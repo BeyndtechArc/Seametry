@@ -1,0 +1,5 @@
+{
+  "name": "@seametry/source-stork", "version": "0.1.0", "private": true, "type": "module",
+  "exports": "./src/index.ts", "dependencies": { "@seametry/domain": "0.1.0" },
+  "scripts": { "typecheck": "tsc --noEmit -p tsconfig.json" }
+}

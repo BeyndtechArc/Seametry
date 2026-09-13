@@ -1,0 +1,23 @@
+{
+  "name": "seametry",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "packageManager": "npm@11.9.0",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:mobile": "npm run start -w @seametry/mobile",
+    "dev:web": "npm run dev -w @seametry/web",
+    "dev:api": "npm run dev -w @seametry/api",
+    "build:mobile": "cd apps/mobile && npx expo export --platform android --output-dir ../../dist/mobile-android --clear",
+    "coverage": "node --experimental-strip-types tools/coverage-probe.ts",
+    "test": "node --experimental-strip-types --test packages/preflight/src/index.test.ts",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build -w @seametry/web && npm run build -w @seametry/api"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.0"
+  }
+}
