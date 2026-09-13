@@ -1,0 +1,5 @@
+{
+  "name": "@seametry/api", "version": "0.1.0", "private": true, "type": "module",
+  "scripts": { "dev": "node --experimental-strip-types --watch src/index.ts", "build": "tsc --noEmit -p tsconfig.json", "start": "node --experimental-strip-types src/index.ts", "typecheck": "tsc --noEmit -p tsconfig.json" },
+  "dependencies": { "@hono/node-server": "^1.19.0", "hono": "^4.13.7" }
+}

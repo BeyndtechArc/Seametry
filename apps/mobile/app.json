@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "Seametry",
+    "slug": "seametry",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.seametry.mobile" },
+    "android": { "package": "com.seametry.mobile" }
+  }
+}
