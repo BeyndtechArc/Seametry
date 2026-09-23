@@ -12,6 +12,15 @@
   <p class="tight addr">{{.Address}}</p>
   <p class="tight">{{.Issuer}} · {{.Decimals}} decimals · read at slot <span class="num">{{.Slot}}</span> on {{.CapturedAt}}</p>
 
+  {{if .Decision}}
+  <div class="card">
+    <h3 style="margin-top:0">Admission decision <span class="stamp {{if eq .Decision "BLOCK"}}stale{{else}}ok{{end}}">{{.Decision}}</span></h3>
+    <p class="tight">Evaluated by <code>internal/policy</code> against <code>{{.PolicyVersion}}</code>. A decision states conditions; it never recommends.</p>
+    {{range .Reasons}}<div class="sentence"><span><span class="stamp {{if eq (printf "%s" .Severity) "BLOCK"}}stale{{else}}done{{end}}" style="margin-right:8px">{{.Severity}}</span>{{.Fact}}<br><code style="color:var(--ink3)">{{.Code}}</code></span></div>{{end}}
+    <p class="tight" style="font-size:13px;color:var(--ink3)">Input digest <code>{{short .InputDigest}}</code>. Identical inputs produce this same digest on any machine, which is what makes a recorded decision checkable rather than merely stored.</p>
+  </div>
+  {{end}}
+
   <div class="card">
     <h3 style="margin-top:0">What the issuer can do</h3>
     {{range .Sentences}}<div class="sentence">{{.}}</div>{{end}}

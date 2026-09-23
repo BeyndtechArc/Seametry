@@ -30,6 +30,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BeyndtechArc/Seametry/internal/policy"
 	"github.com/BeyndtechArc/Seametry/internal/registry"
 )
 
@@ -70,6 +71,11 @@ type Instrument struct {
 	EffectiveAt string
 	Stale       bool
 	Pending     bool
+
+	Decision      string
+	Reasons       []policy.Reason
+	PolicyVersion string
+	InputDigest   string
 }
 
 type survey struct {
@@ -259,6 +265,16 @@ func loadInstruments() []Instrument {
 				inst.Pending = resolved.ActivationPending
 			}
 		}
+		// The same decision function the engine uses, on the same bytes.
+		if in, err := policy.FromRegistry(f.Symbol, f.Address, "certificate", mint, asOf, f.Slot, f.Symbol == "TQQQx" || f.Symbol == "CRDAx", false); err == nil {
+			if result, err := policy.Evaluate(policy.Default(), in); err == nil {
+				inst.Decision = string(result.Decision)
+				inst.Reasons = result.Reasons
+				inst.PolicyVersion = result.PolicyVersion
+				inst.InputDigest = result.InputDigest
+			}
+		}
+
 		out = append(out, inst)
 	}
 	sort.Slice(out, func(i, j int) bool {

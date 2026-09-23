@@ -1,0 +1,942 @@
+{
+  "note": "Decisions pinned against real mainnet mints plus synthetic cases for the blocking paths no live xStocks mint currently exhibits. Regenerate with go test ./internal/policy -update. A case is never edited by hand to make code pass.",
+  "policy": {
+    "version": "policy-2026.09.1",
+    "accepted_grades": [
+      "entitlement",
+      "certificate",
+      "interest"
+    ],
+    "allowed_hook_programs": [],
+    "block_on_unknown_extension": false,
+    "block_on_issuer_halt": false
+  },
+  "cases": [
+    {
+      "name": "AAPLx",
+      "input": {
+        "symbol": "AAPLx",
+        "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 449580424,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": true,
+          "activation_pending": false,
+          "live_value": "1.0032690125398187053207266217214055359363555908203125",
+          "naive_value": "1.002664207589379685714447987265884876251220703125"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "severity": "ALLOW",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "251ba80c34be2ca989b46ff8f2a6e983ecb32399ad5463d96ac0e447187050fd"
+      }
+    },
+    {
+      "name": "CATx",
+      "input": {
+        "symbol": "CATx",
+        "mint": "XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 449580424,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1.0012961784886627025770167165319435298442840576171875",
+          "naive_value": "1.0012961784886627025770167165319435298442840576171875"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "93f87f16d1c7c43fbd03b0c3a42d3af84b3e549a705cbf961d0be2c6dd2dcd70"
+      }
+    },
+    {
+      "name": "CRDAx",
+      "input": {
+        "symbol": "CRDAx",
+        "mint": "XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 449580424,
+        "halted_by_issuer": true,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "HALTED_BY_ISSUER",
+            "severity": "WARN",
+            "fact": "The issuer has halted trading in this."
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "b85dd28f0a71da1768b7ce731c81229d628c454241dd1649999d459f95039847"
+      }
+    },
+    {
+      "name": "NFLXx",
+      "input": {
+        "symbol": "NFLXx",
+        "mint": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 449580424,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": true,
+          "activation_pending": false,
+          "live_value": "10",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "severity": "ALLOW",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "5d89df4ac5f9114dae1525fb92e8461f0843ff2f3f2dbb02f1d9784c6022d683"
+      }
+    },
+    {
+      "name": "PALLx",
+      "input": {
+        "symbol": "PALLx",
+        "mint": "XsTTtPA5V19YwHKDv4xeVXNM6kdsQNJvg3MyWkRUckt",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 449580424,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": true,
+          "activation_pending": false,
+          "live_value": "5",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "severity": "ALLOW",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "bd2b93975a39bafa97b0c3631fe60b381f79ebe7d603a419373b3617cb1b33f7"
+      }
+    },
+    {
+      "name": "STRKx",
+      "input": {
+        "symbol": "STRKx",
+        "mint": "XsaQGz41BEQkS9xAB44uvUtuXcdLJAXEU1dogEzWMZ8",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 449580424,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": true,
+          "activation_pending": false,
+          "live_value": "1.084091008567570124654366736649535596370697021484375",
+          "naive_value": "1.0561756999911942056513680654461495578289031982421875"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "severity": "ALLOW",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "71497c7203defd9545c3e38f96a49af689ac89b5255638aefe05172654b1c035"
+      }
+    },
+    {
+      "name": "TQQQx",
+      "input": {
+        "symbol": "TQQQx",
+        "mint": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 449580424,
+        "halted_by_issuer": true,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": true,
+          "activation_pending": false,
+          "live_value": "2.01169059793726745510866749100387096405029296875",
+          "naive_value": "2.008976295242212106728629805729724466800689697265625"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "HALTED_BY_ISSUER",
+            "severity": "WARN",
+            "fact": "The issuer has halted trading in this."
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "severity": "ALLOW",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "c09b7e934e443ff9bee1d563ad02a70277b43a60900096c32b226f7c846a2213"
+      }
+    },
+    {
+      "name": "UNGRADED",
+      "input": {
+        "symbol": "UNGRADED",
+        "mint": "SyntheticMintUNGRADED",
+        "grade": "ungraded",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "GRADE_UNGRADED",
+            "severity": "BLOCK",
+            "fact": "This instrument's claim has not been classified, so what it legally represents is unknown."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "d9d486ce7949bdf8b4620655e7685684b06588c87bbff7ee0a1405f7018a05d5"
+      }
+    },
+    {
+      "name": "PAUSED",
+      "input": {
+        "symbol": "PAUSED",
+        "mint": "SyntheticMintPAUSED",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": true,
+          "paused_now": true,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "ISSUER_PAUSED_NOW",
+            "severity": "BLOCK",
+            "fact": "The issuer has paused all movement of this."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "6530d8032c4f370ef2853eada1c0387d3c18b971119daaa96545aaa9512458e6"
+      }
+    },
+    {
+      "name": "FROZENDEFAULT",
+      "input": {
+        "symbol": "FROZENDEFAULT",
+        "mint": "SyntheticMintFROZENDEFAULT",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": true,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "NEW_ACCOUNTS_START_FROZEN",
+            "severity": "BLOCK",
+            "fact": "A new account for this starts frozen until the issuer approves it, so a recipient may be unable to receive."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "7ee710993e1993b508cc6e8875b51b3fab8f0302103c2d16c18eda98e944c13b"
+      }
+    },
+    {
+      "name": "ACTIVEHOOK",
+      "input": {
+        "symbol": "ACTIVEHOOK",
+        "mint": "SyntheticMintACTIVEHOOK",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "active",
+          "transfer_hook_program": "HookProgramNobodyHasRead111111111111111111"
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "TRANSFER_HOOK_ACTIVE_UNRECOGNISED",
+            "severity": "BLOCK",
+            "fact": "This checks who may receive it, using a program Seametry has not read."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "42f843aae235c2fa6bf69a2c2604ed810707f98e79afd41f85a4f362aaa5efa5"
+      }
+    },
+    {
+      "name": "NONTRANSFERABLE",
+      "input": {
+        "symbol": "NONTRANSFERABLE",
+        "mint": "SyntheticMintNONTRANSFERABLE",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": true,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "NON_TRANSFERABLE",
+            "severity": "BLOCK",
+            "fact": "This cannot be transferred at all."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "944d8260af66d2acba8c16310f3c9ae2c20324ee9cbc81200b648d6ca4663cb4"
+      }
+    },
+    {
+      "name": "QUARANTINED",
+      "input": {
+        "symbol": "QUARANTINED",
+        "mint": "SyntheticMintQUARANTINED",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": true,
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "CORPORATE_ACTION_MISMATCH",
+            "severity": "BLOCK",
+            "fact": "An expected corporate action and the observed state disagree, so this instrument is held back until they are reconciled."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "cc3ea5ac8284f7c68fd64fb58552773920349714da313205d3d995d3fddda3ef"
+      }
+    },
+    {
+      "name": "UNRESOLVED",
+      "input": {
+        "symbol": "UNRESOLVED",
+        "mint": "SyntheticMintUNRESOLVED",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": false,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "",
+          "naive_value": ""
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "MULTIPLIER_UNRESOLVED",
+            "severity": "BLOCK",
+            "fact": "The quantity you appear to hold could not be resolved from this instrument's configuration."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "19c889c263f21a516935dc1cd54f10dc8c57fe33a2e06eeda6fe3145afb3d241"
+      }
+    },
+    {
+      "name": "UNKNOWNEXT",
+      "input": {
+        "symbol": "UNKNOWNEXT",
+        "mint": "SyntheticMintUNKNOWNEXT",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": [
+          "Unknown(60000)"
+        ]
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "UNKNOWN_EXTENSION_PRESENT",
+            "severity": "WARN",
+            "fact": "This carries an issuer control Seametry does not yet decode (Token-2022 extension Unknown(60000))."
+          }
+        ],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "6eaf8967a540919f5de61970233c8d8f899e509ee8e6e431f7e4df9689da3275"
+      }
+    },
+    {
+      "name": "CLEAN",
+      "input": {
+        "symbol": "CLEAN",
+        "mint": "SyntheticMintCLEAN",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "ALLOW",
+        "reasons": [],
+        "policy_version": "policy-2026.09.1",
+        "input_digest": "163162956e2e4d34f129eef8af334c7934fb3f5db3a79378c156d3b47c6d91d5"
+      }
+    }
+  ]
+}
