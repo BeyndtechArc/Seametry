@@ -13,3 +13,12 @@ dist
 *.test
 *.out
 coverage.txt
+
+# Fonts are fetched, never committed: the ITF Free Font License forbids
+# redistributing them through a public repository. Run: go run ./tools/fonts
+/assets/fonts/*.woff2
+/assets/fonts/*.woff
+/assets/fonts/*.ttf
+/assets/fonts/*.otf
+/assets/fonts/*.zip
+/assets/fonts/FONTSHARE-FFL.txt

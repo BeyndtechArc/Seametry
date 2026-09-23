@@ -74,6 +74,7 @@ Literal names live in code and in every external contract.
 
 | Document | What it is |
 |---|---|
+| [decisions/2026-09-23-oracles-on-chain.md](decisions/2026-09-23-oracles-on-chain.md) | Why oracle values are read from Solana accounts rather than credentialed APIs, what was measured, and what it costs |
 | [decisions/2026-09-23-etf-spine.md](decisions/2026-09-23-etf-spine.md) | Why baskets became the spine and intelligence became the admission standard, the open authorized participant wedge, why lending is excluded, why one process, why retention became policy |
 | [decisions/2026-09-22-reconciliation.md](decisions/2026-09-22-reconciliation.md) | Why Go became the single authority, why Redis was dropped, why public receipts are separately constructed and salted, why unknown enums stay observable |
 | [archive/](archive/) | Nine retired documents, each stamped with what replaced it |
