@@ -1,7 +1,7 @@
 {
   "note": "A demonstration batch. The bodies are invented; the scheme is not. Its root is not written on chain. Every proof here must verify under an implementation that is not the one that produced it.",
   "sealed_at": "2026-09-23T12:00:00Z",
-  "root": "e8582cd0693d40a85242a70635c3dd7ac69e4e50166fca8aff31c62730fc8893",
+  "root": "774ec4d1c3f470ff8013c8c663359cfd9b765c9fbc0a00795250f1efa2b6caa9",
   "count": 5,
   "proofs": [
     {
@@ -44,22 +44,22 @@
         "settlement": "finalized",
         "office": "Seametry Office, Port Harcourt"
       },
-      "private_commitment": "012ad4d03e0c5f86829418fff58c205db83265d672caf1cd17e0ebbdef3954f0",
+      "private_commitment": "b822d845282c0fa9dfb290fba5749a382e9598948d7885f9962a3d8037b47a7e",
       "path": [
         {
           "side": "right",
-          "hash": "e8d21189441b008f765a8de536be31d90dcd9b852acafebec61cd02d6f69ad04"
+          "hash": "efb1357509563aec131e545dda55eec0b8654f1d8d5e21c4b91c41dc56257b44"
         },
         {
           "side": "right",
-          "hash": "4707db716640116c537b252133512293ab7c3c4cfe0505b01fda771cd9eb965b"
+          "hash": "a38150c3a22f3fbaca52fadf703a0acef2feb0767082f4d8dfc5a6edb2f0e6df"
         },
         {
           "side": "right",
-          "hash": "6526ab1a08df2c427291961dce03d04bddcbd07768b6f5a057e9675b844c3772"
+          "hash": "700f6509dc0355680d2e4aadaeafca40e771c776dfbf483f9d616a232f9e02e8"
         }
       ],
-      "root": "e8582cd0693d40a85242a70635c3dd7ac69e4e50166fca8aff31c62730fc8893"
+      "root": "774ec4d1c3f470ff8013c8c663359cfd9b765c9fbc0a00795250f1efa2b6caa9"
     },
     {
       "serial": "09260000002",
@@ -88,22 +88,22 @@
         "settlement": "finalized",
         "office": "Seametry Office, Port Harcourt"
       },
-      "private_commitment": "0de978a33e60720d3fdfe1aaba170e9205f85aadc883c1d7047adba130124f7a",
+      "private_commitment": "4df92d5f5b56437156d317acd99d2372b8ffa62b0d401b34751308dcf79b8745",
       "path": [
         {
           "side": "left",
-          "hash": "9b811f11f9399d8987f12e596c1ff1b896757cd4d0bfdb773a3216e3abe5f048"
+          "hash": "84e76ffec75194753485a9c13b992e866955a8f6510594c1d79594afc61675a8"
         },
         {
           "side": "right",
-          "hash": "4707db716640116c537b252133512293ab7c3c4cfe0505b01fda771cd9eb965b"
+          "hash": "a38150c3a22f3fbaca52fadf703a0acef2feb0767082f4d8dfc5a6edb2f0e6df"
         },
         {
           "side": "right",
-          "hash": "6526ab1a08df2c427291961dce03d04bddcbd07768b6f5a057e9675b844c3772"
+          "hash": "700f6509dc0355680d2e4aadaeafca40e771c776dfbf483f9d616a232f9e02e8"
         }
       ],
-      "root": "e8582cd0693d40a85242a70635c3dd7ac69e4e50166fca8aff31c62730fc8893"
+      "root": "774ec4d1c3f470ff8013c8c663359cfd9b765c9fbc0a00795250f1efa2b6caa9"
     },
     {
       "serial": "09260000003",
@@ -132,22 +132,22 @@
         "settlement": "finalized",
         "office": "Seametry Office, Port Harcourt"
       },
-      "private_commitment": "884668b8143e211c44bbd7dcd1e81288e2db99bf4ba135fd172e1b434f89ff5b",
+      "private_commitment": "952783ed01026c70697b3b8c8e52d0c0ad5aadb2a341db67fdc56a29404215a9",
       "path": [
         {
           "side": "right",
-          "hash": "df0b205f7b3ba7f43f016c99b4c93051961e06b45fdecf6112cd196d624c3ab3"
+          "hash": "cb4c21d970bde61704c056ab06a066bc50cee92b79d8dc7bf89e30064ce829eb"
         },
         {
           "side": "left",
-          "hash": "1d77dfceba46d9e4835a821e2af6d51b74b646bd8232c3e705c80891be052dbe"
+          "hash": "225db71439cba232ba3d20cbb03a5123202ddbccd8d360e6cc89e5a036449984"
         },
         {
           "side": "right",
-          "hash": "6526ab1a08df2c427291961dce03d04bddcbd07768b6f5a057e9675b844c3772"
+          "hash": "700f6509dc0355680d2e4aadaeafca40e771c776dfbf483f9d616a232f9e02e8"
         }
       ],
-      "root": "e8582cd0693d40a85242a70635c3dd7ac69e4e50166fca8aff31c62730fc8893"
+      "root": "774ec4d1c3f470ff8013c8c663359cfd9b765c9fbc0a00795250f1efa2b6caa9"
     },
     {
       "serial": "09260000004",
@@ -175,22 +175,22 @@
         "settlement": "finalized",
         "office": "Seametry Office, Port Harcourt"
       },
-      "private_commitment": "45f75d14bea7801b382bcee357c77f0ecd9ae5be5edee06dba93389e7ba9f234",
+      "private_commitment": "ebac3251c15c349e3ec6bf61cad38b2e6c71577f87aa7d7d062373f597a56985",
       "path": [
         {
           "side": "left",
-          "hash": "cfdc67d60932f2709614b4300cec05ae9012ae87b464ff63cbad3bd93208fcb6"
+          "hash": "cc780fef3cade24c21f2aa49fbe5930c44d47427fd74d9995524a0371ae42e7f"
         },
         {
           "side": "left",
-          "hash": "1d77dfceba46d9e4835a821e2af6d51b74b646bd8232c3e705c80891be052dbe"
+          "hash": "225db71439cba232ba3d20cbb03a5123202ddbccd8d360e6cc89e5a036449984"
         },
         {
           "side": "right",
-          "hash": "6526ab1a08df2c427291961dce03d04bddcbd07768b6f5a057e9675b844c3772"
+          "hash": "700f6509dc0355680d2e4aadaeafca40e771c776dfbf483f9d616a232f9e02e8"
         }
       ],
-      "root": "e8582cd0693d40a85242a70635c3dd7ac69e4e50166fca8aff31c62730fc8893"
+      "root": "774ec4d1c3f470ff8013c8c663359cfd9b765c9fbc0a00795250f1efa2b6caa9"
     },
     {
       "serial": "09260000005",
@@ -218,14 +218,14 @@
         "settlement": "finalized",
         "office": "Seametry Office, Port Harcourt"
       },
-      "private_commitment": "60d5f3edd0ea92974d822f676f8ab4f31d08e050f8767022b9f715044e714f8b",
+      "private_commitment": "74f760016afdb807c407117f8a58f6545e4c4355c62f809a8c57981d40c21ca5",
       "path": [
         {
           "side": "left",
-          "hash": "283057d400f57b959955ca1bd944f2c5e1ac83e044f141c974f9fac6fd76d2ee"
+          "hash": "bbe80cd0d894a1ced4e64f3666a039cc635f434dbe496066762cbd3ed2ba27be"
         }
       ],
-      "root": "e8582cd0693d40a85242a70635c3dd7ac69e4e50166fca8aff31c62730fc8893"
+      "root": "774ec4d1c3f470ff8013c8c663359cfd9b765c9fbc0a00795250f1efa2b6caa9"
     }
   ],
   "private_bodies_revealed_for_the_demonstration": {
@@ -243,7 +243,7 @@
         "settled_at": "2026-09-23T12:00:11Z",
         "slot": 449580424,
         "approval_digest": "0000000000000000000000000000000000000000000000000000000000000001",
-        "salt": "556f944fbbd5f0d199403a2772d5ebaef6d7ce3afb4db1a29b49db0ea444afbf"
+        "salt": "0b032fa0520a7e6f3fa5dbc4c519c42e93ad9b07022ae605bbb08eb7951d37ec"
       },
       "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
     },
@@ -261,7 +261,7 @@
         "settled_at": "2026-09-23T11:59:11Z",
         "slot": 449580425,
         "approval_digest": "0000000000000000000000000000000000000000000000000000000000000002",
-        "salt": "806aa4eeb972ae9e054952ead8ba2a7d92678db63688a36818897bb489d318c1"
+        "salt": "456fc69b1a6e54d2de78f2ad7b4142a87c321c781a0c9820dade6ce8ccd84ee1"
       },
       "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
     },
@@ -279,7 +279,7 @@
         "settled_at": "2026-09-23T11:58:11Z",
         "slot": 449580426,
         "approval_digest": "0000000000000000000000000000000000000000000000000000000000000003",
-        "salt": "b4d0ad894fa1f9fef8147018c90b988a2737fe7d806e7c9201db53b0ec0c49e8"
+        "salt": "eaf8852bd8a67400450d043c1f27eea75376b158701d09e74e5dec90338a1270"
       },
       "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
     },
@@ -297,7 +297,7 @@
         "settled_at": "2026-09-23T11:57:11Z",
         "slot": 449580427,
         "approval_digest": "0000000000000000000000000000000000000000000000000000000000000004",
-        "salt": "bf024b835d7f9f5f3aff8c7d4d4bec2413af806281c272487ac42210956c457f"
+        "salt": "865b14631f51b8b3b8b838c2fda482b5d0b67604509420eef733e4c0af07fcff"
       },
       "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
     },
@@ -315,7 +315,7 @@
         "settled_at": "2026-09-23T11:56:11Z",
         "slot": 449580428,
         "approval_digest": "0000000000000000000000000000000000000000000000000000000000000005",
-        "salt": "79efad53c4ddbcf8e143f9770f9e3649aa89c04a8a1c0a618320a562d44e24d5"
+        "salt": "64526f9fa453269bc00d7179ba948a486b39e26debf6fc90ac4e37804a5e8b40"
       },
       "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
     }

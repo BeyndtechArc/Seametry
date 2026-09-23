@@ -101,36 +101,13 @@
    */
   function splitPoint(n) { var k = 1; while (k * 2 < n) k *= 2; return k; }
 
-  function layout(n) {
-    var levels = [], nodes = [];
-    for (var i = 0; i < n; i++) nodes.push({ lo: i, hi: i + 1 });
-    levels.push(nodes);
-    while (levels[levels.length - 1].length > 1) {
-      var cur = levels[levels.length - 1], next = [], i2 = 0;
-      // Rebuild the same partition the engine uses at each level.
-      var spans = partition(0, n);
-      next = spans;
-      levels.push(next);
-      if (next.length === cur.length) break;
-      if (next.length === 1) break;
-    }
-    return levels;
-  }
-
-  // partition returns the subtree spans one level above the leaves, recursively.
-  function partition(lo, hi) {
-    var n = hi - lo;
-    if (n <= 1) return [{ lo: lo, hi: hi }];
-    var k = splitPoint(n);
-    return [{ lo: lo, hi: lo + k }, { lo: lo + k, hi: hi }];
-  }
-
+  /**
+   * Groups the tree's spans by depth, so each level can be drawn as a row.
+   * The recursion uses the same split the engine uses, which is what makes
+   * the picture the shape that was actually hashed rather than an
+   * illustration of one.
+   */
   function buildLevels(n) {
-    var levels = [[]];
-    for (var i = 0; i < n; i++) levels[0].push({ lo: i, hi: i + 1 });
-    var current = [{ lo: 0, hi: n }];
-    var stack = [];
-    // Expand the tree top down into levels by depth.
     var byDepth = {};
     (function walk(lo, hi, depth) {
       byDepth[depth] = byDepth[depth] || [];

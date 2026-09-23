@@ -120,6 +120,7 @@ type splitRow struct {
 
 func main() {
 	out := flag.String("out", filepath.Join("dist", "explorer"), "output directory")
+	addr := flag.String("serve", "", "generate, then serve on this address, for example :8080")
 	flag.Parse()
 
 	instruments := loadInstruments()
@@ -194,13 +195,24 @@ func main() {
 	// Static assets, plus the fonts if they have been fetched.
 	copyEmbedded(*out, "assets/explorer.css", "explorer.css")
 	copyEmbedded(*out, "assets/verify.js", "verify.js")
+	// The sealed batch travels as its own script rather than inline, so the
+	// content security policy can refuse inline script entirely.
+	if err := os.WriteFile(filepath.Join(*out, "batch.js"),
+		[]byte("window.__SEAMETRY_BATCH__ = "+batchRaw+";\n"), 0o644); err != nil {
+		fail(err)
+	}
 	copyFonts(*out)
+	writeHostConfig(*out)
 
 	fmt.Printf("\n%d instruments, %d sealed receipts", len(instruments), batchCount)
 	if surveyData != nil {
 		fmt.Printf(", %d mints surveyed", surveyData.MintsDecoded)
 	}
 	fmt.Printf("\n\nopen %s\n", filepath.Join(*out, "index.html"))
+
+	if *addr != "" {
+		serve(*out, *addr)
+	}
 }
 
 func loadInstruments() []Instrument {
