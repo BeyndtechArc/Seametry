@@ -1,3 +1,8 @@
+> **ARCHIVED, NOT BINDING.** Historical record only. Retired 23 September 2026.
+> Historical hackathon walkthrough for the pre Terminal product shape.
+> Nothing in this file has authority over a living document. Do not build from it,
+> do not cite it in a decision, and do not update it. See `../README.md`.
+
 # Demo and Submission Script
 
 ## Core claim

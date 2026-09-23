@@ -1,3 +1,8 @@
+> **ARCHIVED, NOT BINDING.** Historical record only. Retired 23 September 2026.
+> Replaced by `../prd/MOBILE.md`.
+> Nothing in this file has authority over a living document. Do not build from it,
+> do not cite it in a decision, and do not update it. See `../README.md`.
+
 # Native Mobile V1
 
 ## Product standard

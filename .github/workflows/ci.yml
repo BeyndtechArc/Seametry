@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  GO_VERSION: "1.27.1"
+
+jobs:
+  spec:
+    name: Conformance vectors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      # Regenerates the vectors and fails if the result differs from what is
+      # committed. This is what stops anyone editing a vector by hand to make
+      # an implementation pass. It also reruns every generator self-check,
+      # including the CVE-2012-2459 non-collision.
+      - name: Vectors match their generator
+        run: node tools/spec/generate.mjs --check
+
+  go:
+    name: Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Formatting
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "These files are not gofmt'd:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      # Race detection is required on every run. It needs cgo, which is why it
+      # runs here rather than on a developer's Windows machine.
+      - name: Test
+        run: go test -race -count=1 ./...
+
+  language:
+    name: Language boundary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # docs/ENGINEERING_STANDARD.md section 16. These rules apply to code,
+      # comments, copy and documentation, so the check covers all of them and
+      # excludes only the archive, which is retired historical text.
+      - name: No em dashes
+        run: |
+          if grep -rInP '\x{2014}' \
+              --include='*.go' --include='*.md' --include='*.ts' --include='*.tsx' \
+              --include='*.js' --include='*.mjs' --include='*.rs' --include='*.yml' \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive \
+              --exclude=AGENTS.md .; then
+            echo
+            echo "Em dashes are not used in this project. See docs/ENGINEERING_STANDARD.md section 16."
+            exit 1
+          fi
+
+      # A value is never described as true, correct, fair, safe, guaranteed or
+      # pure. Matches only those words applied to a value, so that prose
+      # rejecting the usage does not trip the check.
+      - name: No value claims
+        run: |
+          if grep -rInE '\b(true|correct|fair|safe|guaranteed|pure) (price|value|quote|number|rate)\b' \
+              --include='*.go' --include='*.md' --include='*.ts' --include='*.tsx' \
+              --include='*.js' --include='*.mjs' --include='*.rs' \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive \
+              --exclude=AGENTS.md . \
+              | grep -vE 'never|not |no |refus|forbid|prohibit'; then
+            echo
+            echo "A value is never called true, correct, fair, safe, guaranteed or pure."
+            echo "See docs/ENGINEERING_STANDARD.md section 16."
+            exit 1
+          fi

@@ -6,3 +6,10 @@ dist
 .env.local
 *.log
 *.tsbuildinfo
+
+# Go
+/seametry
+/seametry.exe
+*.test
+*.out
+coverage.txt

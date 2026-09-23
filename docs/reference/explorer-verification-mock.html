@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seametry Explorer: verify a hallmark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Schibsted+Grotesk:wght@400;500;600&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ground:#EDEBE3; --sheet:#F7F5EF; --raised:#FCFBF7; --tray:#E0DDD1;
+  --ink:#1F1E1D; --ink2:#5F5C55; --ink3:#918D83; --rule:#DBD8CD;
+  --green:#B7EC75; --on-green:#16200B; --prov:#3A20D6;
+  --grain-opacity:.035;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:'Schibsted Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'Fragment Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0A0A0A; --sheet:#141414; --raised:#1C1C1C; --tray:#262626;
+    --ink:#F5F5F3; --ink2:#9A9A96; --ink3:#66665F; --rule:#242422;
+    --prov:#8F8AFF; --grain-opacity:.05;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0A0A0A; --sheet:#141414; --raised:#1C1C1C; --tray:#262626;
+  --ink:#F5F5F3; --ink2:#9A9A96; --ink3:#66665F; --rule:#242422;
+  --prov:#8F8AFF; --grain-opacity:.05;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;min-height:100%;position:relative}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:var(--grain-opacity);z-index:0;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:40px 22px 96px}
+.num{font-variant-numeric:tabular-nums lining-nums}
+
+header.top{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding-bottom:18px;border-bottom:.5px solid var(--rule)}
+.word{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em}
+.word span{color:var(--ink3);font-family:var(--sans);font-size:14px;font-weight:500;margin-left:10px;letter-spacing:0}
+.honest{font-size:13px;color:var(--ink3);text-align:right;max-width:34ch}
+
+.hero{padding:56px 0 30px}
+h1{font-family:var(--serif);font-weight:300;font-size:clamp(40px,8vw,68px);line-height:1.02;letter-spacing:-.03em;max-width:12ch}
+.lede{color:var(--ink2);font-size:17px;margin-top:18px;max-width:52ch}
+
+.entry{margin-top:34px;display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+.field{flex:1 1 260px;background:var(--sheet);border-radius:999px;display:flex;align-items:center;padding:0 22px;min-height:60px;border:.5px solid var(--rule)}
+.field input{all:unset;flex:1;font-family:var(--sans);font-size:18px;font-weight:500;letter-spacing:.08em;font-variant-numeric:tabular-nums;text-transform:uppercase;color:var(--ink);min-width:0}
+.field input::placeholder{color:var(--ink3);letter-spacing:.02em;text-transform:none;font-weight:400}
+.tray{background:var(--tray);border-radius:999px;padding:8px;display:flex}
+.key{all:unset;cursor:pointer;background:var(--green);color:var(--on-green);border-radius:999px;padding:0 30px;min-height:44px;display:flex;align-items:center;font-weight:500;font-size:15px}
+.key:active{transform:translateY(1px);filter:brightness(.94)}
+.quiet{all:unset;cursor:pointer;color:var(--ink2);font-size:14px;font-weight:500;padding:10px 16px;border-radius:999px;background:var(--sheet);border:.5px solid var(--rule)}
+:focus-visible{outline:2px solid var(--prov);outline-offset:3px}
+.samples{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.samples p{font-size:13px;color:var(--ink3);margin-right:4px}
+.chip{all:unset;cursor:pointer;font-size:13px;font-weight:500;letter-spacing:.08em;font-variant-numeric:tabular-nums;padding:7px 13px;border-radius:999px;background:var(--sheet);color:var(--ink2);border:.5px solid var(--rule)}
+.chip:hover{color:var(--ink)}
+.msg{margin-top:14px;font-size:14px;color:var(--prov);min-height:1.4em}
+
+#result{margin-top:44px;display:none}
+.mark{background:var(--sheet);border-radius:4px;padding:26px 24px 22px;border-top:.5px solid rgba(255,255,255,.06)}
+.punches{display:flex;gap:10px;align-items:center}
+.punch{width:52px;height:52px;border-radius:12px 12px 22px 22px;background:var(--raised);border:1px solid var(--ink3);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;color:var(--ink2);box-shadow:inset 0 -.5px 0 rgba(255,255,255,.18)}
+.punch.oval{border-radius:999px}
+.punch.cut{border-radius:4px;clip-path:polygon(9px 0,calc(100% - 9px) 0,100% 9px,100% 100%,0 100%,0 9px)}
+.punch.date{font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.serial{margin-top:16px;font-size:22px;font-weight:600;letter-spacing:.16em;font-variant-numeric:tabular-nums}
+.kind{margin-top:4px;color:var(--ink2);font-size:14px}
+
+.steps{list-style:none;margin-top:12px}
+.step{padding:30px 0 6px;border-top:.5px solid var(--rule);margin-top:26px;opacity:.28;transition:opacity .3s}
+.step.on{opacity:1}
+.step h2{font-family:var(--serif);font-weight:400;font-size:24px;letter-spacing:-.015em;display:flex;gap:14px;align-items:baseline}
+.step h2 .n{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink3);font-variant-numeric:tabular-nums}
+.step p.d{color:var(--ink2);margin-top:8px;max-width:58ch;font-size:15px}
+pre.body{margin-top:16px;background:var(--sheet);border-radius:4px;padding:16px 18px;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--ink2);overflow-x:auto;white-space:pre}
+pre.body mark{background:none;color:var(--prov);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+.hashrow{margin-top:14px;display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:6px 18px;align-items:baseline}
+.hashrow dt{font-size:13px;color:var(--ink3)}
+.hashrow dd{font-family:var(--mono);font-size:12.5px;color:var(--ink);word-break:break-all}
+.formula{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--ink3);overflow-x:auto;white-space:nowrap}
+
+.treebox{margin-top:18px;background:var(--sheet);border-radius:4px;padding:14px 10px 6px;overflow-x:auto}
+svg.tree{display:block;width:100%;min-width:520px;height:auto}
+.tree line{stroke:var(--rule);stroke-width:1.2}
+.tree line.lit{stroke:var(--prov);stroke-width:1.6}
+.tree circle{fill:var(--raised);stroke:var(--ink3);stroke-width:1}
+.tree circle.sib{stroke:var(--prov);stroke-dasharray:2 2}
+.tree circle.lit{fill:var(--prov);stroke:var(--prov)}
+.tree text{fill:var(--ink3);font-family:var(--sans);font-size:11px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--ink3)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:0}
+
+.verdict{margin-top:18px;font-family:var(--serif);font-size:26px;font-weight:300;letter-spacing:-.02em}
+.verdict.no{color:var(--prov)}
+.seal{margin-top:12px;color:var(--ink2);font-size:15px;max-width:58ch}
+.closing{margin-top:44px;font-family:var(--serif);font-weight:300;font-size:clamp(30px,6vw,46px);line-height:1.08;letter-spacing:-.025em;opacity:0}
+.after{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+
+footer{margin-top:80px;padding-top:20px;border-top:.5px solid var(--rule);color:var(--ink3);font-size:13px;max-width:62ch}
+footer p+p{margin-top:8px}
+@media (max-width:520px){ .honest{display:none} .hero{padding-top:40px} }
+@media (prefers-reduced-motion: reduce){ .step{transition:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="word">Seametry<span>Explorer</span></div>
+    <div class="honest">Demonstration batch, built in this page. Its root is not yet written on-chain.</div>
+  </header>
+
+  <section class="hero">
+    <h1>Check a hallmark yourself.</h1>
+    <p class="lede">Enter a serial. Your browser recomputes every hash from the public record up to the batch root. Nothing here is taken on trust, including us.</p>
+
+    <form class="entry" id="form" autocomplete="off">
+      <label class="field"><input id="serial" inputmode="text" maxlength="11" placeholder="Serial, for example 09260000001" aria-label="Hallmark serial"></label>
+      <div class="tray"><button class="key" type="submit">Verify</button></div>
+    </form>
+    <div class="samples" id="samples"><p>Serials in this batch</p></div>
+    <div class="msg" id="msg" role="status" aria-live="polite"></div>
+  </section>
+
+  <section id="result" aria-live="polite">
+    <div class="mark">
+      <div class="punches" id="punches" aria-hidden="true">
+        <div class="punch">S</div>
+        <div class="punch oval" id="p-grade">E</div>
+        <div class="punch cut">H</div>
+        <div class="punch date" id="p-date">0926</div>
+      </div>
+      <div class="serial" id="r-serial"></div>
+      <div class="kind" id="r-kind"></div>
+    </div>
+
+    <ol class="steps">
+      <li class="step" id="s1">
+        <h2><span class="n">1</span>The public record</h2>
+        <p class="d">What anyone may see. No wallet, no transaction signature, no exact amounts: a signature is public on-chain and would reveal all three. Hashed in canonical form.</p>
+        <pre class="body" id="pub"></pre>
+        <dl class="hashrow"><dt>Public digest</dt><dd id="hp">&nbsp;</dd></dl>
+      </li>
+      <li class="step" id="s2">
+        <h2><span class="n">2</span>The owner's commitment</h2>
+        <p class="d">The private record stays with its owner, salted so its amounts cannot be guessed. Only its fingerprint travels with the proof.</p>
+        <dl class="hashrow">
+          <dt>Private commitment</dt><dd id="hq">&nbsp;</dd>
+          <dt>Leaf</dt><dd id="hl">&nbsp;</dd>
+        </dl>
+        <div class="formula">leaf = SHA-256( 0x00 · public digest · private commitment )</div>
+      </li>
+      <li class="step" id="s3">
+        <h2><span class="n">3</span>The path to the root</h2>
+        <p class="d">Each level is computed here from the level below and one sibling supplied by the proof.</p>
+        <div class="treebox"><svg class="tree" id="tree" viewBox="0 0 660 250" role="img" aria-label="Merkle tree with the verified path highlighted"></svg></div>
+        <div class="legend"><span><i style="background:var(--prov)"></i>Computed in your browser</span><span><i style="border:1px dashed var(--prov)"></i>Sibling from the proof</span></div>
+        <dl class="hashrow" id="levels"></dl>
+        <div class="formula">node = SHA-256( 0x01 · left · right )</div>
+      </li>
+      <li class="step" id="s4">
+        <h2><span class="n">4</span>The seal</h2>
+        <dl class="hashrow">
+          <dt>Computed root</dt><dd id="rc">&nbsp;</dd>
+          <dt>Published root</dt><dd id="rp">&nbsp;</dd>
+        </dl>
+        <div class="verdict" id="verdict"></div>
+        <p class="seal" id="seal"></p>
+      </li>
+    </ol>
+
+    <p class="closing" id="closing">Your browser just verified this. We didn't.</p>
+    <div class="after">
+      <button class="quiet" id="tamper" type="button">Change one character and verify again</button>
+      <button class="quiet" id="again" type="button">Verify the original</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>Scheme: canonical JSON with sorted keys, SHA-256 through the browser's Web Crypto, leaves prefixed 0x00 and interior nodes 0x01 in the style of Certificate Transparency. Private records carry a 32-byte salt.</p>
+    <p>Demonstration salts here are derived deterministically so the batch root is stable between visits. Production salts are random and never leave the owner.</p>
+  </footer>
+</div>
+
+<script id="core">
+/* Pure verification core. No DOM. */
+const enc = new TextEncoder();
+function canon(v){
+  if (v === null || typeof v !== 'object') {
+    if (typeof v === 'number' && !Number.isInteger(v)) throw new Error('non-integer number in canonical body');
+    return JSON.stringify(v);
+  }
+  if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
+  return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
+}
+async function sha(bytes){ return new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)); }
+function cat(...parts){ const n = parts.reduce((a,p)=>a+p.length,0); const o = new Uint8Array(n); let i=0; for (const p of parts){ o.set(p,i); i+=p.length; } return o; }
+const hex = b => Array.from(b, x => x.toString(16).padStart(2,'0')).join('');
+const unhex = h => new Uint8Array(h.match(/../g).map(x => parseInt(x,16)));
+const P0 = new Uint8Array([0]), P1 = new Uint8Array([1]);
+async function digestBody(o){ return sha(enc.encode(canon(o))); }
+async function leafOf(hpub, hpriv){ return sha(cat(P0, hpub, hpriv)); }
+async function nodeOf(l, r){ return sha(cat(P1, l, r)); }
+
+const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+function serialFor(mmyy, n){ let s=''; for (let i=0;i<7;i++){ s = CROCKFORD[n % 32] + s; n = Math.floor(n/32); } return mmyy + s; }
+
+/* The Office side: builds a batch. The verifier below never touches private bodies. */
+async function officeBuildBatch(){
+  const policy = 'policy-2026.09.3';
+  const specs = [
+    {kind:'Strike, genesis of Alloy No. 1', basket:'Alloy No. 1, STORM', grades:['entitlement','certificate'], legs:[['MSTR','entitlement',['freeze','take back']],['AAPLx','certificate',['freeze','pause','take back','change apparent quantity']]], band:'1,000 to 10,000 USDC', weakest:'verified', venues:['Hall']},
+    {kind:'Allocation purchase', basket:'Personal allocation', grades:['certificate'], legs:[['NVDAx','certificate',['freeze','pause','take back','change apparent quantity']]], band:'100 to 1,000 USDC', weakest:'unverified', venues:['Meteora','Raydium']},
+    {kind:'Strike', basket:'Alloy No. 1, STORM', grades:['entitlement','certificate'], legs:[['MSTR','entitlement',['freeze','take back']],['AAPLx','certificate',['freeze','pause','take back','change apparent quantity']]], band:'100 to 1,000 USDC', weakest:'verified', venues:['Hall']},
+    {kind:'Melt, one leg held as a claim', basket:'Alloy No. 1, STORM', grades:['entitlement','certificate'], legs:[['MSTR','entitlement',['freeze','take back']],['AAPLx','certificate',['freeze','pause','take back','change apparent quantity']]], band:'100 to 1,000 USDC', weakest:'stale', venues:['Hall']},
+    {kind:'Allocation purchase', basket:'Personal allocation', grades:['entitlement'], legs:[['INTC','entitlement',['freeze','take back']]], band:'under 100 USDC', weakest:'verified', venues:['Orca']},
+    {kind:'Allocation purchase', basket:'Personal allocation', grades:['certificate','entitlement'], legs:[['TSLAx','certificate',['freeze','pause','take back','change apparent quantity']],['NKE','entitlement',['freeze','take back']]], band:'1,000 to 10,000 USDC', weakest:'stale', venues:['Meteora']},
+    {kind:'Withdrawal of a released claim', basket:'Alloy No. 1, STORM', grades:['certificate'], legs:[['AAPLx','certificate',['freeze','pause','take back','change apparent quantity']]], band:'100 to 1,000 USDC', weakest:'verified', venues:['Hall']},
+    {kind:'Strike', basket:'Alloy No. 1, STORM', grades:['entitlement','certificate'], legs:[['MSTR','entitlement',['freeze','take back']],['AAPLx','certificate',['freeze','pause','take back','change apparent quantity']]], band:'under 100 USDC', weakest:'unverified', venues:['Hall']},
+  ];
+  const bundles = [];
+  for (let i=0;i<specs.length;i++){
+    const s = specs[i];
+    const serial = serialFor('0926', i+1);
+    const pub = {
+      serial, month:'2026-09', kind:s.kind, basket:s.basket,
+      constituents: s.legs.map(([t,g,p]) => ({ticker:t, grade:g, issuer_can:p})),
+      weakest_evidence:s.weakest, size_band:s.band, venues:s.venues,
+      policy, settlement:'finalized', office:'Seametry Office, Port Harcourt'
+    };
+    const salt = hex(await sha(enc.encode('seametry-demo-salt-' + serial)));
+    const priv = { serial, wallet:'demo-wallet-' + (i+1), signature:'demo-signature-' + (i+1), amount_atoms:String(1000000 * (i+3)), scale:6, salt };
+    const hpub = await digestBody(pub);
+    const hpriv = await digestBody(priv);
+    bundles.push({ serial, pub, hprivHex: hex(hpriv), leaf: await leafOf(hpub, hpriv) });
+  }
+  const levels = [bundles.map(b => b.leaf)];
+  while (levels[levels.length-1].length > 1){
+    const cur = levels[levels.length-1], next = [];
+    for (let i=0;i<cur.length;i+=2) next.push(await nodeOf(cur[i], cur[i+1]));
+    levels.push(next);
+  }
+  bundles.forEach((b, idx) => {
+    const proof = []; let k = idx;
+    for (let L=0; L<levels.length-1; L++){
+      const sib = k ^ 1;
+      proof.push({ side: sib < k ? 'left' : 'right', hash: hex(levels[L][sib]) });
+      k = k >> 1;
+    }
+    b.proof = proof; b.index = idx; delete b.leaf;
+  });
+  return { root: hex(levels[levels.length-1][0]), bundles };
+}
+
+/* The verifier: public body, private commitment, proof, published root. */
+async function verifyBundle(pub, hprivHex, proof, rootHex){
+  const hpub = await digestBody(pub);
+  const leaf = await leafOf(hpub, unhex(hprivHex));
+  const path = []; let cur = leaf;
+  for (const step of proof){
+    const sib = unhex(step.hash);
+    cur = step.side === 'left' ? await nodeOf(sib, cur) : await nodeOf(cur, sib);
+    path.push(hex(cur));
+  }
+  return { hpub: hex(hpub), leaf: hex(leaf), path, root: hex(cur), ok: hex(cur) === rootHex };
+}
+if (typeof module !== 'undefined') module.exports = { canon, officeBuildBatch, verifyBundle, serialFor };
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script>
+(async function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const G = (!reduce && window.gsap) ? window.gsap : null;
+  const $ = id => document.getElementById(id);
+  const sleep = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+  const HEXCH = '0123456789abcdef';
+
+  function resolve(el, text, ms){
+    if (reduce || !ms){ el.textContent = text; return Promise.resolve(); }
+    return new Promise(done => {
+      const t0 = performance.now();
+      function frame(t){
+        const p = Math.min(1, (t - t0) / ms), fixed = Math.floor(p * text.length);
+        let s = text.slice(0, fixed);
+        for (let i = fixed; i < text.length; i++) s += HEXCH[(Math.random()*16)|0];
+        el.textContent = s;
+        p < 1 ? requestAnimationFrame(frame) : (el.textContent = text, done());
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  const batch = await officeBuildBatch();
+  const bySerial = new Map(batch.bundles.map(b => [b.serial, b]));
+
+  const samples = $('samples');
+  batch.bundles.forEach(b => {
+    const c = document.createElement('button');
+    c.type = 'button'; c.className = 'chip'; c.textContent = b.serial;
+    c.addEventListener('click', () => { $('serial').value = b.serial; run(b.serial, false); });
+    samples.appendChild(c);
+  });
+
+  const tree = $('tree');
+  const W = 660, xs = [];
+  const levelY = [214, 150, 86, 26];
+  xs[0] = Array.from({length:8}, (_, i) => 45 + i * 81.4);
+  for (let L=1; L<4; L++) xs[L] = xs[L-1].reduce((a, x, i, arr) => (i % 2 ? a : a.concat((x + arr[i+1]) / 2)), []);
+  const NS = 'http://www.w3.org/2000/svg';
+  const lines = {}, dots = {};
+  function drawTree(){
+    tree.innerHTML = '';
+    for (let L=0; L<3; L++) xs[L].forEach((x, i) => {
+      const ln = document.createElementNS(NS, 'line');
+      ln.setAttribute('x1', x); ln.setAttribute('y1', levelY[L]);
+      ln.setAttribute('x2', xs[L+1][i>>1]); ln.setAttribute('y2', levelY[L+1]);
+      tree.appendChild(ln); lines[L+'-'+i] = ln;
+    });
+    for (let L=0; L<4; L++) xs[L].forEach((x, i) => {
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', x); c.setAttribute('cy', levelY[L]); c.setAttribute('r', L === 3 ? 8 : 6);
+      tree.appendChild(c); dots[L+'-'+i] = c;
+    });
+    batch.bundles.forEach((b, i) => {
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', xs[0][i]); t.setAttribute('y', 240); t.setAttribute('text-anchor', 'middle');
+      t.textContent = b.serial.slice(-3); tree.appendChild(t);
+    });
+    const r = document.createElementNS(NS, 'text');
+    r.setAttribute('x', xs[3][0] + 16); r.setAttribute('y', levelY[3] + 4); r.textContent = 'root';
+    tree.appendChild(r);
+  }
+
+  function short(h){ return h.slice(0, 16) + '…' + h.slice(-8); }
+
+  let current = null, busy = false;
+  async function run(serial, tamper){
+    if (busy) return;
+    const s = (serial || '').trim().toUpperCase();
+    const b = bySerial.get(s);
+    if (!b){
+      $('msg').textContent = s ? 'No hallmark with serial ' + s + ' is in this batch. Choose one of the serials above.' : 'Enter a serial, or choose one above.';
+      return;
+    }
+    busy = true; current = s; $('msg').textContent = '';
+    const res = $('result'); res.style.display = 'block';
+    ['s1','s2','s3','s4'].forEach(id => $(id).classList.remove('on'));
+    ['hp','hq','hl','rc','rp'].forEach(id => $(id).innerHTML = '&nbsp;');
+    $('levels').innerHTML = ''; $('verdict').textContent = ''; $('verdict').className = 'verdict'; $('seal').textContent = '';
+    $('closing').style.opacity = 0;
+    drawTree();
+
+    const pub = JSON.parse(JSON.stringify(b.pub));
+    let shown = JSON.stringify(pub, null, 2);
+    if (tamper){
+      pub.policy = pub.policy.replace(/3$/, '4');
+      shown = JSON.stringify(pub, null, 2).replace('"' + pub.policy + '"', '"<mark>' + pub.policy + '</mark>"');
+    }
+
+    $('r-serial').textContent = b.serial;
+    $('r-kind').textContent = b.pub.kind + (tamper ? ', with one character changed' : '');
+    const weakestGrade = b.pub.constituents.some(c => c.grade === 'certificate') ? 'C' : 'E';
+    $('p-grade').textContent = weakestGrade;
+    res.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'start'});
+
+    const punches = Array.from($('punches').children);
+    if (G){
+      G.set(punches, {opacity:0, scale:1.06});
+      await G.to(punches, {opacity:1, scale:1, duration:.09, stagger:.07, ease:'power2.out', delay:.25});
+    } else punches.forEach(p => { p.style.opacity = 1; });
+
+    const out = await verifyBundle(pub, b.hprivHex, b.proof, batch.root);
+
+    $('s1').classList.add('on');
+    $('pub').innerHTML = shown.replace(/&(?!lt;|gt;)/g,'&amp;').replace(/<(?!\/?mark>)/g,'&lt;');
+    await sleep(350);
+    await resolve($('hp'), out.hpub, 700);
+
+    await sleep(250); $('s2').classList.add('on');
+    await resolve($('hq'), b.hprivHex, 500);
+    await resolve($('hl'), out.leaf, 600);
+
+    await sleep(250); $('s3').classList.add('on');
+    let k = b.index;
+    dots['0-'+k].classList.add('lit');
+    for (let L=0; L<3; L++){
+      const sib = k ^ 1;
+      dots[L+'-'+sib].classList.add('sib');
+      await sleep(260);
+      lines[L+'-'+k].classList.add('lit'); lines[L+'-'+sib].classList.add('lit');
+      const up = k >> 1;
+      dots[(L+1)+'-'+up].classList.add('lit');
+      const dt = document.createElement('dt'); dt.textContent = L < 2 ? 'Level ' + (L+1) : 'Root';
+      const dd = document.createElement('dd'); dd.title = out.path[L];
+      $('levels').append(dt, dd);
+      await resolve(dd, short(out.path[L]), 450);
+      k = up;
+    }
+
+    await sleep(250); $('s4').classList.add('on');
+    await resolve($('rc'), out.root, 500);
+    $('rp').textContent = batch.root;
+    await sleep(300);
+    if (out.ok){
+      $('verdict').textContent = 'Matches the published root.';
+      $('seal').textContent = 'This batch root has not been written on-chain yet. Once it is, this step also checks it against the Solana memo transaction, signed by a published anchor key.';
+      await sleep(500);
+      if (G) G.to($('closing'), {opacity:1, duration:.8, ease:'power1.out'}); else $('closing').style.opacity = 1;
+    } else {
+      $('verdict').textContent = 'Does not match the published root.';
+      $('verdict').className = 'verdict no';
+      $('seal').textContent = 'One changed character in the public record produced an entirely different root. That is the whole guarantee.';
+    }
+    busy = false;
+  }
+
+  $('form').addEventListener('submit', e => { e.preventDefault(); run($('serial').value, false); });
+  $('tamper').addEventListener('click', () => current && run(current, true));
+  $('again').addEventListener('click', () => current && run(current, false));
+})();
+</script>
+</body>
+</html>

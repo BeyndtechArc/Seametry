@@ -1,3 +1,8 @@
+> **ARCHIVED, NOT BINDING.** Historical record only. Retired 23 September 2026.
+> Replaced by `../SERVICE_CATALOG.md` sections 3.2 and 3.3, and `../ENGINEERING_STANDARD.md` section 13.
+> Nothing in this file has authority over a living document. Do not build from it,
+> do not cite it in a decision, and do not update it. See `../README.md`.
+
 # Oracle and Source Policy
 
 ## Policy goal

@@ -10,6 +10,8 @@
     "dev:web": "npm run dev -w @seametry/web",
     "dev:api": "npm run dev -w @seametry/api",
     "build:mobile": "cd apps/mobile && npx expo export --platform android --output-dir ../../dist/mobile-android --clear",
+    "spec": "node tools/spec/generate.mjs",
+    "spec:check": "node tools/spec/generate.mjs --check",
     "coverage": "node --experimental-strip-types tools/coverage-probe.ts",
     "test": "node --experimental-strip-types --test packages/preflight/src/index.test.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",

@@ -1,0 +1,188 @@
+{
+  "scheme": "RFC 8785 (JCS), restricted: a JSON number must be an integer in int64 range",
+  "note": "Every implementation must produce `canonical` byte for byte, and must refuse every case in `rejects`.",
+  "number_rule": "A JSON number in a canonical body must be an integer in the IEEE-754 safe range, -(2^53 - 1) to (2^53 - 1) inclusive. Every fractional value and every magnitude beyond that range is a string. The bound is the safe-integer range rather than int64 because JavaScript cannot represent int64 extremes exactly, so an int64 bound would be one no browser-side verifier could ever satisfy. This also removes ECMAScript exponential number formatting from the specification entirely, which is the largest source of divergence between JCS implementations, and it is consistent with amounts travelling as integer atoms plus an explicit scale.",
+  "key_order_rule": "Members are ordered by the UTF-16 code units of the key, per JCS. This is NOT the same as ordering by UTF-8 bytes: a key above U+FFFF encodes to a surrogate pair beginning 0xD800..0xDBFF, which sorts before U+E000..U+FFFF in UTF-16 but after it in UTF-8. The \"surrogate pair sorts before U+FFFD\" vector below is the one that catches an implementation which sorted raw bytes.",
+  "accepts": [
+    {
+      "name": "empty object",
+      "input": {},
+      "canonical": "{}"
+    },
+    {
+      "name": "empty array",
+      "input": [],
+      "canonical": "[]"
+    },
+    {
+      "name": "literals",
+      "input": {
+        "t": true,
+        "f": false,
+        "n": null
+      },
+      "canonical": "{\"f\":false,\"n\":null,\"t\":true}"
+    },
+    {
+      "name": "key order is UTF-16 code unit order",
+      "input": {
+        "0": 4,
+        "z": 1,
+        "a": 2,
+        "M": 3
+      },
+      "canonical": "{\"0\":4,\"M\":3,\"a\":2,\"z\":1}"
+    },
+    {
+      "name": "non-ASCII keys sort after ASCII",
+      "input": {
+        "é": 1,
+        "z": 2,
+        "a": 3
+      },
+      "canonical": "{\"a\":3,\"z\":2,\"é\":1}"
+    },
+    {
+      "name": "surrogate pair key sorts by code unit",
+      "input": {
+        "😀": 1,
+        "z": 2
+      },
+      "canonical": "{\"z\":2,\"😀\":1}"
+    },
+    {
+      "name": "surrogate pair sorts before U+FFFD (UTF-16 order, not UTF-8 byte order)",
+      "input": {
+        "�": 1,
+        "𐀀": 2
+      },
+      "canonical": "{\"𐀀\":2,\"�\":1}",
+      "catches": "An implementation that sorts keys by UTF-8 bytes emits these in the opposite order, because U+FFFD begins 0xEF and U+10000 begins 0xF0, while in UTF-16 the surrogate 0xD800 precedes 0xFFFD."
+    },
+    {
+      "name": "nested objects sort at every level",
+      "input": {
+        "b": {
+          "d": 1,
+          "c": 2
+        },
+        "a": 3
+      },
+      "canonical": "{\"a\":3,\"b\":{\"c\":2,\"d\":1}}"
+    },
+    {
+      "name": "array order is preserved",
+      "input": {
+        "a": [
+          3,
+          1,
+          2
+        ]
+      },
+      "canonical": "{\"a\":[3,1,2]}"
+    },
+    {
+      "name": "control characters escape",
+      "input": {
+        "k": "a\tb\nc"
+      },
+      "canonical": "{\"k\":\"a\\tb\\nc\"}"
+    },
+    {
+      "name": "quote and backslash escape",
+      "input": {
+        "k": "a\"b\\c"
+      },
+      "canonical": "{\"k\":\"a\\\"b\\\\c\"}"
+    },
+    {
+      "name": "non-ASCII is emitted raw, not escaped",
+      "input": {
+        "k": "héllo"
+      },
+      "canonical": "{\"k\":\"héllo\"}"
+    },
+    {
+      "name": "negative zero collapses to zero",
+      "input": {
+        "n": 0
+      },
+      "canonical": "{\"n\":0}"
+    },
+    {
+      "name": "negative integer",
+      "input": {
+        "n": -42
+      },
+      "canonical": "{\"n\":-42}"
+    },
+    {
+      "name": "largest safe integer",
+      "input": {
+        "n": 9007199254740991
+      },
+      "canonical": "{\"n\":9007199254740991}"
+    },
+    {
+      "name": "smallest safe integer",
+      "input": {
+        "n": -9007199254740991
+      },
+      "canonical": "{\"n\":-9007199254740991}"
+    },
+    {
+      "name": "amounts travel as integer atoms plus scale",
+      "input": {
+        "amount_atoms": "123456789",
+        "scale": 6
+      },
+      "canonical": "{\"amount_atoms\":\"123456789\",\"scale\":6}"
+    }
+  ],
+  "rejects": [
+    {
+      "name": "fractional number",
+      "input": {
+        "n": 1.5
+      },
+      "reason": "non-integer number"
+    },
+    {
+      "name": "fractional number inside an array",
+      "input": {
+        "a": [
+          1,
+          2.5
+        ]
+      },
+      "reason": "non-integer number"
+    },
+    {
+      "name": "price as a float",
+      "input": {
+        "price": 248.37
+      },
+      "reason": "non-integer number"
+    },
+    {
+      "name": "first unsafe integer",
+      "input": {
+        "n": 9007199254740992
+      },
+      "reason": "integer outside the safe range"
+    },
+    {
+      "name": "magnitude at the 1e21 boundary",
+      "input": {
+        "n": 1e+21
+      },
+      "reason": "integer outside the safe range"
+    }
+  ],
+  "refused_but_not_expressible_as_vectors": [
+    "Infinity",
+    "-Infinity",
+    "NaN",
+    "undefined"
+  ]
+}

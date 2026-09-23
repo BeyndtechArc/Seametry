@@ -1,109 +1,128 @@
 # Seametry
 
-**See how one tokenized stock changes across issuer state, oracle observations, and executable Solana liquidity before you sign.**
+**Exchange traded funds on Solana where anyone can be an authorized
+participant, and where the basket keeps working when the issuers of the things
+inside it do not.**
 
-Seametry is a native mobile trading application for tokenized stocks on Solana. It combines instrument identity, issuer state, independent market observations, and size-specific executable routes in one preflight. The user sees the exact conditions, approves them, and signs with their own wallet.
+A tokenized stock is not an ordinary token. Its issuer can freeze it where it
+sits, pause all movement of it, take it back from any wallet, decide who may
+receive it, and change how many of them you appear to hold. All of that is
+written on chain for anyone who decodes it, and almost nobody decodes it. A
+basket of eight tokenized stocks is a basket of eight instruments that eight
+other parties still control.
 
-The first reproduced case is UNHx on 12 September 2026. During a scheduled dividend multiplier change, xStocks reported an asset-level halt and no issuer price while a Jupiter-mediated Solana route remained executable. Public interfaces also disagreed about supply representation. Seametry does not call any source the universal true price. It shows what each number represents, when it was observed, whether it is verifiable, and what the proposed transaction will actually guarantee.
+Seametry's basket is struck in a program with no key. It holds no price, so
+minting cannot be manipulated by moving a market and the basket works when
+every price source is down. Melting it back into its parts cannot be blocked by
+anyone, including us. Delivery of an individual constituent can be blocked, by
+that constituent's own issuer, and the product says so in those words instead of
+pretending otherwise.
 
-## V1 surfaces
+## A bundle is not an ETF
 
-| Surface | Purpose | Distribution |
-| --- | --- | --- |
-| Native mobile app | Watch assets, receive factual state alerts, inspect preflight, connect a wallet, sign and retain receipts | Android install build; iOS development/TestFlight build when signing access permits |
-| Public proof console | Let judges inspect live source health, replay the UNHx case, view a settled receipt, and download the app | Public web URL |
-| Shared preflight engine | Normalize sources and derive deterministic `ALLOW`, `WARN`, or `BLOCK` states | Open-source TypeScript package |
-| Source gateway | Protect provider credentials, verify signed observations, cache briefly, and return one typed context envelope | Small TypeScript service |
+Several teams ship bundlers: one transaction, several tokens, you hold the
+tokens. An ETF is a mechanism. Shares exist because someone deposited the
+basket to create them, and can always be destroyed to reclaim it, and that loop
+is what keeps a share's price honest.
 
-The web console is evidence and distribution. The mobile app is the product.
+Traditionally that loop is restricted to authorized participants, a closed list
+of large banks. On Solana it can be open to every wallet. That is the product.
 
-## Current implementation
+## Surfaces
 
-- Native Expo shell with Today, Markets, Activity, and Settings states.
-- Public Next.js evidence console reading the latest generated coverage snapshot.
-- Typed xStocks and Jupiter adapters using public endpoints.
-- Chainlink and Stork coverage adapters that distinguish configured, unavailable, and credential-blocked states. Live signed-value verification is not claimed yet.
-- Pure deterministic preflight engine with tests for agreement, issuer halt, and missing references.
-- Hono gateway with health and coverage endpoints.
+| Surface | User | Job | Phase |
+|---|---|---|---|
+| **Explorer** | Public, researchers, press | Inspect instruments and evidence, watch the devnet demonstration, verify any receipt against the chain with no account | 1 |
+| **Terminal** | Market makers, arbitrageurs, analysts | The creation and redemption console: NAV against share price, depth at size, assembly cost against melt proceeds | 2 |
+| **Mobile** | Holders | Hold baskets, see what changed, approve and sign. Deliberately not a consumer brokerage | 2 |
+| **API and SDK** | Wallets, exchanges, issuers, protocols | Buy the assay: grades, prerogatives, corporate actions, admissibility, receipt verification | 3 |
 
-## Run locally
+One Go core powers all four. No surface computes a decision; every surface
+renders one the core produced, with the inputs and policy version that produced
+it.
 
-```bash
-npm install
-npm run coverage
-npm test
-npm run typecheck
-npm run build:mobile
-npm run dev:mobile
-```
+## The moat is the admission standard
 
-Run `npm run dev:web` for the public console or `npm run dev:api` for the gateway. Copy `.env.example` to `.env` only when provider credentials and explicit feed mappings are available.
+Before a constituent enters a formula, Seametry decodes what it actually is,
+live from chain rather than from any published list: its grade (the legal shape
+of the claim), every issuer prerogative over it as a plain sentence, its live
+Scaled UI multiplier resolved from the effective timestamp rather than the
+frequently stale field, its executable depth at size, and any Token-2022
+extension we do not recognise, kept observable instead of dropped.
 
-## The 90-second judge path
+Published as a standard, that is Good Delivery: the rules a constituent must
+meet to enter a basket, and the reasons printed beside the stamp when it does
+not.
 
-1. Open the UNHx replay and see the scheduled corporate action, issuer halt, missing issuer quote, oracle observations, and executable Solana route on one synchronized timeline.
-2. Switch to the normal control asset and enter a trade amount.
-3. Inspect instrument rights, source timestamps, divergence, route composition, expected output, minimum output, and all fees.
-4. Approve the exact conditions, open the wallet, and sign.
-5. Return to Seametry and compare the approved minimum with the settled output.
-6. Open the public transaction and exported receipt.
+Full product architecture: [docs/PRODUCT_ARCHITECTURE.md](docs/PRODUCT_ARCHITECTURE.md).
 
-## Source roles
+## Where the project actually stands
 
-| Source | Seametry uses it for |
-| --- | --- |
-| xStocks | Instrument identity, legal form, restrictions, multiplier, corporate actions, halt/session state, issuer reference and reserve context |
-| Chainlink Data Streams | Low-latency independent RWA/equity observation, report timestamp, market status, and cryptographic report verification where available |
-| Stork | A second signed low-latency observation and source-diversity check, consumed by REST/WebSocket and verified before use |
-| Jupiter Metis | Size-specific executable Solana route, AMM labels, route splits, expected output, minimum output and raw swap instructions |
-| Solana RPC | Mint/account state, Token-2022 interpretation, simulation, transaction submission and settlement verification |
-| User wallet | Key custody, explicit connection and transaction signature |
+Stated plainly, because a README that describes intentions as though they were
+code is the first thing that rots.
 
-## Repository plan
+**Exists:** a TypeScript scaffold. A deterministic preflight package with
+tests, typed xStocks and Jupiter adapters over public endpoints, Chainlink and
+Stork coverage adapters that distinguish configured, unavailable, and
+credential blocked states, a Hono gateway with health and coverage endpoints,
+an Expo shell with four screens, and a Next.js console reading a generated
+coverage snapshot.
 
-```text
-apps/
-  mobile/              Expo + React Native product
-  web/                 public judge/evidence console
-  api/                 provider gateway and receipt endpoint
-packages/
-  domain/              canonical types and reason codes
-  preflight/           deterministic derivation engine
-  source-xstocks/      issuer adapter
-  source-chainlink/    Chainlink adapter and verification
-  source-stork/        Stork adapter and verification
-  source-jupiter/      Metis quote/build adapter
-  source-solana/       RPC and settlement adapter
-  ui/                  shared tokens, copy and small primitives
-fixtures/
-  unhx-2026-09-12/
-  normal-control/
-  missing-source/
-  no-route/
-evidence/
-docs/
-```
+**Does not exist:** the Go core these documents specify. The contract in
+`api/openapi/`. Any CI. Any of the shared vectors in `spec/`. The Terminal.
 
-## V1 success
+**Known conflict:** `packages/preflight` computes decisions in TypeScript,
+which `ENGINEERING_STANDARD.md` section 2 forbids. It is retired in principle
+and still present in fact. It goes when the Go core replaces it, in one change,
+so the repository never shows two authorities.
 
-- One native mobile build installable by judges.
-- One real, small mainnet transaction with a receipt.
-- One live asset with xStocks, Chainlink, Stork, Jupiter and Solana context, or an explicit typed `unavailable` observation if a provider does not publish that instrument.
-- One synchronized UNHx replay backed by captured raw evidence.
-- One normal control proving that a closed underlying market alone is not an error.
-- Deterministic tests showing identical inputs produce identical decisions.
-- Public documentation that distinguishes observed facts, derived states and product policy.
-
-## Language boundary
-
-Seametry uses `issuer`, `reference observation`, `executable quote`, and `settled result`. It does not label a value `true`, `correct`, `fair`, or `safe`, and it does not recommend direction, size, timing, or suitability.
+The full gap list, including documentation gaps, is in
+[docs/README.md](docs/README.md) under Open items.
 
 ## Documentation
 
-- [Master brief](docs/MASTER_BRIEF.md)
-- [System architecture](docs/ARCHITECTURE.md)
-- [Native mobile V1](docs/MOBILE_V1.md)
-- [Oracle and source policy](docs/ORACLE_POLICY.md)
-- [Build plan](docs/BUILD_PLAN.md)
-- [Demo and submission](docs/DEMO_SCRIPT.md)
-- [Claims and limitations](docs/CLAIMS_AND_LIMITATIONS.md)
+Start at **[docs/README.md](docs/README.md)**. It carries the index, states
+which document owns which subject, and explains how documents are changed.
+
+Three foundation documents, short on purpose, read before writing code:
+
+- [Product architecture](docs/PRODUCT_ARCHITECTURE.md): what this is, for whom,
+  and how it is paid for
+- [Service catalog](docs/SERVICE_CATALOG.md): boundaries, data ownership,
+  contracts, deployment
+- [Engineering standard](docs/ENGINEERING_STANDARD.md): the non negotiable
+  rules and what enforces each one
+
+## Run what exists today
+
+```bash
+npm install
+npm run coverage      # live source coverage probe, writes evidence/
+npm test              # preflight determinism tests
+npm run typecheck
+npm run dev:web       # public console
+npm run dev:api       # gateway
+npm run dev:mobile    # Expo
+```
+
+Copy `.env.example` to `.env` only when provider credentials are available.
+Public discovery works without secrets; signed oracle reads do not.
+
+## Source roles
+
+| Source | Used for |
+|---|---|
+| Issuer endpoints (xStocks and others) | Instrument identity, legal form, restrictions, multiplier, corporate actions, halt and session state, issuer reference |
+| Chainlink Data Streams | Independent low latency observation, report timestamp, market status, report verification where available |
+| Stork | A second signed low latency observation and source diversity check |
+| Jupiter | Size specific executable routes, splits, expected and minimum output, fees, swap instructions |
+| Solana RPC | Mint and account state, Token-2022 interpretation, simulation, submission, settlement |
+| User wallet | Key custody, explicit connection, transaction signature. Seametry holds no key |
+
+## The line Seametry does not cross
+
+It does not call any value true, correct, fair, or safe. It does not average
+sources into a synthetic consensus. It does not recommend direction, size,
+timing, or suitability. It does not custody assets. When a source goes quiet it
+is reported as stale with its age, or unavailable by name, never as a continued
+last value.
