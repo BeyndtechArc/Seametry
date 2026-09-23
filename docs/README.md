@@ -55,7 +55,7 @@ Read all three before writing code. They are short on purpose.
 | [prd/HALL.md](prd/HALL.md) | The Hall on-chain program: guarantees, instructions, arithmetic, prerogative handling, the devnet demonstration | Live. **The product.** Devnet is phase 1, mainnet is phase 3 |
 | [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Basket arithmetic: holdings boundary, recipe conformance vectors, valuation, weights, delivery evaluation | Live. Core from phase 0. Contains sections pending removal, listed in its header |
 | [prd/MOBILE.md](prd/MOBILE.md) | Mobile holding, monitoring, and approval surface | Live. Phase 2. Deliberately not a consumer brokerage |
-| `prd/EXPLORER.md` | Public Explorer: the devnet demonstration, evidence, the verification ritual | **Not written.** Phase 1, so this is the most urgent gap |
+| [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the verification ritual, instrument pages, evidence pages, the Hall demonstration | Live. Phase 1 |
 | `prd/TERMINAL.md` | Terminal: the creation and redemption console | **Not written.** Phase 2 |
 | `prd/API.md` | The assay as a metered service, entitlements | Not written. Phase 3 |
 
@@ -118,10 +118,12 @@ Tracked here because an untracked gap becomes folklore.
 
 **Documentation**
 
-- `prd/EXPLORER.md` does not exist, and the Explorer is phase 1. The devnet
-  demonstration it publishes is specified in `prd/HALL.md` section 7, and the
-  verification ritual in `CRAFT.md`, but nothing owns the surface itself.
 - `prd/TERMINAL.md` and `prd/API.md` do not exist.
+- Two open brand decisions are recorded in `prd/EXPLORER.md` section 5:
+  typefaces (the reference mock uses Google Fonts, the documents specify self
+  hosted Fontshare) and whether the Explorer defaults to warm paper or to the
+  touchstone black. Whichever way each goes, the page and the documents must
+  agree afterwards.
 - The validation record in `PRODUCT_ARCHITECTURE.md` section 11 needs the
   pitch clinic's exact date, which is currently recorded only as
   "September 2026, ahead of Stocklana".
@@ -139,8 +141,6 @@ Tracked here because an untracked gap becomes folklore.
   `STORM-VOICE-SYSTEM.md`. That file does not exist anywhere in the repository.
   Either it is written, or the requirement points at
   `BRAND_AND_WORLD.md` section 7 itself and the reference is removed.
-- The external validation of the idea and market, referenced 23 September 2026,
-  is not recorded anywhere. Who said what, and what specifically was validated.
 
 **Code**
 
