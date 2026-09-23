@@ -28,6 +28,31 @@ jobs:
       - name: Vectors match their generator
         run: node tools/spec/generate.mjs --check
 
+  cross-implementation:
+    name: Go seals, JavaScript verifies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      # The Explorer tells a visitor "your browser just verified this, we
+      # didn't." That is only honest if a receipt sealed by the Go engine
+      # genuinely verifies under an implementation that is not the Go engine.
+      # tools/spec/verify-receipts.mjs shares no code with the server: it
+      # reimplements canonicalization, leaf composition and the Merkle path
+      # from the spec. If the two ever disagree by a byte, this job fails and
+      # the claim cannot be made.
+      - name: Seal a batch with the Go engine
+        run: go run ./tools/seal
+
+      - name: Verify it with an independent implementation
+        run: node tools/spec/verify-receipts.mjs
+
   go:
     name: Go
     runs-on: ubuntu-latest

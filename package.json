@@ -4,7 +4,10 @@
   "type": "module",
   "version": "0.1.0",
   "packageManager": "npm@11.9.0",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev:mobile": "npm run start -w @seametry/mobile",
     "dev:web": "npm run dev -w @seametry/web",
@@ -15,7 +18,8 @@
     "coverage": "node --experimental-strip-types tools/coverage-probe.ts",
     "test": "node --experimental-strip-types --test packages/preflight/src/index.test.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "build": "npm run build -w @seametry/web && npm run build -w @seametry/api"
+    "build": "npm run build -w @seametry/web && npm run build -w @seametry/api",
+    "verify:receipts": "node tools/spec/verify-receipts.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -1,0 +1,323 @@
+{
+  "note": "A demonstration batch. The bodies are invented; the scheme is not. Its root is not written on chain. Every proof here must verify under an implementation that is not the one that produced it.",
+  "sealed_at": "2026-09-23T12:00:00Z",
+  "root": "8d622f9247e9f2fd59cf817a9be9e50adac52cf9428a38a2d73cfe00e13a4c23",
+  "count": 5,
+  "proofs": [
+    {
+      "serial": "09260000001",
+      "public_body": {
+        "serial": "09260000001",
+        "kind": "strike",
+        "month": "2026-09",
+        "basket": "Alloy No. 1",
+        "constituents": [
+          {
+            "ticker": "AAPLx",
+            "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+            "grade": "certificate",
+            "issuer_can": [
+              "The issuer can freeze this where it sits.",
+              "The issuer can pause all movement of this.",
+              "The issuer can take this back from any wallet.",
+              "The issuer can switch on a check of who may receive this.",
+              "The issuer can change how many of these you appear to hold."
+            ]
+          },
+          {
+            "ticker": "NFLXx",
+            "mint": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL",
+            "grade": "certificate",
+            "issuer_can": [
+              "The issuer can freeze this where it sits.",
+              "The issuer can take this back from any wallet.",
+              "The issuer can change how many of these you appear to hold."
+            ]
+          }
+        ],
+        "weakest_evidence": "verified",
+        "size_band": "1,000 to 10,000 USDC",
+        "venues": [
+          "Hall"
+        ],
+        "policy_version": "policy-2026.09.3",
+        "settlement": "finalized",
+        "office": "Seametry Office, Port Harcourt"
+      },
+      "private_commitment": "3b27bdae2e64114cc9d7fe490782a09a7536f2cd0ec17de16bf1340ac4a51d9b",
+      "path": [
+        {
+          "side": "right",
+          "hash": "be5d99c3ef4b6f9af6c92c74e72c4e22123c0cf23781234abdabe0653c77d17c"
+        },
+        {
+          "side": "right",
+          "hash": "a020d47c977e21f33153f3e8469ad149780aafcb979c9666a8a3d89e27e2d5e0"
+        },
+        {
+          "side": "right",
+          "hash": "5edd8ddd196b3c8872405ac943929816469a1dfcdbf200f060c33bdea44e1972"
+        }
+      ],
+      "root": "8d622f9247e9f2fd59cf817a9be9e50adac52cf9428a38a2d73cfe00e13a4c23"
+    },
+    {
+      "serial": "09260000002",
+      "public_body": {
+        "serial": "09260000002",
+        "kind": "allocation_purchase",
+        "month": "2026-09",
+        "basket": "Personal allocation",
+        "constituents": [
+          {
+            "ticker": "CATx",
+            "mint": "XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6",
+            "grade": "certificate",
+            "issuer_can": [
+              "The issuer can freeze this where it sits."
+            ]
+          }
+        ],
+        "weakest_evidence": "unverified",
+        "size_band": "100 to 1,000 USDC",
+        "venues": [
+          "Meteora",
+          "Raydium"
+        ],
+        "policy_version": "policy-2026.09.3",
+        "settlement": "finalized",
+        "office": "Seametry Office, Port Harcourt"
+      },
+      "private_commitment": "0c6a4ae2564e21d6a557be930867b0960f838261462c1935e29666bd64bc9a21",
+      "path": [
+        {
+          "side": "left",
+          "hash": "1843846608955935066da50810fe38f8ceedec44e6b845bbadaec8e26a5d26f1"
+        },
+        {
+          "side": "right",
+          "hash": "a020d47c977e21f33153f3e8469ad149780aafcb979c9666a8a3d89e27e2d5e0"
+        },
+        {
+          "side": "right",
+          "hash": "5edd8ddd196b3c8872405ac943929816469a1dfcdbf200f060c33bdea44e1972"
+        }
+      ],
+      "root": "8d622f9247e9f2fd59cf817a9be9e50adac52cf9428a38a2d73cfe00e13a4c23"
+    },
+    {
+      "serial": "09260000003",
+      "public_body": {
+        "serial": "09260000003",
+        "kind": "melt",
+        "month": "2026-09",
+        "basket": "Alloy No. 1",
+        "constituents": [
+          {
+            "ticker": "CRDAx",
+            "mint": "XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ",
+            "grade": "certificate",
+            "issuer_can": [
+              "The issuer can freeze this where it sits.",
+              "The issuer can pause all movement of this."
+            ]
+          }
+        ],
+        "weakest_evidence": "stale",
+        "size_band": "100 to 1,000 USDC",
+        "venues": [
+          "Hall"
+        ],
+        "policy_version": "policy-2026.09.3",
+        "settlement": "finalized",
+        "office": "Seametry Office, Port Harcourt"
+      },
+      "private_commitment": "df0bcc38b99a8f9fab0f3d15626ba5e02d32a5e0d60bfdc89802d3b0e4a04165",
+      "path": [
+        {
+          "side": "right",
+          "hash": "f7b02baa20f9f0d6efb4e46339f8e4739f2cbc26487d7119fe7813b81f853aed"
+        },
+        {
+          "side": "left",
+          "hash": "39c9aa5a7347f8e44caf2be91f492239ae9649564e1d89af0bbe22a8e93c1436"
+        },
+        {
+          "side": "right",
+          "hash": "5edd8ddd196b3c8872405ac943929816469a1dfcdbf200f060c33bdea44e1972"
+        }
+      ],
+      "root": "8d622f9247e9f2fd59cf817a9be9e50adac52cf9428a38a2d73cfe00e13a4c23"
+    },
+    {
+      "serial": "09260000004",
+      "public_body": {
+        "serial": "09260000004",
+        "kind": "withdraw",
+        "month": "2026-09",
+        "basket": "Alloy No. 1",
+        "constituents": [
+          {
+            "ticker": "PALLx",
+            "mint": "XsTTtPA5V19YwHKDv4xeVXNM6kdsQNJvg3MyWkRUckt",
+            "grade": "certificate",
+            "issuer_can": [
+              "The issuer can take this back from any wallet."
+            ]
+          }
+        ],
+        "weakest_evidence": "verified",
+        "size_band": "under 100 USDC",
+        "venues": [
+          "Hall"
+        ],
+        "policy_version": "policy-2026.09.3",
+        "settlement": "finalized",
+        "office": "Seametry Office, Port Harcourt"
+      },
+      "private_commitment": "f17f67a2fa1232b6d531441c23db5b925153625d6675ce7ea18e2b10d0d8eb00",
+      "path": [
+        {
+          "side": "left",
+          "hash": "b88acdcc920a54b5266f13c25c11709c745aa84ff7334ea977e8554ed5611c3a"
+        },
+        {
+          "side": "left",
+          "hash": "39c9aa5a7347f8e44caf2be91f492239ae9649564e1d89af0bbe22a8e93c1436"
+        },
+        {
+          "side": "right",
+          "hash": "5edd8ddd196b3c8872405ac943929816469a1dfcdbf200f060c33bdea44e1972"
+        }
+      ],
+      "root": "8d622f9247e9f2fd59cf817a9be9e50adac52cf9428a38a2d73cfe00e13a4c23"
+    },
+    {
+      "serial": "09260000005",
+      "public_body": {
+        "serial": "09260000005",
+        "kind": "strike",
+        "month": "2026-09",
+        "basket": "Alloy No. 1",
+        "constituents": [
+          {
+            "ticker": "STRKx",
+            "mint": "XsaQGz41BEQkS9xAB44uvUtuXcdLJAXEU1dogEzWMZ8",
+            "grade": "certificate",
+            "issuer_can": [
+              "The issuer can change how many of these you appear to hold."
+            ]
+          }
+        ],
+        "weakest_evidence": "verified",
+        "size_band": "over 10,000 USDC",
+        "venues": [
+          "Hall"
+        ],
+        "policy_version": "policy-2026.09.3",
+        "settlement": "finalized",
+        "office": "Seametry Office, Port Harcourt"
+      },
+      "private_commitment": "3ed3d5c3beb41664536d41b96956458d0854f19459adea4dfa352198d76d27a6",
+      "path": [
+        {
+          "side": "left",
+          "hash": "769969d9d443d401c9e7d66184f55accf805fb52d55bea88eca73310f1411b91"
+        }
+      ],
+      "root": "8d622f9247e9f2fd59cf817a9be9e50adac52cf9428a38a2d73cfe00e13a4c23"
+    }
+  ],
+  "private_bodies_revealed_for_the_demonstration": {
+    "09260000001": {
+      "body": {
+        "serial": "09260000001",
+        "wallet": "DemoWa11et0000000000000000000001",
+        "signature": "DemoSignature000000000000000000000000000000000000000000000000001",
+        "approved_atoms": "412500000",
+        "settled_atoms": "412873211",
+        "floor_atoms": "408375000",
+        "scale": 6,
+        "fee_atoms": "1237500",
+        "approved_at": "2026-09-23T12:00:00Z",
+        "settled_at": "2026-09-23T12:00:11Z",
+        "slot": 449580424,
+        "approval_digest": "0000000000000000000000000000000000000000000000000000000000000001",
+        "salt": "ed38327aa95cf670944b7f262ea5e197debab2adca388bdf408f22db1b866995"
+      },
+      "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
+    },
+    "09260000002": {
+      "body": {
+        "serial": "09260000002",
+        "wallet": "DemoWa11et0000000000000000000002",
+        "signature": "DemoSignature000000000000000000000000000000000000000000000000002",
+        "approved_atoms": "412507919",
+        "settled_atoms": "412881130",
+        "floor_atoms": "408382919",
+        "scale": 6,
+        "fee_atoms": "1237500",
+        "approved_at": "2026-09-23T11:59:00Z",
+        "settled_at": "2026-09-23T11:59:11Z",
+        "slot": 449580425,
+        "approval_digest": "0000000000000000000000000000000000000000000000000000000000000002",
+        "salt": "37b3c919009d30c2fbc0b85fef7f3846c606e93c632386dc18119e4e2b713c14"
+      },
+      "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
+    },
+    "09260000003": {
+      "body": {
+        "serial": "09260000003",
+        "wallet": "DemoWa11et0000000000000000000003",
+        "signature": "DemoSignature000000000000000000000000000000000000000000000000003",
+        "approved_atoms": "412515838",
+        "settled_atoms": "412889049",
+        "floor_atoms": "408390838",
+        "scale": 6,
+        "fee_atoms": "1237500",
+        "approved_at": "2026-09-23T11:58:00Z",
+        "settled_at": "2026-09-23T11:58:11Z",
+        "slot": 449580426,
+        "approval_digest": "0000000000000000000000000000000000000000000000000000000000000003",
+        "salt": "c2ed11941909de89597362b558e0fb7cbcf61cfb904b7f4ecee4eedaac786450"
+      },
+      "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
+    },
+    "09260000004": {
+      "body": {
+        "serial": "09260000004",
+        "wallet": "DemoWa11et0000000000000000000004",
+        "signature": "DemoSignature000000000000000000000000000000000000000000000000004",
+        "approved_atoms": "412523757",
+        "settled_atoms": "412896968",
+        "floor_atoms": "408398757",
+        "scale": 6,
+        "fee_atoms": "1237500",
+        "approved_at": "2026-09-23T11:57:00Z",
+        "settled_at": "2026-09-23T11:57:11Z",
+        "slot": 449580427,
+        "approval_digest": "0000000000000000000000000000000000000000000000000000000000000004",
+        "salt": "2067b105f1678c29d6b59e17239ca99e50c0fef4c4fdd291e0bf15bca9171553"
+      },
+      "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
+    },
+    "09260000005": {
+      "body": {
+        "serial": "09260000005",
+        "wallet": "DemoWa11et0000000000000000000005",
+        "signature": "DemoSignature000000000000000000000000000000000000000000000000005",
+        "approved_atoms": "412531676",
+        "settled_atoms": "412904887",
+        "floor_atoms": "408406676",
+        "scale": 6,
+        "fee_atoms": "1237500",
+        "approved_at": "2026-09-23T11:56:00Z",
+        "settled_at": "2026-09-23T11:56:11Z",
+        "slot": 449580428,
+        "approval_digest": "0000000000000000000000000000000000000000000000000000000000000005",
+        "salt": "68c2e547c636d796bf140d3cd1a417d8126cf4846f068d2480f374996abdf516"
+      },
+      "note": "Revealed here only because this batch is a demonstration. In production a private body never leaves its owner, and the owner reveals it with its salt to prove what they approved."
+    }
+  }
+}
