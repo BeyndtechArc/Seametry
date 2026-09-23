@@ -1,0 +1,38 @@
+# Line endings are normalized to LF everywhere, in the repository and in the
+# working copy on every platform.
+#
+# This is not a style preference. The conformance vectors in spec/ are compared
+# byte for byte by the drift check, and digests are computed over exact bytes.
+# If Git rewrote line endings on checkout, a Windows working copy would report
+# drift that Linux CI could not reproduce, and the failure would look like a
+# defect in the vectors rather than in the checkout.
+* text=auto eol=lf
+
+*.go     text eol=lf
+*.json   text eol=lf
+*.md     text eol=lf
+*.mjs    text eol=lf
+*.js     text eol=lf
+*.ts     text eol=lf
+*.tsx    text eol=lf
+*.rs     text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.html   text eol=lf
+*.css    text eol=lf
+*.sh     text eol=lf
+*.sql    text eol=lf
+
+# Generated, reviewed rarely, and noisy in diffs.
+package-lock.json  -diff linguist-generated
+
+# Captured evidence and fixtures are bytes as the source sent them. Never
+# transform these: a normalized payload no longer hashes to its recorded digest.
+fixtures/**  -text
+evidence/**  -text
+
+*.png binary
+*.jpg binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
