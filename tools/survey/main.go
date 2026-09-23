@@ -13,8 +13,7 @@
 package main
 
 import (
-	"bytes"
-	"encoding/base64"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -23,9 +22,11 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/BeyndtechArc/Seametry/internal/registry"
+	"github.com/BeyndtechArc/Seametry/internal/solana"
 )
 
 const (
@@ -87,7 +88,7 @@ type report struct {
 }
 
 func main() {
-	rpc := flag.String("rpc", defaultRPC, "Solana JSON-RPC endpoint")
+	rpc := flag.String("rpc", solana.EndpointFromEnv(defaultRPC), "Solana JSON-RPC endpoint")
 	out := flag.String("out", "evidence", "output directory")
 	flag.Parse()
 
@@ -99,8 +100,11 @@ func main() {
 
 	asOf := time.Now().UTC()
 	rep := report{
-		Source:            "xStocks public asset API, decoded from mainnet mint accounts",
-		Cluster:           *rpc,
+		Source: "xStocks public asset API, decoded from mainnet mint accounts",
+		// Redacted, because a provider endpoint usually carries its key in the
+		// URL and this file is committed. An evidence artifact naming the
+		// cluster is useful; one leaking a credential is a breach.
+		Cluster:           solana.RedactEndpoint(*rpc),
 		CapturedAt:        asOf,
 		ResolvedAsOf:      asOf,
 		MintsPublished:    len(assets),
@@ -112,7 +116,15 @@ func main() {
 		Stale:          []finding{},
 	}
 
-	client := &http.Client{Timeout: 60 * time.Second}
+	// Rate limiting lives in the client, so nothing here has to remember to be
+	// polite. The endpoint's own limit is the binding constraint, not a sleep
+	// somebody guessed.
+	client, err := solana.New(*rpc, solana.Options{})
+	if err != nil {
+		fail(err)
+	}
+	ctx := context.Background()
+
 	for start := 0; start < len(assets); start += accountsPerCall {
 		end := min(start+accountsPerCall, len(assets))
 		batch := assets[start:end]
@@ -122,7 +134,7 @@ func main() {
 			addresses[i] = solanaMint(a)
 		}
 
-		slot, accounts, err := fetchAccounts(client, *rpc, addresses)
+		slot, accounts, err := client.GetMultipleAccounts(ctx, addresses, "finalized")
 		if err != nil {
 			fail(err)
 		}
@@ -130,15 +142,11 @@ func main() {
 
 		for i, account := range accounts {
 			a := batch[i]
-			if account == nil || len(account.Data) == 0 {
+			if account == nil {
 				rep.DecodeFailures = append(rep.DecodeFailures, a.Symbol+": no account")
 				continue
 			}
-			raw, err := base64.StdEncoding.DecodeString(account.Data[0])
-			if err != nil {
-				rep.DecodeFailures = append(rep.DecodeFailures, a.Symbol+": "+err.Error())
-				continue
-			}
+			raw := account.Data
 
 			mint, err := registry.DecodeMint(raw)
 			if err != nil {
@@ -211,7 +219,6 @@ func main() {
 			}
 		}
 		fmt.Printf("  decoded %d of %d\n", rep.MintsDecoded, len(assets))
-		time.Sleep(500 * time.Millisecond) // the public endpoint is shared
 	}
 
 	sort.Slice(rep.Stale, func(i, j int) bool { return rep.Stale[i].Symbol < rep.Stale[j].Symbol })
@@ -243,7 +250,16 @@ func main() {
 	fmt.Printf("paused on chain            %d\n", rep.PausedOnChain)
 	fmt.Printf("unknown extensions         %v\n", rep.UnknownExtensions)
 	fmt.Printf("decode failures            %d\n", len(rep.DecodeFailures))
+	// The prose note is generated from the same report, so it can never assert
+	// a number the data does not contain.
+	notePath := strings.TrimSuffix(path, ".json") + ".md"
+	if err := os.WriteFile(notePath, []byte(renderNote(rep)), 0o644); err != nil {
+		fail(err)
+	}
+
 	fmt.Printf("\nwrote %s\n", path)
+	fmt.Printf("wrote %s\n", notePath)
+	fmt.Printf("rpc:   %s\n", client.Usage())
 }
 
 func solanaMint(a asset) string {
@@ -282,51 +298,6 @@ func fetchAssets() ([]asset, error) {
 		}
 	}
 	return out, nil
-}
-
-type accountValue struct {
-	Data  []string `json:"data"`
-	Owner string   `json:"owner"`
-}
-
-func fetchAccounts(client *http.Client, endpoint string, addresses []string) (uint64, []*accountValue, error) {
-	body, err := json.Marshal(map[string]any{
-		"jsonrpc": "2.0", "id": 1, "method": "getMultipleAccounts",
-		"params": []any{addresses, map[string]string{"encoding": "base64", "commitment": "finalized"}},
-	})
-	if err != nil {
-		return 0, nil, err
-	}
-	response, err := client.Post(endpoint, "application/json", bytes.NewReader(body))
-	if err != nil {
-		return 0, nil, err
-	}
-	defer response.Body.Close()
-	payload, err := io.ReadAll(response.Body)
-	if err != nil {
-		return 0, nil, err
-	}
-	var parsed struct {
-		Result *struct {
-			Context struct {
-				Slot uint64 `json:"slot"`
-			} `json:"context"`
-			Value []*accountValue `json:"value"`
-		} `json:"result"`
-		Error *struct {
-			Message string `json:"message"`
-		} `json:"error"`
-	}
-	if err := json.Unmarshal(payload, &parsed); err != nil {
-		return 0, nil, err
-	}
-	if parsed.Error != nil {
-		return 0, nil, fmt.Errorf("rpc: %s", parsed.Error.Message)
-	}
-	if parsed.Result == nil {
-		return 0, nil, fmt.Errorf("rpc: no result")
-	}
-	return parsed.Result.Context.Slot, parsed.Result.Value, nil
 }
 
 func fail(err error) {

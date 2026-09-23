@@ -1,0 +1,70 @@
+{{define "evidence.html"}}{{template "head" .}}
+
+  <h1>What 1026 tokenized equities carry.</h1>
+  {{if .Survey}}
+  <p class="lede">Every instrument its issuer publishes, decoded from mainnet at slot <span class="num">{{.Survey.Slot}}</span>. Reproduce it yourself with <code>go run ./tools/survey</code>, no credentials required.</p>
+
+  <h2>Issuer powers</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Power</th><th>Mints</th><th>Share</th></tr></thead>
+    <tbody>
+      <tr><td>Can take this back from any wallet</td><td class="n"><strong>{{.Survey.WithPermanentDelegate}}</strong></td><td class="n">100%</td></tr>
+      <tr><td>Can freeze this where it sits</td><td class="n"><strong>{{.Survey.WithFreezeAuthority}}</strong></td><td class="n">100%</td></tr>
+      <tr><td>Can switch on a check of who may receive this</td><td class="n"><strong>{{.Survey.WithDisabledHook}}</strong></td><td class="n">100%</td></tr>
+      <tr><td>Currently checking who may receive</td><td class="n">{{.Survey.WithActiveHook}}</td><td class="n">0%</td></tr>
+      <tr><td>Halted by the issuer right now</td><td class="n">{{.Survey.HaltedByIssuer}}</td><td class="n"></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The transfer hook row is the one worth sitting with. Not a single mint has an active hook, so a product reporting hooks as a boolean would say "no hook" across the board and be wrong about all {{.Survey.MintsDecoded}}. The hook exists on every one of them, switched off, with a named authority who can switch it on.</p>
+
+  <h2>The multiplier field</h2>
+  <div class="figures">
+    <div class="figure"><b>{{.Survey.WithScaledUIAmount}}</b><span>carrying Scaled UI Amount</span></div>
+    <div class="figure"><b>{{.Survey.StaleMultiplier}}</b><span>where the obvious field is stale ({{.StalePct}}%)</span></div>
+    <div class="figure"><b>{{.Survey.PendingActivation}}</b><span>scheduled, not yet effective</span></div>
+    <div class="figure"><b>{{len .Survey.DecodeFailures}}</b><span>decode failures</span></div>
+  </div>
+
+  {{if .BigSplits}}
+  <h3>Splits, where the obvious field never moved</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Instrument</th><th>Field says</th><th>Live value</th><th>Effective since</th></tr></thead>
+    <tbody>{{range .BigSplits}}<tr><td><strong>{{.Symbol}}</strong></td><td class="n">{{.Naive}}</td><td class="n"><strong>{{.Live}}</strong></td><td class="n">{{.Since}}</td></tr>{{end}}</tbody>
+  </table>
+  </div>
+  {{end}}
+
+  <h3>Every instrument reading a stale field</h3>
+  <p class="tight">The smaller drifts matter more than the splits, because they are easy to dismiss and there are far more of them.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Instrument</th><th>Underlying</th><th>Field says</th><th>Live value</th><th>Since</th></tr></thead>
+    <tbody>
+    {{range .Survey.Stale}}<tr>
+      <td><strong>{{.Symbol}}</strong></td>
+      <td>{{.Underlying}}</td>
+      <td class="mono">{{trunc 20 .NaiveValue}}</td>
+      <td class="mono">{{trunc 20 .LiveValue}}</td>
+      <td class="n">{{slice .EffectiveAt 0 10}}</td>
+    </tr>{{end}}
+    </tbody>
+  </table>
+  </div>
+
+  <div class="limits">
+    <h3>What this does not establish</h3>
+    <ul>
+      <li><strong>One issuer.</strong> xStocks only. Backpack Securities is not covered, and whether its dividends arrive as a multiplier change or as newly minted tokens is unsettled. A fixture capture settles it, not a documentation page.</li>
+      <li><strong>A moment, not a trend.</strong> One slot. The staleness share moves as issuers update fields, and the large splits will eventually be cleaned up.</li>
+      <li><strong>Nothing about intent.</strong> An issuer holding a power is not an issuer misusing one.</li>
+      <li><strong>Nothing about depth.</strong> Whether any of these can be traded at size is a separate measurement.</li>
+    </ul>
+  </div>
+  {{else}}
+  <div class="card"><p>No survey yet. Run <code>go run ./tools/survey</code>.</p></div>
+  {{end}}
+
+{{template "foot" .}}{{end}}

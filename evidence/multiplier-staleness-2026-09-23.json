@@ -1,19 +1,19 @@
 {
   "source": "xStocks public asset API, decoded from mainnet mint accounts",
-  "cluster": "https://api.mainnet-beta.solana.com",
-  "captured_at": "2026-09-23T03:33:21.7954028Z",
-  "resolved_as_of": "2026-09-23T03:33:21.7954028Z",
-  "slot": 449582227,
-  "mints_published": 1026,
-  "mints_decoded": 1026,
-  "with_scaled_ui_amount": 1026,
-  "stale_multiplier_field": 385,
-  "activation_scheduled_not_yet_effective": 1,
+  "cluster": "https://mainnet.helius-rpc.com/ (path and query redacted)",
+  "captured_at": "2026-09-23T22:45:17.4794299Z",
+  "resolved_as_of": "2026-09-23T22:45:17.4794299Z",
+  "slot": 449842612,
+  "mints_published": 1124,
+  "mints_decoded": 1124,
+  "with_scaled_ui_amount": 1124,
+  "stale_multiplier_field": 383,
+  "activation_scheduled_not_yet_effective": 5,
   "halted_by_issuer": 7,
   "paused_on_chain": 0,
-  "with_permanent_delegate": 1026,
-  "with_freeze_authority": 1026,
-  "with_transfer_hook_initialized_disabled": 1026,
+  "with_permanent_delegate": 1124,
+  "with_freeze_authority": 1124,
+  "with_transfer_hook_initialized_disabled": 1124,
   "with_transfer_hook_active": 0,
   "default_account_state_frozen": 0,
   "unknown_extensions": {},
@@ -1326,16 +1326,6 @@
       "naive_value": "1",
       "live_value": "1.00260190444399999165625558816827833652496337890625",
       "effective_at": "2026-08-21T00:30:00Z",
-      "halted_by_issuer": false,
-      "paused_on_chain": false
-    },
-    {
-      "symbol": "FEZx",
-      "underlying": "FEZ",
-      "mint": "XsbZDdYJKxEBQASz4KBj23NRgymXw2NK6mbNQ6PYhC7",
-      "naive_value": "1",
-      "live_value": "1.0111067299500000604695060246740467846393585205078125",
-      "effective_at": "2026-06-21T23:55:00Z",
       "halted_by_issuer": false,
       "paused_on_chain": false
     },
@@ -2970,16 +2960,6 @@
       "paused_on_chain": false
     },
     {
-      "symbol": "SATAx",
-      "underlying": "SATA",
-      "mint": "XsAxB3xLnt7xto5ChiSbVNHBoXcXzKuzS7FieiNYwtY",
-      "naive_value": "1.048043911630229363396438202471472322940826416015625",
-      "live_value": "1.048584648214804904142738450900651514530181884765625",
-      "effective_at": "2026-09-23T00:30:00Z",
-      "halted_by_issuer": false,
-      "paused_on_chain": false
-    },
-    {
       "symbol": "SBACx",
       "underlying": "SBAC",
       "mint": "Xs3BuKwwLLSgKCKPBeSN5Wje5gP8McsHrt6pnqWzjhs",
@@ -3297,6 +3277,16 @@
       "live_value": "1.002640701468000106189037978765554726123809814453125",
       "effective_at": "2026-09-04T00:30:00Z",
       "halted_by_issuer": false,
+      "paused_on_chain": false
+    },
+    {
+      "symbol": "TQQQx",
+      "underlying": "TQQQ",
+      "mint": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc",
+      "naive_value": "2.008976295242212106728629805729724466800689697265625",
+      "live_value": "2.01169059793726745510866749100387096405029296875",
+      "effective_at": "2026-09-23T04:00:00Z",
+      "halted_by_issuer": true,
       "paused_on_chain": false
     },
     {
@@ -3826,16 +3816,6 @@
       "naive_value": "1.0130866005227463499949180913972668349742889404296875",
       "live_value": "1.0176489705351909886843486674479208886623382568359375",
       "effective_at": "2026-08-15T00:30:00Z",
-      "halted_by_issuer": false,
-      "paused_on_chain": false
-    },
-    {
-      "symbol": "XOPx",
-      "underlying": "XOP",
-      "mint": "XsAk6BoV4kBXUM6WXodKyM21CN92G9jArwAzFvbh3LX",
-      "naive_value": "1",
-      "live_value": "1.0034153710219999577901717202621512115001678466796875",
-      "effective_at": "2026-06-21T23:55:00Z",
       "halted_by_issuer": false,
       "paused_on_chain": false
     },

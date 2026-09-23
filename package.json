@@ -19,7 +19,10 @@
     "test": "node --experimental-strip-types --test packages/preflight/src/index.test.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build -w @seametry/web && npm run build -w @seametry/api",
-    "verify:receipts": "node tools/spec/verify-receipts.mjs"
+    "verify:receipts": "node tools/spec/verify-receipts.mjs",
+    "explorer": "go run ./tools/explorer",
+    "survey": "go run ./tools/survey",
+    "fonts": "go run ./tools/fonts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

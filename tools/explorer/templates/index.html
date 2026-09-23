@@ -1,0 +1,73 @@
+{{define "index.html"}}{{template "head" .}}
+
+  <h1>Know what it's made of.</h1>
+  <p class="lede">Seametry builds exchange traded funds on Solana where anyone can be an authorized participant, and where the basket keeps working when the issuers of the things inside it do not.</p>
+
+  {{if .Survey}}
+  <div class="figures">
+    <div class="figure"><b>{{.Survey.MintsDecoded}}</b><span>mints decoded from mainnet</span></div>
+    <div class="figure"><b>{{.Survey.StaleMultiplier}}</b><span>reading a stale multiplier ({{.StalePct}}%)</span></div>
+    <div class="figure"><b>{{.Survey.WithPermanentDelegate}}</b><span>the issuer can take back from any wallet</span></div>
+    <div class="figure"><b>{{.Survey.WithActiveHook}}</b><span>with an active transfer hook</span></div>
+  </div>
+  {{end}}
+
+  <h2>A tokenized stock is not an ordinary token</h2>
+  <p>Its issuer can freeze it where it sits, pause all movement of it, take it back from any wallet, decide who may receive it, and change how many of them you appear to hold. All of that is written on chain for anyone who decodes it, and almost nobody decodes it.</p>
+  <p>A basket of eight tokenized stocks is a basket of eight instruments that eight other parties still control. Every bundler shipping today assumes the tokens inside behave like tokens. For tokenized equities that assumption is false, and it fails in ways that stay invisible until the day they matter.</p>
+
+  <h2>A bundle is not an ETF</h2>
+  <p>A bundle buys you several tokens in one transaction, and you end up holding the tokens. An ETF is a mechanism: shares exist because someone deposited the basket to create them, and can always be destroyed to reclaim it. That loop is what keeps a share's price honest.</p>
+  <p>Traditionally the loop is restricted to authorized participants, a closed list of large banks, and that gatekeeping is much of why retail pays a spread. On Solana it can be open to every wallet. <strong>That is the product.</strong></p>
+
+  {{if .BigSplits}}
+  <h2>The obvious field is wrong on a third of this market</h2>
+  <p class="tight">Scaled UI Amount carries <code>multiplier</code>, <code>new_multiplier</code> and an effective timestamp. The live value is <code>new_multiplier</code> once its timestamp has passed. Anything reading the obvious field is one corporate action behind.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Instrument</th><th>The obvious field says</th><th>The live value is</th><th>Since</th></tr></thead>
+    <tbody>
+    {{range .BigSplits}}<tr>
+      <td><strong>{{.Symbol}}</strong></td>
+      <td class="n">{{.Naive}}</td>
+      <td class="n"><strong>{{.Live}}</strong></td>
+      <td class="n">{{.Since}}</td>
+    </tr>{{end}}
+    </tbody>
+  </table>
+  </div>
+  <p>These are splits. Anyone pricing a position in {{(index .BigSplits 0).Symbol}} from the obvious field values it at a fraction of what it is. <a href="evidence.html">The full survey</a> has the rest, including the smaller and more insidious cases.</p>
+  {{end}}
+
+  <h2>What is built</h2>
+  <p class="tight">Honest status, because a page that reports intentions as though they were code is the first thing to rot.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Piece</th><th>State</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><strong>internal/canonical</strong></td><td><span class="stamp done">built</span></td><td>RFC 8785 canonical JSON, integers only, so a float cannot reach a digest</td></tr>
+      <tr><td><strong>internal/merkle</strong></td><td><span class="stamp done">built</span></td><td>RFC 6962 receipt tree, defined at every batch size</td></tr>
+      <tr><td><strong>internal/amount</strong></td><td><span class="stamp done">built</span></td><td>Exact decimal: integer atoms plus scale, explicit rounding</td></tr>
+      <tr><td><strong>internal/registry</strong></td><td><span class="stamp done">built</span></td><td>Token-2022 decoding: issuer powers and the live multiplier</td></tr>
+      <tr><td><strong>internal/receipt</strong></td><td><span class="stamp done">built</span></td><td>Two bodies, salted private, serials, proofs anyone can check</td></tr>
+      <tr><td><strong>internal/solana</strong></td><td><span class="stamp done">built</span></td><td>Rate limited RPC with credit accounting and bounded retries</td></tr>
+      <tr><td><strong>This Explorer</strong></td><td><span class="stamp done">built</span></td><td>Static, generated from the data above, verifies offline</td></tr>
+      <tr><td><strong>internal/policy</strong></td><td><span class="stamp todo">next</span></td><td>Deterministic decisions with versioned reason codes</td></tr>
+      <tr><td><strong>programs/hall</strong></td><td><span class="stamp todo">not started</span></td><td>The keyless basket program. Devnet first, no legal gate</td></tr>
+      <tr><td><strong>On-chain anchoring</strong></td><td><span class="stamp todo">not started</span></td><td>Writing batch roots to Solana, so the ritual ends on chain</td></tr>
+      <tr><td><strong>Terminal, mobile, API</strong></td><td><span class="stamp todo">phase 2 and 3</span></td><td>Creation and redemption console, holding surface, metered assay</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="limits">
+    <h3>What this does not establish</h3>
+    <ul>
+      <li>One issuer only. Backpack Securities is not covered, and its dividend mechanism is still an open question.</li>
+      <li>A moment, not a trend. Figures come from one slot, and the share moves as issuers update fields.</li>
+      <li>Nothing about intent. An issuer holding a power is not an issuer misusing one, and every issuer holding a given power gets the identical sentence here.</li>
+      <li>Nothing about depth. Whether any of these can be traded at size is a separate measurement, and a separate ceiling.</li>
+    </ul>
+  </div>
+
+{{template "foot" .}}{{end}}

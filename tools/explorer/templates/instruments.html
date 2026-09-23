@@ -1,0 +1,52 @@
+{{define "instruments.html"}}{{template "head" .}}
+
+  <h1>What each one actually is.</h1>
+  <p class="lede">Decoded from the mint account, not from anything an issuer published. A published extension list is evidence of intent at the time it was written. The account is what is true now.</p>
+
+  {{if not .Instruments}}
+  <div class="card"><p>No fixtures captured yet. Run <code>go run ./tools/capture</code>.</p></div>
+  {{end}}
+
+  {{range .Instruments}}
+  <h2>{{.Symbol}}</h2>
+  <p class="tight addr">{{.Address}}</p>
+  <p class="tight">{{.Issuer}} · {{.Decimals}} decimals · read at slot <span class="num">{{.Slot}}</span> on {{.CapturedAt}}</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">What the issuer can do</h3>
+    {{range .Sentences}}<div class="sentence">{{.}}</div>{{end}}
+    {{if not .Sentences}}<p class="tight">No issuer powers decoded.</p>{{end}}
+  </div>
+
+  {{if .LiveValue}}
+  <div class="card">
+    <h3 style="margin-top:0">Scaled UI multiplier
+      {{if .Stale}}<span class="stamp stale">the obvious field is stale</span>
+      {{else if .Pending}}<span class="stamp stale">activation scheduled</span>
+      {{else}}<span class="stamp ok">agrees</span>{{end}}
+    </h3>
+    <div class="scroll">
+    <table>
+      <tbody>
+        <tr><td style="width:34%">A reader of <code>multiplier</code> gets</td><td class="mono">{{.NaiveValue}}</td></tr>
+        <tr><td>The live value is</td><td class="mono"><strong>{{.LiveValue}}</strong></td></tr>
+        <tr><td>Resolved from</td><td><code>{{.Source}}</code>, effective {{.EffectiveAt}}</td></tr>
+      </tbody>
+    </table>
+    </div>
+    {{if .Stale}}<p>Those long decimal tails are not a display defect. Token-2022 stores the multiplier as a float64, and those digits are what the float actually holds. It is converted to its exact decimal once, at the boundary, and every calculation after that is exact.</p>{{end}}
+  </div>
+  {{end}}
+
+  <div class="card">
+    <h3 style="margin-top:0">Token-2022 extensions present</h3>
+    <p class="tight">{{range $i, $e := .Extensions}}{{if $i}} · {{end}}<code>{{$e}}</code>{{end}}</p>
+    <p class="tight">Transfer hook: <code>{{.HookState}}</code>.
+    {{if eq .HookState "initialized_disabled"}}The extension exists with no program set. Reporting that as absent would be a different fact: a hook that is off can be switched on by its authority at any time, without any other change to the mint.{{end}}</p>
+    {{if .Unknown}}<p class="tight">Extensions this build does not decode: {{range $i, $u := .Unknown}}{{if $i}}, {{end}}<code>{{$u}}</code>{{end}}. Named rather than dropped, because an unknown that is silently discarded is indistinguishable from an absent one.</p>{{end}}
+  </div>
+
+  <p class="tight" style="color:var(--ink3);font-size:13.5px">Why this one is in the set: {{.Note}}</p>
+  {{end}}
+
+{{template "foot" .}}{{end}}

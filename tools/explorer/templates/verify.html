@@ -1,0 +1,77 @@
+{{define "verify.html"}}{{template "head" .}}
+
+  <h1>Check a hallmark yourself.</h1>
+  <p class="lede">Enter a serial. Your browser recomputes every hash from the public record up to the batch root, using its own Web Crypto. Nothing here is taken on trust, including us.</p>
+
+  {{if .BatchCount}}
+  <form class="entry" id="form" autocomplete="off">
+    <label class="field"><input id="serial" inputmode="text" maxlength="11" placeholder="Serial, for example 09260000001" aria-label="Hallmark serial"></label>
+    <div class="tray"><button class="key" type="submit">Verify</button></div>
+  </form>
+  <div class="chips" id="chips"><p>Serials in this batch</p></div>
+  <div class="msg" id="msg" role="status"></div>
+
+  <section id="result" hidden>
+    <ol class="steps">
+      <li class="step" id="s1">
+        <h3><span class="n">1</span>The public record</h3>
+        <p class="tight">What anyone may see. No wallet, no transaction signature, no exact amounts: a signature is public on-chain and would reveal all three. Hashed in canonical form.</p>
+        <pre id="pub"></pre>
+        <dl class="hashes"><dt>Public digest</dt><dd id="hp"> </dd></dl>
+      </li>
+      <li class="step" id="s2">
+        <h3><span class="n">2</span>The owner's commitment</h3>
+        <p class="tight">The private record stays with its owner, salted so its amounts cannot be recovered by guessing. Only its fingerprint travels with the proof.</p>
+        <dl class="hashes">
+          <dt>Private commitment</dt><dd id="hq"> </dd>
+          <dt>Leaf</dt><dd id="hl"> </dd>
+        </dl>
+        <div class="formula">leaf = SHA-256( 0x00 · public digest · private commitment )</div>
+      </li>
+      <li class="step" id="s3">
+        <h3><span class="n">3</span>The path to the root</h3>
+        <p class="tight">Each level is computed here, from the level below and one sibling supplied by the proof.</p>
+        <div class="treebox"><svg class="tree" id="tree" role="img" aria-label="Merkle tree with the verified path highlighted"></svg></div>
+        <div class="legend"><span><i style="background:var(--prov)"></i>Computed in your browser</span><span><i style="border:1px dashed var(--prov)"></i>Sibling from the proof</span></div>
+        <dl class="hashes" id="levels"></dl>
+        <div class="formula">node = SHA-256( 0x01 · left · right )</div>
+      </li>
+      <li class="step" id="s4">
+        <h3><span class="n">4</span>The seal</h3>
+        <dl class="hashes">
+          <dt>Computed root</dt><dd id="rc"> </dd>
+          <dt>Published root</dt><dd id="rp"> </dd>
+        </dl>
+        <div class="verdict" id="verdict"></div>
+        <p class="tight" id="seal"></p>
+      </li>
+    </ol>
+
+    <p class="closing" id="closing">Your browser just verified this. We didn't.</p>
+    <div class="after">
+      <button class="quiet" id="tamper" type="button">Change one character and verify again</button>
+      <button class="quiet" id="again" type="button">Verify the original</button>
+    </div>
+  </section>
+
+  <!-- The verdict is announced here, once. The hashes above update every frame
+       and are deliberately outside any live region. -->
+  <p id="announce" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap"></p>
+
+  <div class="limits">
+    <h3>What this demonstration is and is not</h3>
+    <ul>
+      <li>The scheme is real. The bodies are invented, because no mainnet transaction has been made yet.</li>
+      <li>The batch was sealed by the Go engine. This page shares no code with it and reimplements the canonicalization, leaf composition and Merkle path from the specification. CI fails if the two ever disagree by a byte.</li>
+      <li><strong>This root is not written on-chain yet.</strong> Once it is, step 4 also checks it against the Solana memo transaction, signed by a published anchor key.</li>
+      <li>Disconnect your network and verify again. It still works, which is the strongest form of the claim.</li>
+    </ul>
+  </div>
+
+  <script>window.__SEAMETRY_BATCH__ = {{.BatchJSON}};</script>
+  <script src="verify.js"></script>
+  {{else}}
+  <div class="card"><p>No sealed batch yet. Run <code>go run ./tools/seal</code>.</p></div>
+  {{end}}
+
+{{template "foot" .}}{{end}}

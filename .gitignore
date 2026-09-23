@@ -22,3 +22,6 @@ coverage.txt
 /assets/fonts/*.otf
 /assets/fonts/*.zip
 /assets/fonts/FONTSHARE-FFL.txt
+
+# Generated surfaces. Rebuild with: go run ./tools/explorer
+/dist/
