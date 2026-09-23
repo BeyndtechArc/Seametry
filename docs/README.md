@@ -144,19 +144,29 @@ Tracked here because an untracked gap becomes folklore.
 
 **Code**
 
-- The repository contains a TypeScript scaffold, not the Go core these
-  documents describe. `packages/preflight` computes decisions in TypeScript,
-  which `ENGINEERING_STANDARD.md` section 2 forbids. Nothing in the repository
-  yet satisfies the foundation.
+Done: `internal/canonical`, `internal/merkle`, `internal/amount`,
+`internal/registry`, `spec/` with generator and drift gate, CI, and
+`fixtures/mainnet/` captured at slot 449580424.
+
+- `packages/preflight` still computes decisions in TypeScript, which
+  `ENGINEERING_STANDARD.md` section 2 forbids. It is retired in principle and
+  present in fact, and it goes when the Go core replaces what it does, in one
+  change, so the repository never shows two authorities.
+- `internal/receipt` does not exist, so nothing yet builds the public and
+  private bodies or allocates serials.
 - `api/openapi/`, `spec/recipe/vectors/`, and `spec/policy/golden/` are
   referenced by these documents and do not exist.
-- No CI exists. Most rules in `ENGINEERING_STANDARD.md` name an enforcement
-  mechanism that is not yet implemented.
+- CI does not yet enforce every rule the standard names. The gaps are the
+  no-float lint (currently only enforced inside `internal/canonical` at
+  runtime) and the public artifact scan described in section 12.
+- `-race` does not run on a Windows developer machine because it needs cgo.
+  CI runs it on Linux.
 
 **External**
 
 - Backpack Securities' dividend mechanism is unconfirmed: a multiplier change
   or newly minted tokens. It is settled by capturing mint fixtures, not by
-  reading documentation.
+  reading documentation. The survey in `evidence/` covers xStocks only.
 - Stocklana submission closes 25 September 2026, 16:00 ET, judging through
-  2 October. Confirmed at hackathons.solana.com on 23 September 2026.
+  2 October. Confirmed at hackathons.solana.com on 23 September 2026. The
+  deadline shapes which release is cut and nothing else.
