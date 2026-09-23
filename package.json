@@ -22,7 +22,8 @@
     "verify:receipts": "node tools/spec/verify-receipts.mjs",
     "explorer": "go run ./tools/explorer",
     "survey": "go run ./tools/survey",
-    "fonts": "go run ./tools/fonts"
+    "fonts": "go run ./tools/fonts",
+    "serve": "node tools/serve.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
