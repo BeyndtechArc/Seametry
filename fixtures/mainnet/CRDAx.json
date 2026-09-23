@@ -1,0 +1,15 @@
+{
+  "symbol": "CRDAx",
+  "issuer": "Backed Finance (xStocks)",
+  "note": "Halted by its issuer with no multiplier movement, which separates halt state from corporate action state. The two are independent and a decoder that conflated them would pass on TQQQx alone.",
+  "address": "XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ",
+  "cluster": "https://api.mainnet-beta.solana.com",
+  "commitment": "finalized",
+  "slot": 449580424,
+  "captured_at": "2026-09-23T03:25:33Z",
+  "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "lamports": 5707200,
+  "data_sha256": "6aa6140a925e4c99b56e7da9104d97f8bf1097886477d8cd263315cf4f872bd9",
+  "data_len": 692,
+  "data_base64": "AQAAAGVqQkIv6okUBqQZ0dHeCPQqhHlBtaGulevOYZrDFyk0jkyxv0cKAAAIAQEAAAD/3+wbzSzTg5PITaoIyRzA041nf/jQq3tdAz8A9zLMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQABD+fHuLje4B+pFy3TmAJcivsAJKWAm5ORVi0NeJKXpxgfowUATmM1G1igl4R+2JnJ6Oj6o5hhtlyQXllKT8H5WDAAgAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGBgABAAEZADgABm9ZIlHMR3R4JaWa0UIupDVz9SjaXe4q94ErMU+ZReMAAAAAAADwPwiFj2oAAAAAAAAAAAAA8D8aACEA/9/sG80s04OTyE2qCMkcwNONZ3/40Kt7XQM/APcyzDAABABBAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATALMAQ/nx7i43uAfqRct05gCXIr7ACSlgJuTkVYtDXiSl6cYH6MFAE5jNRtYoJeEftiZyejo+qOYYbZckF5ZSk/B+VhoAAABDcm9kYSBJbnRlcm5hdGlvbmFsIHhTdG9jawUAAABDUkRBeEQAAABodHRwczovL3hzdG9ja3MtbWV0YWRhdGEuYmFja2VkLmZpL3Rva2Vucy9Tb2xhbmEvQ1JEQXgvbWV0YWRhdGEuanNvbgAAAAA="
+}

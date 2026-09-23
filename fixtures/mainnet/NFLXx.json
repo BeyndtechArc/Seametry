@@ -1,0 +1,15 @@
+{
+  "symbol": "NFLXx",
+  "issuer": "Backed Finance (xStocks)",
+  "note": "The catastrophic case. The field named multiplier reads 1.0 while the live value has been 10.0 since 16 November 2025, a ten for one split. Anyone pricing a position from the obvious field is wrong by 900 percent. This fixture is why the resolver exists.",
+  "address": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL",
+  "cluster": "https://api.mainnet-beta.solana.com",
+  "commitment": "finalized",
+  "slot": 449580424,
+  "captured_at": "2026-09-23T03:25:33Z",
+  "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "lamports": 5623680,
+  "data_sha256": "b071aef632fdb81a6d62cc54748e80726ad889a31b9d39cb83d8e4f41264fd2d",
+  "data_len": 680,
+  "data_base64": "AQAAAGVqQkIv6okUBqQZ0dHeCPQqhHlBtaGulevOYZrDFyk0DLXfMhoOAAAIAQEAAAD/3+wbzSzTg5PITaoIyRzA041nf/jQq3tdAz8A9zLMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQABD+fHuLje4B+pFy3TmAJcivsAJKWAm5ORVi0NeJKXpxgfoN+LIQ7TZ2JXKDHJIcxFvSd5VFlRbdnyWRdakOGiRDAAgAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGBgABAAEZADgABm9ZIlHMR3R4JaWa0UIupDVz9SjaXe4q94ErMU+ZReMAAAAAAADwP1RkGmkAAAAAAAAAAAAAJEAaACEA/9/sG80s04OTyE2qCMkcwNONZ3/40Kt7XQM/APcyzDAABABBAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAKcAQ/nx7i43uAfqRct05gCXIr7ACSlgJuTkVYtDXiSl6cYH6DfiyEO02diVygxySHMRb0neVRZUW3Z8lkXWpDhokQ4AAABOZXRmbGl4IHhTdG9jawUAAABORkxYeEQAAABodHRwczovL3hzdG9ja3MtbWV0YWRhdGEuYmFja2VkLmZpL3Rva2Vucy9Tb2xhbmEvTkZMWHgvbWV0YWRhdGEuanNvbgAAAAA="
+}

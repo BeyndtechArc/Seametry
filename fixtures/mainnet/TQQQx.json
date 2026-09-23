@@ -1,0 +1,15 @@
+{
+  "symbol": "TQQQx",
+  "issuer": "Backed Finance (xStocks)",
+  "note": "The rarest and most important case: an activation scheduled but not yet effective at capture time. It proves the resolver must NOT return new_multiplier before its timestamp, which is the opposite error from reading the stale field. Also halted by its issuer at capture, so it covers both at once. Tests must resolve it against a fixed reference time, never the wall clock, or this fixture rots the moment the activation lands.",
+  "address": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc",
+  "cluster": "https://api.mainnet-beta.solana.com",
+  "commitment": "finalized",
+  "slot": 449580424,
+  "captured_at": "2026-09-23T03:25:33Z",
+  "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "lamports": 1205939710,
+  "data_sha256": "0a1356128bc39eacd524b3f23092f8e56a9ed6fd553251d7553c690d301e1525",
+  "data_len": 677,
+  "data_base64": "AQAAAGVqQkIv6okUBqQZ0dHeCPQqhHlBtaGulevOYZrDFyk0Xz/Jlx8aAAAIAQEAAAD/3+wbzSzTg5PITaoIyRzA041nf/jQq3tdAz8A9zLMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQABD+fHuLje4B+pFy3TmAJcivsAJKWAm5ORVi0NeJKXpxgfoyT2cUyZ8J5UqzvpRro2a+BFhFNurtEPXFdlqJdvPDAAgAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGBgABAAEZADgABm9ZIlHMR3R4JaWa0UIupDVz9SjaXe4q94ErMU+ZReNNCfQpYhIAQMBOs2oAAAAAcH1+PfEXAEAaACEA/9/sG80s04OTyE2qCMkcwNONZ3/40Kt7XQM/APcyzDAABABBAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAKQAQ/nx7i43uAfqRct05gCXIr7ACSlgJuTkVYtDXiSl6cYH6Mk9nFMmfCeVKs76Ua6NmvgRYRTbq7RD1xXZaiXbzwsAAABUUVFRIHhTdG9jawUAAABUUVFReEQAAABodHRwczovL3hzdG9ja3MtbWV0YWRhdGEuYmFja2VkLmZpL3Rva2Vucy9Tb2xhbmEvVFFRUXgvbWV0YWRhdGEuanNvbgAAAAA="
+}

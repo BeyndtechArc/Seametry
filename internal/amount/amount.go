@@ -5,11 +5,17 @@
 // is atoms / 10^scale. The pair always travels together, because atoms without
 // a scale is not a small number, it is a meaningless one.
 //
-// There is no floating point anywhere in this package and no way to get a
-// float in or out. That is the whole reason it exists: a binary float cannot
-// represent most decimal fractions, so a price that survives one arithmetic
-// step intact can be wrong after three, and the error appears in settlement
-// rather than in a test.
+// No arithmetic here is performed in floating point, and no operation returns
+// a float. That is the whole reason it exists: a binary float cannot represent
+// most decimal fractions, so a price that survives one arithmetic step intact
+// can be wrong after three, and the error appears in settlement rather than in
+// a test.
+//
+// There is exactly one float shaped door, FromFloat64Exact, and it is an
+// entrance rather than an exit. It exists because Token-2022 stores the Scaled
+// UI multiplier as a float64 on chain, which is not a representation we chose
+// and not one we can refuse to read. The conversion is exact and happens once,
+// at the boundary, and everything after it is exact decimal.
 //
 // Rounding is never implicit. Every operation that can lose precision takes a
 // Rounding, and RoundExact refuses rather than silently discarding a
@@ -27,13 +33,19 @@ package amount
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/big"
 	"strings"
 )
 
-// MaxScale bounds how many decimal places an amount may carry. Token-2022
-// mints top out well below this; the headroom is for derived ratios.
-const MaxScale = 38
+// MaxScale bounds how many decimal places an amount may carry.
+//
+// It is large because of FromFloat64Exact. A float64 near 1.0 carries 52
+// fractional bits, and representing it exactly in decimal takes 52 decimal
+// places, so a bound chosen for ordinary token amounts would make the exact
+// conversion impossible. Ordinary amounts use scales below 20; this bound
+// exists to catch nonsense, not to express an expectation.
+const MaxScale = 1100
 
 // Rounding selects what happens when an operation leaves a remainder.
 type Rounding uint8
@@ -185,6 +197,52 @@ func ParseDecimal(s string) (Amount, error) {
 		n.Neg(n)
 	}
 	return Amount{atoms: n, scale: scale}, nil
+}
+
+// FromFloat64Exact converts a float64 to its exact decimal value.
+//
+// This is the only entry point in the package that accepts a float, and it
+// exists for exactly one reason: the Token-2022 Scaled UI Amount extension
+// stores its multiplier as a float64 on chain. We do not get to choose that
+// representation, so the honest response is to convert it once, at the
+// boundary, without loss, and to do every subsequent calculation in exact
+// decimal.
+//
+// The conversion is exact, not approximate. Every finite float64 is a dyadic
+// rational m/2^k, and every dyadic rational has a terminating decimal
+// expansion, obtained by multiplying the numerator by 5^k. So 1.1 converts to
+// the full 1.100000000000000088817841970012523233890533447265625 that the
+// float actually holds, rather than to the 1.1 that printing it suggests.
+// That distinction is the entire point: the long value is what the chain
+// means, and rounding it to what it looks like would reintroduce the error
+// this package exists to remove.
+//
+// Never use this to bring a computed float into the domain. If a float was
+// computed rather than read from chain, the defect is upstream.
+func FromFloat64Exact(f float64) (Amount, error) {
+	if math.IsNaN(f) {
+		return Amount{}, fmt.Errorf("amount: cannot convert NaN")
+	}
+	if math.IsInf(f, 0) {
+		return Amount{}, fmt.Errorf("amount: cannot convert infinity")
+	}
+
+	rat := new(big.Rat).SetFloat64(f) // exact for every finite float64
+	denominator := rat.Denom()
+
+	// big.Rat normalizes, and the only prime factor a float64 denominator can
+	// carry is two, so after normalization it is exactly a power of two.
+	k := denominator.BitLen() - 1
+	if new(big.Int).Lsh(big.NewInt(1), uint(k)).Cmp(denominator) != 0 {
+		return Amount{}, fmt.Errorf("amount: float64 denominator %s is not a power of two", denominator)
+	}
+	if k > MaxScale {
+		return Amount{}, fmt.Errorf("amount: %v needs scale %d to represent exactly, beyond the maximum of %d", f, k, MaxScale)
+	}
+
+	// value = num / 2^k = (num * 5^k) / 10^k
+	atoms := new(big.Int).Mul(rat.Num(), new(big.Int).Exp(big.NewInt(5), big.NewInt(int64(k)), nil))
+	return Amount{atoms: atoms, scale: int32(k)}, nil
 }
 
 // MustParseDecimal is ParseDecimal for constants and tests. It panics on a

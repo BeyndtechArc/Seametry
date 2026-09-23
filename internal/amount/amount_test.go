@@ -3,6 +3,7 @@ package amount
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -159,7 +160,7 @@ func TestVectorMulDiv(t *testing.T) {
 }
 
 // The Hall's rounding discipline, asserted as the property it actually is:
-// a required input never rounds below the true value and an output never
+// a required input never rounds below the exact value and an output never
 // rounds above it, so every rounding favours the protocol rather than the
 // caller. If this inverted, a basket would leak value on every strike.
 func TestRoundingAlwaysFavoursTheProtocol(t *testing.T) {
@@ -186,10 +187,10 @@ func TestRoundingAlwaysFavoursTheProtocol(t *testing.T) {
 			exactFloor := new(big.Int).Div(num, supply)
 
 			if required.Atoms().Cmp(exactFloor) < 0 {
-				t.Errorf("required input rounded below the true value (ledger=%d shares=%d)", ledger, shares)
+				t.Errorf("required input rounded below the exact value (ledger=%d shares=%d)", ledger, shares)
 			}
 			if out.Atoms().Cmp(exactFloor) > 0 {
-				t.Errorf("output rounded above the true value (ledger=%d shares=%d)", ledger, shares)
+				t.Errorf("output rounded above the exact value (ledger=%d shares=%d)", ledger, shares)
 			}
 			if c, _ := out.Cmp(required); c > 0 {
 				t.Errorf("output exceeded required input (ledger=%d shares=%d)", ledger, shares)
@@ -403,6 +404,49 @@ func TestNegativeRoundingDirections(t *testing.T) {
 		}
 		if got.AtomsString() != c.want {
 			t.Errorf("-7/2 %v: want %s got %s", c.mode, c.want, got.AtomsString())
+		}
+	}
+}
+
+// FromFloat64Exact is the one float boundary in the system, and it must be
+// exact rather than pretty. 1.1 is not 1.1 in binary, and the long decimal is
+// what the chain actually holds.
+func TestFromFloat64ExactIsExactNotPretty(t *testing.T) {
+	got, err := FromFloat64Exact(1.1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	const want = "1.100000000000000088817841970012523233890533447265625"
+	if got.String() != want {
+		t.Errorf("1.1 must convert to what the float holds\n  want %s\n  got  %s", want, got)
+	}
+}
+
+func TestFromFloat64ExactRoundTripsEveryFloat(t *testing.T) {
+	for _, f := range []float64{
+		0, 1, -1, 0.5, 10, 5, 1.0026642075893797, 1.0032690125398187,
+		2.008976295242212, 1.0561757, 0.1, -0.1, 1e-10, 1e10,
+	} {
+		a, err := FromFloat64Exact(f)
+		if err != nil {
+			t.Fatalf("%v: %v", f, err)
+		}
+		// Parsing the exact decimal back and re-reading it as a float must
+		// return the identical float, since the decimal lost nothing.
+		back, _, err := new(big.Float).SetPrec(200).Parse(a.String(), 10)
+		if err != nil {
+			t.Fatalf("%v: reparse: %v", f, err)
+		}
+		if f64, _ := back.Float64(); f64 != f {
+			t.Errorf("%v did not round trip: got %v via %s", f, f64, a)
+		}
+	}
+}
+
+func TestFromFloat64ExactRefusesNonFinite(t *testing.T) {
+	for _, f := range []float64{math.NaN(), math.Inf(1), math.Inf(-1)} {
+		if _, err := FromFloat64Exact(f); err == nil {
+			t.Errorf("accepted %v", f)
 		}
 	}
 }

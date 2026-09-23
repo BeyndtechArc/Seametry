@@ -1,0 +1,44 @@
+[
+  {
+    "symbol": "NFLXx",
+    "mint": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "The catastrophic case. The field named multiplier reads 1.0 while the live value has been 10.0 since 16 November 2025, a ten for one split. Anyone pricing a position from the obvious field is wrong by 900 percent. This fixture is why the resolver exists."
+  },
+  {
+    "symbol": "PALLx",
+    "mint": "XsTTtPA5V19YwHKDv4xeVXNM6kdsQNJvg3MyWkRUckt",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "A second split at a different ratio, five for one, so a decoder cannot pass by hardcoding ten."
+  },
+  {
+    "symbol": "AAPLx",
+    "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "The subtle case: one corporate action behind rather than many. The field reads 1.0026642075893797, the live value is 1.0032690125398187, effective 8 August 2026. A decoder that only catches dramatic drift would pass on NFLXx and quietly fail here."
+  },
+  {
+    "symbol": "STRKx",
+    "mint": "XsaQGz41BEQkS9xAB44uvUtuXcdLJAXEU1dogEzWMZ8",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "Both values are non-trivial and neither is 1.0, so a decoder cannot pass by assuming a stale field always still reads its initial value."
+  },
+  {
+    "symbol": "TQQQx",
+    "mint": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "The rarest and most important case: an activation scheduled but not yet effective at capture time. It proves the resolver must NOT return new_multiplier before its timestamp, which is the opposite error from reading the stale field. Also halted by its issuer at capture, so it covers both at once. Tests must resolve it against a fixed reference time, never the wall clock, or this fixture rots the moment the activation lands."
+  },
+  {
+    "symbol": "CATx",
+    "mint": "XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "Control. multiplier and new_multiplier agree, so resolution is unambiguous and a decoder that always preferred one field would still pass here. A control that cannot fail is what makes the failing fixtures meaningful."
+  },
+  {
+    "symbol": "CRDAx",
+    "mint": "XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "Halted by its issuer with no multiplier movement, which separates halt state from corporate action state. The two are independent and a decoder that conflated them would pass on TQQQx alone."
+  }
+]

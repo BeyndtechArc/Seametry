@@ -1,0 +1,15 @@
+{
+  "symbol": "AAPLx",
+  "issuer": "Backed Finance (xStocks)",
+  "note": "The subtle case: one corporate action behind rather than many. The field reads 1.0026642075893797, the live value is 1.0032690125398187, effective 8 August 2026. A decoder that only catches dramatic drift would pass on NFLXx and quietly fail here.",
+  "address": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+  "cluster": "https://api.mainnet-beta.solana.com",
+  "commitment": "finalized",
+  "slot": 449580424,
+  "captured_at": "2026-09-23T03:25:33Z",
+  "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "lamports": 647086478,
+  "data_sha256": "a14a36df74288c2da3af183a6eec618bd5b4ec0232a49a9059f03bb06440b48f",
+  "data_len": 678,
+  "data_base64": "AQAAAGVqQkIv6okUBqQZ0dHeCPQqhHlBtaGulevOYZrDFyk0drU2EvwNAAAIAQEAAAD/3+wbzSzTg5PITaoIyRzA041nf/jQq3tdAz8A9zLMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARIAQABD+fHuLje4B+pFy3TmAJcivsAJKWAm5ORVi0NeJKXpxgfooHtWzpJmuZKqX9ZEXDx3mLLrtzM8Hn7eBixrhgflDAAgAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGBgABAAEZADgABm9ZIlHMR3R4JaWa0UIupDVz9SjaXe4q94ErMU+ZReNQdcef6QrwP4h4dmoAAAAABS7fzmMN8D8aACEA/9/sG80s04OTyE2qCMkcwNONZ3/40Kt7XQM/APcyzDAABABBAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBAAEP58e4uN7gH6kXLdOYAlyK+wAkpYCbk5FWLQ14kpenGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAKUAQ/nx7i43uAfqRct05gCXIr7ACSlgJuTkVYtDXiSl6cYH6KB7Vs6SZrmSql/WRFw8d5iy67czPB5+3gYsa4YH5QwAAABBcHBsZSB4U3RvY2sFAAAAQUFQTHhEAAAAaHR0cHM6Ly94c3RvY2tzLW1ldGFkYXRhLmJhY2tlZC5maS90b2tlbnMvU29sYW5hL0FBUEx4L21ldGFkYXRhLmpzb24AAAAA"
+}
