@@ -1,0 +1,737 @@
+{
+  "representation": "An amount is an integer count of atoms plus an explicit scale. The value is atoms / 10^scale. The pair always travels together: atoms without a scale is meaningless.",
+  "wire_format": "{\"atoms\":\"<integer as a string>\",\"scale\":<integer>}. Atoms are a string because they routinely exceed the range a JSON number can carry exactly.",
+  "rounding_modes": {
+    "exact": "refuse any division that leaves a remainder",
+    "down": "toward zero",
+    "up": "away from zero",
+    "floor": "toward negative infinity",
+    "ceil": "toward positive infinity"
+  },
+  "note": "Rounding is never implicit. Every operation that can lose precision names its mode, and the Hall uses ceil for required inputs and floor for outputs so that every rounding favours the protocol.",
+  "parse": [
+    {
+      "decimal": "0",
+      "atoms": "0",
+      "scale": 0
+    },
+    {
+      "decimal": "1",
+      "atoms": "1",
+      "scale": 0
+    },
+    {
+      "decimal": "-1",
+      "atoms": "-1",
+      "scale": 0
+    },
+    {
+      "decimal": "0.5",
+      "atoms": "5",
+      "scale": 1
+    },
+    {
+      "decimal": "1.50",
+      "atoms": "150",
+      "scale": 2
+    },
+    {
+      "decimal": "-0.001",
+      "atoms": "-1",
+      "scale": 3
+    },
+    {
+      "decimal": "248.37",
+      "atoms": "24837",
+      "scale": 2
+    },
+    {
+      "decimal": "0.000000000000000001",
+      "atoms": "1",
+      "scale": 18
+    },
+    {
+      "decimal": "123456789012345678901234567890",
+      "atoms": "123456789012345678901234567890",
+      "scale": 0
+    },
+    {
+      "decimal": "-0.0",
+      "atoms": "0",
+      "scale": 1
+    }
+  ],
+  "parse_rejects": [
+    {
+      "decimal": "",
+      "reason": "empty"
+    },
+    {
+      "decimal": ".",
+      "reason": "no digits"
+    },
+    {
+      "decimal": "1.2.3",
+      "reason": "more than one decimal point"
+    },
+    {
+      "decimal": "1e5",
+      "reason": "exponent notation is not accepted; atoms and scale carry magnitude"
+    },
+    {
+      "decimal": "1 000",
+      "reason": "separators are not accepted"
+    },
+    {
+      "decimal": "+1",
+      "reason": "leading plus is not accepted"
+    },
+    {
+      "decimal": "NaN",
+      "reason": "not a number"
+    },
+    {
+      "decimal": "0x10",
+      "reason": "not decimal"
+    }
+  ],
+  "rescale": [
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 5,
+      "rounding": "exact",
+      "expected_atoms": "1234500"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 5,
+      "rounding": "down",
+      "expected_atoms": "1234500"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 5,
+      "rounding": "up",
+      "expected_atoms": "1234500"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 5,
+      "rounding": "floor",
+      "expected_atoms": "1234500"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 5,
+      "rounding": "ceil",
+      "expected_atoms": "1234500"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 3,
+      "rounding": "exact",
+      "expected_atoms": "12345"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 3,
+      "rounding": "down",
+      "expected_atoms": "12345"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 3,
+      "rounding": "up",
+      "expected_atoms": "12345"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 3,
+      "rounding": "floor",
+      "expected_atoms": "12345"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 3,
+      "rounding": "ceil",
+      "expected_atoms": "12345"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "down",
+      "expected_atoms": "123"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "up",
+      "expected_atoms": "124"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "floor",
+      "expected_atoms": "123"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "ceil",
+      "expected_atoms": "124"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 0,
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 0,
+      "rounding": "down",
+      "expected_atoms": "12"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 0,
+      "rounding": "up",
+      "expected_atoms": "13"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 0,
+      "rounding": "floor",
+      "expected_atoms": "12"
+    },
+    {
+      "atoms": "12345",
+      "scale": 3,
+      "target_scale": 0,
+      "rounding": "ceil",
+      "expected_atoms": "13"
+    },
+    {
+      "atoms": "-12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "-12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "down",
+      "expected_atoms": "-123"
+    },
+    {
+      "atoms": "-12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "up",
+      "expected_atoms": "-124"
+    },
+    {
+      "atoms": "-12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "floor",
+      "expected_atoms": "-124"
+    },
+    {
+      "atoms": "-12345",
+      "scale": 3,
+      "target_scale": 1,
+      "rounding": "ceil",
+      "expected_atoms": "-123"
+    },
+    {
+      "atoms": "15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "down",
+      "expected_atoms": "1"
+    },
+    {
+      "atoms": "15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "up",
+      "expected_atoms": "2"
+    },
+    {
+      "atoms": "15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "floor",
+      "expected_atoms": "1"
+    },
+    {
+      "atoms": "15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "ceil",
+      "expected_atoms": "2"
+    },
+    {
+      "atoms": "-15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "-15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "down",
+      "expected_atoms": "-1"
+    },
+    {
+      "atoms": "-15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "up",
+      "expected_atoms": "-2"
+    },
+    {
+      "atoms": "-15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "floor",
+      "expected_atoms": "-2"
+    },
+    {
+      "atoms": "-15",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "ceil",
+      "expected_atoms": "-1"
+    },
+    {
+      "atoms": "25",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "25",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "down",
+      "expected_atoms": "2"
+    },
+    {
+      "atoms": "25",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "up",
+      "expected_atoms": "3"
+    },
+    {
+      "atoms": "25",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "floor",
+      "expected_atoms": "2"
+    },
+    {
+      "atoms": "25",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "ceil",
+      "expected_atoms": "3"
+    },
+    {
+      "atoms": "10",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "exact",
+      "expected_atoms": "1"
+    },
+    {
+      "atoms": "10",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "down",
+      "expected_atoms": "1"
+    },
+    {
+      "atoms": "10",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "up",
+      "expected_atoms": "1"
+    },
+    {
+      "atoms": "10",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "floor",
+      "expected_atoms": "1"
+    },
+    {
+      "atoms": "10",
+      "scale": 1,
+      "target_scale": 0,
+      "rounding": "ceil",
+      "expected_atoms": "1"
+    }
+  ],
+  "mul_div": [
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "3",
+      "div": "7",
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "3",
+      "div": "7",
+      "rounding": "down",
+      "expected_atoms": "428571"
+    },
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "3",
+      "div": "7",
+      "rounding": "up",
+      "expected_atoms": "428572"
+    },
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "3",
+      "div": "7",
+      "rounding": "floor",
+      "expected_atoms": "428571"
+    },
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "3",
+      "div": "7",
+      "rounding": "ceil",
+      "expected_atoms": "428572"
+    },
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "down",
+      "expected_atoms": "333333"
+    },
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "up",
+      "expected_atoms": "333334"
+    },
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "floor",
+      "expected_atoms": "333333"
+    },
+    {
+      "atoms": "1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "ceil",
+      "expected_atoms": "333334"
+    },
+    {
+      "atoms": "-1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "-1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "down",
+      "expected_atoms": "-333333"
+    },
+    {
+      "atoms": "-1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "up",
+      "expected_atoms": "-333334"
+    },
+    {
+      "atoms": "-1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "floor",
+      "expected_atoms": "-333334"
+    },
+    {
+      "atoms": "-1000000",
+      "scale": 6,
+      "mul": "1",
+      "div": "3",
+      "rounding": "ceil",
+      "expected_atoms": "-333333"
+    },
+    {
+      "atoms": "1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "down",
+      "expected_atoms": "0"
+    },
+    {
+      "atoms": "1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "up",
+      "expected_atoms": "1"
+    },
+    {
+      "atoms": "1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "floor",
+      "expected_atoms": "0"
+    },
+    {
+      "atoms": "1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "ceil",
+      "expected_atoms": "1"
+    },
+    {
+      "atoms": "-1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "-1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "down",
+      "expected_atoms": "0"
+    },
+    {
+      "atoms": "-1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "up",
+      "expected_atoms": "-1"
+    },
+    {
+      "atoms": "-1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "floor",
+      "expected_atoms": "-1"
+    },
+    {
+      "atoms": "-1",
+      "scale": 0,
+      "mul": "1",
+      "div": "2",
+      "rounding": "ceil",
+      "expected_atoms": "0"
+    },
+    {
+      "atoms": "100",
+      "scale": 0,
+      "mul": "1",
+      "div": "1",
+      "rounding": "exact",
+      "expected_atoms": "100"
+    },
+    {
+      "atoms": "100",
+      "scale": 0,
+      "mul": "1",
+      "div": "1",
+      "rounding": "down",
+      "expected_atoms": "100"
+    },
+    {
+      "atoms": "100",
+      "scale": 0,
+      "mul": "1",
+      "div": "1",
+      "rounding": "up",
+      "expected_atoms": "100"
+    },
+    {
+      "atoms": "100",
+      "scale": 0,
+      "mul": "1",
+      "div": "1",
+      "rounding": "floor",
+      "expected_atoms": "100"
+    },
+    {
+      "atoms": "100",
+      "scale": 0,
+      "mul": "1",
+      "div": "1",
+      "rounding": "ceil",
+      "expected_atoms": "100"
+    },
+    {
+      "atoms": "340282366920938463463374607431768211455",
+      "scale": 0,
+      "mul": "7",
+      "div": "11",
+      "rounding": "exact",
+      "error": "inexact division under exact rounding"
+    },
+    {
+      "atoms": "340282366920938463463374607431768211455",
+      "scale": 0,
+      "mul": "7",
+      "div": "11",
+      "rounding": "down",
+      "expected_atoms": "216543324404233567658511113820216134562"
+    },
+    {
+      "atoms": "340282366920938463463374607431768211455",
+      "scale": 0,
+      "mul": "7",
+      "div": "11",
+      "rounding": "up",
+      "expected_atoms": "216543324404233567658511113820216134563"
+    },
+    {
+      "atoms": "340282366920938463463374607431768211455",
+      "scale": 0,
+      "mul": "7",
+      "div": "11",
+      "rounding": "floor",
+      "expected_atoms": "216543324404233567658511113820216134562"
+    },
+    {
+      "atoms": "340282366920938463463374607431768211455",
+      "scale": 0,
+      "mul": "7",
+      "div": "11",
+      "rounding": "ceil",
+      "expected_atoms": "216543324404233567658511113820216134563"
+    },
+    {
+      "atoms": "0",
+      "scale": 6,
+      "mul": "5",
+      "div": "3",
+      "rounding": "exact",
+      "expected_atoms": "0"
+    },
+    {
+      "atoms": "0",
+      "scale": 6,
+      "mul": "5",
+      "div": "3",
+      "rounding": "down",
+      "expected_atoms": "0"
+    },
+    {
+      "atoms": "0",
+      "scale": 6,
+      "mul": "5",
+      "div": "3",
+      "rounding": "up",
+      "expected_atoms": "0"
+    },
+    {
+      "atoms": "0",
+      "scale": 6,
+      "mul": "5",
+      "div": "3",
+      "rounding": "floor",
+      "expected_atoms": "0"
+    },
+    {
+      "atoms": "0",
+      "scale": 6,
+      "mul": "5",
+      "div": "3",
+      "rounding": "ceil",
+      "expected_atoms": "0"
+    }
+  ]
+}

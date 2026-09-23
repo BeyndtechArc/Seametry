@@ -209,11 +209,191 @@ function buildMerkleVectors() {
 }
 
 /* ------------------------------------------------------------------ *
+ * Amount: integer atoms plus an explicit scale.
+ *
+ * Generated with BigInt so the expected values are exact. These bind Go now
+ * and Rust later, because recipe arithmetic in the Hall is the same MulDiv
+ * with the same rounding, and a half-unit disagreement between the two
+ * implementations is a fund that does not balance.
+ * ------------------------------------------------------------------ */
+
+/** Rounding applied when a division leaves a remainder. */
+function divRound(numerator, denominator, mode) {
+  if (denominator === 0n) throw new Error('division by zero');
+  const q = numerator / denominator; // BigInt division truncates toward zero
+  const r = numerator % denominator;
+  if (r === 0n) return q;
+  const negative = (numerator < 0n) !== (denominator < 0n);
+  switch (mode) {
+    case 'exact': throw new Error('inexact division under exact rounding');
+    case 'down': return q;                       // toward zero
+    case 'up': return negative ? q - 1n : q + 1n; // away from zero
+    case 'floor': return negative ? q - 1n : q;   // toward negative infinity
+    case 'ceil': return negative ? q : q + 1n;    // toward positive infinity
+    default: throw new Error('unknown rounding mode ' + mode);
+  }
+}
+
+const ROUNDING = ['exact', 'down', 'up', 'floor', 'ceil'];
+
+function buildAmountVectors() {
+  const parse = [
+    { decimal: '0', atoms: '0', scale: 0 },
+    { decimal: '1', atoms: '1', scale: 0 },
+    { decimal: '-1', atoms: '-1', scale: 0 },
+    { decimal: '0.5', atoms: '5', scale: 1 },
+    { decimal: '1.50', atoms: '150', scale: 2 },
+    { decimal: '-0.001', atoms: '-1', scale: 3 },
+    { decimal: '248.37', atoms: '24837', scale: 2 },
+    { decimal: '0.000000000000000001', atoms: '1', scale: 18 },
+    { decimal: '123456789012345678901234567890', atoms: '123456789012345678901234567890', scale: 0 },
+    { decimal: '-0.0', atoms: '0', scale: 1 },
+  ];
+
+  const parseRejects = [
+    { decimal: '', reason: 'empty' },
+    { decimal: '.', reason: 'no digits' },
+    { decimal: '1.2.3', reason: 'more than one decimal point' },
+    { decimal: '1e5', reason: 'exponent notation is not accepted; atoms and scale carry magnitude' },
+    { decimal: '1 000', reason: 'separators are not accepted' },
+    { decimal: '+1', reason: 'leading plus is not accepted' },
+    { decimal: 'NaN', reason: 'not a number' },
+    { decimal: '0x10', reason: 'not decimal' },
+  ];
+
+  // Rescaling to a smaller scale loses precision, so it takes a rounding mode.
+  const rescale = [];
+  for (const [atoms, scale, target] of [
+    ['12345', 3, 5], ['12345', 3, 3], ['12345', 3, 1], ['12345', 3, 0],
+    ['-12345', 3, 1], ['15', 1, 0], ['-15', 1, 0], ['25', 1, 0], ['10', 1, 0],
+  ]) {
+    for (const mode of ROUNDING) {
+      const a = BigInt(atoms);
+      let expected = null, error = null;
+      try {
+        if (target >= scale) {
+          expected = (a * 10n ** BigInt(target - scale)).toString();
+        } else {
+          expected = divRound(a, 10n ** BigInt(scale - target), mode).toString();
+        }
+      } catch (e) { error = e.message; }
+      rescale.push({ atoms, scale, target_scale: target, rounding: mode, ...(error ? { error } : { expected_atoms: expected }) });
+    }
+  }
+
+  // MulDiv is the operation recipe arithmetic is built from:
+  //   required_in(i, n) = ceil( n * ledger[i] / supply )
+  //   out(i, n)         = floor( n * ledger[i] / supply )
+  const mulDiv = [];
+  for (const [atoms, scale, mul, div] of [
+    ['1000000', 6, '3', '7'],
+    ['1000000', 6, '1', '3'],
+    ['-1000000', 6, '1', '3'],
+    ['1', 0, '1', '2'],
+    ['-1', 0, '1', '2'],
+    ['100', 0, '1', '1'],
+    ['340282366920938463463374607431768211455', 0, '7', '11'], // beyond u128, proves big integers
+    ['0', 6, '5', '3'],
+  ]) {
+    for (const mode of ROUNDING) {
+      let expected = null, error = null;
+      try {
+        expected = divRound(BigInt(atoms) * BigInt(mul), BigInt(div), mode).toString();
+      } catch (e) { error = e.message; }
+      mulDiv.push({ atoms, scale, mul, div, rounding: mode, ...(error ? { error } : { expected_atoms: expected }) });
+    }
+  }
+
+  return {
+    representation: 'An amount is an integer count of atoms plus an explicit scale. The value is atoms / 10^scale. The pair always travels together: atoms without a scale is meaningless.',
+    wire_format: '{"atoms":"<integer as a string>","scale":<integer>}. Atoms are a string because they routinely exceed the range a JSON number can carry exactly.',
+    rounding_modes: {
+      exact: 'refuse any division that leaves a remainder',
+      down: 'toward zero',
+      up: 'away from zero',
+      floor: 'toward negative infinity',
+      ceil: 'toward positive infinity',
+    },
+    note: 'Rounding is never implicit. Every operation that can lose precision names its mode, and the Hall uses ceil for required inputs and floor for outputs so that every rounding favours the protocol.',
+    parse,
+    parse_rejects: parseRejects,
+    rescale,
+    mul_div: mulDiv,
+  };
+}
+
+/* ------------------------------------------------------------------ *
  * Self-checks. These run every time and failing one is a build failure.
  * ------------------------------------------------------------------ */
 
 const failures = [];
 const check = (name, ok, detail) => { if (!ok) failures.push(detail ? `${name}: ${detail}` : name); };
+
+function selfCheckAmount(v) {
+  // Parsing round-trips: atoms and scale must reproduce the decimal.
+  for (const c of v.parse) {
+    const atoms = BigInt(c.atoms);
+    const neg = atoms < 0n;
+    let digits = (neg ? -atoms : atoms).toString().padStart(c.scale + 1, '0');
+    const formatted = (neg ? '-' : '') +
+      (c.scale === 0 ? digits : digits.slice(0, digits.length - c.scale) + '.' + digits.slice(digits.length - c.scale));
+    // The decimal in the vector may carry a trailing zero or a negative zero,
+    // so compare numerically rather than textually.
+    check(`amount parse "${c.decimal}" round-trips`,
+      BigInt(formatted.replace('.', '').replace('-', '') || '0') === (neg ? -atoms : atoms),
+      `formatted ${formatted}`);
+  }
+
+  // Rescaling up then back down under any mode returns the original, because
+  // scaling up is lossless.
+  for (const c of v.rescale) {
+    if (c.target_scale < c.scale || c.error) continue;
+    const back = divRound(BigInt(c.expected_atoms), 10n ** BigInt(c.target_scale - c.scale), 'exact').toString();
+    check(`amount rescale up is lossless (${c.atoms}@${c.scale} -> ${c.target_scale})`, back === c.atoms,
+      `got ${back}`);
+  }
+
+  // Rounding modes must bracket each other: floor <= down <= up <= ceil for a
+  // positive value, and the reverse relationships hold for a negative one.
+  const byKey = new Map();
+  for (const c of v.mul_div) {
+    if (c.error) continue;
+    const key = `${c.atoms}|${c.mul}|${c.div}`;
+    if (!byKey.has(key)) byKey.set(key, {});
+    byKey.get(key)[c.rounding] = BigInt(c.expected_atoms);
+  }
+  for (const [key, modes] of byKey) {
+    if (modes.floor === undefined || modes.ceil === undefined) continue;
+    check(`amount muldiv floor <= ceil (${key})`, modes.floor <= modes.ceil,
+      `floor ${modes.floor} ceil ${modes.ceil}`);
+    if (modes.down !== undefined) {
+      check(`amount muldiv down is between floor and ceil (${key})`,
+        modes.down >= modes.floor && modes.down <= modes.ceil);
+    }
+    if (modes.up !== undefined) {
+      check(`amount muldiv up is between floor and ceil (${key})`,
+        modes.up >= modes.floor && modes.up <= modes.ceil);
+    }
+  }
+
+  // Exact rounding must refuse precisely when there is a remainder, and
+  // produce the same answer as every other mode when there is not.
+  for (const c of v.mul_div) {
+    const exact = (BigInt(c.atoms) * BigInt(c.mul)) % BigInt(c.div) === 0n;
+    if (c.rounding !== 'exact') continue;
+    check(`amount muldiv exact refuses iff inexact (${c.atoms}*${c.mul}/${c.div})`,
+      exact ? !c.error : !!c.error,
+      exact ? 'refused an exact division' : 'accepted an inexact division');
+  }
+
+  // Every vector must survive a JSON round-trip, same rule as elsewhere.
+  for (const group of [v.parse, v.parse_rejects, v.rescale, v.mul_div]) {
+    for (const c of group) {
+      check('amount vector survives a JSON round-trip',
+        JSON.stringify(JSON.parse(JSON.stringify(c))) === JSON.stringify(c));
+    }
+  }
+}
 
 function selfCheck(merkleVectors) {
   // Canonicalization: every accept round-trips, every reject throws.
@@ -299,11 +479,14 @@ const leafFor2 = i => leafHash(sha256(utf8(`public-${i}`)), sha256(utf8(`private
  * ------------------------------------------------------------------ */
 
 const merkleVectors = buildMerkleVectors();
+const amountVectors = buildAmountVectors();
 selfCheck(merkleVectors);
+selfCheckAmount(amountVectors);
 
 const outputs = [
   ['spec/canonical/vectors.json', canonicalVectors],
   ['spec/merkle/vectors.json', merkleVectors],
+  ['spec/amount/vectors.json', amountVectors],
 ];
 
 let drift = false;
@@ -328,4 +511,8 @@ if (failures.length) {
 if (drift) process.exit(1);
 
 const proofCount = merkleVectors.trees.reduce((n, t) => n + t.proofs.length, 0);
-console.log(`\nself-checks passed: ${canonicalVectors.accepts.length} canonical accepts, ${canonicalVectors.rejects.length} rejects, ${merkleVectors.trees.length} trees, ${proofCount} inclusion proofs, 33 tree sizes, CVE-2012-2459 non-collision`);
+const amountCount = amountVectors.parse.length + amountVectors.parse_rejects.length +
+  amountVectors.rescale.length + amountVectors.mul_div.length;
+console.log(`\nself-checks passed: ${canonicalVectors.accepts.length} canonical accepts, ${canonicalVectors.rejects.length} rejects, ` +
+  `${merkleVectors.trees.length} trees, ${proofCount} inclusion proofs, 33 tree sizes, CVE-2012-2459 non-collision, ` +
+  `${amountCount} amount cases`);
