@@ -1,0 +1,202 @@
+{
+  "note": "The Hall's arithmetic, shared by the Go implementation and the Rust program. Amounts are integer atoms as strings at the stated scale; shares are plain integers. Times are seconds from the start of each scenario. Regenerate with go test ./internal/basket -update. A vector is never edited to make an implementation pass.",
+  "vest_window_seconds": 3600,
+  "scenarios": [
+    {
+      "name": "donation vests over the window",
+      "purpose": "A donated surplus becomes pending and enters the ledger linearly, so share value cannot jump in one block.",
+      "scale": 6,
+      "steps": [
+        {
+          "op": "initial",
+          "ledger": "1000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "actual": "2000000",
+          "kind": "credit",
+          "ledger": "1000000",
+          "pending": "1000000",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "at_seconds": 900,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "1250000",
+          "pending": "750000",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "at_seconds": 1800,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "1500000",
+          "pending": "500000",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "at_seconds": 3600,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "2000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "at_seconds": 7200,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "2000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000"
+        }
+      ]
+    },
+    {
+      "name": "seizure larger than pending",
+      "purpose": "A loss consumes unvested pending first, then falls on ledger and unclaimed in proportion, so neither group absorbs it alone.",
+      "scale": 6,
+      "steps": [
+        {
+          "op": "initial",
+          "ledger": "600000",
+          "pending": "0",
+          "unclaimed": "400000",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "actual": "900000",
+          "kind": "deficit",
+          "ledger": "540000",
+          "pending": "0",
+          "unclaimed": "360000",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "actual": "500000",
+          "kind": "deficit",
+          "ledger": "300000",
+          "pending": "0",
+          "unclaimed": "200000",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "actual": "100000",
+          "kind": "deficit",
+          "ledger": "60000",
+          "pending": "0",
+          "unclaimed": "40000",
+          "supply": "1000"
+        }
+      ]
+    },
+    {
+      "name": "strike and melt with rounding",
+      "purpose": "Required inputs round up and outputs round down at a supply that leaves a remainder, so a round trip never profits the caller.",
+      "scale": 6,
+      "steps": [
+        {
+          "op": "initial",
+          "ledger": "999983",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000003"
+        },
+        {
+          "op": "create",
+          "shares": "1",
+          "result": "1",
+          "ledger": "999984",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000004"
+        },
+        {
+          "op": "redeem",
+          "shares": "1",
+          "result": "0",
+          "ledger": "999984",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000003"
+        },
+        {
+          "op": "create",
+          "shares": "7",
+          "result": "7",
+          "ledger": "999991",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000010"
+        },
+        {
+          "op": "redeem",
+          "shares": "7",
+          "result": "6",
+          "ledger": "999985",
+          "pending": "0",
+          "unclaimed": "6",
+          "supply": "1000003"
+        },
+        {
+          "op": "create",
+          "shares": "1000",
+          "result": "1000",
+          "ledger": "1000985",
+          "pending": "0",
+          "unclaimed": "6",
+          "supply": "1001003"
+        },
+        {
+          "op": "redeem",
+          "shares": "1000",
+          "result": "999",
+          "ledger": "999986",
+          "pending": "0",
+          "unclaimed": "1005",
+          "supply": "1000003"
+        }
+      ]
+    },
+    {
+      "name": "multiplier only issuer",
+      "purpose": "A Scaled UI multiplier change moves no raw units, so sync finds nothing. This is the xStocks case and the common one.",
+      "scale": 6,
+      "steps": [
+        {
+          "op": "initial",
+          "ledger": "1000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "at_seconds": 2592000,
+          "actual": "1000000",
+          "kind": "unchanged",
+          "ledger": "1000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000"
+        }
+      ]
+    }
+  ]
+}
