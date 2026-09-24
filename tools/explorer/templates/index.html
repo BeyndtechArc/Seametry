@@ -50,10 +50,13 @@
       <tr><td><strong>internal/amount</strong></td><td><span class="stamp done">built</span></td><td>Exact decimal: integer atoms plus scale, explicit rounding</td></tr>
       <tr><td><strong>internal/registry</strong></td><td><span class="stamp done">built</span></td><td>Token-2022 decoding: issuer powers and the live multiplier</td></tr>
       <tr><td><strong>internal/receipt</strong></td><td><span class="stamp done">built</span></td><td>Two bodies, salted private, serials, proofs anyone can check</td></tr>
-      <tr><td><strong>internal/solana</strong></td><td><span class="stamp done">built</span></td><td>Rate limited RPC with credit accounting and bounded retries</td></tr>
+      <tr><td><strong>internal/transport</strong></td><td><span class="stamp done">built</span></td><td>Pacing, cost accounting, bounded retry and Retry-After for any rate limited service</td></tr>
+      <tr><td><strong>internal/solana</strong></td><td><span class="stamp done">built</span></td><td>Chain reads over JSON-RPC, charged in the provider's own credits</td></tr>
+      <tr><td><strong>internal/liquidity</strong></td><td><span class="stamp done">built</span></td><td>Executable depth at size, with absent routes recorded as facts and never as zeros</td></tr>
+      <tr><td><strong>internal/policy</strong></td><td><span class="stamp done">built</span></td><td>Deterministic decisions with versioned reason codes, including depth</td></tr>
+      <tr><td><strong>internal/basket</strong></td><td><span class="stamp done">built</span></td><td>The Hall's arithmetic, with vectors the Rust program must match</td></tr>
       <tr><td><strong>This Explorer</strong></td><td><span class="stamp done">built</span></td><td>Static, generated from the data above, verifies offline</td></tr>
-      <tr><td><strong>internal/policy</strong></td><td><span class="stamp todo">next</span></td><td>Deterministic decisions with versioned reason codes</td></tr>
-      <tr><td><strong>programs/hall</strong></td><td><span class="stamp todo">not started</span></td><td>The keyless basket program. Devnet first, no legal gate</td></tr>
+      <tr><td><strong>programs/hall</strong></td><td><span class="stamp todo">toolchain ready</span></td><td>The keyless basket program. Anchor and Solana are installed; the program is next. Devnet first, no legal gate</td></tr>
       <tr><td><strong>On-chain anchoring</strong></td><td><span class="stamp todo">not started</span></td><td>Writing batch roots to Solana, so the ritual ends on chain</td></tr>
       <tr><td><strong>Terminal, mobile, API</strong></td><td><span class="stamp todo">phase 2 and 3</span></td><td>Creation and redemption console, holding surface, metered assay</td></tr>
     </tbody>

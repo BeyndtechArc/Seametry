@@ -21,6 +21,26 @@
   </div>
   {{end}}
 
+  {{if .Depth}}
+  <div class="card">
+    <h3 class="lead">Executable depth</h3>
+    <p class="tight">What buying with USDC would actually realise, from stored aggregator responses. The shortfall is measured against the smallest size that priced.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>Size (USDC)</th><th>Route</th><th>Shortfall</th><th>Venues</th></tr></thead>
+      <tbody>
+      {{range .Depth}}<tr>
+        <td class="n"><strong>{{.SizeUSDC}}</strong></td>
+        <td>{{.Availability}}{{if .Code}} <code class="reason-code">{{.Code}}</code>{{end}}</td>
+        <td class="n">{{.Shortfall}}</td>
+        <td>{{if .Venues}}{{.Venues}}{{else}}no observation{{end}}</td>
+      </tr>{{end}}
+      </tbody>
+    </table>
+    </div>
+  </div>
+  {{end}}
+
   <div class="card">
     <h3 class="lead">What the issuer can do</h3>
     {{range .Sentences}}<div class="sentence">{{.}}</div>{{end}}

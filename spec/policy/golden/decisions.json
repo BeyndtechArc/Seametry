@@ -1,7 +1,7 @@
 {
   "note": "Decisions pinned against real mainnet mints plus synthetic cases for the blocking paths no live xStocks mint currently exhibits. Regenerate with go test ./internal/policy -update. A case is never edited by hand to make code pass.",
   "policy": {
-    "version": "policy-2026.09.1",
+    "version": "policy-2026.09.2",
     "accepted_grades": [
       "entitlement",
       "certificate",
@@ -9,7 +9,9 @@
     ],
     "allowed_hook_programs": [],
     "block_on_unknown_extension": false,
-    "block_on_issuer_halt": false
+    "block_on_issuer_halt": false,
+    "depth_reference_usdc": 1000,
+    "depth_ceiling_bps": 100
   },
   "cases": [
     {
@@ -22,6 +24,14 @@
         "observed_at_slot": 449580424,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": true,
           "has_permanent_delegate": true,
@@ -83,8 +93,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "251ba80c34be2ca989b46ff8f2a6e983ecb32399ad5463d96ac0e447187050fd"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "474c08ca877be7f9fc5b0cf2897e1526ebf710c1eb0e037a0a20f9c011a854a7"
       }
     },
     {
@@ -97,6 +107,14 @@
         "observed_at_slot": 449580424,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "no_route",
+          "provider_code": "NO_ROUTES_FOUND",
+          "shortfall_bps": null,
+          "baseline_size_usdc": 0
+        },
         "prerogatives": {
           "has_freeze_authority": true,
           "has_permanent_delegate": true,
@@ -120,8 +138,13 @@
         "unknown_extensions": []
       },
       "result": {
-        "decision": "WARN",
+        "decision": "BLOCK",
         "reasons": [
+          {
+            "code": "NO_ROUTE_FOUND",
+            "severity": "BLOCK",
+            "fact": "No route to buy 1000 USDC of this was found."
+          },
           {
             "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
             "severity": "WARN",
@@ -153,8 +176,8 @@
             "fact": "The issuer can switch on a check of who may receive this."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "93f87f16d1c7c43fbd03b0c3a42d3af84b3e549a705cbf961d0be2c6dd2dcd70"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "66ffb54d2bfc2e41b6170f7669f03faee14da68484f84f416324392802981b5b"
       }
     },
     {
@@ -167,6 +190,14 @@
         "observed_at_slot": 449580424,
         "halted_by_issuer": true,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "not_tradable",
+          "provider_code": "TOKEN_NOT_TRADABLE",
+          "shortfall_bps": null,
+          "baseline_size_usdc": 0
+        },
         "prerogatives": {
           "has_freeze_authority": true,
           "has_permanent_delegate": true,
@@ -190,8 +221,13 @@
         "unknown_extensions": []
       },
       "result": {
-        "decision": "WARN",
+        "decision": "BLOCK",
         "reasons": [
+          {
+            "code": "TOKEN_NOT_TRADABLE_BY_AGGREGATOR",
+            "severity": "BLOCK",
+            "fact": "The aggregator will not trade this token."
+          },
           {
             "code": "HALTED_BY_ISSUER",
             "severity": "WARN",
@@ -228,8 +264,8 @@
             "fact": "The issuer can switch on a check of who may receive this."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "b85dd28f0a71da1768b7ce731c81229d628c454241dd1649999d459f95039847"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "0aae16f338f11f5dee79065224ea712c86d80684ff107b15de68997b6bef72a0"
       }
     },
     {
@@ -242,6 +278,14 @@
         "observed_at_slot": 449580424,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 232,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": true,
           "has_permanent_delegate": true,
@@ -265,8 +309,13 @@
         "unknown_extensions": []
       },
       "result": {
-        "decision": "WARN",
+        "decision": "BLOCK",
         "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "severity": "BLOCK",
+            "fact": "Buying 1000 USDC realises a rate 232 basis points worse than buying 100 USDC, above the 100 basis point ceiling."
+          },
           {
             "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
             "severity": "WARN",
@@ -303,8 +352,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "5d89df4ac5f9114dae1525fb92e8461f0843ff2f3f2dbb02f1d9784c6022d683"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "14c79651356e0f678901184d20f3595b4cf28c1968a6f2040b5a996fa61ef194"
       }
     },
     {
@@ -317,6 +366,14 @@
         "observed_at_slot": 449580424,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "no_route",
+          "provider_code": "NO_ROUTES_FOUND",
+          "shortfall_bps": null,
+          "baseline_size_usdc": 0
+        },
         "prerogatives": {
           "has_freeze_authority": true,
           "has_permanent_delegate": true,
@@ -340,8 +397,13 @@
         "unknown_extensions": []
       },
       "result": {
-        "decision": "WARN",
+        "decision": "BLOCK",
         "reasons": [
+          {
+            "code": "NO_ROUTE_FOUND",
+            "severity": "BLOCK",
+            "fact": "No route to buy 1000 USDC of this was found."
+          },
           {
             "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
             "severity": "WARN",
@@ -378,8 +440,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "bd2b93975a39bafa97b0c3631fe60b381f79ebe7d603a419373b3617cb1b33f7"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "0d07362ca50ebe742de3b72c6c873d593d87f0d2f24e1e8ec150e1a4820629b6"
       }
     },
     {
@@ -392,6 +454,14 @@
         "observed_at_slot": 449580424,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 8237,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": true,
           "has_permanent_delegate": true,
@@ -415,8 +485,13 @@
         "unknown_extensions": []
       },
       "result": {
-        "decision": "WARN",
+        "decision": "BLOCK",
         "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "severity": "BLOCK",
+            "fact": "Buying 1000 USDC realises a rate 8237 basis points worse than buying 100 USDC, above the 100 basis point ceiling."
+          },
           {
             "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
             "severity": "WARN",
@@ -453,8 +528,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "71497c7203defd9545c3e38f96a49af689ac89b5255638aefe05172654b1c035"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "7ee73a5088bf146fce0b6c8836fd57a936461e10818f9d50ab746b645dadfea0"
       }
     },
     {
@@ -467,6 +542,14 @@
         "observed_at_slot": 449580424,
         "halted_by_issuer": true,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 346,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": true,
           "has_permanent_delegate": true,
@@ -490,8 +573,13 @@
         "unknown_extensions": []
       },
       "result": {
-        "decision": "WARN",
+        "decision": "BLOCK",
         "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "severity": "BLOCK",
+            "fact": "Buying 1000 USDC realises a rate 346 basis points worse than buying 100 USDC, above the 100 basis point ceiling."
+          },
           {
             "code": "HALTED_BY_ISSUER",
             "severity": "WARN",
@@ -533,8 +621,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "c09b7e934e443ff9bee1d563ad02a70277b43a60900096c32b226f7c846a2213"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "a2e2bbc5fb2f32948f273a8774e2312f8cf1add8b48e85c88a2b5977dda955d7"
       }
     },
     {
@@ -547,6 +635,14 @@
         "observed_at_slot": 1,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": false,
           "has_permanent_delegate": false,
@@ -578,8 +674,8 @@
             "fact": "This instrument's claim has not been classified, so what it legally represents is unknown."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "d9d486ce7949bdf8b4620655e7685684b06588c87bbff7ee0a1405f7018a05d5"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "a59f3084cc0accb1f1fbf67e7bd3ee3adb5acc9dab8aa80f3771cf43ccfff3e6"
       }
     },
     {
@@ -592,6 +688,14 @@
         "observed_at_slot": 1,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": false,
           "has_permanent_delegate": false,
@@ -623,8 +727,8 @@
             "fact": "The issuer has paused all movement of this."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "6530d8032c4f370ef2853eada1c0387d3c18b971119daaa96545aaa9512458e6"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "cf10db650e2a2b3d2d23cff41a1a2e167a5fc9939069e442d28e4c84d38b02df"
       }
     },
     {
@@ -637,6 +741,14 @@
         "observed_at_slot": 1,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": false,
           "has_permanent_delegate": false,
@@ -668,8 +780,8 @@
             "fact": "A new account for this starts frozen until the issuer approves it, so a recipient may be unable to receive."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "7ee710993e1993b508cc6e8875b51b3fab8f0302103c2d16c18eda98e944c13b"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "a08df31272f85507c665936163bd57891cd58f7350b152e645b5a91a055969ee"
       }
     },
     {
@@ -682,6 +794,14 @@
         "observed_at_slot": 1,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": false,
           "has_permanent_delegate": false,
@@ -713,8 +833,8 @@
             "fact": "This checks who may receive it, using a program Seametry has not read."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "42f843aae235c2fa6bf69a2c2604ed810707f98e79afd41f85a4f362aaa5efa5"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "b2ba2644903aa8fbb0c1f3fd3e95d76b96ec936221abfbe821e1e73aeb6b46ca"
       }
     },
     {
@@ -727,6 +847,14 @@
         "observed_at_slot": 1,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": false,
           "has_permanent_delegate": false,
@@ -758,8 +886,8 @@
             "fact": "This cannot be transferred at all."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "944d8260af66d2acba8c16310f3c9ae2c20324ee9cbc81200b648d6ca4663cb4"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "dda69cd43eb19a3a2f159f1a5bb1981a4bed04fcd5ff5cc5e77d3c7cfeefc372"
       }
     },
     {
@@ -772,6 +900,14 @@
         "observed_at_slot": 1,
         "halted_by_issuer": false,
         "quarantined": true,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": false,
           "has_permanent_delegate": false,
@@ -803,8 +939,8 @@
             "fact": "An expected corporate action and the observed state disagree, so this instrument is held back until they are reconciled."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "cc3ea5ac8284f7c68fd64fb58552773920349714da313205d3d995d3fddda3ef"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "a72e2b5e56620550432b1b713b311be4052a416ee1ac4dbda849f9e1adf17d76"
       }
     },
     {
@@ -817,6 +953,14 @@
         "observed_at_slot": 1,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": false,
           "has_permanent_delegate": false,
@@ -848,8 +992,8 @@
             "fact": "The quantity you appear to hold could not be resolved from this instrument's configuration."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "19c889c263f21a516935dc1cd54f10dc8c57fe33a2e06eeda6fe3145afb3d241"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "b4bb72a51e15d78eafc4f11bbeef838ecab28d896e6758514b653b218a40dfcf"
       }
     },
     {
@@ -862,6 +1006,14 @@
         "observed_at_slot": 1,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": false,
           "has_permanent_delegate": false,
@@ -895,8 +1047,8 @@
             "fact": "This carries an issuer control Seametry does not yet decode (Token-2022 extension Unknown(60000))."
           }
         ],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "6eaf8967a540919f5de61970233c8d8f899e509ee8e6e431f7e4df9689da3275"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "6acd2b9bd9560b1f3c085f61d52de6762babaf19923f34d9fac0ee147b4e2511"
       }
     },
     {
@@ -909,6 +1061,14 @@
         "observed_at_slot": 1,
         "halted_by_issuer": false,
         "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
         "prerogatives": {
           "has_freeze_authority": false,
           "has_permanent_delegate": false,
@@ -934,8 +1094,326 @@
       "result": {
         "decision": "ALLOW",
         "reasons": [],
-        "policy_version": "policy-2026.09.1",
-        "input_digest": "163162956e2e4d34f129eef8af334c7934fb3f5db3a79378c156d3b47c6d91d5"
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "a1a12c6ba85feca13b2323c295af20de5de43e07ca6bb3e651ebf85ffa8a0799"
+      }
+    },
+    {
+      "name": "NOROUTE",
+      "input": {
+        "symbol": "NOROUTE",
+        "mint": "SyntheticMintNOROUTE",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "no_route",
+          "provider_code": "NO_ROUTES_FOUND",
+          "shortfall_bps": null,
+          "baseline_size_usdc": 0
+        },
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "NO_ROUTE_FOUND",
+            "severity": "BLOCK",
+            "fact": "No route to buy 1000 USDC of this was found."
+          }
+        ],
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "a20447f7548b5971a6bf9f259f2c24f85b30277afa89b3a882dbb6ab561b72a0"
+      }
+    },
+    {
+      "name": "NOTTRADABLE",
+      "input": {
+        "symbol": "NOTTRADABLE",
+        "mint": "SyntheticMintNOTTRADABLE",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "not_tradable",
+          "provider_code": "TOKEN_NOT_TRADABLE",
+          "shortfall_bps": null,
+          "baseline_size_usdc": 0
+        },
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "TOKEN_NOT_TRADABLE_BY_AGGREGATOR",
+            "severity": "BLOCK",
+            "fact": "The aggregator will not trade this token."
+          }
+        ],
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "0b0f953630eb1e35dd4f14be0e9acde411351d9d4bb9fc5e7c2d337d36c81cc9"
+      }
+    },
+    {
+      "name": "UNKNOWNREFUSAL",
+      "input": {
+        "symbol": "UNKNOWNREFUSAL",
+        "mint": "SyntheticMintUNKNOWNREFUSAL",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "unrecognised",
+          "provider_code": "SOMETHING_NEW",
+          "shortfall_bps": null,
+          "baseline_size_usdc": 0
+        },
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "ROUTE_REFUSAL_UNRECOGNISED",
+            "severity": "BLOCK",
+            "fact": "The aggregator refused with a reason Seametry does not recognise (\"SOMETHING_NEW\")."
+          }
+        ],
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "108829daa53f15fa03a936565420ad8fd80ea76b7265517727b0933573ed4288"
+      }
+    },
+    {
+      "name": "THIN",
+      "input": {
+        "symbol": "THIN",
+        "mint": "SyntheticMintTHIN",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 232,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "BLOCK",
+        "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "severity": "BLOCK",
+            "fact": "Buying 1000 USDC realises a rate 232 basis points worse than buying 100 USDC, above the 100 basis point ceiling."
+          }
+        ],
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "db95321da92428e56831f81f065ed95c1e6e5a97f1b66233c7287ba0bf148adc"
+      }
+    },
+    {
+      "name": "UNMEASURED",
+      "input": {
+        "symbol": "UNMEASURED",
+        "mint": "SyntheticMintUNMEASURED",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": false,
+          "size_usdc": 0,
+          "availability": "",
+          "provider_code": "",
+          "shortfall_bps": null,
+          "baseline_size_usdc": 0
+        },
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "DEPTH_NOT_OBSERVED",
+            "severity": "WARN",
+            "fact": "Executable depth has not been observed at 1000 USDC."
+          }
+        ],
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "910e4b587ade564720570167cf677099ba1ca6580894948bd8f011008b3d722f"
+      }
+    },
+    {
+      "name": "WRONGSIZE",
+      "input": {
+        "symbol": "WRONGSIZE",
+        "mint": "SyntheticMintWRONGSIZE",
+        "grade": "certificate",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 1,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 100,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 12,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": false,
+          "has_permanent_delegate": false,
+          "has_mint_authority": false,
+          "can_change_multiplier": false,
+          "pausable": false,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "DEPTH_NOT_OBSERVED",
+            "severity": "WARN",
+            "fact": "Executable depth has not been observed at 1000 USDC."
+          }
+        ],
+        "policy_version": "policy-2026.09.2",
+        "input_digest": "56ca31a6ddfa84770cf55790532532395284fa675a97ef986eb1d415ec01e4dd"
       }
     }
   ]

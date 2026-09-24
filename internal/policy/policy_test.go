@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/BeyndtechArc/Seametry/internal/liquidity"
 	"github.com/BeyndtechArc/Seametry/internal/registry"
 )
 
@@ -81,12 +82,30 @@ func inputsFromFixtures(t *testing.T) []Input {
 		if err != nil {
 			t.Fatalf("%s: %v", f.Symbol, err)
 		}
+		in.Depth = depthFromFixtures(t, f.Symbol, f.Address, mint.Decimals)
 		out = append(out, in)
 	}
 	if len(out) == 0 {
 		t.Fatal("no fixtures; run: go run ./tools/capture")
 	}
 	return out
+}
+
+// depthFromFixtures replays the stored Jupiter responses for one instrument, so
+// the decision is made against depth that was actually measured and the test
+// needs no network.
+func depthFromFixtures(t *testing.T, symbol, mint string, decimals uint8) DepthFacts {
+	t.Helper()
+	curve, err := liquidity.LoadCurve(filepath.Join("..", "..", "fixtures", "jupiter"),
+		symbol, mint, int32(decimals), []int64{100, 1000, 10000}, referenceTime)
+	if err != nil {
+		t.Fatal(err)
+	}
+	facts, err := DepthFromCurve(curve, Default().DepthReferenceUSDC)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return facts
 }
 
 // synthetic covers the blocking paths that no real xStocks mint exhibits.
@@ -99,6 +118,7 @@ func synthetic() []Input {
 			AsOf: referenceTime, ObservedAtSlot: 1,
 			UnknownExtensions: []string{},
 			MultiplierState:   MultiplierFacts{Present: true, Resolved: true, LiveValue: "1", NaiveValue: "1"},
+			Depth:             healthyDepth(),
 		}
 	}
 	ungraded := base("UNGRADED")
@@ -129,8 +149,38 @@ func synthetic() []Input {
 
 	clean := base("CLEAN")
 
+	// Depth cases are appended after the originals so earlier indexes that
+	// other tests rely on do not move.
+	noRoute := base("NOROUTE")
+	noRoute.Depth = DepthFacts{Observed: true, SizeUSDC: 1000, Availability: "no_route", ProviderCode: "NO_ROUTES_FOUND"}
+
+	notTradable := base("NOTTRADABLE")
+	notTradable.Depth = DepthFacts{Observed: true, SizeUSDC: 1000, Availability: "not_tradable", ProviderCode: "TOKEN_NOT_TRADABLE"}
+
+	unknownRefusal := base("UNKNOWNREFUSAL")
+	unknownRefusal.Depth = DepthFacts{Observed: true, SizeUSDC: 1000, Availability: "unrecognised", ProviderCode: "SOMETHING_NEW"}
+
+	thin := base("THIN")
+	thin.Depth = healthyDepth()
+	thin.Depth.ShortfallBps = ptr(232)
+
+	unmeasured := base("UNMEASURED")
+	unmeasured.Depth = DepthFacts{}
+
+	wrongSize := base("WRONGSIZE")
+	wrongSize.Depth = healthyDepth()
+	wrongSize.Depth.SizeUSDC = 100
+
 	return []Input{ungraded, paused, frozenDefault, activeHook, nonTransferable,
-		quarantined, unresolved, unknownExt, clean}
+		quarantined, unresolved, unknownExt, clean,
+		noRoute, notTradable, unknownRefusal, thin, unmeasured, wrongSize}
+}
+
+func ptr(v int64) *int64 { return &v }
+
+// healthyDepth is depth comfortably inside the default ceiling.
+func healthyDepth() DepthFacts {
+	return DepthFacts{Observed: true, SizeUSDC: 1000, Availability: "available", ShortfallBps: ptr(12), BaselineSizeUSDC: 100}
 }
 
 func buildGolden(t *testing.T) goldenFile {
@@ -358,4 +408,138 @@ func TestInputDigestChangesWithInputs(t *testing.T) {
 	if first.Decision != second.Decision {
 		t.Error("the slot alone should not change the decision")
 	}
+}
+
+// Depth is judged at the policy's reference size and nowhere else. A shortfall
+// at 100 USDC says nothing about 1,000, so depth measured at the wrong size is
+// reported as not observed rather than stretched to fit.
+func TestDepthAtAnotherSizeIsNotStretchedToFit(t *testing.T) {
+	in := synthetic()[14] // WRONGSIZE
+	result, err := Evaluate(Default(), in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !hasCode(result, CodeDepthNotObserved) {
+		t.Errorf("depth at 100 USDC must not satisfy a 1000 USDC reference, got %v", codes(result))
+	}
+	if hasCode(result, CodeDepthAboveCeiling) {
+		t.Error("a shortfall measured at another size must not be judged against the ceiling")
+	}
+}
+
+// Absent depth is not healthy depth. An instrument nobody measured must not
+// pass as though it had been.
+func TestUnmeasuredDepthWarnsRatherThanPassing(t *testing.T) {
+	result, err := Evaluate(Default(), synthetic()[13]) // UNMEASURED
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Decision != Warn || !hasCode(result, CodeDepthNotObserved) {
+		t.Errorf("decision %s with %v", result.Decision, codes(result))
+	}
+}
+
+func TestEveryDepthRefusalBlocksWithItsOwnCode(t *testing.T) {
+	for name, c := range map[string]struct {
+		input int
+		code  Code
+	}{
+		"no route":               {9, CodeNoRoute},
+		"not tradable":           {10, CodeNotTradable},
+		"unrecognised refusal":   {11, CodeRefusalUnknown},
+		"shortfall over ceiling": {12, CodeDepthAboveCeiling},
+	} {
+		result, err := Evaluate(Default(), synthetic()[c.input])
+		if err != nil {
+			t.Fatal(err)
+		}
+		if result.Decision != Block || !hasCode(result, c.code) {
+			t.Errorf("%s: decision %s with %v, want BLOCK with %s", name, result.Decision, codes(result), c.code)
+		}
+	}
+}
+
+// The unknown provider code appears in the sentence, in the provider's words,
+// and is never replaced by one of the known refusals.
+func TestUnrecognisedRefusalKeepsTheProvidersCode(t *testing.T) {
+	result, err := Evaluate(Default(), synthetic()[11])
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, r := range result.Reasons {
+		if r.Code == CodeRefusalUnknown && !strings.Contains(r.Fact, "SOMETHING_NEW") {
+			t.Errorf("the provider's own code must reach the reader: %q", r.Fact)
+		}
+	}
+	if hasCode(result, CodeNoRoute) || hasCode(result, CodeNotTradable) {
+		t.Error("an unknown refusal must never be mapped to a known one")
+	}
+}
+
+func TestTheCeilingIsPolicyDataNotCode(t *testing.T) {
+	thin := synthetic()[12] // 232 bps at the reference size
+
+	strict, lenient := Default(), Default()
+	lenient.Version = "policy-test-lenient"
+	lenient.DepthCeilingBps = 300
+
+	blocked, err := Evaluate(strict, thin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	passed, err := Evaluate(lenient, thin)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if blocked.Decision != Block || hasCode(passed, CodeDepthAboveCeiling) {
+		t.Errorf("raising the ceiling to 300 bps must admit 232: %s then %s", blocked.Decision, passed.Decision)
+	}
+	if blocked.InputDigest != passed.InputDigest {
+		t.Error("the inputs did not change, so the digest must not either")
+	}
+}
+
+// The ceiling is inclusive: a shortfall exactly at it is inside.
+func TestShortfallAtTheCeilingIsAdmitted(t *testing.T) {
+	at := synthetic()[8] // CLEAN
+	at.Depth.ShortfallBps = ptr(Default().DepthCeilingBps)
+	if result, _ := Evaluate(Default(), at); hasCode(result, CodeDepthAboveCeiling) {
+		t.Error("a shortfall equal to the ceiling is not above it")
+	}
+	over := synthetic()[8]
+	over.Depth.ShortfallBps = ptr(Default().DepthCeilingBps + 1)
+	if result, _ := Evaluate(Default(), over); !hasCode(result, CodeDepthAboveCeiling) {
+		t.Error("one basis point over the ceiling must be refused")
+	}
+}
+
+// DepthFromCurve must state which size the shortfall was measured against.
+func TestDepthFactsRecordTheirBaseline(t *testing.T) {
+	facts := depthFromFixtures(t, "AAPLx", "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp", 8)
+	if !facts.Observed || facts.SizeUSDC != 1000 {
+		t.Fatalf("facts %+v", facts)
+	}
+	if facts.BaselineSizeUSDC != 100 {
+		t.Errorf("the smallest size that priced was 100 USDC, baseline recorded as %d", facts.BaselineSizeUSDC)
+	}
+	if facts.ShortfallBps == nil {
+		t.Fatal("a priced instrument has a shortfall")
+	}
+}
+
+func hasCode(result Result, code Code) bool {
+	for _, r := range result.Reasons {
+		if r.Code == code {
+			return true
+		}
+	}
+	return false
+}
+
+func codes(result Result) []Code {
+	out := make([]Code, len(result.Reasons))
+	for i, r := range result.Reasons {
+		out[i] = r.Code
+	}
+	return out
 }

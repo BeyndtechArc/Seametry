@@ -188,11 +188,11 @@ func (c *Client) once(build func() (*http.Request, error), check func([]byte) er
 	case response.StatusCode == http.StatusTooManyRequests:
 		return nil, &RetryableError{Err: errors.New("rate limited (HTTP 429)"), RetryAfter: retryAfter(response)}
 	case response.StatusCode >= 500:
-		return nil, &RetryableError{Err: statusError(response.StatusCode, body), RetryAfter: retryAfter(response)}
+		return nil, &RetryableError{Err: &StatusError{Code: response.StatusCode, Body: body}, RetryAfter: retryAfter(response)}
 	case response.StatusCode != http.StatusOK:
 		// 401 and 403 are a bad credential, which does not improve with
 		// repetition. Every other 4xx is a request we got wrong.
-		return nil, &PermanentError{Err: statusError(response.StatusCode, body)}
+		return nil, &PermanentError{Err: &StatusError{Code: response.StatusCode, Body: body}}
 	}
 
 	if check != nil {
@@ -203,13 +203,22 @@ func (c *Client) once(build func() (*http.Request, error), check func([]byte) er
 	return body, nil
 }
 
-func statusError(status int, body []byte) error {
+// StatusError is a non-200 response, kept whole so a caller can read the body.
+// A service may report a fact about the thing asked about through an error
+// status, as Jupiter does with NO_ROUTES_FOUND, and that is information rather
+// than a fault.
+type StatusError struct {
+	Code int
+	Body []byte
+}
+
+func (e *StatusError) Error() string {
 	const limit = 200
-	text := string(body)
+	text := string(e.Body)
 	if len(text) > limit {
 		text = text[:limit] + "..."
 	}
-	return fmt.Errorf("HTTP %d: %s", status, text)
+	return fmt.Sprintf("HTTP %d: %s", e.Code, text)
 }
 
 func retryAfter(response *http.Response) time.Duration {

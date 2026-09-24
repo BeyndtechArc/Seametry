@@ -1,0 +1,9 @@
+{
+  "symbol": "CRDAx",
+  "mint": "XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ",
+  "size_usdc": 100,
+  "captured_at": "2026-09-24T21:26:19Z",
+  "status": 400,
+  "sha256": "c8ccd699a2a22813bdbb2ee36114bc8c0987d342f094cd7711a7386011af329a",
+  "body": "{\"error\":\"The token XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ is not tradable\",\"errorCode\":\"TOKEN_NOT_TRADABLE\"}"
+}

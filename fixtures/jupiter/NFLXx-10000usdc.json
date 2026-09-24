@@ -1,0 +1,9 @@
+{
+  "symbol": "NFLXx",
+  "mint": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL",
+  "size_usdc": 10000,
+  "captured_at": "2026-09-24T21:26:26Z",
+  "status": 200,
+  "sha256": "e6d1cdd51bb600e04ce44ea376c6b86a8e1742023b728eb1cb61ef986d054571",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"10000000000\",\"outputMint\":\"XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL\",\"outAmount\":\"1136822498\",\"otherAmountThreshold\":\"1131138386\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.1692471530852456685426595943\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"7RQXW5KEBgHCcy1eSNs1Kh7BWaEL46q8jb9t18S151bL\",\"label\":\"Raydium CLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL\",\"inAmount\":\"10000000000\",\"outAmount\":\"1136822498\",\"updateContextSlot\":\"450149769\"},\"percent\":100,\"bps\":null}],\"contextSlot\":450149918,\"timeTaken\":0.0006609,\"swapUsdValue\":\"9998.544129238850000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"7RQXW5KEBgHCcy1eSNs1Kh7BWaEL46q8jb9t18S151bL\":\"1136822498\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"Not used RG: FullLiquidIntermediate, contains ALT: true\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0}"
+}

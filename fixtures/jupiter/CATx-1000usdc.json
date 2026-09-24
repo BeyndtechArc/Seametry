@@ -1,0 +1,9 @@
+{
+  "symbol": "CATx",
+  "mint": "XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6",
+  "size_usdc": 1000,
+  "captured_at": "2026-09-24T21:26:16Z",
+  "status": 400,
+  "sha256": "46b54798d322ada30fd7ec72811389cac17f76c9cb5fa4996f7cb18b0457e95b",
+  "body": "{\"error\":\"No routes found\",\"errorCode\":\"NO_ROUTES_FOUND\"}"
+}

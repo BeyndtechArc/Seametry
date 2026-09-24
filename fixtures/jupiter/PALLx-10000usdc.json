@@ -1,0 +1,9 @@
+{
+  "symbol": "PALLx",
+  "mint": "XsTTtPA5V19YwHKDv4xeVXNM6kdsQNJvg3MyWkRUckt",
+  "size_usdc": 10000,
+  "captured_at": "2026-09-24T21:26:30Z",
+  "status": 400,
+  "sha256": "ea3f83b6f94947f3ce2a3f828a798b4075a975a2cc5ed1d61d15e510e4484c60",
+  "body": "{\"error\":\"The token XsTTtPA5V19YwHKDv4xeVXNM6kdsQNJvg3MyWkRUckt is not tradable\",\"errorCode\":\"TOKEN_NOT_TRADABLE\"}"
+}

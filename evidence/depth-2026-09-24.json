@@ -1,0 +1,260 @@
+{
+  "captured_at": "2026-09-24T21:26:39.2618945Z",
+  "quote_asset": "USDC",
+  "slippage_bps": 50,
+  "instruments": [
+    {
+      "symbol": "AAPLx",
+      "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+      "decimals": 8,
+      "points": [
+        {
+          "size_usdc": 100,
+          "availability": "available",
+          "out_atoms": "29667672",
+          "shortfall_bps": 0,
+          "stated_impact_bps": 3,
+          "venues": [
+            "Raydium CLMM"
+          ],
+          "context_slot": 450149863,
+          "raw_sha256": "3de98b70e426892a9336cc87f5362cd00b47239f02d73a891263ed1a26448d26"
+        },
+        {
+          "size_usdc": 1000,
+          "availability": "available",
+          "out_atoms": "296322500",
+          "shortfall_bps": 12,
+          "stated_impact_bps": 14,
+          "venues": [
+            "Raydium CLMM"
+          ],
+          "context_slot": 450149863,
+          "raw_sha256": "66d9be3f328d1b228e8d2a1889ca6df8d49dfdb4cb9099d1a2774a7fecb01f27"
+        },
+        {
+          "size_usdc": 10000,
+          "availability": "available",
+          "out_atoms": "2956292523",
+          "shortfall_bps": 36,
+          "stated_impact_bps": 38,
+          "venues": [
+            "Raydium CLMM",
+            "Byreal"
+          ],
+          "context_slot": 450149868,
+          "raw_sha256": "bcb4271e4955eae9458add5fc332c33c9bb938916f54192ef2268168ea94dae4"
+        }
+      ]
+    },
+    {
+      "symbol": "CATx",
+      "mint": "XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6",
+      "decimals": 8,
+      "points": [
+        {
+          "size_usdc": 100,
+          "availability": "no_route",
+          "provider_code": "NO_ROUTES_FOUND",
+          "raw_sha256": "46b54798d322ada30fd7ec72811389cac17f76c9cb5fa4996f7cb18b0457e95b"
+        },
+        {
+          "size_usdc": 1000,
+          "availability": "no_route",
+          "provider_code": "NO_ROUTES_FOUND",
+          "raw_sha256": "46b54798d322ada30fd7ec72811389cac17f76c9cb5fa4996f7cb18b0457e95b"
+        },
+        {
+          "size_usdc": 10000,
+          "availability": "no_route",
+          "provider_code": "NO_ROUTES_FOUND",
+          "raw_sha256": "46b54798d322ada30fd7ec72811389cac17f76c9cb5fa4996f7cb18b0457e95b"
+        }
+      ]
+    },
+    {
+      "symbol": "CRDAx",
+      "mint": "XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ",
+      "decimals": 8,
+      "points": [
+        {
+          "size_usdc": 100,
+          "availability": "not_tradable",
+          "provider_code": "TOKEN_NOT_TRADABLE",
+          "raw_sha256": "c8ccd699a2a22813bdbb2ee36114bc8c0987d342f094cd7711a7386011af329a"
+        },
+        {
+          "size_usdc": 1000,
+          "availability": "not_tradable",
+          "provider_code": "TOKEN_NOT_TRADABLE",
+          "raw_sha256": "c8ccd699a2a22813bdbb2ee36114bc8c0987d342f094cd7711a7386011af329a"
+        },
+        {
+          "size_usdc": 10000,
+          "availability": "not_tradable",
+          "provider_code": "TOKEN_NOT_TRADABLE",
+          "raw_sha256": "c8ccd699a2a22813bdbb2ee36114bc8c0987d342f094cd7711a7386011af329a"
+        }
+      ]
+    },
+    {
+      "symbol": "NFLXx",
+      "mint": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL",
+      "decimals": 8,
+      "points": [
+        {
+          "size_usdc": 100,
+          "availability": "available",
+          "out_atoms": "13636658",
+          "shortfall_bps": 0,
+          "stated_impact_bps": 35,
+          "venues": [
+            "Raydium CLMM"
+          ],
+          "context_slot": 450149906,
+          "raw_sha256": "f7975db4d97f5f805570ebf2134462a10430e0bb3b9bc3338b2d30c895b75eff"
+        },
+        {
+          "size_usdc": 1000,
+          "availability": "available",
+          "out_atoms": "133210116",
+          "shortfall_bps": 232,
+          "stated_impact_bps": 266,
+          "venues": [
+            "Raydium CLMM"
+          ],
+          "context_slot": 450149912,
+          "raw_sha256": "4f4a7a2ca3fd8e91b3a922db1063ccac59d3c0a0a832bfb4ccde6e12e34f0601"
+        },
+        {
+          "size_usdc": 10000,
+          "availability": "available",
+          "out_atoms": "1136822498",
+          "shortfall_bps": 1664,
+          "stated_impact_bps": 1693,
+          "venues": [
+            "Raydium CLMM"
+          ],
+          "context_slot": 450149918,
+          "raw_sha256": "e6d1cdd51bb600e04ce44ea376c6b86a8e1742023b728eb1cb61ef986d054571"
+        }
+      ]
+    },
+    {
+      "symbol": "PALLx",
+      "mint": "XsTTtPA5V19YwHKDv4xeVXNM6kdsQNJvg3MyWkRUckt",
+      "decimals": 8,
+      "points": [
+        {
+          "size_usdc": 100,
+          "availability": "no_route",
+          "provider_code": "NO_ROUTES_FOUND",
+          "raw_sha256": "46b54798d322ada30fd7ec72811389cac17f76c9cb5fa4996f7cb18b0457e95b"
+        },
+        {
+          "size_usdc": 1000,
+          "availability": "no_route",
+          "provider_code": "NO_ROUTES_FOUND",
+          "raw_sha256": "46b54798d322ada30fd7ec72811389cac17f76c9cb5fa4996f7cb18b0457e95b"
+        },
+        {
+          "size_usdc": 10000,
+          "availability": "not_tradable",
+          "provider_code": "TOKEN_NOT_TRADABLE",
+          "raw_sha256": "ea3f83b6f94947f3ce2a3f828a798b4075a975a2cc5ed1d61d15e510e4484c60"
+        }
+      ]
+    },
+    {
+      "symbol": "STRKx",
+      "mint": "XsaQGz41BEQkS9xAB44uvUtuXcdLJAXEU1dogEzWMZ8",
+      "decimals": 8,
+      "points": [
+        {
+          "size_usdc": 100,
+          "availability": "available",
+          "out_atoms": "112362045",
+          "shortfall_bps": 0,
+          "stated_impact_bps": 603,
+          "venues": [
+            "Manifest"
+          ],
+          "context_slot": 450149939,
+          "raw_sha256": "2bd39c97eebba89ac74cced6c1f9ce8a9de261fb4724ea3da63d7f1f39dc9c7e"
+        },
+        {
+          "size_usdc": 1000,
+          "availability": "available",
+          "out_atoms": "198201108",
+          "shortfall_bps": 8237,
+          "stated_impact_bps": 8343,
+          "venues": [
+            "Manifest"
+          ],
+          "context_slot": 450149945,
+          "raw_sha256": "98c8828efeea3330e6ec4e383cf8fcfb002990ccbfd65c0f7d5309010c1f471c"
+        },
+        {
+          "size_usdc": 10000,
+          "availability": "available",
+          "out_atoms": "287813880",
+          "shortfall_bps": 9744,
+          "stated_impact_bps": 9760,
+          "venues": [
+            "Manifest"
+          ],
+          "context_slot": 450149949,
+          "raw_sha256": "c61242bfa86ebf3ea2106f7311eaa74bc4038acdd51fec5709165604181505be"
+        }
+      ]
+    },
+    {
+      "symbol": "TQQQx",
+      "mint": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc",
+      "decimals": 8,
+      "points": [
+        {
+          "size_usdc": 100,
+          "availability": "available",
+          "out_atoms": "62911615",
+          "shortfall_bps": 0,
+          "stated_impact_bps": 62,
+          "venues": [
+            "Raydium CLMM",
+            "Whirlpool"
+          ],
+          "context_slot": 450149954,
+          "raw_sha256": "0bde25ccd58db216d63f716828544ffde77295f6fea0e209cc8dc02658ee81de"
+        },
+        {
+          "size_usdc": 1000,
+          "availability": "available",
+          "out_atoms": "607356572",
+          "shortfall_bps": 346,
+          "stated_impact_bps": 406,
+          "venues": [
+            "Raydium CLMM",
+            "Whirlpool"
+          ],
+          "context_slot": 450149959,
+          "raw_sha256": "0eae553709e9d7036cfd9a2101933bbbbb41ffd0e2f58a7f3d196ed83f0b3675"
+        },
+        {
+          "size_usdc": 10000,
+          "availability": "available",
+          "out_atoms": "4998867098",
+          "shortfall_bps": 2055,
+          "stated_impact_bps": 2103,
+          "venues": [
+            "Raydium CLMM",
+            "Riptide",
+            "Whirlpool"
+          ],
+          "context_slot": 450149965,
+          "raw_sha256": "1ceb8f128a1d5caf3184bc93be99141167b1528ae2a637a1e95ef0d8068e9a76"
+        }
+      ]
+    }
+  ],
+  "spent": "21 requests, 21 cost, 0 retries, 22.658s held by the rate limiter"
+}

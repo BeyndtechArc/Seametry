@@ -1,0 +1,9 @@
+{
+  "symbol": "AAPLx",
+  "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+  "size_usdc": 1000,
+  "captured_at": "2026-09-24T21:26:12Z",
+  "status": 200,
+  "sha256": "66d9be3f328d1b228e8d2a1889ca6df8d49dfdb4cb9099d1a2774a7fecb01f27",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"1000000000\",\"outputMint\":\"XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp\",\"outAmount\":\"296322500\",\"otherAmountThreshold\":\"294840888\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0013968217320724315667126635\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"ApniVWuZbZoruTAJdyJcLBA4AVw4DKGdV5fHxo6qrAZT\",\"label\":\"Raydium CLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp\",\"inAmount\":\"1000000000\",\"outAmount\":\"296322500\",\"updateContextSlot\":\"450149769\"},\"percent\":100,\"bps\":null}],\"contextSlot\":450149863,\"timeTaken\":0.006882299,\"swapUsdValue\":\"999.841629828041000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"CKwJZwm7oj3nu4653N1EpDrqXbXAYXoPFiPeEnLouF8y\":\"295801718\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"1000136982\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0}"
+}

@@ -1,0 +1,9 @@
+{
+  "symbol": "TQQQx",
+  "mint": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc",
+  "size_usdc": 100,
+  "captured_at": "2026-09-24T21:26:36Z",
+  "status": 200,
+  "sha256": "0bde25ccd58db216d63f716828544ffde77295f6fea0e209cc8dc02658ee81de",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc\",\"outAmount\":\"62911615\",\"otherAmountThreshold\":\"62597057\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0061326686705048154294694042\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"4pCZCVEiYyT4efNdXUdL2tJF8VGMgiMXrZWq6FiNXhRw\",\"label\":\"Raydium CLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W\",\"inAmount\":\"100000000\",\"outAmount\":\"12975571\",\"updateContextSlot\":\"450149930\"},\"percent\":100,\"bps\":null},{\"swapInfo\":{\"ammKey\":\"Bztq1RwZmU4L7cCnkh5pVz4LnRZ2YUMBzQ5VC2ETg789\",\"label\":\"Whirlpool\",\"inputMint\":\"XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W\",\"outputMint\":\"XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc\",\"inAmount\":\"12975571\",\"outAmount\":\"62911615\",\"updateContextSlot\":\"450146991\"},\"percent\":100,\"bps\":null}],\"contextSlot\":450149954,\"timeTaken\":0.000945277,\"swapUsdValue\":\"99.985441292388500\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"100013756\",\"Bztq1RwZmU4L7cCnkh5pVz4LnRZ2YUMBzQ5VC2ETg789\":\"62911615\",\"4pCZCVEiYyT4efNdXUdL2tJF8VGMgiMXrZWq6FiNXhRw\":\"12975571\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"EioN9wGsc9U39XnzFesnd7keSywBcPoJc49NhMpivot\",\"XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W\"]}"
+}

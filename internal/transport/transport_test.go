@@ -265,3 +265,20 @@ func TestWaitReportsTheDelayItImposed(t *testing.T) {
 		t.Error("the second call had to wait and must say how long")
 	}
 }
+
+// A service can report a fact through an error status, so the caller must be
+// able to read the status and body rather than a flattened message.
+func TestStatusErrorKeepsTheBodyForTheCaller(t *testing.T) {
+	client, _ := newTestClient(Options{}, func(*http.Request) (*http.Response, error) {
+		return reply(400, `{"errorCode":"NO_ROUTES_FOUND"}`, nil), nil
+	})
+	_, err := client.Do(context.Background(), 1, get, nil)
+
+	var status *StatusError
+	if !errors.As(err, &status) {
+		t.Fatalf("expected a StatusError, got %T: %v", err, err)
+	}
+	if status.Code != 400 || !strings.Contains(string(status.Body), "NO_ROUTES_FOUND") {
+		t.Errorf("status %d body %q", status.Code, status.Body)
+	}
+}

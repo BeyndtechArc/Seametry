@@ -25,7 +25,9 @@ import (
 	"sort"
 	"time"
 
+	"github.com/BeyndtechArc/Seametry/internal/amount"
 	"github.com/BeyndtechArc/Seametry/internal/canonical"
+	"github.com/BeyndtechArc/Seametry/internal/liquidity"
 	"github.com/BeyndtechArc/Seametry/internal/registry"
 )
 
@@ -68,6 +70,12 @@ const (
 	CodeActiveHookUnknown    Code = "TRANSFER_HOOK_ACTIVE_UNRECOGNISED"
 	CodeQuarantined          Code = "CORPORATE_ACTION_MISMATCH"
 	CodeMultiplierUnresolved Code = "MULTIPLIER_UNRESOLVED"
+
+	CodeNoRoute           Code = "NO_ROUTE_FOUND"
+	CodeNotTradable       Code = "TOKEN_NOT_TRADABLE_BY_AGGREGATOR"
+	CodeRefusalUnknown    Code = "ROUTE_REFUSAL_UNRECOGNISED"
+	CodeDepthAboveCeiling Code = "DEPTH_ABOVE_CEILING"
+	CodeDepthNotObserved  Code = "DEPTH_NOT_OBSERVED"
 
 	CodeUnknownExtension  Code = "UNKNOWN_EXTENSION_PRESENT"
 	CodeHaltedByIssuer    Code = "HALTED_BY_ISSUER"
@@ -116,16 +124,32 @@ type Document struct {
 
 	// BlockOnIssuerHalt decides whether an issuer halt refuses the instrument.
 	BlockOnIssuerHalt bool `json:"block_on_issuer_halt"`
+
+	// DepthReferenceUSDC is the notional size, in whole USDC, at which
+	// executable depth is judged.
+	DepthReferenceUSDC int64 `json:"depth_reference_usdc"`
+
+	// DepthCeilingBps is the largest shortfall, in basis points, that the rate
+	// at the reference size may show against the smallest size that priced.
+	//
+	// ASSUMPTION, not a finding. 100 basis points was chosen as a round figure
+	// that admits the one deep instrument in the first survey (12 bps at 1,000
+	// USDC) and refuses those losing more than two percent. Nothing here
+	// validates it as the right level for a basket, and it should be revisited
+	// with evidence about what constituent depth an alloy actually needs.
+	DepthCeilingBps int64 `json:"depth_ceiling_bps"`
 }
 
 // Default is the policy shipped with this build.
 func Default() Document {
 	return Document{
-		Version:                 "policy-2026.09.1",
+		Version:                 "policy-2026.09.2",
 		AcceptedGrades:          []string{"entitlement", "certificate", "interest"},
 		AllowedHookPrograms:     []string{},
 		BlockOnUnknownExtension: false,
 		BlockOnIssuerHalt:       false,
+		DepthReferenceUSDC:      1000,
+		DepthCeilingBps:         100,
 	}
 }
 
@@ -148,6 +172,7 @@ type Input struct {
 	HaltedByIssuer bool `json:"halted_by_issuer"`
 	Quarantined    bool `json:"quarantined"`
 
+	Depth             DepthFacts       `json:"depth"`
 	Prerogatives      PrerogativeFacts `json:"prerogatives"`
 	MultiplierState   MultiplierFacts  `json:"multiplier"`
 	UnknownExtensions []string         `json:"unknown_extensions"`
@@ -165,6 +190,27 @@ type PrerogativeFacts struct {
 	FreezesNewAccounts   bool   `json:"freezes_new_accounts"`
 	TransferHookState    string `json:"transfer_hook_state"`
 	TransferHookProgram  string `json:"transfer_hook_program"`
+}
+
+// DepthFacts is what the aggregator said about executing at one size.
+type DepthFacts struct {
+	// Observed is false when depth was not measured at all, which is different
+	// from measured and found absent.
+	Observed bool `json:"observed"`
+
+	// SizeUSDC is the size these facts describe, in whole USDC.
+	SizeUSDC int64 `json:"size_usdc"`
+
+	// Availability is one of the liquidity package's values, as a string.
+	Availability string `json:"availability"`
+
+	// ProviderCode is the aggregator's own refusal code, verbatim.
+	ProviderCode string `json:"provider_code"`
+
+	// ShortfallBps is measured against BaselineSizeUSDC, the smallest size that
+	// priced. A shortfall against an unstated baseline would be a bare number.
+	ShortfallBps     *int64 `json:"shortfall_bps"`
+	BaselineSizeUSDC int64  `json:"baseline_size_usdc"`
 }
 
 // MultiplierFacts is what the resolver found.
@@ -232,6 +278,7 @@ func Evaluate(doc Document, in Input) (Result, error) {
 	if in.HaltedByIssuer && doc.BlockOnIssuerHalt {
 		add(CodeHaltedByIssuer, Block, "The issuer has halted trading in this.")
 	}
+	reasons = append(reasons, depthReasons(doc, in.Depth)...)
 
 	// Conditions a holder is told about and decides on themselves.
 	if len(in.UnknownExtensions) > 0 && !doc.BlockOnUnknownExtension {
@@ -301,6 +348,86 @@ func Evaluate(doc Document, in Input) (Result, error) {
 		PolicyVersion: doc.Version,
 		InputDigest:   hex.EncodeToString(digest[:]),
 	}, nil
+}
+
+// depthReasons judges executable depth at the policy's reference size.
+//
+// Depth measured at some other size is treated as not observed here rather than
+// stretched to fit, because a shortfall at 100 USDC says nothing about 1,000.
+func depthReasons(doc Document, depth DepthFacts) []Reason {
+	if !depth.Observed || depth.SizeUSDC != doc.DepthReferenceUSDC {
+		return []Reason{{
+			Code: CodeDepthNotObserved, Severity: Warn,
+			Fact: fmt.Sprintf("Executable depth has not been observed at %d USDC.", doc.DepthReferenceUSDC),
+		}}
+	}
+
+	switch depth.Availability {
+	case "available":
+		if depth.ShortfallBps != nil && *depth.ShortfallBps > doc.DepthCeilingBps {
+			return []Reason{{
+				Code: CodeDepthAboveCeiling, Severity: Block,
+				Fact: fmt.Sprintf(
+					"Buying %d USDC realises a rate %d basis points worse than buying %d USDC, above the %d basis point ceiling.",
+					depth.SizeUSDC, *depth.ShortfallBps, depth.BaselineSizeUSDC, doc.DepthCeilingBps),
+			}}
+		}
+		return nil
+	case "no_route":
+		return []Reason{{Code: CodeNoRoute, Severity: Block,
+			Fact: fmt.Sprintf("No route to buy %d USDC of this was found.", depth.SizeUSDC)}}
+	case "not_tradable":
+		return []Reason{{Code: CodeNotTradable, Severity: Block,
+			Fact: "The aggregator will not trade this token."}}
+	}
+	// An unknown availability keeps the provider's own words. It is never
+	// mapped to a known refusal, because a reason we do not recognise is a fact
+	// in its own right.
+	return []Reason{{Code: CodeRefusalUnknown, Severity: Block,
+		Fact: fmt.Sprintf("The aggregator refused with a reason Seametry does not recognise (%q).", depth.ProviderCode)}}
+}
+
+// DepthFromCurve reads the facts at one size off a measured curve.
+//
+// It records the size the shortfall was measured against, which is the
+// smallest size that priced. A shortfall with no stated baseline is a bare
+// number.
+func DepthFromCurve(curve liquidity.Curve, sizeUSDC int64) (DepthFacts, error) {
+	want, err := amount.FromInt64(sizeUSDC*1_000_000, 6)
+	if err != nil {
+		return DepthFacts{}, err
+	}
+	for _, point := range curve.Points {
+		if !point.Size.Equal(want) {
+			continue
+		}
+		facts := DepthFacts{
+			Observed: true, SizeUSDC: sizeUSDC,
+			Availability: string(point.Observation.Availability),
+			ProviderCode: point.Observation.Code,
+			ShortfallBps: point.ShortfallBps,
+		}
+		if curve.Reference >= 0 {
+			baseline, err := wholeUSDC(curve.Points[curve.Reference].Size)
+			if err != nil {
+				return DepthFacts{}, err
+			}
+			facts.BaselineSizeUSDC = baseline
+		}
+		return facts, nil
+	}
+	return DepthFacts{}, nil
+}
+
+func wholeUSDC(size amount.Amount) (int64, error) {
+	whole, err := size.Rescale(0, amount.RoundExact)
+	if err != nil {
+		return 0, fmt.Errorf("policy: size %s is not a whole number of USDC: %w", size, err)
+	}
+	if !whole.Atoms().IsInt64() {
+		return 0, fmt.Errorf("policy: size %s is out of range", size)
+	}
+	return whole.Atoms().Int64(), nil
 }
 
 // FromRegistry flattens a decoded mint into decision inputs.

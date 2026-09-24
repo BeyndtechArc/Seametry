@@ -1,6 +1,6 @@
 # Documentation
 
-**Last substantive change:** 23 September 2026.
+**Last substantive change:** 24 September 2026.
 
 ---
 
@@ -85,6 +85,7 @@ Literal names live in code and in every external contract.
 
 | Document | What it is |
 |---|---|
+| [decisions/2026-09-24-depth-at-size.md](decisions/2026-09-24-depth-at-size.md) | What executable depth looked like across seven live instruments, why a refusal is an observation, and every assumption made to get a ceiling |
 | [decisions/2026-09-23-oracles-on-chain.md](decisions/2026-09-23-oracles-on-chain.md) | Why oracle values are read from Solana accounts rather than credentialed APIs, what was measured, and what it costs |
 | [decisions/2026-09-23-etf-spine.md](decisions/2026-09-23-etf-spine.md) | Why baskets became the spine and intelligence became the admission standard, the open authorized participant wedge, why lending is excluded, why one process, why retention became policy |
 | [decisions/2026-09-22-reconciliation.md](decisions/2026-09-22-reconciliation.md) | Why Go became the single authority, why Redis was dropped, why public receipts are separately constructed and salted, why unknown enums stay observable |
@@ -131,11 +132,6 @@ Tracked here because an untracked gap becomes folklore.
 **Documentation**
 
 - `prd/TERMINAL.md` and `prd/API.md` do not exist.
-- Two open brand decisions are recorded in `prd/EXPLORER.md` section 5:
-  typefaces (the reference mock uses Google Fonts, the documents specify self
-  hosted Fontshare) and whether the Explorer defaults to warm paper or to the
-  touchstone black. Whichever way each goes, the page and the documents must
-  agree afterwards.
 - The validation record in `PRODUCT_ARCHITECTURE.md` section 11 needs the
   pitch clinic's exact date, which is currently recorded only as
   "September 2026, ahead of Stocklana".
@@ -156,21 +152,27 @@ Tracked here because an untracked gap becomes folklore.
 
 **Code**
 
-Done: `internal/canonical`, `internal/merkle`, `internal/amount`,
-`internal/registry`, `spec/` with generator and drift gate, CI, and
-`fixtures/mainnet/` captured at slot 449580424.
+Built and tested: `internal/canonical`, `merkle`, `amount`, `registry`,
+`receipt`, `transport`, `solana`, `liquidity`, `policy` and `basket`, with
+shared vectors and goldens in `spec/`, captured fixtures for mainnet mints and
+aggregator responses, a generated Explorer, and CI.
 
 - `packages/preflight` still computes decisions in TypeScript, which
-  `ENGINEERING_STANDARD.md` section 2 forbids. It is retired in principle and
-  present in fact, and it goes when the Go core replaces what it does, in one
-  change, so the repository never shows two authorities.
-- `internal/receipt` does not exist, so nothing yet builds the public and
-  private bodies or allocates serials.
-- `api/openapi/`, `spec/recipe/vectors/`, and `spec/policy/golden/` are
-  referenced by these documents and do not exist.
-- CI does not yet enforce every rule the standard names. The gaps are the
-  no-float lint (currently only enforced inside `internal/canonical` at
-  runtime) and the public artifact scan described in section 12.
+  `ENGINEERING_STANDARD.md` section 2 forbids. `internal/policy` now does
+  everything it did and more, so it can go. It should go in one change with its
+  workspace entries, so the repository never shows two authorities.
+- `programs/hall` does not exist. The toolchain installs (Solana CLI 4.3.0,
+  Anchor 1.2.0, Rust 1.98.1), but that an Anchor program builds and tests here
+  is not yet verified, and the documentation says WSL is required.
+- Nothing is anchored on chain, so the verification ritual ends at the
+  published root rather than at a transaction.
+- `api/openapi/` does not exist. The public boundary has no contract yet.
+- Depth is measured for buying only. Selling into USDC is unmeasured and can
+  differ sharply on a thin pool.
+- The depth ceiling of 100 basis points is an assumption, recorded in
+  `decisions/2026-09-24-depth-at-size.md` with the rest.
+- CI does not enforce the no-float rule outside `internal/canonical`, where it
+  is checked at runtime.
 - `-race` does not run on a Windows developer machine because it needs cgo.
   CI runs it on Linux.
 

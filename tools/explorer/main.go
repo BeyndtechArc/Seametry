@@ -30,6 +30,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/BeyndtechArc/Seametry/internal/liquidity"
 	"github.com/BeyndtechArc/Seametry/internal/policy"
 	"github.com/BeyndtechArc/Seametry/internal/registry"
 )
@@ -76,6 +77,72 @@ type Instrument struct {
 	Reasons       []policy.Reason
 	PolicyVersion string
 	InputDigest   string
+	Depth         []DepthRow
+}
+
+// DepthRow is one measured size on an instrument's depth curve.
+type DepthRow struct {
+	SizeUSDC     int64
+	Availability string
+	Code         string
+	Shortfall    string
+	Venues       string
+}
+
+// halted lists instruments the issuer had halted when their mint was captured.
+// Halt state is not in the mint, so it is recorded beside the fixtures' notes.
+var halted = map[string]bool{"TQQQx": true, "CRDAx": true}
+
+// depthSizes are the sizes depth was captured at.
+var depthSizes = []int64{100, 1000, 10000}
+
+// decide runs the engine's own decision on the captured bytes, and returns the
+// depth curve it was made against so the page can show its working.
+func decide(f fixture, mint *registry.Mint, asOf time.Time) (policy.Result, []DepthRow, error) {
+	input, err := policy.FromRegistry(f.Symbol, f.Address, "certificate", mint, asOf, f.Slot, halted[f.Symbol], false)
+	if err != nil {
+		return policy.Result{}, nil, err
+	}
+
+	curve, err := liquidity.LoadCurve(filepath.Join("fixtures", "jupiter"), f.Symbol, f.Address,
+		int32(mint.Decimals), depthSizes, asOf)
+	if err != nil {
+		return policy.Result{}, nil, err
+	}
+	policyDoc := policy.Default()
+	if input.Depth, err = policy.DepthFromCurve(curve, policyDoc.DepthReferenceUSDC); err != nil {
+		return policy.Result{}, nil, err
+	}
+
+	result, err := policy.Evaluate(policyDoc, input)
+	if err != nil {
+		return policy.Result{}, nil, err
+	}
+
+	rows := make([]DepthRow, len(curve.Points))
+	for i, p := range curve.Points {
+		row := DepthRow{SizeUSDC: depthSizes[i], Availability: string(p.Observation.Availability), Code: p.Observation.Code, Shortfall: "no observation"}
+		if p.ShortfallBps != nil {
+			row.Shortfall = fmt.Sprintf("%d bps", *p.ShortfallBps)
+		}
+		if q := p.Observation.Quote; q != nil {
+			row.Venues = venueList(q.Hops)
+		}
+		rows[i] = row
+	}
+	return result, rows, nil
+}
+
+func venueList(hops []liquidity.Hop) string {
+	seen := map[string]bool{}
+	var names []string
+	for _, h := range hops {
+		if !seen[h.Venue] {
+			seen[h.Venue] = true
+			names = append(names, h.Venue)
+		}
+	}
+	return strings.Join(names, ", ")
 }
 
 type survey struct {
@@ -281,15 +348,15 @@ func loadInstruments() []Instrument {
 				inst.Pending = resolved.ActivationPending
 			}
 		}
-		// The same decision function the engine uses, on the same bytes.
-		if in, err := policy.FromRegistry(f.Symbol, f.Address, "certificate", mint, asOf, f.Slot, f.Symbol == "TQQQx" || f.Symbol == "CRDAx", false); err == nil {
-			if result, err := policy.Evaluate(policy.Default(), in); err == nil {
-				inst.Decision = string(result.Decision)
-				inst.Reasons = result.Reasons
-				inst.PolicyVersion = result.PolicyVersion
-				inst.InputDigest = result.InputDigest
-			}
+		result, depth, err := decide(f, mint, asOf)
+		if err != nil {
+			fail(fmt.Errorf("%s: %w", f.Symbol, err))
 		}
+		inst.Decision = string(result.Decision)
+		inst.Reasons = result.Reasons
+		inst.PolicyVersion = result.PolicyVersion
+		inst.InputDigest = result.InputDigest
+		inst.Depth = depth
 
 		out = append(out, inst)
 	}
