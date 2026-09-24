@@ -73,6 +73,13 @@ file with your preferences in it.
 **Errors say what to do.** "invalid input" is useless. Name the value, the
 expectation, and where it came from.
 
+**Edit source with the editor, never with a shell string.** A backtick is
+command substitution in a shell and a struct tag in Go, so passing Go through
+`node -e "..."` or a heredoc silently strips its tags, and the file still
+compiles. That has happened here twice, once destroying `json` tags and once
+injecting a tool's output into a document. Read the region back after any edit
+made through a shell.
+
 ---
 
 ## Uncertainty
