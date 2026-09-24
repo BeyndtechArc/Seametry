@@ -64,18 +64,13 @@ Read all three before writing code. They are short on purpose.
 | Document | Owns |
 |---|---|
 | [`.claude/skills/seametry-design/`](../.claude/skills/seametry-design/SKILL.md) | **Every executable design decision.** Tokens, colour, type, space, radius, motion values, component contracts, page templates, interface voice, and the linter that enforces them. Invoked automatically for any work that creates or changes UI |
-| [BRAND_AND_WORLD.md](BRAND_AND_WORLD.md) | The world and its canon, the naming register, the world to code name map, the liturgy |
+| [BRAND_AND_WORLD.md](BRAND_AND_WORLD.md) | The world and its canon, the naming register, the world to code name map, the liturgy, which moments are ceremonies. Holds no executable design value |
 | [CRAFT.md](CRAFT.md) | Library evaluations and the reasoning behind them |
 
 The split is execution against canon. The skill says what a surface must do and
 fails the build when it does not. The world document says what things are
 called and why the world is the way it is. When a value is in dispute, the
 token file wins, because it is the only one a build reads.
-
-**Pending:** `BRAND_AND_WORLD.md` sections 8 and 9 (visual language, motion)
-and parts of `CRAFT.md` restate values the skill now owns and enforces. Those
-sections need trimming to their canon, so that a colour or duration appears in
-exactly one place. Until then the skill's tokens are authoritative.
 
 The name map in `BRAND_AND_WORLD.md` section 4 is the only source for which
 world name corresponds to which code name. World names live in interfaces.

@@ -84,7 +84,7 @@ This is the most honest possible version of the product's promise, and it is spe
 
 ### The Strike, both surfaces
 
-Four punches land 70ms apart, each scaling from 1.06 to 1.00 over 90ms; the serial types on after the last. Mobile adds a heavy haptic per punch. Web uses GSAP. Reduced motion collapses it to a single instant. Specified in the world document; listed here because it is the one moment both surfaces share.
+Four punches land in sequence and the serial types on after the last. Mobile adds a heavy haptic per punch. Web uses GSAP. Reduced motion collapses it to a single instant. The ceremony is named in the world document and its durations are tokens; it is listed here because it is the one moment both surfaces share.
 
 ### The landing is the incident
 

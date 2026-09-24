@@ -1,12 +1,10 @@
-> **Living document. Owns:** the world, canon, voice, naming, the world-to-code name map, visual language, and motion. Every surface answers to this file on those subjects.
-> **Does not own:** product scope, service boundaries, or engineering rules. See `PRODUCT_ARCHITECTURE.md`, `SERVICE_CATALOG.md`, `ENGINEERING_STANDARD.md`.
+> **Living document. Owns:** the world and its canon, the naming register, the world-to-code name map, the liturgy, and which moments are ceremonies.
+> **Does not own:** product scope, service boundaries, or engineering rules (`PRODUCT_ARCHITECTURE.md`, `SERVICE_CATALOG.md`, `ENGINEERING_STANDARD.md`), or any executable design value, which belongs to the design system at `.claude/skills/seametry-design/`.
 > **Note, 23 September 2026:** the canon holds in full. The basket is the product, so its vocabulary (alloy, strike, melt, formula, claim, the Hall) is current rather than deferred, and the assay vocabulary (grade, prerogative, Good Delivery, hallmark, seal) describes the admission standard the product is built on. Nothing here is decoration over a different product.
 
 # Seametry: The Hall
 
-World, brand and voice. Every surface answers to this document: interface, motion, naming, copy, pitch.
-
-Revision 3.
+World, brand and voice. Every surface answers to this document on naming, copy and pitch.
 
 ---
 
@@ -177,47 +175,58 @@ The last is the Scaled UI multiplier: dividends and splits. True, and quietly un
 
 ## 8. Visual language
 
-### Carried from the design system
+The values live in the design system, which owns every executable design
+decision and fails the build on a violation: `.claude/skills/seametry-design/`.
+This section holds only what makes the visual language belong to this world.
 
-| Token | Value | Job |
-|---|---|---|
-| ground | `#0A0A0A` | the touchstone |
-| sheet | `#141414` | surfaces |
-| raised | `#1C1C1C` | sheets, modals |
-| tray | `#262626` | button housings |
-| ink / ink2 / ink3 | `#F5F5F3` / `#9A9A96` / `#66665F` | type |
-| rule | `#242422` | hairlines |
-| green | `#B7EC75` | touchable. Nothing else is green |
-| blue | `#3A20D6` | bars alongside green, charts, micro-indicators |
-| blue text | `#8F8AFF` | provenance in text, NGD stamp |
+The black ground is not dark mode. It is the touchstone, and every constituent
+is drawn across it. Light is the certificate, the one place the world turns to
+paper. Both are complete.
 
-Blue never occupies a surface larger than a chip. Banners are a small carousel, roughly 72pt tall, one statement and one detail line, section title carrying a count badge: *Needs a look · 2*. Buttons are full pills seated in an 8px neutral tray pill, charcoal text on green, quieter than the figures they act on. No shadows anywhere. Radius carries meaning: data sharp, surfaces soft, touchable fully rounded, sheets matching the device corner.
+Two cues say a thing can be touched: green, and roundness. Nothing else is
+green, and nothing touchable is square. Blue means provenance and never
+occupies a surface larger than a chip. Depth is tone, never shadow.
 
-### New, from the world
+**Ground grain.** Static monochrome noise on the touchstone, never animated.
+You should feel stone before you notice it.
 
-**Ground grain.** Two to three percent monochrome noise on the touchstone, static, never animated. You should feel stone before you notice it.
+**The punch.** A debossed mark, made by tone and never by blur. Four kinds:
+the sponsor's mark, the grade, the office, and the date.
 
-**The punch.** Outline at 1px ink3, fill one tone below its surface, a half-pixel highlight on the lower inner edge. Deboss by tone, never by blur.
+**The hallmark row.** Four punches, left to right: sponsor's mark, grade mark
+(the weakest grade present), office mark (Hall or Office), date mark (MMYY).
+Serial beneath.
 
-**The hallmark row.** Four punches, left to right: sponsor's mark, grade mark (the weakest grade present), office mark (Hall or Office), date mark (MMYY). Serial beneath.
+**The serial.** Format `MMYY` plus seven Crockford base32 characters, eleven in
+total, which is the LBMA maximum for bar serials, with the month and year
+leading exactly as the Good Delivery rules allow. LBMA also requires refiners
+to apply a consistent font to every digit; tabular numerals are the same
+discipline.
 
-**The serial.** Switzer 600, tabular figures, tracking +8%. Format `MMYY` plus seven Crockford base32 characters, eleven in total, which is the LBMA maximum for bar serials, with the month and year leading exactly as the Good Delivery rules allow. LBMA also requires refiners to apply a consistent font to every digit; tabular numerals are the same discipline.
-
-**The certificate.** The one place the world turns to paper. The export is a certificate of analysis: warm paper, ink type, the hallmark row printed large, and the seal (Merkle root plus anchoring signature) set as the approved signature line.
-
-**Type.** Sentient for figures and titles, Switzer for interface. Self-hosted. Confirm the Fontshare licence covers app embedding before shipping.
+**The certificate.** The export is a certificate of analysis: warm paper, ink
+type, the hallmark row printed large, and the seal (Merkle root plus anchoring
+signature) set as the approved signature line.
 
 ---
 
 ## 9. Motion
 
-**The Strike.** The single orchestrated moment in the product. When a hallmark is issued, the four punches land in sequence, 70ms apart, each scaling 1.06 to 1.00 over 90ms with a heavy haptic impact. The serial types on after the last punch. No blur, no glow. Reduced motion collapses it to one instant with one haptic.
+Only the ceremonies are named here. Durations, easing and springs are tokens.
 
-**The Melt.** The alloy's constituent rows separate outward over 240ms, a light haptic for each delivered leg. A leg the issuer is holding back does not move. It stays where it was, labelled as a claim. Stillness is the information.
+**The Strike.** The single orchestrated moment in the product. When a hallmark
+is issued, the four punches land in sequence with a heavy haptic impact each,
+and the serial types on after the last. No blur, no glow. Reduced motion
+collapses it to one instant with one haptic.
 
-**The Seal.** When a hallmark changes from Unsealed to Sealed, its seal glyph fills once over 180ms. No haptic. Quiet confirmation.
+**The Melt.** The alloy's constituent rows separate outward, a light haptic for
+each delivered leg. A leg the issuer is holding back does not move. It stays
+where it was, labelled as a claim. Stillness is the information.
 
-**Everything else** responds to touch only. House spring: damping 18, stiffness 180. Optional sound: a single dry metallic tap on the Strike, off by default.
+**The Seal.** When a hallmark changes from Unsealed to Sealed, its seal glyph
+fills once. No haptic. Quiet confirmation.
+
+**Everything else** responds to touch only. Optional sound: a single dry
+metallic tap on the Strike, off by default.
 
 ---
 
