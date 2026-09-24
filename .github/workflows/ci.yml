@@ -106,6 +106,12 @@ jobs:
       # prd/MOBILE.md rebuilds the second in phase 2. They carry 34 violations
       # and are excluded deliberately rather than silently, so that adding them
       # back is a visible change to this line.
+      # The linter arrives as an import and is replaced wholesale on each new
+      # version of the design system, so a fix inside it does not survive unless
+      # something outside it fails when the fix is gone. This is that something.
+      - name: Linter regressions
+        run: node --test tools/design/lint_test.mjs
+
       - name: Design lint
         run: node .claude/skills/seametry-design/scripts/design-lint.mjs tools/explorer packages/ui
 

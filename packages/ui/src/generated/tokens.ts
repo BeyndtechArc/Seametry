@@ -12,8 +12,8 @@ export const theme = {
       "primary": "#F5F5F3",
       "secondary": "#B4B4AF",
       "tertiary": "#8A8A83",
-      "faint": "#5A5A54",
-      "onTouch": "#16200B",
+      "faint": "#5A5E4F",
+      "onTouch": "#12140F",
       "inverse": "#0A0A0A"
     },
     "line": {
@@ -22,10 +22,20 @@ export const theme = {
       "highlight": "rgba(255,255,255,0.06)"
     },
     "accent": {
-      "touch": "#B7EC75",
-      "touchPressed": "#A3D862",
+      "touch": "#8DA32C",
+      "touchPressed": "#7A8E23",
       "provenance": "#8F8AFF",
-      "provenanceField": "#3A20D6"
+      "provenanceField": "#3A20D6",
+      "touchText": "#98AD39"
+    },
+    "feature": {
+      "ground": "#2D332C",
+      "sheet": "#3B4238",
+      "raised": "#4A5344",
+      "text": {
+        "primary": "#C3C5AD",
+        "secondary": "#9A9D8C"
+      }
     }
   },
   "light": {
@@ -50,10 +60,20 @@ export const theme = {
       "highlight": "rgba(255,255,255,0.70)"
     },
     "accent": {
-      "touch": "#B7EC75",
-      "touchPressed": "#A3D862",
+      "touch": "#8DA32C",
+      "touchPressed": "#7A8E23",
       "provenance": "#3A20D6",
-      "provenanceField": "#3A20D6"
+      "provenanceField": "#3A20D6",
+      "touchText": "#6E8320"
+    },
+    "feature": {
+      "ground": "#DCE0CC",
+      "sheet": "#E6E9D8",
+      "raised": "#F0F2E6",
+      "text": {
+        "primary": "#2A2E1F",
+        "secondary": "#565B45"
+      }
     }
   }
 } as const;
@@ -165,6 +185,44 @@ export const tokens = {
     "m": 768,
     "l": 1024,
     "xl": 1280
+  },
+  "scale": {
+    "touch": {
+      "50": "#262E02",
+      "100": "#394407",
+      "200": "#4D5A10",
+      "300": "#617219",
+      "400": "#778A22",
+      "500": "#8DA32C",
+      "600": "#A6BB58",
+      "700": "#BFD37E",
+      "800": "#D9EBA2",
+      "900": "#EEFEC0"
+    },
+    "provenance": {
+      "50": "#292753",
+      "100": "#3C3972",
+      "200": "#4F4C93",
+      "300": "#6460B6",
+      "400": "#7975DA",
+      "500": "#8F8AFF",
+      "600": "#A9AAFE",
+      "700": "#C5C7FE",
+      "800": "#E2E4FF",
+      "900": "#F3F4FF"
+    },
+    "olive": {
+      "50": "#1A201A",
+      "100": "#2D332C",
+      "200": "#414740",
+      "300": "#575C56",
+      "400": "#6D736C",
+      "500": "#848A83",
+      "600": "#9CA19B",
+      "700": "#B5B9B4",
+      "800": "#CED2CD",
+      "900": "#E8ECE7"
+    }
   }
 } as const;
 export type ThemeName = keyof typeof theme;

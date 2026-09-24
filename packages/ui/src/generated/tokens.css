@@ -60,6 +60,36 @@
   --sm-breakpoint-m: 768px;
   --sm-breakpoint-l: 1024px;
   --sm-breakpoint-xl: 1280px;
+  --sm-scale-touch-50: #262E02;
+  --sm-scale-touch-100: #394407;
+  --sm-scale-touch-200: #4D5A10;
+  --sm-scale-touch-300: #617219;
+  --sm-scale-touch-400: #778A22;
+  --sm-scale-touch-500: #8DA32C;
+  --sm-scale-touch-600: #A6BB58;
+  --sm-scale-touch-700: #BFD37E;
+  --sm-scale-touch-800: #D9EBA2;
+  --sm-scale-touch-900: #EEFEC0;
+  --sm-scale-provenance-50: #292753;
+  --sm-scale-provenance-100: #3C3972;
+  --sm-scale-provenance-200: #4F4C93;
+  --sm-scale-provenance-300: #6460B6;
+  --sm-scale-provenance-400: #7975DA;
+  --sm-scale-provenance-500: #8F8AFF;
+  --sm-scale-provenance-600: #A9AAFE;
+  --sm-scale-provenance-700: #C5C7FE;
+  --sm-scale-provenance-800: #E2E4FF;
+  --sm-scale-provenance-900: #F3F4FF;
+  --sm-scale-olive-50: #1A201A;
+  --sm-scale-olive-100: #2D332C;
+  --sm-scale-olive-200: #414740;
+  --sm-scale-olive-300: #575C56;
+  --sm-scale-olive-400: #6D736C;
+  --sm-scale-olive-500: #848A83;
+  --sm-scale-olive-600: #9CA19B;
+  --sm-scale-olive-700: #B5B9B4;
+  --sm-scale-olive-800: #CED2CD;
+  --sm-scale-olive-900: #E8ECE7;
   --sm-surface-ground: #0A0A0A;
   --sm-surface-sheet: #141414;
   --sm-surface-raised: #1C1C1C;
@@ -68,16 +98,22 @@
   --sm-text-primary: #F5F5F3;
   --sm-text-secondary: #B4B4AF;
   --sm-text-tertiary: #8A8A83;
-  --sm-text-faint: #5A5A54;
-  --sm-text-onTouch: #16200B;
+  --sm-text-faint: #5A5E4F;
+  --sm-text-onTouch: #12140F;
   --sm-text-inverse: #0A0A0A;
   --sm-line-rule: #242422;
   --sm-line-strong: #3A3A36;
   --sm-line-highlight: rgba(255,255,255,0.06);
-  --sm-accent-touch: #B7EC75;
-  --sm-accent-touchPressed: #A3D862;
+  --sm-accent-touch: #8DA32C;
+  --sm-accent-touchPressed: #7A8E23;
   --sm-accent-provenance: #8F8AFF;
   --sm-accent-provenanceField: #3A20D6;
+  --sm-accent-touchText: #98AD39;
+  --sm-feature-ground: #2D332C;
+  --sm-feature-sheet: #3B4238;
+  --sm-feature-raised: #4A5344;
+  --sm-feature-text-primary: #C3C5AD;
+  --sm-feature-text-secondary: #9A9D8C;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
@@ -96,10 +132,16 @@
     --sm-line-rule: #DBD8CD;
     --sm-line-strong: #C4C0B4;
     --sm-line-highlight: rgba(255,255,255,0.70);
-    --sm-accent-touch: #B7EC75;
-    --sm-accent-touchPressed: #A3D862;
+    --sm-accent-touch: #8DA32C;
+    --sm-accent-touchPressed: #7A8E23;
     --sm-accent-provenance: #3A20D6;
     --sm-accent-provenanceField: #3A20D6;
+    --sm-accent-touchText: #6E8320;
+    --sm-feature-ground: #DCE0CC;
+    --sm-feature-sheet: #E6E9D8;
+    --sm-feature-raised: #F0F2E6;
+    --sm-feature-text-primary: #2A2E1F;
+    --sm-feature-text-secondary: #565B45;
     color-scheme: light;
   }
 }
@@ -118,10 +160,16 @@
   --sm-line-rule: #DBD8CD;
   --sm-line-strong: #C4C0B4;
   --sm-line-highlight: rgba(255,255,255,0.70);
-  --sm-accent-touch: #B7EC75;
-  --sm-accent-touchPressed: #A3D862;
+  --sm-accent-touch: #8DA32C;
+  --sm-accent-touchPressed: #7A8E23;
   --sm-accent-provenance: #3A20D6;
   --sm-accent-provenanceField: #3A20D6;
+  --sm-accent-touchText: #6E8320;
+  --sm-feature-ground: #DCE0CC;
+  --sm-feature-sheet: #E6E9D8;
+  --sm-feature-raised: #F0F2E6;
+  --sm-feature-text-primary: #2A2E1F;
+  --sm-feature-text-secondary: #565B45;
   color-scheme: light;
 }
 :root[data-theme="dark"] {
@@ -133,15 +181,21 @@
   --sm-text-primary: #F5F5F3;
   --sm-text-secondary: #B4B4AF;
   --sm-text-tertiary: #8A8A83;
-  --sm-text-faint: #5A5A54;
-  --sm-text-onTouch: #16200B;
+  --sm-text-faint: #5A5E4F;
+  --sm-text-onTouch: #12140F;
   --sm-text-inverse: #0A0A0A;
   --sm-line-rule: #242422;
   --sm-line-strong: #3A3A36;
   --sm-line-highlight: rgba(255,255,255,0.06);
-  --sm-accent-touch: #B7EC75;
-  --sm-accent-touchPressed: #A3D862;
+  --sm-accent-touch: #8DA32C;
+  --sm-accent-touchPressed: #7A8E23;
   --sm-accent-provenance: #8F8AFF;
   --sm-accent-provenanceField: #3A20D6;
+  --sm-accent-touchText: #98AD39;
+  --sm-feature-ground: #2D332C;
+  --sm-feature-sheet: #3B4238;
+  --sm-feature-raised: #4A5344;
+  --sm-feature-text-primary: #C3C5AD;
+  --sm-feature-text-secondary: #9A9D8C;
   color-scheme: dark;
 }

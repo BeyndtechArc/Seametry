@@ -5,144 +5,559 @@
       "$description": "The touchstone. Default mode.",
       "surface": {
         "$type": "color",
-        "ground":  { "$value": "#0A0A0A" },
-        "sheet":   { "$value": "#141414" },
-        "raised":  { "$value": "#1C1C1C" },
-        "tray":    { "$value": "#262626" },
-        "inverse": { "$value": "#F5F5F3" }
+        "ground": {
+          "$value": "#0A0A0A",
+          "$description": "Default operational ground. Neutral, near-black, full contrast headroom. Data-dense screens live here."
+        },
+        "sheet": {
+          "$value": "#141414"
+        },
+        "raised": {
+          "$value": "#1C1C1C"
+        },
+        "tray": {
+          "$value": "#262626"
+        },
+        "inverse": {
+          "$value": "#F5F5F3"
+        }
       },
       "text": {
         "$type": "color",
-        "primary":   { "$value": "#F5F5F3", "$description": "18.1:1 on ground" },
-        "secondary": { "$value": "#B4B4AF", "$description": "9.4:1 on ground" },
-        "tertiary":  { "$value": "#8A8A83", "$description": "5.7:1 ground, 4.9:1 raised. Lowest grey allowed for readable text." },
-        "faint":     { "$value": "#5A5A54", "$description": "Decorative only. Never for text a user must read." },
-        "onTouch":   { "$value": "#16200B", "$description": "Text on the green key. 12.3:1" },
-        "inverse":   { "$value": "#0A0A0A" }
+        "primary": {
+          "$value": "#F5F5F3",
+          "$description": "Operational primary text: bone-white, tuned for the neutral ground family."
+        },
+        "secondary": {
+          "$value": "#B4B4AF",
+          "$description": "Tuned against sheet, its main surface: 5.6:1 there, 6.6:1 ground, 4.9:1 raised, 4.5:1 tray."
+        },
+        "tertiary": {
+          "$value": "#8A8A83",
+          "$description": "5.7:1 on operational ground, 4.9:1 on raised. Full range restored now that feature surfaces carry their own, narrower rules."
+        },
+        "faint": {
+          "$value": "#5A5E4F",
+          "$description": "Decorative only. Never for text a user must read."
+        },
+        "onTouch": {
+          "$value": "#12140F",
+          "$description": "Text on the touch fill. 6.5:1"
+        },
+        "inverse": {
+          "$value": "#0A0A0A"
+        }
       },
       "line": {
         "$type": "color",
-        "rule":      { "$value": "#242422" },
-        "strong":    { "$value": "#3A3A36" },
-        "highlight": { "$value": "rgba(255,255,255,0.06)", "$description": "Top-edge hairline on raised surfaces. The only light effect allowed." }
+        "rule": {
+          "$value": "#242422"
+        },
+        "strong": {
+          "$value": "#3A3A36"
+        },
+        "highlight": {
+          "$value": "rgba(255,255,255,0.06)",
+          "$description": "Top-edge hairline on raised surfaces. The only light effect allowed."
+        }
       },
       "accent": {
         "$type": "color",
-        "touch":        { "$value": "#B7EC75", "$description": "Touchable. Nothing else is green." },
-        "touchPressed": { "$value": "#A3D862" },
-        "provenance":   { "$value": "#8F8AFF", "$description": "Provenance in text and micro elements. 6.8:1 on ground" },
-        "provenanceField": { "$value": "#3A20D6", "$description": "Bars beside green, chart fills, chips. Never a surface larger than a chip." }
+        "touch": {
+          "$value": "#8DA32C",
+          "$description": "Fill on keys and full-round controls only. Not for text; fails contrast as text on any surface."
+        },
+        "touchPressed": {
+          "$value": "#7A8E23"
+        },
+        "provenance": {
+          "$value": "#8F8AFF",
+          "$description": "Provenance in text and micro elements. 6.8:1 on ground"
+        },
+        "provenanceField": {
+          "$value": "#3A20D6",
+          "$description": "Bars beside green, chart fills, chips. Never a surface larger than a chip."
+        },
+        "touchText": {
+          "$type": "color",
+          "$value": "#98AD39",
+          "$description": "Small marks and links on operational surfaces. On feature (olive) surfaces, prefer text.primary with the touch icon; see foundations.md 5b."
+        }
+      },
+      "feature": {
+        "$type": "color",
+        "$description": "The olive track. Reserved for named feature surfaces (see foundations.md section 5b): hero sections, alloy ceremony panels, sponsor profile headers, the Explorer landing. Never the default app background.",
+        "ground": {
+          "$value": "#2D332C"
+        },
+        "sheet": {
+          "$value": "#3B4238"
+        },
+        "raised": {
+          "$value": "#4A5344"
+        },
+        "text": {
+          "$type": "color",
+          "primary": {
+            "$value": "#C3C5AD",
+            "$description": "8.7:1 on feature.ground. Bone tuned for olive."
+          },
+          "secondary": {
+            "$value": "#9A9D8C",
+            "$description": "restricted to feature.ground/sheet; see foundations.md 5b"
+          }
+        }
       }
     },
     "light": {
       "$description": "The certificate paper.",
       "surface": {
         "$type": "color",
-        "ground":  { "$value": "#EDEBE3" },
-        "sheet":   { "$value": "#F7F5EF" },
-        "raised":  { "$value": "#FCFBF7" },
-        "tray":    { "$value": "#E0DDD1" },
-        "inverse": { "$value": "#1F1E1D" }
+        "ground": {
+          "$value": "#EDEBE3"
+        },
+        "sheet": {
+          "$value": "#F7F5EF"
+        },
+        "raised": {
+          "$value": "#FCFBF7"
+        },
+        "tray": {
+          "$value": "#E0DDD1"
+        },
+        "inverse": {
+          "$value": "#1F1E1D"
+        }
       },
       "text": {
         "$type": "color",
-        "primary":   { "$value": "#1F1E1D" },
-        "secondary": { "$value": "#45423C" },
-        "tertiary":  { "$value": "#65615A", "$description": "5.2:1 ground, 4.5:1 tray" },
-        "faint":     { "$value": "#A8A49A", "$description": "Decorative only." },
-        "onTouch":   { "$value": "#16200B" },
-        "inverse":   { "$value": "#F5F5F3" }
+        "primary": {
+          "$value": "#1F1E1D"
+        },
+        "secondary": {
+          "$value": "#45423C"
+        },
+        "tertiary": {
+          "$value": "#65615A",
+          "$description": "5.2:1 ground, 4.5:1 tray"
+        },
+        "faint": {
+          "$value": "#A8A49A",
+          "$description": "Decorative only."
+        },
+        "onTouch": {
+          "$value": "#16200B"
+        },
+        "inverse": {
+          "$value": "#F5F5F3"
+        }
       },
       "line": {
         "$type": "color",
-        "rule":      { "$value": "#DBD8CD" },
-        "strong":    { "$value": "#C4C0B4" },
-        "highlight": { "$value": "rgba(255,255,255,0.70)" }
+        "rule": {
+          "$value": "#DBD8CD"
+        },
+        "strong": {
+          "$value": "#C4C0B4"
+        },
+        "highlight": {
+          "$value": "rgba(255,255,255,0.70)"
+        }
       },
       "accent": {
         "$type": "color",
-        "touch":        { "$value": "#B7EC75", "$description": "Fill only on light. Green text fails contrast on paper; touchable text uses text.primary with an underline." },
-        "touchPressed": { "$value": "#A3D862" },
-        "provenance":   { "$value": "#3A20D6" },
-        "provenanceField": { "$value": "#3A20D6" }
+        "touch": {
+          "$value": "#8DA32C",
+          "$description": "Fill only on light. Green text fails contrast on paper; touchable text uses text.primary with an underline."
+        },
+        "touchPressed": {
+          "$value": "#7A8E23"
+        },
+        "provenance": {
+          "$value": "#3A20D6"
+        },
+        "provenanceField": {
+          "$value": "#3A20D6"
+        },
+        "touchText": {
+          "$type": "color",
+          "$value": "#6E8320",
+          "$description": "Deepened olive for links/marks on paper. Fill token fails contrast as text on light."
+        }
+      },
+      "feature": {
+        "$type": "color",
+        "$description": "Light-mode olive track, same restriction as dark.",
+        "ground": {
+          "$value": "#DCE0CC"
+        },
+        "sheet": {
+          "$value": "#E6E9D8"
+        },
+        "raised": {
+          "$value": "#F0F2E6"
+        },
+        "text": {
+          "$type": "color",
+          "primary": {
+            "$value": "#2A2E1F"
+          },
+          "secondary": {
+            "$value": "#565B45"
+          }
+        }
       }
     }
   },
   "font": {
     "family": {
       "$type": "fontFamily",
-      "display": { "$value": ["Sentient", "Fraunces", "Georgia", "serif"], "$description": "Figures, titles, lot names, ceremonies." },
-      "ui":      { "$value": ["Switzer", "Schibsted Grotesk", "system-ui", "sans-serif"], "$description": "Everything a user operates." },
-      "digest":  { "$value": ["Fragment Mono", "ui-monospace", "monospace"], "$description": "Hashes, addresses, signatures only. Never labels." }
+      "display": {
+        "$value": [
+          "Sentient",
+          "Fraunces",
+          "Georgia",
+          "serif"
+        ],
+        "$description": "Figures, titles, lot names, ceremonies."
+      },
+      "ui": {
+        "$value": [
+          "Switzer",
+          "Schibsted Grotesk",
+          "system-ui",
+          "sans-serif"
+        ],
+        "$description": "Everything a user operates."
+      },
+      "digest": {
+        "$value": [
+          "Fragment Mono",
+          "ui-monospace",
+          "monospace"
+        ],
+        "$description": "Hashes, addresses, signatures only. Never labels."
+      }
     },
     "weight": {
       "$type": "fontWeight",
-      "light": { "$value": 300 }, "regular": { "$value": 400 }, "medium": { "$value": 500 }, "semibold": { "$value": 600 }, "bold": { "$value": 700 }
+      "light": {
+        "$value": 300
+      },
+      "regular": {
+        "$value": 400
+      },
+      "medium": {
+        "$value": 500
+      },
+      "semibold": {
+        "$value": 600
+      },
+      "bold": {
+        "$value": 700
+      }
     },
     "size": {
       "$type": "dimension",
-      "micro":  { "$value": "12px" },
-      "small":  { "$value": "13px" },
-      "body":   { "$value": "15px" },
-      "lead":   { "$value": "17px" },
-      "title-s":{ "$value": "20px" },
-      "title":  { "$value": "24px" },
-      "title-l":{ "$value": "30px" },
-      "figure": { "$value": "38px" },
-      "figure-l": { "$value": "48px" },
-      "display":  { "$value": "60px" },
-      "display-l":{ "$value": "76px" }
+      "micro": {
+        "$value": "12px"
+      },
+      "small": {
+        "$value": "13px"
+      },
+      "body": {
+        "$value": "15px"
+      },
+      "lead": {
+        "$value": "17px"
+      },
+      "title-s": {
+        "$value": "20px"
+      },
+      "title": {
+        "$value": "24px"
+      },
+      "title-l": {
+        "$value": "30px"
+      },
+      "figure": {
+        "$value": "38px"
+      },
+      "figure-l": {
+        "$value": "48px"
+      },
+      "display": {
+        "$value": "60px"
+      },
+      "display-l": {
+        "$value": "76px"
+      }
     },
     "tracking": {
       "$type": "dimension",
-      "display": { "$value": "-0.03em" },
-      "title":   { "$value": "-0.015em" },
-      "body":    { "$value": "0em" },
-      "serial":  { "$value": "0.14em" }
+      "display": {
+        "$value": "-0.03em"
+      },
+      "title": {
+        "$value": "-0.015em"
+      },
+      "body": {
+        "$value": "0em"
+      },
+      "serial": {
+        "$value": "0.14em"
+      }
     }
   },
   "space": {
     "$type": "dimension",
-    "0": { "$value": "0px" }, "1": { "$value": "2px" }, "2": { "$value": "4px" }, "3": { "$value": "8px" },
-    "4": { "$value": "12px" }, "5": { "$value": "16px" }, "6": { "$value": "20px" }, "7": { "$value": "24px" },
-    "8": { "$value": "32px" }, "9": { "$value": "40px" }, "10": { "$value": "56px" }, "11": { "$value": "72px" },
-    "12": { "$value": "96px" }, "13": { "$value": "128px" }
+    "0": {
+      "$value": "0px"
+    },
+    "1": {
+      "$value": "2px"
+    },
+    "2": {
+      "$value": "4px"
+    },
+    "3": {
+      "$value": "8px"
+    },
+    "4": {
+      "$value": "12px"
+    },
+    "5": {
+      "$value": "16px"
+    },
+    "6": {
+      "$value": "20px"
+    },
+    "7": {
+      "$value": "24px"
+    },
+    "8": {
+      "$value": "32px"
+    },
+    "9": {
+      "$value": "40px"
+    },
+    "10": {
+      "$value": "56px"
+    },
+    "11": {
+      "$value": "72px"
+    },
+    "12": {
+      "$value": "96px"
+    },
+    "13": {
+      "$value": "128px"
+    }
   },
   "radius": {
     "$type": "dimension",
-    "data":    { "$value": "0px",   "$description": "Rules, rows, figures. Information reads as printed." },
-    "surface": { "$value": "4px",   "$description": "Sheets and panels." },
-    "punch":   { "$value": "12px",  "$description": "Hallmark punch base radius." },
-    "control": { "$value": "999px", "$description": "Anything a finger or cursor acts on." },
-    "sheet":   { "$value": "28px",  "$description": "Mobile sheets, matching the device corner." }
+    "data": {
+      "$value": "0px",
+      "$description": "Rules, rows, figures. Information reads as printed."
+    },
+    "surface": {
+      "$value": "4px",
+      "$description": "Sheets and panels."
+    },
+    "punch": {
+      "$value": "12px",
+      "$description": "Hallmark punch base radius."
+    },
+    "control": {
+      "$value": "999px",
+      "$description": "Anything a finger or cursor acts on."
+    },
+    "sheet": {
+      "$value": "28px",
+      "$description": "Mobile sheets, matching the device corner."
+    }
   },
   "size": {
     "$type": "dimension",
-    "tray":       { "$value": "8px",  "$description": "Neutral housing around a key." },
-    "target":     { "$value": "44px", "$description": "Minimum touch target." },
-    "key":        { "$value": "50px" },
-    "readable":   { "$value": "72ch" },
-    "content":    { "$value": "1200px" }
+    "tray": {
+      "$value": "8px",
+      "$description": "Neutral housing around a key."
+    },
+    "target": {
+      "$value": "44px",
+      "$description": "Minimum touch target."
+    },
+    "key": {
+      "$value": "50px"
+    },
+    "readable": {
+      "$value": "72ch"
+    },
+    "content": {
+      "$value": "1200px"
+    }
   },
   "motion": {
     "duration": {
       "$type": "duration",
-      "quick":  { "$value": "120ms" },
-      "base":   { "$value": "180ms" },
-      "settle": { "$value": "220ms" },
-      "sheet":  { "$value": "240ms" },
-      "punch":  { "$value": "90ms" },
-      "punchStagger": { "$value": "70ms" },
-      "seal":   { "$value": "180ms" }
+      "quick": {
+        "$value": "120ms"
+      },
+      "base": {
+        "$value": "180ms"
+      },
+      "settle": {
+        "$value": "220ms"
+      },
+      "sheet": {
+        "$value": "240ms"
+      },
+      "punch": {
+        "$value": "90ms"
+      },
+      "punchStagger": {
+        "$value": "70ms"
+      },
+      "seal": {
+        "$value": "180ms"
+      }
     },
     "easing": {
       "$type": "cubicBezier",
-      "standard": { "$value": [0.2, 0, 0, 1] },
-      "exit":     { "$value": [0.4, 0, 1, 1] }
+      "standard": {
+        "$value": [
+          0.2,
+          0,
+          0,
+          1
+        ]
+      },
+      "exit": {
+        "$value": [
+          0.4,
+          0,
+          1,
+          1
+        ]
+      }
     }
   },
   "breakpoint": {
     "$type": "dimension",
-    "s": { "$value": "480px" }, "m": { "$value": "768px" }, "l": { "$value": "1024px" }, "xl": { "$value": "1280px" }
+    "s": {
+      "$value": "480px"
+    },
+    "m": {
+      "$value": "768px"
+    },
+    "l": {
+      "$value": "1024px"
+    },
+    "xl": {
+      "$value": "1280px"
+    }
+  },
+  "scale": {
+    "$description": "Generated by scripts/generate-scale.mjs. Do not hand-edit. Raw perceptual material, 12 steps each (50 lightest to 900 darkest... wait see note).",
+    "$note": "Steps run 50 (darkest, low-lightness end) to 900 (lightest) in this build; treat as raw material, not usage tokens.",
+    "touch": {
+      "$type": "color",
+      "50": {
+        "$value": "#262E02"
+      },
+      "100": {
+        "$value": "#394407"
+      },
+      "200": {
+        "$value": "#4D5A10"
+      },
+      "300": {
+        "$value": "#617219"
+      },
+      "400": {
+        "$value": "#778A22"
+      },
+      "500": {
+        "$value": "#8DA32C"
+      },
+      "600": {
+        "$value": "#A6BB58"
+      },
+      "700": {
+        "$value": "#BFD37E"
+      },
+      "800": {
+        "$value": "#D9EBA2"
+      },
+      "900": {
+        "$value": "#EEFEC0"
+      }
+    },
+    "provenance": {
+      "$type": "color",
+      "50": {
+        "$value": "#292753"
+      },
+      "100": {
+        "$value": "#3C3972"
+      },
+      "200": {
+        "$value": "#4F4C93"
+      },
+      "300": {
+        "$value": "#6460B6"
+      },
+      "400": {
+        "$value": "#7975DA"
+      },
+      "500": {
+        "$value": "#8F8AFF"
+      },
+      "600": {
+        "$value": "#A9AAFE"
+      },
+      "700": {
+        "$value": "#C5C7FE"
+      },
+      "800": {
+        "$value": "#E2E4FF"
+      },
+      "900": {
+        "$value": "#F3F4FF"
+      }
+    },
+    "olive": {
+      "$type": "color",
+      "50": {
+        "$value": "#1A201A"
+      },
+      "100": {
+        "$value": "#2D332C"
+      },
+      "200": {
+        "$value": "#414740"
+      },
+      "300": {
+        "$value": "#575C56"
+      },
+      "400": {
+        "$value": "#6D736C"
+      },
+      "500": {
+        "$value": "#848A83"
+      },
+      "600": {
+        "$value": "#9CA19B"
+      },
+      "700": {
+        "$value": "#B5B9B4"
+      },
+      "800": {
+        "$value": "#CED2CD"
+      },
+      "900": {
+        "$value": "#E8ECE7"
+      }
+    }
   }
 }
