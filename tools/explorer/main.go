@@ -193,6 +193,10 @@ func main() {
 	}
 
 	// Static assets, plus the fonts if they have been fetched.
+	// The generated design tokens travel with the page. They are the only
+	// place a colour, size or duration is stated, and they are generated from
+	// the design system source rather than written here.
+	copyFile(filepath.Join("packages", "ui", "src", "generated", "tokens.css"), filepath.Join(*out, "tokens.css"))
 	copyEmbedded(*out, "assets/explorer.css", "explorer.css")
 	copyEmbedded(*out, "assets/verify.js", "verify.js")
 	// The sealed batch travels as its own script rather than inline, so the
@@ -356,7 +360,7 @@ func copyFonts(out string) {
 		fail(err)
 	}
 	copied := 0
-	for _, name := range []string{"Sentient-Variable.woff2", "Switzer-Variable.woff2"} {
+	for _, name := range []string{"Sentient-Variable.woff2", "Switzer-Variable.woff2", "FragmentMono-Regular.woff2"} {
 		data, err := os.ReadFile(filepath.Join("assets", "fonts", name))
 		if err != nil {
 			continue
@@ -366,7 +370,7 @@ func copyFonts(out string) {
 		}
 		copied++
 	}
-	if copied < 2 {
+	if copied < 3 {
 		fmt.Fprintln(os.Stderr, "explorer: fonts not found, the page will fall back to system faces; run: go run ./tools/fonts")
 	}
 }
@@ -374,4 +378,19 @@ func copyFonts(out string) {
 func fail(err error) {
 	fmt.Fprintln(os.Stderr, "explorer:", err)
 	os.Exit(1)
+}
+
+// copyFile copies a generated artifact into the output. It fails loudly when
+// the source is missing, because a page silently rendered without its tokens
+// looks like a styling bug rather than a missing build step.
+func copyFile(from, to string) {
+	data, err := os.ReadFile(from)
+	if err != nil {
+		fail(fmt.Errorf("%s is missing; regenerate it with:\n"+
+			"  node .claude/skills/seametry-design/scripts/build-tokens.mjs "+
+			".claude/skills/seametry-design/assets/tokens/seametry.tokens.json packages/ui/src/generated\n%w", from, err))
+	}
+	if err := os.WriteFile(to, data, 0o644); err != nil {
+		fail(err)
+	}
 }

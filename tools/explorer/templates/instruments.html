@@ -14,22 +14,22 @@
 
   {{if .Decision}}
   <div class="card">
-    <h3 style="margin-top:0">Admission decision <span class="stamp {{if eq .Decision "BLOCK"}}stale{{else}}ok{{end}}">{{.Decision}}</span></h3>
+    <h3 class="lead">Admission decision <span class="stamp {{if eq .Decision "BLOCK"}}block{{else if eq .Decision "WARN"}}warn{{else}}allow{{end}}">{{.Decision}}</span></h3>
     <p class="tight">Evaluated by <code>internal/policy</code> against <code>{{.PolicyVersion}}</code>. A decision states conditions; it never recommends.</p>
-    {{range .Reasons}}<div class="sentence"><span><span class="stamp {{if eq (printf "%s" .Severity) "BLOCK"}}stale{{else}}done{{end}}" style="margin-right:8px">{{.Severity}}</span>{{.Fact}}<br><code style="color:var(--ink3)">{{.Code}}</code></span></div>{{end}}
-    <p class="tight" style="font-size:13px;color:var(--ink3)">Input digest <code>{{short .InputDigest}}</code>. Identical inputs produce this same digest on any machine, which is what makes a recorded decision checkable rather than merely stored.</p>
+    {{range .Reasons}}<div class="sentence"><span><span class="stamp {{if eq (printf "%s" .Severity) "BLOCK"}}block{{else if eq (printf "%s" .Severity) "WARN"}}warn{{else}}allow{{end}}">{{.Severity}}</span> {{.Fact}}<br><code class="reason-code">{{.Code}}</code></span></div>{{end}}
+    <p class="tight meta">Input digest <code>{{short .InputDigest}}</code>. Identical inputs produce this same digest on any machine, which is what makes a recorded decision checkable rather than merely stored.</p>
   </div>
   {{end}}
 
   <div class="card">
-    <h3 style="margin-top:0">What the issuer can do</h3>
+    <h3 class="lead">What the issuer can do</h3>
     {{range .Sentences}}<div class="sentence">{{.}}</div>{{end}}
     {{if not .Sentences}}<p class="tight">No issuer powers decoded.</p>{{end}}
   </div>
 
   {{if .LiveValue}}
   <div class="card">
-    <h3 style="margin-top:0">Scaled UI multiplier
+    <h3 class="lead">Scaled UI multiplier
       {{if .Stale}}<span class="stamp stale">the obvious field is stale</span>
       {{else if .Pending}}<span class="stamp stale">activation scheduled</span>
       {{else}}<span class="stamp ok">agrees</span>{{end}}
@@ -37,7 +37,7 @@
     <div class="scroll">
     <table>
       <tbody>
-        <tr><td style="width:34%">A reader of <code>multiplier</code> gets</td><td class="mono">{{.NaiveValue}}</td></tr>
+        <tr><td class="label">A reader of <code>multiplier</code> gets</td><td class="mono">{{.NaiveValue}}</td></tr>
         <tr><td>The live value is</td><td class="mono"><strong>{{.LiveValue}}</strong></td></tr>
         <tr><td>Resolved from</td><td><code>{{.Source}}</code>, effective {{.EffectiveAt}}</td></tr>
       </tbody>
@@ -48,14 +48,14 @@
   {{end}}
 
   <div class="card">
-    <h3 style="margin-top:0">Token-2022 extensions present</h3>
+    <h3 class="lead">Token-2022 extensions present</h3>
     <p class="tight">{{range $i, $e := .Extensions}}{{if $i}} · {{end}}<code>{{$e}}</code>{{end}}</p>
     <p class="tight">Transfer hook: <code>{{.HookState}}</code>.
     {{if eq .HookState "initialized_disabled"}}The extension exists with no program set. Reporting that as absent would be a different fact: a hook that is off can be switched on by its authority at any time, without any other change to the mint.{{end}}</p>
     {{if .Unknown}}<p class="tight">Extensions this build does not decode: {{range $i, $u := .Unknown}}{{if $i}}, {{end}}<code>{{$u}}</code>{{end}}. Named rather than dropped, because an unknown that is silently discarded is indistinguishable from an absent one.</p>{{end}}
   </div>
 
-  <p class="tight" style="color:var(--ink3);font-size:13.5px">Why this one is in the set: {{.Note}}</p>
+  <p class="tight meta">Why this one is in the set: {{.Note}}</p>
   {{end}}
 
 {{template "foot" .}}{{end}}

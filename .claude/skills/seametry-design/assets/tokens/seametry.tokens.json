@@ -1,0 +1,148 @@
+{
+  "$description": "Seametry design tokens. W3C Design Tokens Community Group format. Single source of truth: never hand-edit generated tokens.css or tokens.ts.",
+  "theme": {
+    "dark": {
+      "$description": "The touchstone. Default mode.",
+      "surface": {
+        "$type": "color",
+        "ground":  { "$value": "#0A0A0A" },
+        "sheet":   { "$value": "#141414" },
+        "raised":  { "$value": "#1C1C1C" },
+        "tray":    { "$value": "#262626" },
+        "inverse": { "$value": "#F5F5F3" }
+      },
+      "text": {
+        "$type": "color",
+        "primary":   { "$value": "#F5F5F3", "$description": "18.1:1 on ground" },
+        "secondary": { "$value": "#B4B4AF", "$description": "9.4:1 on ground" },
+        "tertiary":  { "$value": "#8A8A83", "$description": "5.7:1 ground, 4.9:1 raised. Lowest grey allowed for readable text." },
+        "faint":     { "$value": "#5A5A54", "$description": "Decorative only. Never for text a user must read." },
+        "onTouch":   { "$value": "#16200B", "$description": "Text on the green key. 12.3:1" },
+        "inverse":   { "$value": "#0A0A0A" }
+      },
+      "line": {
+        "$type": "color",
+        "rule":      { "$value": "#242422" },
+        "strong":    { "$value": "#3A3A36" },
+        "highlight": { "$value": "rgba(255,255,255,0.06)", "$description": "Top-edge hairline on raised surfaces. The only light effect allowed." }
+      },
+      "accent": {
+        "$type": "color",
+        "touch":        { "$value": "#B7EC75", "$description": "Touchable. Nothing else is green." },
+        "touchPressed": { "$value": "#A3D862" },
+        "provenance":   { "$value": "#8F8AFF", "$description": "Provenance in text and micro elements. 6.8:1 on ground" },
+        "provenanceField": { "$value": "#3A20D6", "$description": "Bars beside green, chart fills, chips. Never a surface larger than a chip." }
+      }
+    },
+    "light": {
+      "$description": "The certificate paper.",
+      "surface": {
+        "$type": "color",
+        "ground":  { "$value": "#EDEBE3" },
+        "sheet":   { "$value": "#F7F5EF" },
+        "raised":  { "$value": "#FCFBF7" },
+        "tray":    { "$value": "#E0DDD1" },
+        "inverse": { "$value": "#1F1E1D" }
+      },
+      "text": {
+        "$type": "color",
+        "primary":   { "$value": "#1F1E1D" },
+        "secondary": { "$value": "#45423C" },
+        "tertiary":  { "$value": "#65615A", "$description": "5.2:1 ground, 4.5:1 tray" },
+        "faint":     { "$value": "#A8A49A", "$description": "Decorative only." },
+        "onTouch":   { "$value": "#16200B" },
+        "inverse":   { "$value": "#F5F5F3" }
+      },
+      "line": {
+        "$type": "color",
+        "rule":      { "$value": "#DBD8CD" },
+        "strong":    { "$value": "#C4C0B4" },
+        "highlight": { "$value": "rgba(255,255,255,0.70)" }
+      },
+      "accent": {
+        "$type": "color",
+        "touch":        { "$value": "#B7EC75", "$description": "Fill only on light. Green text fails contrast on paper; touchable text uses text.primary with an underline." },
+        "touchPressed": { "$value": "#A3D862" },
+        "provenance":   { "$value": "#3A20D6" },
+        "provenanceField": { "$value": "#3A20D6" }
+      }
+    }
+  },
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "display": { "$value": ["Sentient", "Fraunces", "Georgia", "serif"], "$description": "Figures, titles, lot names, ceremonies." },
+      "ui":      { "$value": ["Switzer", "Schibsted Grotesk", "system-ui", "sans-serif"], "$description": "Everything a user operates." },
+      "digest":  { "$value": ["Fragment Mono", "ui-monospace", "monospace"], "$description": "Hashes, addresses, signatures only. Never labels." }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "light": { "$value": 300 }, "regular": { "$value": 400 }, "medium": { "$value": 500 }, "semibold": { "$value": 600 }, "bold": { "$value": 700 }
+    },
+    "size": {
+      "$type": "dimension",
+      "micro":  { "$value": "12px" },
+      "small":  { "$value": "13px" },
+      "body":   { "$value": "15px" },
+      "lead":   { "$value": "17px" },
+      "title-s":{ "$value": "20px" },
+      "title":  { "$value": "24px" },
+      "title-l":{ "$value": "30px" },
+      "figure": { "$value": "38px" },
+      "figure-l": { "$value": "48px" },
+      "display":  { "$value": "60px" },
+      "display-l":{ "$value": "76px" }
+    },
+    "tracking": {
+      "$type": "dimension",
+      "display": { "$value": "-0.03em" },
+      "title":   { "$value": "-0.015em" },
+      "body":    { "$value": "0em" },
+      "serial":  { "$value": "0.14em" }
+    }
+  },
+  "space": {
+    "$type": "dimension",
+    "0": { "$value": "0px" }, "1": { "$value": "2px" }, "2": { "$value": "4px" }, "3": { "$value": "8px" },
+    "4": { "$value": "12px" }, "5": { "$value": "16px" }, "6": { "$value": "20px" }, "7": { "$value": "24px" },
+    "8": { "$value": "32px" }, "9": { "$value": "40px" }, "10": { "$value": "56px" }, "11": { "$value": "72px" },
+    "12": { "$value": "96px" }, "13": { "$value": "128px" }
+  },
+  "radius": {
+    "$type": "dimension",
+    "data":    { "$value": "0px",   "$description": "Rules, rows, figures. Information reads as printed." },
+    "surface": { "$value": "4px",   "$description": "Sheets and panels." },
+    "punch":   { "$value": "12px",  "$description": "Hallmark punch base radius." },
+    "control": { "$value": "999px", "$description": "Anything a finger or cursor acts on." },
+    "sheet":   { "$value": "28px",  "$description": "Mobile sheets, matching the device corner." }
+  },
+  "size": {
+    "$type": "dimension",
+    "tray":       { "$value": "8px",  "$description": "Neutral housing around a key." },
+    "target":     { "$value": "44px", "$description": "Minimum touch target." },
+    "key":        { "$value": "50px" },
+    "readable":   { "$value": "72ch" },
+    "content":    { "$value": "1200px" }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "quick":  { "$value": "120ms" },
+      "base":   { "$value": "180ms" },
+      "settle": { "$value": "220ms" },
+      "sheet":  { "$value": "240ms" },
+      "punch":  { "$value": "90ms" },
+      "punchStagger": { "$value": "70ms" },
+      "seal":   { "$value": "180ms" }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "standard": { "$value": [0.2, 0, 0, 1] },
+      "exit":     { "$value": [0.4, 0, 1, 1] }
+    }
+  },
+  "breakpoint": {
+    "$type": "dimension",
+    "s": { "$value": "480px" }, "m": { "$value": "768px" }, "l": { "$value": "1024px" }, "xl": { "$value": "1280px" }
+  }
+}

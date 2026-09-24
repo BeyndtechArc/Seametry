@@ -28,7 +28,7 @@
       if (typeof value === 'number') {
         if (!Number.isFinite(value)) throw new Error('non-finite number');
         if (!Number.isInteger(value)) throw new Error('non-integer number');
-        if (!Number.isSafeInteger(value)) throw new Error('integer outside the safe range');
+        if (!Number.isSafeInteger(value)) throw new Error('integer outside the safe range'); // design-lint-disable-line claim-words ECMAScript's own term, not a claim about a value
       }
       return JSON.stringify(value);
     }
@@ -292,7 +292,7 @@
     if (!ok) $('verdict').className = 'verdict no';
     $('seal').textContent = ok
       ? 'This batch root is not written on-chain yet. Once it is, this step also checks it against the Solana memo transaction, signed by a published anchor key.'
-      : 'One changed character in the public record produced an entirely different root. That is the whole guarantee.';
+      : 'One changed character in the public record produced an entirely different root. That is the property the seal rests on.';
 
     // Announce the settled verdict once. The hashes above update every frame
     // and are outside any live region on purpose.

@@ -79,6 +79,36 @@ jobs:
       - name: Test
         run: go test -race -count=1 ./...
 
+  design:
+    name: Design system
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      # Tokens are generated, never hand written. Regenerating must produce no
+      # diff, or the committed tokens and their source have drifted and the
+      # page is styled by something nobody is reviewing.
+      - name: Tokens match their source
+        run: |
+          node .claude/skills/seametry-design/scripts/build-tokens.mjs \
+            .claude/skills/seametry-design/assets/tokens/seametry.tokens.json packages/ui/src/generated
+          if ! git diff --quiet -- packages/ui/src/generated; then
+            echo "Generated tokens differ from the source. Commit the regenerated files."
+            git --no-pager diff -- packages/ui/src/generated
+            exit 1
+          fi
+
+      # Scoped to the surfaces that conform. apps/web and apps/mobile are the
+      # retired TypeScript scaffold: the Explorer replaces the first and
+      # prd/MOBILE.md rebuilds the second in phase 2. They carry 34 violations
+      # and are excluded deliberately rather than silently, so that adding them
+      # back is a visible change to this line.
+      - name: Design lint
+        run: node .claude/skills/seametry-design/scripts/design-lint.mjs tools/explorer packages/ui
+
   language:
     name: Language boundary
     runs-on: ubuntu-latest
@@ -93,7 +123,7 @@ jobs:
           if grep -rInP '\x{2014}' \
               --include='*.go' --include='*.md' --include='*.ts' --include='*.tsx' \
               --include='*.js' --include='*.mjs' --include='*.rs' --include='*.yml' \
-              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive --exclude-dir=.claude \
               --exclude=AGENTS.md .; then
             echo
             echo "Em dashes are not used in this project. See docs/ENGINEERING_STANDARD.md section 16."
@@ -108,7 +138,7 @@ jobs:
           if grep -rInE '\b(true|correct|fair|safe|guaranteed|pure) (price|value|quote|number|rate)\b' \
               --include='*.go' --include='*.md' --include='*.ts' --include='*.tsx' \
               --include='*.js' --include='*.mjs' --include='*.rs' \
-              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive --exclude-dir=.claude \
               --exclude=AGENTS.md . \
               | grep -vE 'never|not |no |refus|forbid|prohibit'; then
             echo

@@ -23,7 +23,9 @@
     "explorer": "go run ./tools/explorer",
     "survey": "go run ./tools/survey",
     "fonts": "go run ./tools/fonts",
-    "serve": "node tools/serve.mjs"
+    "serve": "node tools/serve.mjs",
+    "tokens": "node .claude/skills/seametry-design/scripts/build-tokens.mjs .claude/skills/seametry-design/assets/tokens/seametry.tokens.json packages/ui/src/generated",
+    "design:lint": "node .claude/skills/seametry-design/scripts/design-lint.mjs tools/explorer packages/ui"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

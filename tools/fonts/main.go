@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -50,6 +51,18 @@ var families = []family{
 		"/TTF/Switzer-Variable.ttf":         "Switzer-Variable.ttf",
 	}},
 }
+
+// Fragment Mono is the digest face: hashes, addresses, signatures, and nothing
+// else. It comes from Google Fonts under the SIL Open Font License, which does
+// permit redistribution, unlike the Fontshare pair. It is still fetched rather
+// than committed, so that one command produces the whole set and nobody has to
+// remember which of three faces may be checked in.
+const (
+	fragmentMonoCSS = "https://fonts.googleapis.com/css2?family=Fragment+Mono&display=swap"
+	// Google serves WOFF2 only to a user agent it believes supports it.
+	modernUA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+		"(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
 
 func main() {
 	dir := filepath.Join("assets", "fonts")
@@ -110,6 +123,8 @@ func main() {
 		}
 	}
 
+	total += fetchFragmentMono(client, dir)
+
 	fmt.Printf("\n%d bytes written to %s\n", total, dir)
 	fmt.Println("These files are gitignored on purpose. See the package comment, or assets/fonts/README.md.")
 }
@@ -117,4 +132,55 @@ func main() {
 func fail(err error) {
 	fmt.Fprintln(os.Stderr, "fonts:", err)
 	os.Exit(1)
+}
+
+// fetchFragmentMono resolves the current WOFF2 from the Google Fonts stylesheet
+// rather than hardcoding a versioned URL, because those URLs change whenever
+// the font is revised and a stale one fails silently by falling back.
+func fetchFragmentMono(client *http.Client, dir string) int {
+	fmt.Println("fetching fragment-mono")
+
+	request, err := http.NewRequest(http.MethodGet, fragmentMonoCSS, nil)
+	if err != nil {
+		fail(err)
+	}
+	request.Header.Set("User-Agent", modernUA)
+	response, err := client.Do(request)
+	if err != nil {
+		fail(fmt.Errorf("fragment-mono: %w", err))
+	}
+	stylesheet, err := io.ReadAll(response.Body)
+	response.Body.Close()
+	if err != nil {
+		fail(fmt.Errorf("fragment-mono: %w", err))
+	}
+
+	// Google emits one @font-face per unicode subset, latin last.
+	matches := regexp.MustCompile(`url\((https://[^)]+\.woff2)\)`).FindAllStringSubmatch(string(stylesheet), -1)
+	if len(matches) == 0 {
+		fail(fmt.Errorf("fragment-mono: the stylesheet offered no woff2; Google may have changed what it serves"))
+	}
+	url := matches[len(matches)-1][1]
+
+	request, err = http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		fail(err)
+	}
+	request.Header.Set("User-Agent", modernUA)
+	response, err = client.Do(request)
+	if err != nil {
+		fail(fmt.Errorf("fragment-mono: %w", err))
+	}
+	body, err := io.ReadAll(response.Body)
+	response.Body.Close()
+	if err != nil {
+		fail(fmt.Errorf("fragment-mono: %w", err))
+	}
+
+	path := filepath.Join(dir, "FragmentMono-Regular.woff2")
+	if err := os.WriteFile(path, body, 0o644); err != nil {
+		fail(err)
+	}
+	fmt.Printf("  %-28s %7d bytes\n", "FragmentMono-Regular.woff2", len(body))
+	return len(body)
 }

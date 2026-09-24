@@ -1,7 +1,8 @@
 > **Living document. Owns:** requirements for the public Explorer surface.
 > **Does not own:** product scope (`../PRODUCT_ARCHITECTURE.md`), the receipt
-> scheme (`../ENGINEERING_STANDARD.md` section 12), brand and voice
-> (`../BRAND_AND_WORLD.md`), or library choices (`../CRAFT.md`).
+> scheme (`../ENGINEERING_STANDARD.md` section 12), the world and its naming
+> (`../BRAND_AND_WORLD.md`), or any executable design decision, which belongs
+> to the design system at `.claude/skills/seametry-design/`.
 > **Phase 1.** This is the first surface, and it carries no legal gate.
 
 # PRD: The Explorer
@@ -119,21 +120,24 @@ claim.
 
 ## 5. Craft
 
-Governed by `../CRAFT.md`. The Explorer's one signature moment is the ritual,
-and everything else is quiet, fast and precise.
+Governed by the design system at `.claude/skills/seametry-design/`, which owns
+every executable design decision and fails the build on a violation. The
+Explorer's one signature moment is the ritual; everything else is quiet, fast
+and precise.
 
-Two deviations in the reference mock are open decisions, not defects, and
-whichever way they go the documents and the page must agree:
+Both decisions this section previously left open are now settled there, and the
+Explorer implements both:
 
-- **Typefaces.** The mock uses Fraunces, Schibsted Grotesk and Fragment Mono
-  from Google Fonts. `CRAFT.md` section 5 and `BRAND_AND_WORLD.md` section 8
-  specify Sentient and Switzer, self hosted from Fontshare, to avoid a third
-  party origin for speed and content security policy.
-- **Default theme.** The mock defaults to warm paper with black as the
-  `prefers-color-scheme` variant. `BRAND_AND_WORLD.md` is emphatic that the
-  black ground is the touchstone and not dark mode. A paper default may be
-  right for an evidence surface that reads like a certificate, but it inverts
-  the central metaphor and is a brand decision.
+- **Typefaces.** Sentient for figures and titles, Switzer for interface,
+  Fragment Mono for digests and nothing else. All three self hosted, fetched
+  by `go run ./tools/fonts`, none committed.
+- **Default theme.** Dark is the default and the brand. Light is the
+  certificate. Both are complete, and no component may exist in only one.
+
+Every colour, size, radius and duration on the page comes from
+`packages/ui/src/generated/tokens.css`, generated from the design system's
+token source. The stylesheet states no colour of its own, and
+`npm run design:lint` fails on a raw value.
 
 ## 6. Accessibility
 
