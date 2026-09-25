@@ -71,6 +71,7 @@ fn every_scenario_matches() {
                         pending: atoms(step, "pending"),
                         unclaimed: atoms(step, "unclaimed"),
                         vest_start: 0,
+                        ..Leg::default()
                     };
                     supply = atoms(step, "supply");
                 }

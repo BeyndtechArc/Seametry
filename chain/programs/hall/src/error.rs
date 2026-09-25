@@ -48,6 +48,8 @@ pub enum HallError {
     WrongMaximumsCount,
     #[msg("A mint, Hall account or token program does not match the alloy's record for that constituent.")]
     WrongConstituentAccounts,
+    #[msg("A claim disagrees with its leg about the seizure index. The claim or the alloy state is inconsistent.")]
+    ClaimIndexInconsistent,
 }
 
 impl From<RecipeError> for HallError {
@@ -60,6 +62,9 @@ impl From<RecipeError> for HallError {
             RecipeError::DeficitExceedsHoldings { .. } => Self::DeficitExceedsHoldings,
             RecipeError::ExceedsMaximum { .. } => Self::ExceedsMaximum,
             RecipeError::ExceedsUnclaimed { .. } => Self::ExceedsUnclaimed,
+            RecipeError::ClaimHasNoIndex
+            | RecipeError::ClaimEpochAhead
+            | RecipeError::ClaimIndexBelowLeg => Self::ClaimIndexInconsistent,
         }
     }
 }

@@ -274,10 +274,10 @@ type claimVectorStep struct {
 	Pending     string `json:"pending"`
 	Unclaimed   string `json:"unclaimed"`
 	LegIndex    string `json:"leg_index"`
-	LegEpoch    uint32 `json:"leg_epoch"`
+	LegEpoch    uint64 `json:"leg_epoch"`
 	ClaimUnits  string `json:"claim_units,omitempty"`
 	ClaimIndex  string `json:"claim_index,omitempty"`
-	ClaimEpoch  uint32 `json:"claim_epoch,omitempty"`
+	ClaimEpoch  uint64 `json:"claim_epoch,omitempty"`
 	HasSnapshot bool   `json:"has_snapshot,omitempty"`
 }
 
@@ -369,6 +369,17 @@ func buildClaimVectors(t *testing.T) claimVectorFile {
 				{Op: "settle", Claim: "A"},
 				{Op: "settle", Claim: "B"},
 				{Op: "settle", Claim: "C"},
+			},
+		},
+		{
+			name:    "crediting an existing claim settles it first",
+			purpose: "A claimant who melts again after a seizure keeps only the shrunken value of the earlier units, plus the new units at face value.",
+			ledger:  "1000000",
+			ops: []claimOp{
+				{Op: "redeem", Claim: "A", Units: "400000"},
+				{Op: "sync", Actual: "500000"},
+				{Op: "redeem", Claim: "A", Units: "100000"},
+				{Op: "settle", Claim: "A"},
 			},
 		},
 		{

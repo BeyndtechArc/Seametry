@@ -277,5 +277,6 @@ fn admit_constituent<'info>(
         pending: before,
         unclaimed: 0,
         vest_start: now,
+        ..LegRecord::default()
     })
 }

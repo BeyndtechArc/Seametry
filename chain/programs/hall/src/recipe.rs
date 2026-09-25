@@ -21,6 +21,9 @@ pub enum RecipeError {
     Overflow,
     DeficitExceedsHoldings { remaining: u64 },
     ExceedsMaximum { required: u64, maximum: u64 },
+    ClaimHasNoIndex,
+    ClaimEpochAhead,
+    ClaimIndexBelowLeg,
     ExceedsUnclaimed { requested: u64, unclaimed: u64 },
 }
 
@@ -33,15 +36,33 @@ pub type Result<T> = core::result::Result<T, RecipeError>;
 /// `unclaimed` is owed to holders who melted and have not withdrawn.
 /// `vest_start` is when the current `pending` began vesting; a new credit
 /// restarts it, which stops a donor timing a deposit against their own strike.
+///
+/// `claim_index` and `claim_epoch` record how far seizures have shrunk every
+/// outstanding claim, see `ClaimLeg`. A zero index means no seizure has touched
+/// `unclaimed`, which is `CLAIM_ONE`, so a zeroed account is already correct.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Leg {
     pub ledger: u64,
     pub pending: u64,
     pub unclaimed: u64,
     pub vest_start: i64,
+    pub claim_index: u128,
+    pub claim_epoch: u64,
 }
 
+/// 1.0 in 64 bit fixed point. A u64 times an index no larger than this stays
+/// inside u128, so no claim arithmetic can overflow.
+pub const CLAIM_ONE: u128 = 1 << 64;
+
 impl Leg {
+    pub fn index(&self) -> u128 {
+        if self.claim_index == 0 {
+            CLAIM_ONE
+        } else {
+            self.claim_index
+        }
+    }
+
     pub fn expected(&self) -> Result<u64> {
         self.ledger
             .checked_add(self.pending)
@@ -174,8 +195,108 @@ fn apply_deficit(mut leg: Leg, deficit: u64) -> Result<Leg> {
         return Err(RecipeError::DeficitExceedsHoldings { remaining });
     }
     leg.ledger -= from_ledger;
+    let unclaimed_before = leg.unclaimed;
     leg.unclaimed -= from_unclaimed;
+    shrink_claims(leg, unclaimed_before)
+}
+
+/// Records that `unclaimed` fell from `before` to its current value.
+///
+/// Every claim is worth the same fraction of what it was, so the index falls by
+/// that fraction, rounded down. When nothing is left, or the fraction is too
+/// small for the index to hold, the leg starts a new epoch and older claims
+/// settle to zero.
+fn shrink_claims(mut leg: Leg, before: u64) -> Result<Leg> {
+    if leg.unclaimed == before {
+        return Ok(leg);
+    }
+    if leg.unclaimed == 0 {
+        return start_new_epoch(leg);
+    }
+    let index = leg.index() * u128::from(leg.unclaimed) / u128::from(before);
+    if index == 0 {
+        return start_new_epoch(leg);
+    }
+    leg.claim_index = index;
     Ok(leg)
+}
+
+fn start_new_epoch(mut leg: Leg) -> Result<Leg> {
+    leg.claim_epoch = leg
+        .claim_epoch
+        .checked_add(1)
+        .ok_or(RecipeError::Overflow)?;
+    leg.claim_index = CLAIM_ONE;
+    Ok(leg)
+}
+
+/// One owner's entitlement to one constituent after melting.
+///
+/// `units` are fixed quantities until a seizure, and then they shrink in the
+/// same proportion as the leg's `unclaimed`. The leg keeps an index that only
+/// falls and each claim remembers the index it was last settled against, so a
+/// seizure never has to touch every claim. `index` is zero while `units` is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct ClaimLeg {
+    pub units: u64,
+    pub index: u128,
+    pub epoch: u64,
+}
+
+fn rebase(claim: ClaimLeg, leg: &Leg) -> ClaimLeg {
+    ClaimLeg {
+        index: leg.index(),
+        epoch: leg.claim_epoch,
+        ..claim
+    }
+}
+
+/// Brings a claim up to date with every seizure since it was last touched.
+pub fn settle(claim: &ClaimLeg, leg: &Leg) -> Result<ClaimLeg> {
+    if claim.units == 0 {
+        return Ok(rebase(*claim, leg));
+    }
+    if claim.index == 0 {
+        return Err(RecipeError::ClaimHasNoIndex);
+    }
+    if claim.epoch > leg.claim_epoch {
+        return Err(RecipeError::ClaimEpochAhead);
+    }
+    if claim.epoch < leg.claim_epoch {
+        return Ok(rebase(ClaimLeg { units: 0, ..*claim }, leg));
+    }
+    if claim.index < leg.index() {
+        return Err(RecipeError::ClaimIndexBelowLeg);
+    }
+    let units = u128::from(claim.units) * leg.index() / claim.index;
+    let units = u64::try_from(units).map_err(|_| RecipeError::Overflow)?;
+    Ok(rebase(ClaimLeg { units, ..*claim }, leg))
+}
+
+/// Adds units to a claim after a melt moved them from the ledger to `unclaimed`.
+/// The claim is settled first, so units credited now are not scaled by seizures
+/// that happened before they existed.
+pub fn credit_claim(claim: &ClaimLeg, leg: &Leg, units: u64) -> Result<ClaimLeg> {
+    let mut settled = settle(claim, leg)?;
+    settled.units = settled
+        .units
+        .checked_add(units)
+        .ok_or(RecipeError::Overflow)?;
+    Ok(settled)
+}
+
+/// Delivers units of a claim, reducing the leg's `unclaimed`.
+pub fn withdraw_claim(claim: &ClaimLeg, leg: &mut Leg, units: u64) -> Result<ClaimLeg> {
+    let mut settled = settle(claim, leg)?;
+    if units > settled.units {
+        return Err(RecipeError::ExceedsUnclaimed {
+            requested: units,
+            unclaimed: settled.units,
+        });
+    }
+    apply_withdraw(leg, units)?;
+    settled.units -= units;
+    Ok(settled)
 }
 
 /// Deposits required to mint `shares`, refusing if any exceeds the caller's

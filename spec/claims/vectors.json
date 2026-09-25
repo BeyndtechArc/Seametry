@@ -272,6 +272,61 @@
       ]
     },
     {
+      "name": "crediting an existing claim settles it first",
+      "purpose": "A claimant who melts again after a seizure keeps only the shrunken value of the earlier units, plus the new units at face value.",
+      "scale": 6,
+      "ledger": "1000000",
+      "steps": [
+        {
+          "op": "redeem",
+          "claim": "A",
+          "units": "400000",
+          "ledger": "600000",
+          "pending": "0",
+          "unclaimed": "400000",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 0,
+          "claim_units": "400000",
+          "claim_index": "18446744073709551616",
+          "has_snapshot": true
+        },
+        {
+          "op": "sync",
+          "actual": "500000",
+          "ledger": "300000",
+          "pending": "0",
+          "unclaimed": "200000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0
+        },
+        {
+          "op": "redeem",
+          "claim": "A",
+          "units": "100000",
+          "ledger": "200000",
+          "pending": "0",
+          "unclaimed": "300000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0,
+          "claim_units": "300000",
+          "claim_index": "9223372036854775808",
+          "has_snapshot": true
+        },
+        {
+          "op": "settle",
+          "claim": "A",
+          "ledger": "200000",
+          "pending": "0",
+          "unclaimed": "300000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0,
+          "claim_units": "300000",
+          "claim_index": "9223372036854775808",
+          "has_snapshot": true
+        }
+      ]
+    },
+    {
       "name": "withdrawing after a seizure pays the settled amount",
       "purpose": "A withdrawal settles the claim first and reduces unclaimed by exactly what is paid.",
       "scale": 6,

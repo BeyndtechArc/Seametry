@@ -48,7 +48,7 @@ type Constituent struct {
 	// outstanding claim. See claim.go. A nil ClaimIndex means no seizure has
 	// touched Unclaimed, which is ClaimOne.
 	ClaimIndex *big.Int
-	ClaimEpoch uint32
+	ClaimEpoch uint64
 }
 
 // Expected is the balance the Hall believes it holds.

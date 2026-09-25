@@ -27,7 +27,7 @@ type Claim struct {
 	// and nil, while Units is zero.
 	Index *big.Int
 	// Epoch is the leg's ClaimEpoch at that time.
-	Epoch uint32
+	Epoch uint64
 }
 
 // NewClaim returns an empty claim at the given scale.

@@ -31,6 +31,11 @@ pub struct LegRecord {
     pub pending: u64,
     pub unclaimed: u64,
     pub vest_start: i64,
+    /// The claim index as two halves, because a u128 would force 16 byte
+    /// alignment on a zero-copy struct. Both zero means unset.
+    pub claim_index_low: u64,
+    pub claim_index_high: u64,
+    pub claim_epoch: u64,
 }
 
 impl LegRecord {
@@ -40,6 +45,9 @@ impl LegRecord {
             pending: self.pending,
             unclaimed: self.unclaimed,
             vest_start: self.vest_start,
+            claim_index: (u128::from(self.claim_index_high) << 64)
+                | u128::from(self.claim_index_low),
+            claim_epoch: self.claim_epoch,
         }
     }
 
@@ -48,6 +56,9 @@ impl LegRecord {
         self.pending = leg.pending;
         self.unclaimed = leg.unclaimed;
         self.vest_start = leg.vest_start;
+        self.claim_index_low = leg.claim_index as u64;
+        self.claim_index_high = (leg.claim_index >> 64) as u64;
+        self.claim_epoch = leg.claim_epoch;
     }
 }
 
