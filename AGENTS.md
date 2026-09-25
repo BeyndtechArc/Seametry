@@ -13,7 +13,11 @@ Before you say a task is done, answer these in writing. Any "no" means not done.
 
 1. **Did I run it?** Paste the command and its real output.
 2. **Did I watch the test fail first?** A test written after the code it covers
-   proves nothing until you break the code and see it go red.
+   proves nothing until you break the code and see it go red. Then read the
+   failure: it must fail for the reason the test names, not because the break
+   did not compile or tripped something else. Restore with `git checkout -- <file>`,
+   never by retyping, and rebuild anything generated from the broken source
+   (a compiled `.so`, a golden file) so no build output outlives the break.
 3. **Is anything still uncertain that I have not said out loud?**
 4. **Did I leave the tree clean?** `gofmt -l .` empty, `go vet ./...` silent,
    `go test ./...` passing, and the checks under Commands below.
