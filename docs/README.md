@@ -156,9 +156,13 @@ aggregator responses, a generated Explorer, and CI.
   `ENGINEERING_STANDARD.md` section 2 forbids. `internal/policy` now does
   everything it did and more, so it can go. It should go in one change with its
   workspace entries, so the repository never shows two authorities.
-- `programs/hall` does not exist. The toolchain installs (Solana CLI 4.3.0,
-  Anchor 1.2.0, Rust 1.98.1), but that an Anchor program builds and tests here
-  is not yet verified, and the documentation says WSL is required.
+- `programs/hall` does not exist. The toolchain (Solana CLI 4.3.0, Anchor
+  1.2.0, Rust 1.98.1) builds an Anchor program and runs its litesvm test
+  natively on Windows, verified on the `anchor init` template on 25 September
+  2026. WSL is not required. `anchor build` emitted SBPF v3, which litesvm
+  0.10.0 rejected with `InvalidAccountData`; `cargo-build-sbf --arch v0` gave an
+  ELF it loaded and the test passed. The Hall's tests must build with
+  `--arch v0` until litesvm accepts v3.
 - Nothing is anchored on chain, so the verification ritual ends at the
   published root rather than at a transaction.
 - `api/openapi/` does not exist. The public boundary has no contract yet.
