@@ -43,6 +43,12 @@ type Constituent struct {
 	// credit restarts it, which is what stops a donor timing a deposit to land
 	// just before their own strike.
 	VestStart time.Time
+
+	// ClaimIndex and ClaimEpoch record how far a seizure has shrunk every
+	// outstanding claim. See claim.go. A nil ClaimIndex means no seizure has
+	// touched Unclaimed, which is ClaimOne.
+	ClaimIndex *big.Int
+	ClaimEpoch uint32
 }
 
 // Expected is the balance the Hall believes it holds.
@@ -275,8 +281,11 @@ func applyDeficit(c Constituent, deficit amount.Amount) (Constituent, error) {
 	if c.Ledger, err = c.Ledger.Sub(fromLedger); err != nil {
 		return c, err
 	}
-	c.Unclaimed, err = c.Unclaimed.Sub(fromUnclaimed)
-	return c, err
+	unclaimedBefore := c.Unclaimed
+	if c.Unclaimed, err = c.Unclaimed.Sub(fromUnclaimed); err != nil {
+		return c, err
+	}
+	return shrinkClaims(c, unclaimedBefore)
 }
 
 // Create computes the deposits required to mint shares, refusing if any exceeds

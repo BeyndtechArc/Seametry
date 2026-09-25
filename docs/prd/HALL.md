@@ -58,7 +58,7 @@ An alloy is defined in quantities, the way exchange-traded fund creation units a
 - share mint, share supply, locked genesis shares
 - up to twelve constituents, each: mint, token program, Hall token account, `ledger`, `pending`, `vest_start`, `unclaimed`
 
-**Claim** account, one per alloy per owner: units owed per constituent.
+**Claim** account, one per alloy per owner: per constituent, the units owed, the leg index they were last settled against, and the epoch.
 
 **Invariant** after every sync, per constituent: `actual balance == ledger + pending + unclaimed`.
 
@@ -95,7 +95,8 @@ deficit  (actual < expected): consumes pending first,
 - **Upward credits vest linearly over W** (compiled constant; proposed one hour). A donation cannot jump share value in a single block, so a lending market that prices shares cannot be hit the way Venus was. Donations are gifts to holders; the donor recovers at most their own pro-rata fraction, always less than they gave.
 - **Losses apply immediately.** Conservative in the direction that protects anyone relying on the share's value.
 - **Trade-off, stated:** a newcomer who strikes during a vest window shares in the remaining unvested credit. For multiplier-based issuers no raw credit exists, so this never arises. For mint-to issuers it is small and bounded by W. Revisit once Backpack's mechanism is confirmed.
-- **Claims are fixed quantities.** Raw dividends attributable to unclaimed units accrue to holders. Withdraw promptly; the app notifies.
+- **Claims are fixed quantities until a seizure.** Raw dividends attributable to unclaimed units accrue to holders. Withdraw promptly; the app notifies.
+- **A seizure shrinks every claim in the same proportion.** Each leg keeps an index that only falls, and each claim remembers the index it was last settled against. Settling scales the claim by the ratio of the two, rounded down, so the claims can never sum to more than the Hall holds for them and the rounding remainder stays in the Hall. When nothing is left to scale, the leg starts a new epoch and older claims settle to zero. A claim made after a seizure is not scaled by it. Specified in `internal/basket/claim.go` with vectors in `spec/claims/vectors.json`.
 
 ### 4.6 Issuer prerogatives, case by case
 

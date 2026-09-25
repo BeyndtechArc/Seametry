@@ -1,0 +1,318 @@
+{
+  "note": "How a claim shrinks when a seizure takes part of a leg's unclaimed balance, shared by the Go implementation and the Rust program. Amounts are integer atoms as strings at the stated scale. The index is a 64 bit fixed point number, and claim_one is 1.0. Regenerate with go test ./internal/basket -update. A vector is never edited to make an implementation pass.",
+  "claim_one": "18446744073709551616",
+  "scenarios": [
+    {
+      "name": "a seizure scales every claim in proportion",
+      "purpose": "Half of what the Hall holds is taken, so each claim is worth half of what it was and the claims still sum to no more than unclaimed.",
+      "scale": 6,
+      "ledger": "1000000",
+      "steps": [
+        {
+          "op": "redeem",
+          "claim": "A",
+          "units": "250000",
+          "ledger": "750000",
+          "pending": "0",
+          "unclaimed": "250000",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 0,
+          "claim_units": "250000",
+          "claim_index": "18446744073709551616",
+          "has_snapshot": true
+        },
+        {
+          "op": "redeem",
+          "claim": "B",
+          "units": "150000",
+          "ledger": "600000",
+          "pending": "0",
+          "unclaimed": "400000",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 0,
+          "claim_units": "150000",
+          "claim_index": "18446744073709551616",
+          "has_snapshot": true
+        },
+        {
+          "op": "sync",
+          "actual": "500000",
+          "ledger": "300000",
+          "pending": "0",
+          "unclaimed": "200000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0
+        },
+        {
+          "op": "settle",
+          "claim": "A",
+          "ledger": "300000",
+          "pending": "0",
+          "unclaimed": "200000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0,
+          "claim_units": "125000",
+          "claim_index": "9223372036854775808",
+          "has_snapshot": true
+        },
+        {
+          "op": "settle",
+          "claim": "B",
+          "ledger": "300000",
+          "pending": "0",
+          "unclaimed": "200000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0,
+          "claim_units": "75000",
+          "claim_index": "9223372036854775808",
+          "has_snapshot": true
+        }
+      ]
+    },
+    {
+      "name": "a claim made after a seizure is not scaled by it",
+      "purpose": "Units credited after a seizure start from the index in force then, so an earlier loss cannot reduce them.",
+      "scale": 6,
+      "ledger": "1000000",
+      "steps": [
+        {
+          "op": "redeem",
+          "claim": "A",
+          "units": "400000",
+          "ledger": "600000",
+          "pending": "0",
+          "unclaimed": "400000",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 0,
+          "claim_units": "400000",
+          "claim_index": "18446744073709551616",
+          "has_snapshot": true
+        },
+        {
+          "op": "sync",
+          "actual": "500000",
+          "ledger": "300000",
+          "pending": "0",
+          "unclaimed": "200000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0
+        },
+        {
+          "op": "redeem",
+          "claim": "C",
+          "units": "100000",
+          "ledger": "200000",
+          "pending": "0",
+          "unclaimed": "300000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0,
+          "claim_units": "100000",
+          "claim_index": "9223372036854775808",
+          "has_snapshot": true
+        },
+        {
+          "op": "settle",
+          "claim": "A",
+          "ledger": "200000",
+          "pending": "0",
+          "unclaimed": "300000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0,
+          "claim_units": "200000",
+          "claim_index": "9223372036854775808",
+          "has_snapshot": true
+        },
+        {
+          "op": "settle",
+          "claim": "C",
+          "ledger": "200000",
+          "pending": "0",
+          "unclaimed": "300000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0,
+          "claim_units": "100000",
+          "claim_index": "9223372036854775808",
+          "has_snapshot": true
+        }
+      ]
+    },
+    {
+      "name": "taking everything starts a new epoch",
+      "purpose": "When unclaimed is wiped out the index cannot express the loss, so the epoch advances and every older claim settles to zero.",
+      "scale": 6,
+      "ledger": "400000",
+      "steps": [
+        {
+          "op": "redeem",
+          "claim": "A",
+          "units": "400000",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "400000",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 0,
+          "claim_units": "400000",
+          "claim_index": "18446744073709551616",
+          "has_snapshot": true
+        },
+        {
+          "op": "sync",
+          "actual": "0",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "0",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 1
+        },
+        {
+          "op": "settle",
+          "claim": "A",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "0",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 1,
+          "claim_units": "0",
+          "claim_index": "18446744073709551616",
+          "claim_epoch": 1,
+          "has_snapshot": true
+        }
+      ]
+    },
+    {
+      "name": "rounding leaves dust with the Hall",
+      "purpose": "Two thirds of one unit rounds down to nothing for each of three claimants. The remainder stays in unclaimed and is never paid to anyone.",
+      "scale": 6,
+      "ledger": "3",
+      "steps": [
+        {
+          "op": "redeem",
+          "claim": "A",
+          "units": "1",
+          "ledger": "2",
+          "pending": "0",
+          "unclaimed": "1",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 0,
+          "claim_units": "1",
+          "claim_index": "18446744073709551616",
+          "has_snapshot": true
+        },
+        {
+          "op": "redeem",
+          "claim": "B",
+          "units": "1",
+          "ledger": "1",
+          "pending": "0",
+          "unclaimed": "2",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 0,
+          "claim_units": "1",
+          "claim_index": "18446744073709551616",
+          "has_snapshot": true
+        },
+        {
+          "op": "redeem",
+          "claim": "C",
+          "units": "1",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "3",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 0,
+          "claim_units": "1",
+          "claim_index": "18446744073709551616",
+          "has_snapshot": true
+        },
+        {
+          "op": "sync",
+          "actual": "2",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "2",
+          "leg_index": "12297829382473034410",
+          "leg_epoch": 0
+        },
+        {
+          "op": "settle",
+          "claim": "A",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "2",
+          "leg_index": "12297829382473034410",
+          "leg_epoch": 0,
+          "claim_units": "0",
+          "claim_index": "12297829382473034410",
+          "has_snapshot": true
+        },
+        {
+          "op": "settle",
+          "claim": "B",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "2",
+          "leg_index": "12297829382473034410",
+          "leg_epoch": 0,
+          "claim_units": "0",
+          "claim_index": "12297829382473034410",
+          "has_snapshot": true
+        },
+        {
+          "op": "settle",
+          "claim": "C",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "2",
+          "leg_index": "12297829382473034410",
+          "leg_epoch": 0,
+          "claim_units": "0",
+          "claim_index": "12297829382473034410",
+          "has_snapshot": true
+        }
+      ]
+    },
+    {
+      "name": "withdrawing after a seizure pays the settled amount",
+      "purpose": "A withdrawal settles the claim first and reduces unclaimed by exactly what is paid.",
+      "scale": 6,
+      "ledger": "1000000",
+      "steps": [
+        {
+          "op": "redeem",
+          "claim": "A",
+          "units": "400000",
+          "ledger": "600000",
+          "pending": "0",
+          "unclaimed": "400000",
+          "leg_index": "18446744073709551616",
+          "leg_epoch": 0,
+          "claim_units": "400000",
+          "claim_index": "18446744073709551616",
+          "has_snapshot": true
+        },
+        {
+          "op": "sync",
+          "actual": "500000",
+          "ledger": "300000",
+          "pending": "0",
+          "unclaimed": "200000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0
+        },
+        {
+          "op": "withdraw",
+          "claim": "A",
+          "units": "150000",
+          "ledger": "300000",
+          "pending": "0",
+          "unclaimed": "50000",
+          "leg_index": "9223372036854775808",
+          "leg_epoch": 0,
+          "claim_units": "50000",
+          "claim_index": "9223372036854775808",
+          "has_snapshot": true
+        }
+      ]
+    }
+  ]
+}
