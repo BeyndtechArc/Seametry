@@ -7,7 +7,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-hall = "FhQ6VDg2DmCiqbYuGMuZnJ1ksEfab9MPtedWDPcZT3Vh"
+hall = "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx"
 
 [provider]
 cluster = "localnet"
