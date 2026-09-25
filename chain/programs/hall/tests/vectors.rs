@@ -34,7 +34,11 @@ fn kind(name: &str) -> SyncKind {
 fn assert_state(context: &str, leg: &Leg, supply: u64, step: &Value) {
     assert_eq!(leg.ledger, atoms(step, "ledger"), "{context}: ledger");
     assert_eq!(leg.pending, atoms(step, "pending"), "{context}: pending");
-    assert_eq!(leg.unclaimed, atoms(step, "unclaimed"), "{context}: unclaimed");
+    assert_eq!(
+        leg.unclaimed,
+        atoms(step, "unclaimed"),
+        "{context}: unclaimed"
+    );
     assert_eq!(supply, atoms(step, "supply"), "{context}: supply");
 }
 
@@ -84,7 +88,11 @@ fn every_scenario_matches() {
                     let shares = atoms(step, "shares");
                     let inputs = recipe::create_inputs(&[leg], supply, shares, &[u64::MAX])
                         .unwrap_or_else(|e| panic!("{context}: {e:?}"));
-                    assert_eq!(inputs[0], atoms(step, "result"), "{context}: required input");
+                    assert_eq!(
+                        inputs[0],
+                        atoms(step, "result"),
+                        "{context}: required input"
+                    );
                     recipe::apply_create(&mut leg, inputs[0]).unwrap();
                     supply += shares;
                     assert_state(&context, &leg, supply, step);

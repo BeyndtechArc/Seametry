@@ -3,6 +3,11 @@ use anchor_lang::prelude::*;
 use crate::recipe;
 
 pub const MAX_CONSTITUENTS: usize = 12;
+
+/// Accounts an instruction takes per constituent, in order: mint, the caller's
+/// token account, the Hall's token account, the token program.
+pub const ACCOUNTS_PER_LEG: usize = 4;
+
 pub const ALLOY_SEED: &[u8] = b"alloy";
 pub const SHARE_SEED: &[u8] = b"share";
 pub const LOCKED_SEED: &[u8] = b"locked";

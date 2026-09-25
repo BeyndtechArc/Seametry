@@ -1,8 +1,9 @@
 use anchor_lang::prelude::*;
 
+/// What a sync found. A balance that matched what the Hall expected emits no
+/// event.
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Debug)]
 pub enum SyncKindCode {
-    Unchanged,
     Credit,
     Deficit,
 }
@@ -24,4 +25,13 @@ pub struct AlloyInitialized {
     pub id: u64,
     pub constituent_count: u8,
     pub genesis_shares: u64,
+}
+
+#[event]
+pub struct Struck {
+    pub alloy: Pubkey,
+    pub caller: Pubkey,
+    pub shares: u64,
+    pub supply_after: u64,
+    pub inputs: Vec<u64>,
 }

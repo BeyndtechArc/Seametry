@@ -24,15 +24,17 @@ pub enum HallError {
     ExceedsUnclaimed,
     #[msg("An alloy holds between one and twelve constituents.")]
     ConstituentCountOutOfRange,
-    #[msg("Each constituent needs exactly four accounts: mint, source, Hall account, token program.")]
+    #[msg(
+        "Each constituent needs exactly four accounts: mint, source, Hall account, token program."
+    )]
     WrongAccountCount,
-    #[msg("The genesis deposit and every constituent deposit must be positive.")]
+    #[msg("The genesis shares and every constituent deposit must be positive.")]
     ZeroDeposit,
     #[msg("The same mint appears twice in one alloy.")]
     DuplicateConstituent,
     #[msg("The account is not a mint of the token program named beside it.")]
     NotAMint,
-    #[msg("The source is not a token account of this mint owned by the sponsor.")]
+    #[msg("The source is not a token account of this mint owned by the signer.")]
     WrongSourceAccount,
     #[msg("The token program must be the classic Token program or Token-2022.")]
     UnsupportedTokenProgram,
@@ -40,6 +42,12 @@ pub enum HallError {
     HallAccountFrozen,
     #[msg("The Hall received a different amount than was sent. A transfer fee or hook changed the amount.")]
     DepositNotReceivedInFull,
+    #[msg("The share mint is not the one this alloy issues.")]
+    WrongShareMint,
+    #[msg("Supply one maximum per constituent.")]
+    WrongMaximumsCount,
+    #[msg("A mint, Hall account or token program does not match the alloy's record for that constituent.")]
+    WrongConstituentAccounts,
 }
 
 impl From<RecipeError> for HallError {

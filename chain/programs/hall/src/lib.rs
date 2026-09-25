@@ -21,6 +21,14 @@ pub mod hall {
         instructions::initialize_alloy::handle_initialize_alloy(ctx, args)
     }
 
+    pub fn create<'info>(
+        ctx: Context<'info, Create<'info>>,
+        shares: u64,
+        maximums: Vec<u64>,
+    ) -> Result<()> {
+        instructions::create::handle_create(ctx, shares, maximums)
+    }
+
     pub fn sync(ctx: Context<SyncLeg>, leg_index: u8) -> Result<()> {
         instructions::sync_leg::handle_sync(ctx, leg_index)
     }

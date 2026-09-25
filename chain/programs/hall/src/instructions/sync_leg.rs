@@ -4,7 +4,7 @@ use anchor_spl::token_interface::TokenAccount;
 use crate::{
     error::HallError,
     events::{SyncKindCode, Synced},
-    recipe::{self, SyncKind, SyncOutcome},
+    recipe::{self, SyncKind},
     state::{Alloy, LegRecord},
 };
 
@@ -15,12 +15,31 @@ pub struct SyncLeg<'info> {
     pub hall_account: InterfaceAccount<'info, TokenAccount>,
 }
 
-/// Reconciles one leg against the balance actually held and stores the result.
-/// Shared by every instruction that must sync before it acts.
-pub fn reconcile(record: &mut LegRecord, balance: u64, now: i64) -> Result<SyncOutcome> {
+/// Reconciles one leg against the balance actually held, stores the result and
+/// announces a credit or a deficit. Every instruction that must sync before it
+/// acts goes through here, so the event is emitted the same way from each.
+pub fn reconcile(
+    alloy: Pubkey,
+    index: u8,
+    record: &mut LegRecord,
+    balance: u64,
+    now: i64,
+) -> Result<()> {
     let outcome = recipe::sync(&record.leg(), balance, now)?;
     record.store(&outcome.after);
-    Ok(outcome)
+    let kind = match outcome.kind {
+        SyncKind::Unchanged => return Ok(()),
+        SyncKind::Credit => SyncKindCode::Credit,
+        SyncKind::Deficit => SyncKindCode::Deficit,
+    };
+    emit!(Synced {
+        alloy,
+        leg_index: index,
+        kind,
+        delta: outcome.delta,
+        vested_in: outcome.vested_in,
+    });
+    Ok(())
 }
 
 pub fn handle_sync(ctx: Context<SyncLeg>, leg_index: u8) -> Result<()> {
@@ -35,18 +54,11 @@ pub fn handle_sync(ctx: Context<SyncLeg>, leg_index: u8) -> Result<()> {
         ctx.accounts.hall_account.key(),
         HallError::WrongHallAccount
     );
-
-    let outcome = reconcile(record, ctx.accounts.hall_account.amount, now)?;
-    emit!(Synced {
-        alloy: alloy_key,
+    reconcile(
+        alloy_key,
         leg_index,
-        kind: match outcome.kind {
-            SyncKind::Unchanged => SyncKindCode::Unchanged,
-            SyncKind::Credit => SyncKindCode::Credit,
-            SyncKind::Deficit => SyncKindCode::Deficit,
-        },
-        delta: outcome.delta,
-        vested_in: outcome.vested_in,
-    });
-    Ok(())
+        record,
+        ctx.accounts.hall_account.amount,
+        now,
+    )
 }

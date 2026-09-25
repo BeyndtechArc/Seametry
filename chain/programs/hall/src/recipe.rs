@@ -119,7 +119,10 @@ pub fn vested(leg: &Leg, now: i64) -> Result<u64> {
 pub fn sync(leg: &Leg, actual: u64, now: i64) -> Result<SyncOutcome> {
     let vested_in = vested(leg, now)?;
     let mut after = *leg;
-    after.ledger = leg.ledger.checked_add(vested_in).ok_or(RecipeError::Overflow)?;
+    after.ledger = leg
+        .ledger
+        .checked_add(vested_in)
+        .ok_or(RecipeError::Overflow)?;
     after.pending -= vested_in;
 
     let expected = after.expected()?;
@@ -127,7 +130,10 @@ pub fn sync(leg: &Leg, actual: u64, now: i64) -> Result<SyncOutcome> {
         (SyncKind::Unchanged, 0)
     } else if actual > expected {
         let surplus = actual - expected;
-        after.pending = after.pending.checked_add(surplus).ok_or(RecipeError::Overflow)?;
+        after.pending = after
+            .pending
+            .checked_add(surplus)
+            .ok_or(RecipeError::Overflow)?;
         after.vest_start = now;
         (SyncKind::Credit, surplus)
     } else {
@@ -135,7 +141,12 @@ pub fn sync(leg: &Leg, actual: u64, now: i64) -> Result<SyncOutcome> {
         after = apply_deficit(after, deficit)?;
         (SyncKind::Deficit, deficit)
     };
-    Ok(SyncOutcome { kind, delta, vested_in, after })
+    Ok(SyncOutcome {
+        kind,
+        delta,
+        vested_in,
+        after,
+    })
 }
 
 /// Takes a loss from pending first, then splits the rest between ledger and
@@ -150,7 +161,10 @@ fn apply_deficit(mut leg: Leg, deficit: u64) -> Result<Leg> {
         return Ok(leg);
     }
 
-    let base = leg.ledger.checked_add(leg.unclaimed).ok_or(RecipeError::Overflow)?;
+    let base = leg
+        .ledger
+        .checked_add(leg.unclaimed)
+        .ok_or(RecipeError::Overflow)?;
     if base == 0 {
         return Err(RecipeError::DeficitExceedsHoldings { remaining });
     }
@@ -206,14 +220,20 @@ pub fn apply_create(leg: &mut Leg, input: u64) -> Result<()> {
 /// Moves redeemed units from the ledger to unclaimed.
 pub fn apply_redeem(leg: &mut Leg, units: u64) -> Result<()> {
     leg.ledger = leg.ledger.checked_sub(units).ok_or(RecipeError::Overflow)?;
-    leg.unclaimed = leg.unclaimed.checked_add(units).ok_or(RecipeError::Overflow)?;
+    leg.unclaimed = leg
+        .unclaimed
+        .checked_add(units)
+        .ok_or(RecipeError::Overflow)?;
     Ok(())
 }
 
 /// Delivers one leg of a claim.
 pub fn apply_withdraw(leg: &mut Leg, units: u64) -> Result<()> {
     if units > leg.unclaimed {
-        return Err(RecipeError::ExceedsUnclaimed { requested: units, unclaimed: leg.unclaimed });
+        return Err(RecipeError::ExceedsUnclaimed {
+            requested: units,
+            unclaimed: leg.unclaimed,
+        });
     }
     leg.unclaimed -= units;
     Ok(())

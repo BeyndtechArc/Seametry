@@ -3,24 +3,22 @@ use anchor_spl::{
     associated_token::{self, AssociatedToken},
     token_2022::Token2022,
     token_interface::{
-        mint_to, spl_pod::optional_keys::OptionalNonZeroPubkey, spl_token_2022::state::AccountState,
+        mint_to, spl_pod::optional_keys::OptionalNonZeroPubkey,
         spl_token_metadata_interface::state::TokenMetadata, token_metadata_initialize,
-        token_metadata_update_authority, transfer_checked, Mint, MintTo, TokenAccount,
-        TokenMetadataInitialize, TokenMetadataUpdateAuthority, TransferChecked,
+        token_metadata_update_authority, Mint, MintTo, TokenAccount, TokenMetadataInitialize,
+        TokenMetadataUpdateAuthority,
     },
 };
 
+use super::deposit::{self, DepositAccounts};
 use crate::{
     error::HallError,
     events::AlloyInitialized,
     state::{
-        Alloy, LegRecord, ALLOY_SEED, LOCKED_SEED, MAX_CONSTITUENTS, PROGRAM_VERSION,
-        SHARE_DECIMALS, SHARE_SEED,
+        Alloy, LegRecord, ACCOUNTS_PER_LEG, ALLOY_SEED, LOCKED_SEED, MAX_CONSTITUENTS,
+        PROGRAM_VERSION, SHARE_DECIMALS, SHARE_SEED,
     },
 };
-
-/// Mint, sponsor source account, Hall account, token program.
-const ACCOUNTS_PER_CONSTITUENT: usize = 4;
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct InitializeAlloyArgs {
@@ -92,7 +90,7 @@ pub fn handle_initialize_alloy<'info>(
     );
     require_eq!(
         ctx.remaining_accounts.len(),
-        count * ACCOUNTS_PER_CONSTITUENT,
+        count * ACCOUNTS_PER_LEG,
         HallError::WrongAccountCount
     );
     require!(
@@ -125,13 +123,15 @@ pub fn handle_initialize_alloy<'info>(
     let mut records = [LegRecord::default(); MAX_CONSTITUENTS];
     for (index, (chunk, &deposit)) in ctx
         .remaining_accounts
-        .chunks_exact(ACCOUNTS_PER_CONSTITUENT)
+        .chunks_exact(ACCOUNTS_PER_LEG)
         .zip(&args.deposits)
         .enumerate()
     {
         records[index] = admit_constituent(accounts, chunk, deposit, now)?;
         require!(
-            records[..index].iter().all(|earlier| earlier.mint != records[index].mint),
+            records[..index]
+                .iter()
+                .all(|earlier| earlier.mint != records[index].mint),
             HallError::DuplicateConstituent
         );
     }
@@ -234,23 +234,16 @@ fn initialize_share_metadata<'info>(
 fn admit_constituent<'info>(
     accounts: &InitializeAlloy<'info>,
     chunk: &'info [AccountInfo<'info>],
-    deposit: u64,
+    amount: u64,
     now: i64,
 ) -> Result<LegRecord> {
     let [mint_info, source_info, hall_info, program_info] = chunk else {
         return err!(HallError::WrongAccountCount);
     };
     require!(
-        *program_info.key == anchor_spl::token::ID || *program_info.key == anchor_spl::token_2022::ID,
+        *program_info.key == anchor_spl::token::ID
+            || *program_info.key == anchor_spl::token_2022::ID,
         HallError::UnsupportedTokenProgram
-    );
-    require_keys_eq!(*mint_info.owner, *program_info.key, HallError::NotAMint);
-    let mint = InterfaceAccount::<Mint>::try_from(mint_info).map_err(|_| HallError::NotAMint)?;
-    let source = InterfaceAccount::<TokenAccount>::try_from(source_info)
-        .map_err(|_| HallError::WrongSourceAccount)?;
-    require!(
-        source.mint == mint_info.key() && source.owner == accounts.sponsor.key(),
-        HallError::WrongSourceAccount
     );
 
     associated_token::create_idempotent(CpiContext::new(
@@ -265,35 +258,22 @@ fn admit_constituent<'info>(
         },
     ))?;
 
-    let mut hall = InterfaceAccount::<TokenAccount>::try_from(hall_info)?;
-    require!(hall.state != AccountState::Frozen, HallError::HallAccountFrozen);
-    let before = hall.amount;
-
-    transfer_checked(
-        CpiContext::new(
-            *program_info.key,
-            TransferChecked {
-                from: source_info.clone(),
-                mint: mint_info.clone(),
-                to: hall_info.clone(),
-                authority: accounts.sponsor.to_account_info(),
-            },
-        ),
-        deposit,
-        mint.decimals,
+    let before = deposit::deposit(
+        &DepositAccounts {
+            caller: accounts.sponsor.to_account_info(),
+            mint: mint_info,
+            source: source_info,
+            hall: hall_info,
+            token_program: program_info,
+        },
+        amount,
     )?;
-    hall.reload()?;
-    require_eq!(
-        hall.amount,
-        before.checked_add(deposit).ok_or(HallError::Overflow)?,
-        HallError::DepositNotReceivedInFull
-    );
 
     Ok(LegRecord {
         mint: mint_info.key(),
         token_program: *program_info.key,
         hall_account: hall_info.key(),
-        ledger: deposit,
+        ledger: amount,
         pending: before,
         unclaimed: 0,
         vest_start: now,
