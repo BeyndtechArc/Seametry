@@ -154,11 +154,22 @@ jobs:
           fi
 
   hall:
-    name: Hall arithmetic matches the vectors
+    name: Hall program and arithmetic
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
-      - name: Rust reproduces spec/recipe/vectors.json
+      - name: Install the Solana toolchain
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+      # litesvm 0.10.0 refuses the SBPF v3 that anchor build emits by default,
+      # so the program is built with cargo-build-sbf --arch v0.
+      - name: Build the program
+        working-directory: chain
+        run: cargo-build-sbf --arch v0
+
+      - name: Rust reproduces the vectors and the program passes its tests
         working-directory: chain
         run: cargo test --locked
