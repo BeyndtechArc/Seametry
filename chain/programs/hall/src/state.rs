@@ -5,6 +5,13 @@ use crate::recipe;
 pub const MAX_CONSTITUENTS: usize = 12;
 pub const ALLOY_SEED: &[u8] = b"alloy";
 pub const SHARE_SEED: &[u8] = b"share";
+pub const LOCKED_SEED: &[u8] = b"locked";
+pub const PROGRAM_VERSION: u64 = 1;
+
+/// Shares carry six decimals so a wallet can show a fraction of one. The
+/// arithmetic treats the mint's smallest unit as the share; a whole UI share is
+/// one million of them.
+pub const SHARE_DECIMALS: u8 = 6;
 
 /// One constituent's position. Mirrors `recipe::Leg` plus the accounts that
 /// identify it. Zero-copy: twelve of these do not fit on the SBF stack as an

@@ -22,6 +22,24 @@ pub enum HallError {
     ExceedsMaximum,
     #[msg("A withdrawal exceeds the units owed.")]
     ExceedsUnclaimed,
+    #[msg("An alloy holds between one and twelve constituents.")]
+    ConstituentCountOutOfRange,
+    #[msg("Each constituent needs exactly four accounts: mint, source, Hall account, token program.")]
+    WrongAccountCount,
+    #[msg("The genesis deposit and every constituent deposit must be positive.")]
+    ZeroDeposit,
+    #[msg("The same mint appears twice in one alloy.")]
+    DuplicateConstituent,
+    #[msg("The account is not a mint of the token program named beside it.")]
+    NotAMint,
+    #[msg("The source is not a token account of this mint owned by the sponsor.")]
+    WrongSourceAccount,
+    #[msg("The token program must be the classic Token program or Token-2022.")]
+    UnsupportedTokenProgram,
+    #[msg("The issuer freezes new token accounts for this mint, so the Hall cannot hold it.")]
+    HallAccountFrozen,
+    #[msg("The Hall received a different amount than was sent. A transfer fee or hook changed the amount.")]
+    DepositNotReceivedInFull,
 }
 
 impl From<RecipeError> for HallError {

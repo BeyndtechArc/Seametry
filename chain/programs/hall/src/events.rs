@@ -15,3 +15,13 @@ pub struct Synced {
     pub delta: u64,
     pub vested_in: u64,
 }
+
+#[event]
+pub struct AlloyInitialized {
+    pub alloy: Pubkey,
+    pub sponsor: Pubkey,
+    pub share_mint: Pubkey,
+    pub id: u64,
+    pub constituent_count: u8,
+    pub genesis_shares: u64,
+}

@@ -14,6 +14,13 @@ declare_id!("4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx");
 pub mod hall {
     use super::*;
 
+    pub fn initialize_alloy<'info>(
+        ctx: Context<'info, InitializeAlloy<'info>>,
+        args: InitializeAlloyArgs,
+    ) -> Result<()> {
+        instructions::initialize_alloy::handle_initialize_alloy(ctx, args)
+    }
+
     pub fn sync(ctx: Context<SyncLeg>, leg_index: u8) -> Result<()> {
         instructions::sync_leg::handle_sync(ctx, leg_index)
     }

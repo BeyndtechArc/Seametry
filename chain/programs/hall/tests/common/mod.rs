@@ -9,12 +9,15 @@
 use {
     anchor_lang::{
         prelude::{Clock, Pubkey},
-        solana_program::{instruction::Instruction, program_pack::Pack},
+        solana_program::{
+            instruction::{AccountMeta, Instruction},
+            program_pack::Pack,
+        },
         Discriminator, InstructionData, ToAccountMetas,
     },
     anchor_spl::token::spl_token::{
         self,
-        state::{Account as TokenAccountState, AccountState},
+        state::{Account as TokenAccountState, AccountState, Mint as MintState},
     },
     hall::state::{Alloy, LegRecord},
     litesvm::{types::FailedTransactionMetadata, LiteSVM},
@@ -45,6 +48,10 @@ impl World {
         Self { svm, payer }
     }
 
+    pub fn sponsor(&self) -> Pubkey {
+        self.payer.pubkey()
+    }
+
     pub fn set_clock(&mut self, unix_timestamp: i64) {
         let mut clock = self.svm.get_sysvar::<Clock>();
         clock.unix_timestamp = unix_timestamp;
@@ -66,9 +73,23 @@ impl World {
 
     pub fn put_token_account(&mut self, mint: Pubkey, amount: u64) -> Pubkey {
         let key = Pubkey::new_unique();
+        self.put_token_account_at(key, spl_token::ID, mint, Pubkey::new_unique(), amount);
+        key
+    }
+
+    /// The classic and Token-2022 base account layouts are identical, so one
+    /// layout serves both programs.
+    pub fn put_token_account_at(
+        &mut self,
+        key: Pubkey,
+        program: Pubkey,
+        mint: Pubkey,
+        owner: Pubkey,
+        amount: u64,
+    ) {
         let state = TokenAccountState {
             mint,
-            owner: Pubkey::new_unique(),
+            owner,
             amount,
             state: AccountState::Initialized,
             ..TokenAccountState::default()
@@ -76,12 +97,24 @@ impl World {
         let mut data = vec![0u8; TokenAccountState::LEN];
         TokenAccountState::pack(state, &mut data).unwrap();
         self.svm
-            .set_account(
-                key,
-                Account { lamports: RENT_ENOUGH, data, owner: spl_token::ID, ..Account::default() },
-            )
+            .set_account(key, Account { lamports: RENT_ENOUGH, data, owner: program, ..Account::default() })
+            .unwrap();
+    }
+
+    pub fn put_mint(&mut self, program: Pubkey, decimals: u8) -> Pubkey {
+        let key = Pubkey::new_unique();
+        let state = MintState { is_initialized: true, decimals, ..MintState::default() };
+        let mut data = vec![0u8; MintState::LEN];
+        MintState::pack(state, &mut data).unwrap();
+        self.svm
+            .set_account(key, Account { lamports: RENT_ENOUGH, data, owner: program, ..Account::default() })
             .unwrap();
         key
+    }
+
+    pub fn token_amount(&self, key: Pubkey) -> u64 {
+        let account = self.svm.get_account(&key).unwrap();
+        TokenAccountState::unpack(&account.data[..TokenAccountState::LEN]).unwrap().amount
     }
 
     pub fn set_token_amount(&mut self, key: Pubkey, amount: u64) {
@@ -102,8 +135,18 @@ impl World {
         data: impl InstructionData,
         accounts: impl ToAccountMetas,
     ) -> Result<litesvm::types::TransactionMetadata, FailedTransactionMetadata> {
-        let instruction =
-            Instruction::new_with_bytes(hall::ID, &data.data(), accounts.to_account_metas(None));
+        self.send_with_remaining(data, accounts, vec![])
+    }
+
+    pub fn send_with_remaining(
+        &mut self,
+        data: impl InstructionData,
+        accounts: impl ToAccountMetas,
+        remaining: Vec<AccountMeta>,
+    ) -> Result<litesvm::types::TransactionMetadata, FailedTransactionMetadata> {
+        let mut metas = accounts.to_account_metas(None);
+        metas.extend(remaining);
+        let instruction = Instruction::new_with_bytes(hall::ID, &data.data(), metas);
         self.svm.expire_blockhash();
         let blockhash = self.svm.latest_blockhash();
         let message = Message::new_with_blockhash(&[instruction], Some(&self.payer.pubkey()), &blockhash);

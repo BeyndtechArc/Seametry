@@ -119,6 +119,8 @@ Token-2022 with metadata only. No freeze authority. No permanent delegate. No pa
 
 At most twelve constituents. Derivation: `create` needs a mint and two token accounts per constituent plus roughly seven shared accounts, which fits well under 64, and the remaining headroom absorbs transfer-hook accounts. Verified by a devnet test with twelve constituents, half with hooks enabled.
 
+The account count is not the binding limit. Every account key costs 32 bytes and a legacy transaction is capped at 1,232 bytes. A size estimate for `initialize_alloy` (placeholder keys, one signature, measured on 25 September 2026) gave about 957 bytes at four constituents, 1,389 at eight and 1,822 at twelve. Above roughly six constituents a strike therefore needs a v0 transaction with an address lookup table. The twelve constituent test is not yet written, and the local test helper sends legacy transactions only.
+
 ### 4.9 Fees
 
 Compiled constants per program version, taken in shares: a fraction of minted shares to a fixed treasury on `create`, a fraction transferred instead of burned on `redeem`. Zero on devnet. Mainnet levels decided before the Key, then unchangeable forever. A new fee is a new version.
