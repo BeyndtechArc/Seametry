@@ -156,7 +156,9 @@ aggregator responses, a generated Explorer, and CI.
   `ENGINEERING_STANDARD.md` section 2 forbids. `internal/policy` now does
   everything it did and more, so it can go. It should go in one change with its
   workspace entries, so the repository never shows two authorities.
-- `programs/hall` does not exist. The toolchain (Solana CLI 4.3.0, Anchor
+- `chain/programs/hall` holds the Hall's arithmetic (`recipe.rs`), which
+  reproduces every scenario in `spec/recipe/vectors.json`. The Anchor
+  instructions, accounts and events are not written. The toolchain (Solana CLI 4.3.0, Anchor
   1.2.0, Rust 1.98.1) builds an Anchor program and runs its litesvm test
   natively on Windows, verified on the `anchor init` template on 25 September
   2026. WSL is not required. `anchor build` emitted SBPF v3, which litesvm

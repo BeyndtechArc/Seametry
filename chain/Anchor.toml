@@ -1,0 +1,19 @@
+skip_local_validator = true
+
+[toolchain]
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+hall = "FhQ6VDg2DmCiqbYuGMuZnJ1ksEfab9MPtedWDPcZT3Vh"
+
+[provider]
+cluster = "localnet"
+wallet = '~\.config/solana/id.json'
+
+[scripts]
+test = "cargo test"
+
+[hooks]
