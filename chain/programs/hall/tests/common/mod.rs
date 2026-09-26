@@ -161,9 +161,10 @@ impl World {
 
     pub fn set_token_amount(&mut self, key: Pubkey, amount: u64) {
         let mut account = self.svm.get_account(&key).unwrap();
-        let mut state = TokenAccountState::unpack(&account.data).unwrap();
+        let base = ..TokenAccountState::LEN;
+        let mut state = TokenAccountState::unpack(&account.data[base]).unwrap();
         state.amount = amount;
-        TokenAccountState::pack(state, &mut account.data).unwrap();
+        TokenAccountState::pack(state, &mut account.data[base]).unwrap();
         self.svm.set_account(key, account).unwrap();
     }
 

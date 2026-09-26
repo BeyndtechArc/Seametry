@@ -62,12 +62,18 @@ impl Fixture {
     }
 
     pub fn strike_as(&mut self, wallet: &Wallet, shares: u64) -> Outcome {
+        self.strike_capped_as(wallet, shares, vec![u64::MAX; wallet.sources.len()])
+    }
+
+    pub fn strike_capped_as(
+        &mut self,
+        wallet: &Wallet,
+        shares: u64,
+        maximums: Vec<u64>,
+    ) -> Outcome {
         self.world.send_as(
             &wallet.key,
-            hall::instruction::Create {
-                shares,
-                maximums: vec![u64::MAX; wallet.sources.len()],
-            },
+            hall::instruction::Create { shares, maximums },
             hall::accounts::Create {
                 caller: wallet.key.pubkey(),
                 alloy: self.at.alloy,
@@ -252,15 +258,18 @@ impl Fixture {
     /// For each leg, whether the Hall's balance equals ledger + pending +
     /// unclaimed. Holds after any instruction that syncs the leg.
     pub fn assert_balances_match_ledgers(&self, context: &str) {
-        let alloy = self.world.alloy(self.at.alloy);
         for index in 0..self.sources.len() {
-            let leg = alloy.legs[index];
-            assert_eq!(
-                self.world.token_amount(self.hall(index)),
-                leg.ledger + leg.pending + leg.unclaimed,
-                "{context}: balance invariant for leg {index}"
-            );
+            self.assert_leg_matches_ledger(index, context);
         }
+    }
+
+    pub fn assert_leg_matches_ledger(&self, index: usize, context: &str) {
+        let leg = self.world.alloy(self.at.alloy).legs[index];
+        assert_eq!(
+            self.world.token_amount(self.hall(index)),
+            leg.ledger + leg.pending + leg.unclaimed,
+            "{context}: balance invariant for leg {index}"
+        );
     }
 }
 
