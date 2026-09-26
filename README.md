@@ -61,20 +61,28 @@ Full product architecture: [docs/PRODUCT_ARCHITECTURE.md](docs/PRODUCT_ARCHITECT
 Stated plainly, because a README that describes intentions as though they were
 code is the first thing that rots.
 
-**Exists:** a TypeScript scaffold. A deterministic preflight package with
-tests, typed xStocks and Jupiter adapters over public endpoints, Chainlink and
-Stork coverage adapters that distinguish configured, unavailable, and
-credential blocked states, a Hono gateway with health and coverage endpoints,
-an Expo shell with four screens, and a Next.js console reading a generated
-coverage snapshot.
+**Exists:**
 
-**Does not exist:** the Go core these documents specify. The contract in
-`api/openapi/`. Any CI. Any of the shared vectors in `spec/`. The Terminal.
+- The Go core in `internal/`: canonical JSON, Merkle receipts, exact decimal
+  amounts, Token-2022 mint decoding, the admission policy, the Hall's
+  arithmetic, Jupiter depth measurement and a rate limited transport.
+- `spec/`: conformance vectors shared by Go, a JavaScript receipt verifier and
+  the Rust program, with a drift gate.
+- `chain/programs/hall`: the Hall, an Anchor program. All five instructions are
+  written and tested in litesvm. It is not deployed anywhere.
+- A generated Explorer, captured mainnet fixtures and evidence, and CI.
+- A TypeScript scaffold in `apps/` and `packages/` (source adapters, a gateway,
+  an Expo shell, a Next.js console) that the Go core is replacing.
 
-**Known conflict:** `packages/preflight` computes decisions in TypeScript,
-which `ENGINEERING_STANDARD.md` section 2 forbids. It is retired in principle
-and still present in fact. It goes when the Go core replaces it, in one change,
-so the repository never shows two authorities.
+**Does not exist:** anything on devnet or mainnet. The contract in
+`api/openapi/`. The Terminal. Oracle values read from chain and consumed by the
+policy.
+
+**Known gap:** the retired TypeScript `preflight` also flagged missing and
+divergent reference prices. `internal/policy` has no counterpart, because oracle
+values are to be read from chain
+([decision](docs/decisions/2026-09-23-oracles-on-chain.md)) and that read is not
+built.
 
 The full gap list, including documentation gaps, is in
 [docs/README.md](docs/README.md) under Open items.
@@ -96,14 +104,16 @@ Three foundation documents, short on purpose, read before writing code:
 ## Run what exists today
 
 ```bash
-npm install
-npm run coverage      # live source coverage probe, writes evidence/
-npm test              # preflight determinism tests
-npm run typecheck
-npm run dev:web       # public console
-npm run dev:api       # gateway
-npm run dev:mobile    # Expo
+go test ./...                              # the Go core
+node tools/spec/generate.mjs --check       # conformance vectors must not drift
+npm run explorer                           # rebuild the Explorer
+npm run serve                              # serve it without Go
+(cd chain && cargo-build-sbf --arch v0 && cargo test --locked)   # the Hall
 ```
+
+The TypeScript scaffold still runs: `npm install`, then `npm run coverage`,
+`npm run typecheck`, `npm run dev:web`, `npm run dev:api`, `npm run dev:mobile`.
+It has no tests of its own now that `preflight` is gone.
 
 Copy `.env.example` to `.env` only when provider credentials are available.
 Public discovery works without secrets; signed oracle reads do not.

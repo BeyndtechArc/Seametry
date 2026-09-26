@@ -152,10 +152,11 @@ Built and tested: `internal/canonical`, `merkle`, `amount`, `registry`,
 shared vectors and goldens in `spec/`, captured fixtures for mainnet mints and
 aggregator responses, a generated Explorer, and CI.
 
-- `packages/preflight` still computes decisions in TypeScript, which
-  `ENGINEERING_STANDARD.md` section 2 forbids. `internal/policy` now does
-  everything it did and more, so it can go. It should go in one change with its
-  workspace entries, so the repository never shows two authorities.
+- The retired TypeScript `preflight` flagged missing, closed and divergent
+  reference prices from Chainlink and Stork, using floating point percentages.
+  `internal/policy` has no counterpart for those three flags, because oracle
+  values are to be read from chain and that read is not built. Whatever replaces
+  them must use integer arithmetic.
 - `chain/programs/hall` holds the Hall's arithmetic (`recipe.rs`), which
   reproduces every scenario in `spec/recipe/vectors.json` and
   `spec/claims/vectors.json`. All five instructions (`initialize_alloy`,
