@@ -101,11 +101,10 @@ jobs:
             exit 1
           fi
 
-      # Scoped to the surfaces that conform. apps/web and apps/mobile are the
-      # retired TypeScript scaffold: the Explorer replaces the first and
-      # prd/MOBILE.md rebuilds the second in phase 2. They carry 34 violations
-      # and are excluded deliberately rather than silently, so that adding them
-      # back is a visible change to this line.
+      # Scoped to the surfaces that exist. apps/web and apps/mobile were the
+      # retired TypeScript scaffold; the Explorer replaces the first and
+      # prd/MOBILE.md specifies a rebuild of the second in phase 2, neither
+      # written yet. Nothing else in the tree produces UI.
       # The linter arrives as an import and is replaced wholesale on each new
       # version of the design system, so a fix inside it does not survive unless
       # something outside it fails when the fix is gone. This is that something.

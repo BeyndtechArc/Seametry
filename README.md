@@ -71,16 +71,19 @@ code is the first thing that rots.
 - `chain/programs/hall`: the Hall, an Anchor program. All five instructions are
   written and tested in litesvm. It is not deployed anywhere.
 - A generated Explorer, captured mainnet fixtures and evidence, and CI.
-- A TypeScript scaffold in `apps/` and `packages/` (source adapters, a gateway,
-  an Expo shell, a Next.js console) that the Go core is replacing.
+- Generated design tokens in `packages/ui/src/generated`, the only surviving
+  member of the earlier TypeScript workspace: the rest (source adapters, a
+  gateway, an Expo shell, a Next.js console) was retired once the Go core, the
+  Explorer and the Hall replaced what it did.
 
 **Does not exist:** anything on devnet or mainnet. The contract in
 `api/openapi/`. The Terminal. Oracle values read from chain and consumed by the
 policy.
 
 **Known gap:** the retired TypeScript `preflight` also flagged missing and
-divergent reference prices. `internal/policy` has no counterpart, because oracle
-values are to be read from chain
+divergent reference prices, and the retired coverage probe flagged issuer,
+Chainlink and Stork coverage the same way. `internal/policy` has no
+counterpart for either, because oracle values are to be read from chain
 ([decision](docs/decisions/2026-09-23-oracles-on-chain.md)) and that read is not
 built.
 
@@ -109,11 +112,9 @@ node tools/spec/generate.mjs --check       # conformance vectors must not drift
 npm run explorer                           # rebuild the Explorer
 npm run serve                              # serve it without Go
 (cd chain && cargo-build-sbf --arch v0 && cargo test --locked)   # the Hall
+npm run tokens                             # regenerate packages/ui from the design source
+npm run design:lint                        # design system compliance
 ```
-
-The TypeScript scaffold still runs: `npm install`, then `npm run coverage`,
-`npm run typecheck`, `npm run dev:web`, `npm run dev:api`, `npm run dev:mobile`.
-It has no tests of its own now that `preflight` is gone.
 
 Copy `.env.example` to `.env` only when provider credentials are available.
 Public discovery works without secrets; signed oracle reads do not.
