@@ -56,7 +56,6 @@ type Constituent struct {
 	ClaimEpoch uint64
 }
 
-// Expected is the balance the Hall believes it holds.
 func (c Constituent) Expected() (amount.Amount, error) {
 	sum, err := c.Ledger.Add(c.Pending)
 	if err != nil {
@@ -389,7 +388,6 @@ func ApplyRedeem(a *Alloy, shares *big.Int, legs []amount.Amount) error {
 	return nil
 }
 
-// ApplyCreate adds deposited units to the ledger and mints the shares.
 func ApplyCreate(a *Alloy, shares *big.Int, inputs []amount.Amount) error {
 	if len(inputs) != len(a.Constituents) {
 		return fmt.Errorf("basket: %d inputs for %d constituents", len(inputs), len(a.Constituents))
@@ -405,7 +403,6 @@ func ApplyCreate(a *Alloy, shares *big.Int, inputs []amount.Amount) error {
 	return nil
 }
 
-// Withdraw delivers one leg of a claim, reducing unclaimed.
 func Withdraw(c *Constituent, units amount.Amount) error {
 	cmp, err := units.Cmp(c.Unclaimed)
 	if err != nil {

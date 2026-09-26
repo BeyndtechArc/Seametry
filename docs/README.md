@@ -53,7 +53,7 @@ Read all three before writing code. They are short on purpose.
 | Document | Owns | Status |
 |---|---|---|
 | [prd/HALL.md](prd/HALL.md) | The Hall on-chain program: guarantees, instructions, arithmetic, prerogative handling, the devnet demonstration | Live. **The product.** Devnet is phase 1, mainnet is phase 3 |
-| [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Basket arithmetic: holdings boundary, recipe conformance vectors, valuation, weights, delivery evaluation | Live. Core from phase 0. Contains sections pending removal, listed in its header |
+| [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Off chain basket valuation, weighting and drift, whole-alloy delivery evaluation, acquisition planning | Live. The holdings boundary and NAV/weighting/delivery/execution specs are written; only the holdings boundary and (via `internal/basket`) the recipe arithmetic are built |
 | [prd/MOBILE.md](prd/MOBILE.md) | Mobile holding, monitoring, and approval surface | Live. Phase 2. Deliberately not a consumer brokerage |
 | [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the verification ritual, instrument pages, evidence pages, the Hall demonstration | Live. Phase 1 |
 | [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Nothing interactive exists yet |
@@ -130,12 +130,10 @@ Tracked here because an untracked gap becomes folklore.
 - The validation record in `PRODUCT_ARCHITECTURE.md` section 11 needs the
   pitch clinic's exact date, which is currently recorded only as
   "September 2026, ahead of Stocklana".
-- `prd/BASKET_DOMAIN.md` still contains prerogative, multiplier, policy, and
-  TypeScript package sections that are now owned elsewhere. They need removing
-  from that file.
-- `archive/CLAIMS_AND_LIMITATIONS.md` holds the reproduced UNHx evidence
-  claims. They belong in `evidence/`, with the captured raw payloads beside
-  them.
+- `archive/CLAIMS_AND_LIMITATIONS.md` claims a reproduced UNHx transaction and
+  state split, but no raw UNHx payload exists in `fixtures/` or `evidence/`.
+  It stays archived, not moved, until UNHx is captured and the claim
+  reproduced, or the specific claims are dropped.
 - The build prompt set in `archive/seametry-03-prompts.md` needs regenerating
   against the current architecture. Its invariants and its list of tasks that
   cannot be delegated remain valid input.

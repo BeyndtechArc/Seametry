@@ -1,5 +1,13 @@
 > **ARCHIVED, NOT BINDING.** Historical record only. Retired 23 September 2026.
-> Content is still factually useful and is pending rehoming into `evidence/`. Until then it is evidence, not doctrine.
+> **Not rehomed into `evidence/`.** No raw payload for UNHx exists anywhere in
+> this repository: `fixtures/mainnet/` and `fixtures/jupiter/` hold seven other
+> instruments, captured after this repository was rebuilt, and none of them is
+> UNHx. The claims below describing a reproduced UNHx transaction and state
+> split predate that rebuild and were never re-captured, so unlike
+> `evidence/depth-2026-09-24.md` or `evidence/multiplier-staleness-2026-09-23.md`,
+> nothing here is backed by a fixture a reader can check. It stays archived as
+> a historical claim, not evidence, until someone captures UNHx and reproduces
+> it, or the specific reproduced-transaction claims are dropped.
 > Nothing in this file has authority over a living document. Do not build from it,
 > do not cite it in a decision, and do not update it. See `../README.md`.
 
