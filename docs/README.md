@@ -163,8 +163,12 @@ aggregator responses, a generated Explorer, and CI.
   `create`, `redeem`, `withdraw`, `sync`) are written and tested in litesvm.
   Seeded random sequences check the HALL section 5 properties over strikes,
   melts, withdrawals, donations, seizures and freezes
-  (`chain/programs/hall/tests/properties.rs`). Trident fuzzing, the twelve
-  constituent transaction and transfer-hook accounts are not written. The toolchain (Solana CLI 4.3.0, Anchor
+  (`chain/programs/hall/tests/properties.rs`). `issuer_powers.rs` runs steps 4
+  to 8 of the HALL section 7 demonstration against real Token-2022 mints with
+  the extension set reported for xStocks, in litesvm. Not done: the multiplier
+  step (its initializer takes a float), a run on devnet, Explorer pages that
+  replay it, Trident fuzzing, the twelve constituent transaction and
+  transfer-hook accounts. The toolchain (Solana CLI 4.3.0, Anchor
   1.2.0, Rust 1.98.1) builds an Anchor program and runs its litesvm test
   natively on Windows, verified on the `anchor init` template on 25 September
   2026. WSL is not required. `anchor build` emitted SBPF v3, which litesvm

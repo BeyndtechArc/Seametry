@@ -124,6 +124,24 @@ impl Fixture {
         )
     }
 
+    /// Wraps a world someone else set up, so scenarios that need real issuer
+    /// mints can reuse every helper below.
+    pub fn from_parts(
+        world: World,
+        at: Addresses,
+        striker: Keypair,
+        striker_shares: Pubkey,
+        sources: Vec<Deposit>,
+    ) -> Self {
+        Self {
+            world,
+            at,
+            striker,
+            striker_shares,
+            sources,
+        }
+    }
+
     pub fn hall(&self, index: usize) -> Pubkey {
         hall_account(self.at.alloy, &self.sources[index])
     }

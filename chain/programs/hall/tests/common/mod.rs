@@ -8,6 +8,7 @@
 
 pub mod alloy;
 pub mod fixture;
+pub mod issuer;
 
 use {
     anchor_lang::{
@@ -216,6 +217,24 @@ impl World {
         remaining: Vec<AccountMeta>,
     ) -> Result<litesvm::types::TransactionMetadata, FailedTransactionMetadata> {
         self.submit(data, accounts, remaining, &[signer])
+    }
+
+    /// Sends arbitrary instructions, for the parts of a scenario the program
+    /// under test does not own: an issuer creating a mint, freezing an account.
+    pub fn send_instructions(
+        &mut self,
+        instructions: &[Instruction],
+        extra_signers: &[&Keypair],
+    ) -> Result<litesvm::types::TransactionMetadata, FailedTransactionMetadata> {
+        self.svm.expire_blockhash();
+        let blockhash = self.svm.latest_blockhash();
+        let message =
+            Message::new_with_blockhash(instructions, Some(&self.payer.pubkey()), &blockhash);
+        let mut signers = vec![&self.payer];
+        signers.extend_from_slice(extra_signers);
+        let tx =
+            VersionedTransaction::try_new(VersionedMessage::Legacy(message), &signers).unwrap();
+        self.svm.send_transaction(tx)
     }
 
     fn submit(
