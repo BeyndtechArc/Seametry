@@ -160,8 +160,10 @@ aggregator responses, a generated Explorer, and CI.
   reproduces every scenario in `spec/recipe/vectors.json` and
   `spec/claims/vectors.json`. All five instructions (`initialize_alloy`,
   `create`, `redeem`, `withdraw`, `sync`) are written and tested in litesvm.
-  The randomized property tests of HALL section 5, Trident fuzzing, the twelve
-  constituent transaction and transfer-hook accounts are not. The toolchain (Solana CLI 4.3.0, Anchor
+  Seeded random sequences check the HALL section 5 properties over strikes,
+  melts, withdrawals, donations, seizures and freezes
+  (`chain/programs/hall/tests/properties.rs`). Trident fuzzing, the twelve
+  constituent transaction and transfer-hook accounts are not written. The toolchain (Solana CLI 4.3.0, Anchor
   1.2.0, Rust 1.98.1) builds an Anchor program and runs its litesvm test
   natively on Windows, verified on the `anchor init` template on 25 September
   2026. WSL is not required. `anchor build` emitted SBPF v3, which litesvm

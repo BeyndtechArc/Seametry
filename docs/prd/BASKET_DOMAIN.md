@@ -2,20 +2,16 @@
 > **Does not own, despite containing text about them:** issuer prerogative decoding and live multiplier resolution (now `../SERVICE_CATALOG.md` section 3.1), policy and determinism (now `../ENGINEERING_STANDARD.md` sections 8 and 15), and the TypeScript package layout it describes (retired; the Go core is the single authority). Those sections are pending removal from this file.
 > **Core, from phase 0.** Recipe vectors and valuation are foundational, not deferred: the Rust program is bound to the Go implementation by the shared vectors this file specifies.
 
-# PRD 0: Seametry Core
+# Seametry Core
 
-The assay library. Pure TypeScript that every service and app imports, plus the recipe specification the Hall must match to the unit.
-
-Revision 3.
+The assay library: Go packages under `internal/` that every service uses, plus the recipe specification the Hall must match to the unit. Clients consume a generated client and never compute decisions. Recipe vectors live in `spec/recipe/` and `spec/claims/`, shared by Go and Rust. Amounts are integer atoms plus scale.
 
 ---
-
-> **Superseded in part by `seametry-02-reconcile.md`.** The modules below are now Go packages under `internal/`, not TypeScript packages. Clients consume a generated client and never compute decisions. Recipe vectors live in `spec/recipe/vectors/`, shared by Go and Rust. Amounts are integer atoms plus scale.
 
 
 ## 1. What changed, and why
 
-- **The Hall is price-blind.** NAV is computed off-chain only. The Rust conformance surface shrinks from NAV to recipe arithmetic, which is smaller and removes price manipulation from minting entirely. See PRD 2.
+- **The Hall is price-blind.** NAV is computed off-chain only. The Rust conformance surface shrinks from NAV to recipe arithmetic, which is smaller and removes price manipulation from minting entirely. See `HALL.md`.
 - **Issuer prerogatives are a first-class type,** decoded from chain on every read, never assumed from a published list.
 - **Live multiplier resolution is specified,** because the field named `multiplier` is frequently stale.
 - **Good Delivery evaluation lives in the core,** driven by published policy.
@@ -117,9 +113,9 @@ Off-chain only. The Hall never computes value.
 - Always reports the weakest evidence it contains.
 - For pre-IPO constituents, states the executable price and the marked valuation with its age, side by side.
 
-### 3.7 `packages/recipe`
+### 3.7 `internal/basket`
 
-**The conformance specification.** The exact arithmetic the Hall performs, written in TypeScript with published test vectors. The Rust program passes the identical suite. Any divergence is a failing test, not an exploit.
+**The conformance specification.** The exact arithmetic the Hall performs, written in Go with published vectors in `spec/recipe/` and `spec/claims/`. The Rust program passes the identical vectors. Any divergence is a failing test, not an exploit.
 
 ```
 required_in(i, n) = ceil ( n * ledger[i] / supply )     favours the Hall
@@ -196,4 +192,4 @@ Issuer registry adapters (configuration-driven), a Jupiter adapter, a chain adap
 
 ## 6. Out of scope
 
-Rendering, wallets, services, the program. PRD 1, PRD 2, and the architecture document.
+Rendering, wallets, services, the program. `MOBILE.md`, `HALL.md`, and the architecture document.

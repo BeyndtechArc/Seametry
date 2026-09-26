@@ -2,9 +2,9 @@
 > **This is the product, not a later addition.** The devnet program and its demonstration are phase 1 and carry no legal gate, because no real money is involved. Only the mainnet deployment is phase 3, gated by a crypto securities legal read and a program audit, in that order. See `../PRODUCT_ARCHITECTURE.md` section 9.
 > **Lending constituents is excluded.** It breaks guarantee 1, breaks the balance invariant in section 4.2 (an outgoing loan is indistinguishable from a seizure to `sync`), and breaks the argument in section 8.
 
-# PRD 2: The Hall
+# The Hall
 
-The keyless basket program. Revision 3. Supersedes the vault PRD entirely.
+The keyless basket program.
 
 ---
 
@@ -78,7 +78,7 @@ Named literally. The world names live in the interface, never in a standard's in
 
 ### 4.4 Arithmetic
 
-Specified in PRD 0, `packages/recipe`, with shared test vectors. In short: required inputs round up, outputs round down, every rounding favours the Hall, all intermediates are u128.
+Specified in Go in `internal/basket`, with shared vectors in `spec/recipe/vectors.json` and `spec/claims/vectors.json` that the Rust program in `chain/programs/hall` must reproduce. In short: required inputs round up, outputs round down, every rounding favours the Hall, all intermediates are u128.
 
 **Mint by shares, never by amount.** The caller asks for `n` shares and states maximum inputs. The Hall pulls exactly the required units or fails. A depositor can never be rounded down to zero shares, which is the mechanism of the classic inflation attack.
 
@@ -92,7 +92,7 @@ deficit  (actual < expected): consumes pending first,
                               then falls pro rata on ledger and unclaimed
 ```
 
-- **Upward credits vest linearly over W** (compiled constant; proposed one hour). A donation cannot jump share value in a single block, so a lending market that prices shares cannot be hit the way Venus was. Donations are gifts to holders; the donor recovers at most their own pro-rata fraction, always less than they gave.
+- **Upward credits vest linearly over W** (compiled constant; proposed one hour). A donation cannot jump share value in a single block, so a lending market that prices shares cannot be hit the way Venus was. Donations are gifts to holders; the donor recovers at most their own pro-rata fraction, always less than they gave. `sync` is permissionless, so vesting depends on elapsed time and never on the number of calls: folding vested credit into the ledger moves the vest start forward and leaves its end, and a second sync at the same instant vests nothing more. An earlier version of the arithmetic let repeated syncs compound; a randomized test found it and `spec/recipe/vectors.json` now has a chained scenario that pins it.
 - **Losses apply immediately.** Conservative in the direction that protects anyone relying on the share's value.
 - **Trade-off, stated:** a newcomer who strikes during a vest window shares in the remaining unvested credit. For multiplier-based issuers no raw credit exists, so this never arises. For mint-to issuers it is small and bounded by W. Revisit once Backpack's mechanism is confirmed.
 - **Claims are fixed quantities until a seizure.** Raw dividends attributable to unclaimed units accrue to holders. Withdraw promptly; the app notifies.
@@ -193,7 +193,7 @@ Two things do need funding: the genesis of Alloy No. 1, and seed liquidity for i
 
 ## 10. Sequencing
 
-1. Recipe specification and vectors, PRD 0.
+1. Recipe specification and vectors (`internal/basket`, `spec/`).
 2. Program against the vectors; property tests; fuzzing.
 3. Mock issuers and the devnet demonstration.
 4. App and console integration.
@@ -212,7 +212,7 @@ Two things do need funding: the genesis of Alloy No. 1, and seed liquidity for i
 - A seizure reduces holders and claimants pro rata after consuming unvested credit.
 - The share mint has no freeze authority, delegate, pause, or hook, verifiable on-chain.
 - The program contains no instruction that alters a formula, moves a holder's assets outside `withdraw`, or blocks `redeem`, verifiable from the deployed bytecode.
-- Rust passes every `packages/recipe` vector.
+- Rust passes every vector in `spec/recipe` and `spec/claims`.
 - Twelve constituents, half with enabled hooks, strike successfully in one transaction.
 - A second wallet initializes a new alloy without Seametry's permission.
 

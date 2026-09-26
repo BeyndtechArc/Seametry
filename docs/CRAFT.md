@@ -3,7 +3,7 @@
 
 # Seametry: Craft Map
 
-Libraries, techniques and signature moments. Revision 4.
+Libraries, techniques and signature moments.
 
 ---
 

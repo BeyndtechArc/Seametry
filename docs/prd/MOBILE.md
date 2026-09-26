@@ -3,11 +3,11 @@
 > **Scope boundary, deliberate:** mobile is a holding, monitoring, and approval surface. It is not a general purpose consumer stock brokerage, and that lane is avoided on purpose. See `../PRODUCT_ARCHITECTURE.md` section 6.
 > **The basket content in this file (alloys, allocations, melting, claims) is the product,** not a deferred addition. Allocations reach mainnet in phase 2; alloys on mainnet wait for phase 3.
 
-# PRD 1: Seametry App
+# Seametry App
 
 The Touchstone. A basket-first broker on mobile, and the public console where anything the Office claims can be checked.
 
-Revision 3. Depends on PRD 0, PRD 2, and the architecture document.
+Depends on `BASKET_DOMAIN.md`, `HALL.md`, and the architecture document.
 
 ---
 
@@ -105,7 +105,7 @@ Prerogative exercised on something you hold. Dividend scheduled, then effective.
 - Devnet alloys carry *Devnet Hall. Key still in hand.* on every screen that shows them.
 - The Office's own freshness is evidence: "Ledger 14s behind chain" is shown when true.
 - The app never shows a blended return. Price movement, reinvested dividends and any opted-in yield are always separate.
-- The Hall's three guarantees are stated in About, word for word from PRD 2.
+- The Hall's three guarantees are stated in About, word for word from `HALL.md` section 1.
 
 ---
 
@@ -144,4 +144,4 @@ Expo React Native, consuming the generated TypeScript client against the Go gate
 - **Outside your control:** wallet round trips on iOS, store signing, Jupiter availability, mainnet landing under congestion, constituent depth.
 - **Depth is the ceiling.** Backpack's tokenized Intel opened with a pool of roughly $199K. The strongest claims can sit on the thinnest pools; depth at size is checked before any constituent enters a formula.
 - **Competition inside Stocklana.** At least one other entry already surfaces issuer controls on xStocks. Showing prerogatives is table stakes. Surviving them inside a keyless basket is the differentiation, and the devnet demo exists to prove it.
-- **Legal.** Allocations carry low exposure: nothing pooled, no claim issued. Alloys carry PRD 2's exposure. Geofence per issuer.
+- **Legal.** Allocations carry low exposure: nothing pooled, no claim issued. Alloys carry the Hall's exposure (`HALL.md` section 8). Geofence per issuer.
