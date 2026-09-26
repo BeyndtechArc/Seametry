@@ -29,6 +29,14 @@ pub mod hall {
         instructions::create::handle_create(ctx, shares, maximums)
     }
 
+    pub fn redeem<'info>(ctx: Context<'info, Redeem<'info>>, shares: u64) -> Result<()> {
+        instructions::redeem::handle_redeem(ctx, shares)
+    }
+
+    pub fn withdraw(ctx: Context<Withdraw>, leg_index: u8, units: u64) -> Result<()> {
+        instructions::withdraw::handle_withdraw(ctx, leg_index, units)
+    }
+
     pub fn sync(ctx: Context<SyncLeg>, leg_index: u8) -> Result<()> {
         instructions::sync_leg::handle_sync(ctx, leg_index)
     }

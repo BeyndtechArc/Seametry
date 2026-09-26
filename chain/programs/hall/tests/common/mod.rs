@@ -7,6 +7,7 @@
 #![allow(dead_code)]
 
 pub mod alloy;
+pub mod fixture;
 
 use {
     anchor_lang::{
@@ -164,6 +165,22 @@ impl World {
         state.amount = amount;
         TokenAccountState::pack(state, &mut account.data).unwrap();
         self.svm.set_account(key, account).unwrap();
+    }
+
+    /// What an issuer with a freeze authority can do to the Hall's account.
+    pub fn set_token_state(&mut self, key: Pubkey, state: AccountState) {
+        let mut account = self.svm.get_account(&key).unwrap();
+        let mut unpacked =
+            TokenAccountState::unpack(&account.data[..TokenAccountState::LEN]).unwrap();
+        unpacked.state = state;
+        TokenAccountState::pack(unpacked, &mut account.data[..TokenAccountState::LEN]).unwrap();
+        self.svm.set_account(key, account).unwrap();
+    }
+
+    /// Leaves nothing at `key`, as if the account had never existed.
+    pub fn erase(&mut self, key: Pubkey) {
+        self.svm.set_account(key, Account::default()).unwrap();
+        assert!(self.svm.get_account(&key).is_none(), "{key} was not erased");
     }
 
     pub fn alloy(&self, key: Pubkey) -> Alloy {

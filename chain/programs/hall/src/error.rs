@@ -50,6 +50,10 @@ pub enum HallError {
     WrongConstituentAccounts,
     #[msg("A claim disagrees with its leg about the seizure index. The claim or the alloy state is inconsistent.")]
     ClaimIndexInconsistent,
+    #[msg("Withdraw at least one unit.")]
+    ZeroUnits,
+    #[msg("The Hall's balance after a withdrawal differs from its ledger. A hook or fee changed the amount.")]
+    HallBalanceMismatch,
 }
 
 impl From<RecipeError> for HallError {

@@ -157,9 +157,11 @@ aggregator responses, a generated Explorer, and CI.
   everything it did and more, so it can go. It should go in one change with its
   workspace entries, so the repository never shows two authorities.
 - `chain/programs/hall` holds the Hall's arithmetic (`recipe.rs`), which
-  reproduces every scenario in `spec/recipe/vectors.json`. `sync`,
-  `initialize_alloy` and `create` are written and tested in litesvm; `redeem`
-  and `withdraw` are not. The toolchain (Solana CLI 4.3.0, Anchor
+  reproduces every scenario in `spec/recipe/vectors.json` and
+  `spec/claims/vectors.json`. All five instructions (`initialize_alloy`,
+  `create`, `redeem`, `withdraw`, `sync`) are written and tested in litesvm.
+  The randomized property tests of HALL section 5, Trident fuzzing, the twelve
+  constituent transaction and transfer-hook accounts are not. The toolchain (Solana CLI 4.3.0, Anchor
   1.2.0, Rust 1.98.1) builds an Anchor program and runs its litesvm test
   natively on Windows, verified on the `anchor init` template on 25 September
   2026. WSL is not required. `anchor build` emitted SBPF v3, which litesvm

@@ -35,3 +35,20 @@ pub struct Struck {
     pub supply_after: u64,
     pub inputs: Vec<u64>,
 }
+
+#[event]
+pub struct Redeemed {
+    pub alloy: Pubkey,
+    pub caller: Pubkey,
+    pub shares: u64,
+    pub supply_after: u64,
+    pub legs: Vec<u64>,
+}
+
+#[event]
+pub struct Withdrawn {
+    pub alloy: Pubkey,
+    pub owner: Pubkey,
+    pub leg_index: u8,
+    pub units: u64,
+}

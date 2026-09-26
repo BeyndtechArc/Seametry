@@ -97,3 +97,41 @@ impl Alloy {
         }
     }
 }
+
+pub const CLAIM_SEED: &[u8] = b"claim";
+
+/// One constituent's slot in a claim: the units owed and the leg index and
+/// epoch they were last settled against. Mirrors `recipe::ClaimLeg`.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Default, InitSpace)]
+pub struct ClaimEntry {
+    pub units: u64,
+    pub index: u128,
+    pub epoch: u64,
+}
+
+impl ClaimEntry {
+    pub fn claim_leg(&self) -> recipe::ClaimLeg {
+        recipe::ClaimLeg {
+            units: self.units,
+            index: self.index,
+            epoch: self.epoch,
+        }
+    }
+
+    pub fn store(&mut self, claim: &recipe::ClaimLeg) {
+        self.units = claim.units;
+        self.index = claim.index;
+        self.epoch = claim.epoch;
+    }
+}
+
+/// What one owner is owed by one alloy after melting: a slot per constituent,
+/// in the alloy's order.
+#[account]
+#[derive(InitSpace)]
+pub struct Claim {
+    pub alloy: Pubkey,
+    pub owner: Pubkey,
+    pub bump: u8,
+    pub entries: [ClaimEntry; MAX_CONSTITUENTS],
+}
