@@ -35,6 +35,13 @@ This rule exists because it has already been broken twice in this repo: a
 commit message claimed 551 tests when the real figure was 470, and an evidence
 document named a slot the artifact did not contain.
 
+**Local green is not CI green.** After a push, read the run for that commit from
+GitHub (`https://api.github.com/repos/BeyndtechArc/Seametry/actions/runs`, no
+credentials needed) and report each job. CI was red for a dozen commits here
+before anyone looked, because a check scanned only the directories being edited
+and a step that failed early hid the step behind it. Run a check on the same file
+set CI uses, and when a step fails, run the ones after it too.
+
 **"Should work", "probably", "I think", "this ought to"** are all the same
 sentence: *I did not check.* Check, then write what happened.
 

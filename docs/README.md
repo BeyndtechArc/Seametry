@@ -56,7 +56,7 @@ Read all three before writing code. They are short on purpose.
 | [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Basket arithmetic: holdings boundary, recipe conformance vectors, valuation, weights, delivery evaluation | Live. Core from phase 0. Contains sections pending removal, listed in its header |
 | [prd/MOBILE.md](prd/MOBILE.md) | Mobile holding, monitoring, and approval surface | Live. Phase 2. Deliberately not a consumer brokerage |
 | [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the verification ritual, instrument pages, evidence pages, the Hall demonstration | Live. Phase 1 |
-| `prd/TERMINAL.md` | Terminal: the creation and redemption console | **Not written.** Phase 2 |
+| [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Nothing interactive exists yet |
 | `prd/API.md` | The assay as a metered service, entitlements | Not written. Phase 3 |
 
 ### Brand, and the design system
@@ -126,7 +126,7 @@ Tracked here because an untracked gap becomes folklore.
 
 **Documentation**
 
-- `prd/TERMINAL.md` and `prd/API.md` do not exist.
+- `prd/API.md` does not exist.
 - The validation record in `PRODUCT_ARCHITECTURE.md` section 11 needs the
   pitch clinic's exact date, which is currently recorded only as
   "September 2026, ahead of Stocklana".
