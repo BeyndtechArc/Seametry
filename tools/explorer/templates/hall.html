@@ -1,0 +1,53 @@
+{{define "hall.html"}}{{template "head" .}}
+
+  <h1>The Hall, run against an issuer that uses every power it has.</h1>
+  {{if .Demo}}
+  <div class="limits">
+    <h3>What produced this page</h3>
+    <p>Recorded by <strong>{{.Demo.Producer.Where}}</strong>. {{.Demo.Producer.Description}} Program <code>{{.Demo.Producer.ProgramID}}</code>.{{if not .Demo.Producer.Signatures}} No transaction signatures exist for these steps, so none is shown.{{end}}</p>
+  </div>
+
+  <p class="lede">{{len .Demo.Scenario}} scenarios. Each one names who acted, what they did, whether it worked, the reason when it did not, and the state of the alloy afterwards. Amounts are whole token units.</p>
+
+  <div class="chips">
+    <p>Jump to</p>
+    {{range .Demo.Scenario}}<a class="chip" href="#{{.ID}}">{{.Title}}</a>{{end}}
+  </div>
+
+  {{range .Demo.Scenario}}
+  <h2 id="{{.ID}}">{{.Title}}</h2>
+  <p>{{.Shows}}</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Who</th><th>What</th><th>Result</th><th>Leg A: ledger, pending, unclaimed</th><th>Holder: shares, claim on A, claim on B</th></tr></thead>
+    <tbody>
+    {{range .Steps}}<tr>
+      <td>{{.Actor}}</td>
+      <td>{{.Action}}</td>
+      <td>{{if eq .Result "ok"}}<span class="stamp allow">succeeded</span>{{else}}<span class="stamp warn">refused</span><br><code>{{.Reason}}</code>{{end}}</td>
+      {{with .State}}{{$a := index .Legs 0}}
+      <td class="n">{{commas $a.Ledger}}, {{commas $a.Pending}}, {{commas $a.Unclaimed}}</td>
+      <td class="n">{{commas .Holder.Shares}}, {{commas (index .Holder.Claims 0)}}, {{commas (index .Holder.Claims 1)}}</td>
+      {{else}}
+      <td colspan="2">No alloy exists, because the founding was refused.</td>
+      {{end}}
+    </tr>{{end}}
+    </tbody>
+  </table>
+  </div>
+  <div class="limits">
+    <h3>What this does not show</h3>
+    <p>{{.DoesNotShow}}</p>
+  </div>
+  {{end}}
+
+  <h2>Not shown at all</h2>
+  <ul>
+    {{range .Demo.NotShown}}<li>{{.}}</li>
+    {{end}}
+  </ul>
+  {{else}}
+  <div class="card"><p>No demonstration has been recorded yet. Run <code>WRITE_TRANSCRIPT=1 cargo test --test demo_transcript</code> in <code>chain/</code>.</p></div>
+  {{end}}
+
+{{template "foot" .}}{{end}}

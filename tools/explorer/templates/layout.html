@@ -16,15 +16,16 @@
       <a href="index.html"{{if eq .Nav "index"}} aria-current="page"{{end}}>Overview</a>
       <a href="instruments.html"{{if eq .Nav "instruments"}} aria-current="page"{{end}}>Instruments</a>
       <a href="evidence.html"{{if eq .Nav "evidence"}} aria-current="page"{{end}}>Evidence</a>
+      <a href="hall.html"{{if eq .Nav "hall"}} aria-current="page"{{end}}>The Hall</a>
       <a href="verify.html"{{if eq .Nav "verify"}} aria-current="page"{{end}}>Verify</a>
     </nav>
-    <p class="honest">Work in progress. The Hall program is not built, no batch root is written on-chain yet, and nothing here has been audited. Every figure below is decoded from mainnet at a recorded slot.</p>
+    <p class="honest">Work in progress. The Hall program is written and tested but not deployed, no batch root is written on-chain yet, and nothing here has been audited. Figures on the instrument and evidence pages are decoded from mainnet at a recorded slot. The Hall page is a recording of a local simulator.</p>
   </header>
 {{end}}
 
 {{define "foot"}}
   <footer>
-    <p>Generated {{.Generated}} from data this repository produced: mint accounts captured off Solana mainnet at a recorded slot, a survey run across every instrument its issuer publishes, and a receipt batch sealed by the Go engine.</p>
+    <p>Generated {{.Generated}} from data this repository produced: mint accounts captured off Solana mainnet at a recorded slot, a survey run across every instrument its issuer publishes, a receipt batch sealed by the Go engine, and a recorded run of the Hall program.</p>
     <p>Regenerate with <code>go run ./tools/explorer</code>. Nothing on these pages is illustrative, and nothing needs a server: the verification runs in your browser, offline.</p>
   </footer>
 </div>

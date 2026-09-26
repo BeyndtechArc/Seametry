@@ -179,6 +179,7 @@ type page struct {
 	BatchJSON   template.JS
 	BatchCount  int
 	BatchRoot   string
+	Demo        *Transcript
 }
 
 type splitRow struct {
@@ -217,6 +218,7 @@ func main() {
 		BatchJSON:   template.JS(batchRaw),
 		BatchCount:  batchCount,
 		BatchRoot:   batchRoot,
+		Demo:        loadTranscript(),
 	}
 
 	if err := os.MkdirAll(*out, 0o755); err != nil {
@@ -230,6 +232,7 @@ func main() {
 			}
 			return s[:8] + "…" + s[len(s)-6:]
 		},
+		"commas": commas,
 		"trunc": func(n int, s string) string {
 			if len(s) <= n {
 				return s
@@ -242,6 +245,7 @@ func main() {
 		{"index.html", "index.html", "Seametry Explorer", "index"},
 		{"instruments.html", "instruments.html", "Instruments", "instruments"},
 		{"evidence.html", "evidence.html", "Evidence", "evidence"},
+		{"hall.html", "hall.html", "The Hall", "hall"},
 		{"verify.html", "verify.html", "Verify a hallmark", "verify"},
 	}
 	for _, p := range pages {
