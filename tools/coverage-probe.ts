@@ -51,7 +51,7 @@ const table = [
   "",
   "| Asset | Issuer | Jupiter | Route | Impact | Chainlink | Stork |",
   "|---|---|---|---|---:|---|---|",
-  ...rows.map((row) => `| ${row.instrument.symbol} | ${row.issuer} | ${row.jupiter} | ${row.route ?? "—"} | ${row.priceImpactPct === undefined ? "—" : `${row.priceImpactPct}%`} | ${row.chainlink} | ${row.stork} |`),
+  ...rows.map((row) => `| ${row.instrument.symbol} | ${row.issuer} | ${row.jupiter} | ${row.route ?? "n/a"} | ${row.priceImpactPct === undefined ? "n/a" : `${row.priceImpactPct}%`} | ${row.chainlink} | ${row.stork} |`),
   "",
   "## Notes",
   "",
