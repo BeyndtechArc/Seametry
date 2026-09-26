@@ -41,6 +41,7 @@ func constituent(t *testing.T, mint, ledger, pending, unclaimed string, scale in
 		Pending:   atoms(t, pending, scale),
 		Unclaimed: atoms(t, unclaimed, scale),
 		VestStart: epoch,
+		VestEnd:   epoch.Add(vestWindow),
 	}
 }
 
@@ -116,6 +117,62 @@ func TestStrikeThenMeltNeverProfits(t *testing.T) {
 					ledger, supply, legs[0], inputs[0])
 			}
 		}
+	}
+}
+
+// sync is permissionless, so anyone can call it as often as they like. Calling
+// it again at the same instant must not vest anything more, or a donor could
+// finish a vest early by repeating the call.
+func TestRepeatedSyncsAtOneInstantVestNothingMore(t *testing.T) {
+	donated := atoms(t, "2000000", 6)
+	credited, err := Sync(constituent(t, "X", "1000000", "0", "0", 6), donated, epoch, vestWindow)
+	if err != nil {
+		t.Fatal(err)
+	}
+	halfway := epoch.Add(vestWindow / 2)
+
+	c := credited.After
+	for call := 1; call <= 5; call++ {
+		result, err := Sync(c, donated, halfway, vestWindow)
+		if err != nil {
+			t.Fatal(err)
+		}
+		c = result.After
+		if got := c.Ledger.AtomsString(); got != "1500000" {
+			t.Fatalf("call %d at the halfway point left the ledger at %s, want 1500000: a repeated sync vested more", call, got)
+		}
+	}
+}
+
+// Syncing at several instants must vest exactly what one sync at the last
+// instant would, because vesting is linear in time and not in the number of
+// calls.
+func TestChainedSyncsVestLinearly(t *testing.T) {
+	donated := atoms(t, "2000000", 6)
+	credited, err := Sync(constituent(t, "X", "1000000", "0", "0", 6), donated, epoch, vestWindow)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c := credited.After
+	for _, want := range []struct {
+		at     time.Duration
+		ledger string
+	}{
+		{vestWindow / 4, "1250000"},
+		{vestWindow / 2, "1500000"},
+		{3 * vestWindow / 4, "1750000"},
+		{vestWindow, "2000000"},
+	} {
+		result, err := Sync(c, donated, epoch.Add(want.at), vestWindow)
+		if err != nil {
+			t.Fatal(err)
+		}
+		c = result.After
+		if got := c.Ledger.AtomsString(); got != want.ledger {
+			t.Errorf("at %s the ledger is %s, want %s", want.at, got, want.ledger)
+		}
+		invariant(t, c, donated, want.at.String())
 	}
 }
 
@@ -416,6 +473,11 @@ type vectorStep struct {
 	Pending   string `json:"pending"`
 	Unclaimed string `json:"unclaimed"`
 	Supply    string `json:"supply"`
+	// Chain means the step's resulting state carries into the next step. Steps
+	// without it are evaluated from the state at second zero and discarded, so
+	// they show one instant each. The chained scenario below exists because
+	// that convention cannot expose a defect that only repeated calls reach.
+	Chain bool `json:"chain,omitempty"`
 }
 
 type vectorScenario struct {
@@ -470,6 +532,38 @@ func buildVectors(t *testing.T) vectorFile {
 			s.Steps = append(s.Steps, vectorStep{
 				Op: "sync", AtSeconds: int64(at.Seconds()), Actual: donated.AtomsString(),
 				Kind: string(result.Kind), Ledger: l, Pending: p, Unclaimed: u, Supply: sup,
+			})
+		}
+		file.Scenarios = append(file.Scenarios, s)
+	}
+
+	// Scenario: repeated syncs, at one instant and across several, vest no
+	// faster than one sync at the last instant would.
+	{
+		c := constituent(t, "X", "1000000", "0", "0", 6)
+		supply := big.NewInt(1000)
+		s := vectorScenario{
+			Name:    "repeated syncs vest linearly",
+			Purpose: "Sync is permissionless, so calling it again, at the same instant or at later ones, must not vest more than the elapsed time allows.",
+			Scale:   6,
+		}
+		l, p, u, sup := record(c, supply)
+		s.Steps = append(s.Steps, vectorStep{Op: "initial", Ledger: l, Pending: p, Unclaimed: u, Supply: sup})
+
+		donated := atoms(t, "2000000", 6)
+		for _, at := range []time.Duration{
+			0, vestWindow / 2, vestWindow / 2, vestWindow / 2,
+			3 * vestWindow / 4, 3 * vestWindow / 4, vestWindow, vestWindow,
+		} {
+			result, err := Sync(c, donated, epoch.Add(at), vestWindow)
+			if err != nil {
+				t.Fatal(err)
+			}
+			c = result.After
+			l, p, u, sup = record(c, supply)
+			s.Steps = append(s.Steps, vectorStep{
+				Op: "sync", AtSeconds: int64(at.Seconds()), Actual: donated.AtomsString(),
+				Kind: string(result.Kind), Ledger: l, Pending: p, Unclaimed: u, Supply: sup, Chain: true,
 			})
 		}
 		file.Scenarios = append(file.Scenarios, s)

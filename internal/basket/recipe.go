@@ -39,10 +39,15 @@ type Constituent struct {
 	Pending   amount.Amount
 	Unclaimed amount.Amount
 
-	// VestStart is when the current Pending balance began vesting. A new
-	// credit restarts it, which is what stops a donor timing a deposit to land
-	// just before their own strike.
+	// VestStart and VestEnd bound the current vest: Pending vests linearly
+	// from one to the other. Folding vested credit into the ledger moves
+	// VestStart forward to that instant and leaves VestEnd where it was, so
+	// what remains keeps vesting along the same line and no number of syncs can
+	// finish a vest early. A new credit restarts both over the whole Pending
+	// balance, which is what stops a donor timing a deposit to land just before
+	// their own strike.
 	VestStart time.Time
+	VestEnd   time.Time
 
 	// ClaimIndex and ClaimEpoch record how far a seizure has shrunk every
 	// outstanding claim. See claim.go. A nil ClaimIndex means no seizure has
@@ -101,18 +106,19 @@ func Out(c Constituent, shares, supply *big.Int) (amount.Amount, error) {
 	return c.Ledger.MulDiv(shares, supply, amount.RoundFloor)
 }
 
-// Vested reports how much of Pending has vested by asOf, over window.
+// Vested reports how much of Pending has vested by asOf.
 //
-// Linear, and clamped at both ends. A donation cannot raise share value in a
-// single block, which is the defence against the inflation attack that the
-// Venus exploit used: donated assets there lifted a vault's share price
-// immediately and the profit was taken through liquidations in the same
-// transaction.
-func Vested(c Constituent, asOf time.Time, window time.Duration) (amount.Amount, error) {
+// Linear between VestStart and VestEnd, and clamped at both ends. A donation
+// cannot raise share value in a single block, which is the defence against the
+// inflation attack that the Venus exploit used: donated assets there lifted a
+// vault's share price immediately and the profit was taken through liquidations
+// in the same transaction.
+func Vested(c Constituent, asOf time.Time) (amount.Amount, error) {
 	if c.Pending.IsZero() {
 		return amount.Zero(c.Pending.Scale())
 	}
-	if window <= 0 {
+	span := c.VestEnd.Sub(c.VestStart)
+	if span <= 0 {
 		return c.Pending, nil
 	}
 
@@ -120,13 +126,13 @@ func Vested(c Constituent, asOf time.Time, window time.Duration) (amount.Amount,
 	if elapsed <= 0 {
 		return amount.Zero(c.Pending.Scale())
 	}
-	if elapsed >= window {
+	if elapsed >= span {
 		return c.Pending, nil
 	}
 
 	return c.Pending.MulDiv(
 		big.NewInt(int64(elapsed)),
-		big.NewInt(int64(window)),
+		big.NewInt(int64(span)),
 		amount.RoundFloor,
 	)
 }
@@ -165,7 +171,7 @@ type SyncResult struct {
 // pro rata on the ledger and on unclaimed, so holders and claimants share a
 // seizure in proportion rather than one group absorbing it.
 func Sync(c Constituent, actual amount.Amount, asOf time.Time, window time.Duration) (SyncResult, error) {
-	vested, err := Vested(c, asOf, window)
+	vested, err := Vested(c, asOf)
 	if err != nil {
 		return SyncResult{}, fmt.Errorf("basket: %s: vesting: %w", c.Mint, err)
 	}
@@ -176,6 +182,11 @@ func Sync(c Constituent, actual amount.Amount, asOf time.Time, window time.Durat
 	}
 	if after.Pending, err = c.Pending.Sub(vested); err != nil {
 		return SyncResult{}, err
+	}
+	// What is left vests from now to the same end. Without this a second sync
+	// at the same instant would take the same fraction of the remainder again.
+	if asOf.After(after.VestStart) && asOf.Before(after.VestEnd) {
+		after.VestStart = asOf
 	}
 
 	expected, err := after.Expected()
@@ -211,6 +222,7 @@ func Sync(c Constituent, actual amount.Amount, asOf time.Time, window time.Durat
 			return SyncResult{}, err
 		}
 		result.After.VestStart = asOf
+		result.After.VestEnd = asOf.Add(window)
 		return result, nil
 
 	default:

@@ -34,8 +34,12 @@ pub type Result<T> = core::result::Result<T, RecipeError>;
 ///
 /// `ledger` backs outstanding shares, `pending` is credited but not yet vested,
 /// `unclaimed` is owed to holders who melted and have not withdrawn.
-/// `vest_start` is when the current `pending` began vesting; a new credit
-/// restarts it, which stops a donor timing a deposit against their own strike.
+/// `pending` vests linearly from `vest_start` to `vest_end`. Folding vested
+/// credit into the ledger moves `vest_start` forward to that instant and leaves
+/// `vest_end`, so what remains keeps vesting along the same line and no number
+/// of syncs can finish a vest early. A new credit restarts both over the whole
+/// `pending` balance, which stops a donor timing a deposit against their own
+/// strike.
 ///
 /// `claim_index` and `claim_epoch` record how far seizures have shrunk every
 /// outstanding claim, see `ClaimLeg`. A zero index means no seizure has touched
@@ -46,6 +50,7 @@ pub struct Leg {
     pub pending: u64,
     pub unclaimed: u64,
     pub vest_start: i64,
+    pub vest_end: i64,
     pub claim_index: u128,
     pub claim_epoch: u64,
 }
@@ -122,14 +127,18 @@ pub fn vested(leg: &Leg, now: i64) -> Result<u64> {
     if leg.pending == 0 {
         return Ok(0);
     }
+    let span = leg.vest_end.saturating_sub(leg.vest_start);
+    if span <= 0 {
+        return Ok(leg.pending);
+    }
     let elapsed = now.saturating_sub(leg.vest_start);
     if elapsed <= 0 {
         return Ok(0);
     }
-    if elapsed >= VEST_WINDOW_SECONDS {
+    if elapsed >= span {
         return Ok(leg.pending);
     }
-    mul_div_floor(leg.pending, elapsed as u64, VEST_WINDOW_SECONDS as u64)
+    mul_div_floor(leg.pending, elapsed as u64, span as u64)
 }
 
 /// Reconciles one constituent against the balance actually held.
@@ -145,6 +154,11 @@ pub fn sync(leg: &Leg, actual: u64, now: i64) -> Result<SyncOutcome> {
         .checked_add(vested_in)
         .ok_or(RecipeError::Overflow)?;
     after.pending -= vested_in;
+    // What is left vests from now to the same end. Without this a second sync
+    // at the same instant would take the same fraction of the remainder again.
+    if now > after.vest_start && now < after.vest_end {
+        after.vest_start = now;
+    }
 
     let expected = after.expected()?;
     let (kind, delta) = if actual == expected {
@@ -156,6 +170,9 @@ pub fn sync(leg: &Leg, actual: u64, now: i64) -> Result<SyncOutcome> {
             .checked_add(surplus)
             .ok_or(RecipeError::Overflow)?;
         after.vest_start = now;
+        after.vest_end = now
+            .checked_add(VEST_WINDOW_SECONDS)
+            .ok_or(RecipeError::Overflow)?;
         (SyncKind::Credit, surplus)
     } else {
         let deficit = expected - actual;

@@ -66,6 +66,107 @@
       ]
     },
     {
+      "name": "repeated syncs vest linearly",
+      "purpose": "Sync is permissionless, so calling it again, at the same instant or at later ones, must not vest more than the elapsed time allows.",
+      "scale": 6,
+      "steps": [
+        {
+          "op": "initial",
+          "ledger": "1000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "actual": "2000000",
+          "kind": "credit",
+          "ledger": "1000000",
+          "pending": "1000000",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        },
+        {
+          "op": "sync",
+          "at_seconds": 1800,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "1500000",
+          "pending": "500000",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        },
+        {
+          "op": "sync",
+          "at_seconds": 1800,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "1500000",
+          "pending": "500000",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        },
+        {
+          "op": "sync",
+          "at_seconds": 1800,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "1500000",
+          "pending": "500000",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        },
+        {
+          "op": "sync",
+          "at_seconds": 2700,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "1750000",
+          "pending": "250000",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        },
+        {
+          "op": "sync",
+          "at_seconds": 2700,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "1750000",
+          "pending": "250000",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        },
+        {
+          "op": "sync",
+          "at_seconds": 3600,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "2000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        },
+        {
+          "op": "sync",
+          "at_seconds": 3600,
+          "actual": "2000000",
+          "kind": "unchanged",
+          "ledger": "2000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        }
+      ]
+    },
+    {
       "name": "seizure larger than pending",
       "purpose": "A loss consumes unvested pending first, then falls on ledger and unclaimed in proportion, so neither group absorbs it alone.",
       "scale": 6,

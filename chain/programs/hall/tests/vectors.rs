@@ -1,9 +1,10 @@
 //! Runs the shared recipe vectors against the on-chain arithmetic.
 //!
-//! State is committed after an operation at second zero. A later sync in the
-//! same scenario is evaluated against that committed state without committing,
-//! because the vectors record several instants measured from one starting
-//! point rather than a chain of consecutive events.
+//! State is committed after an operation at second zero, or after any step
+//! marked `chain`. Other later syncs are evaluated against the committed state
+//! without committing, because those vectors record several instants measured
+//! from one starting point rather than a chain of consecutive events. The
+//! chained scenario exists to catch what only repeated calls can reach.
 
 use hall::recipe::{self, Leg, SyncKind};
 use serde_json::Value;
@@ -71,6 +72,7 @@ fn every_scenario_matches() {
                         pending: atoms(step, "pending"),
                         unclaimed: atoms(step, "unclaimed"),
                         vest_start: 0,
+                        vest_end: recipe::VEST_WINDOW_SECONDS,
                         ..Leg::default()
                     };
                     supply = atoms(step, "supply");
@@ -81,7 +83,7 @@ fn every_scenario_matches() {
                         .unwrap_or_else(|e| panic!("{context}: {e:?}"));
                     assert_eq!(outcome.kind, kind(field(step, "kind")), "{context}: kind");
                     assert_state(&context, &outcome.after, supply, step);
-                    if at == 0 {
+                    if at == 0 || step["chain"].as_bool().unwrap_or(false) {
                         leg = outcome.after;
                     }
                 }

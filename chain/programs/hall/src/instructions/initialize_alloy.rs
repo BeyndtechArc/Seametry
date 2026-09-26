@@ -14,6 +14,7 @@ use super::deposit::{self, DepositAccounts};
 use crate::{
     error::HallError,
     events::AlloyInitialized,
+    recipe::VEST_WINDOW_SECONDS,
     state::{
         Alloy, LegRecord, ACCOUNTS_PER_LEG, ALLOY_SEED, LOCKED_SEED, MAX_CONSTITUENTS,
         PROGRAM_VERSION, SHARE_DECIMALS, SHARE_SEED,
@@ -277,6 +278,9 @@ fn admit_constituent<'info>(
         pending: before,
         unclaimed: 0,
         vest_start: now,
+        vest_end: now
+            .checked_add(VEST_WINDOW_SECONDS)
+            .ok_or(HallError::Overflow)?,
         ..LegRecord::default()
     })
 }
