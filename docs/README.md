@@ -160,10 +160,14 @@ aggregator responses, a generated Explorer, and CI.
   melts, withdrawals, donations, seizures and freezes
   (`chain/programs/hall/tests/properties.rs`). `issuer_powers.rs` runs steps 4
   to 8 of the HALL section 7 demonstration against real Token-2022 mints with
-  the extension set reported for xStocks, in litesvm. Not done: the multiplier
-  step (its initializer takes a float), a run on devnet, Explorer pages that
-  replay it, Trident fuzzing, the twelve constituent transaction and
-  transfer-hook accounts. The toolchain (Solana CLI 4.3.0, Anchor
+  the extension set reported for xStocks, in litesvm. The program is deployed
+  to devnet at `4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx` and
+  `chain/tools/devnet-demo` ran the same eight scenarios there, recorded with
+  signatures in `evidence/hall-demo/transcript-devnet.json` and shown on the
+  Explorer's Hall page beside the simulator run. Not done: the multiplier
+  step (its initializer takes a float), a devnet run that waits out a vest,
+  Trident fuzzing, the twelve constituent transaction and transfer-hook
+  accounts. The toolchain (Solana CLI 4.3.0, Anchor
   1.2.0, Rust 1.98.1) builds an Anchor program and runs its litesvm test
   natively on Windows, verified on the `anchor init` template on 25 September
   2026. WSL is not required. `anchor build` emitted SBPF v3, which litesvm

@@ -9,6 +9,9 @@ skip-lint = false
 [programs.localnet]
 hall = "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx"
 
+[programs.devnet]
+hall = "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx"
+
 [provider]
 cluster = "localnet"
 wallet = '~\.config/solana/id.json'

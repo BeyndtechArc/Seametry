@@ -30,7 +30,7 @@ Each item names the service that produces it. The Terminal renders a result and 
 
 - The cost to assemble and melt proceeds arithmetic, computed by `internal/basket` and shown for a demonstration alloy on the Explorer's Hall page, checked against the compiled program.
 - Admissibility decisions and depth at size, computed by `internal/policy` and `internal/liquidity` and shown for seven captured instruments on the Explorer.
-- The Hall program, with all five instructions tested in a simulator. It is not deployed.
+- The Hall program, with all five instructions tested in a simulator and run on devnet. It is not deployed to mainnet.
 
 Nothing here is interactive. There is no input for a formula, no live quote, and no wallet connection.
 

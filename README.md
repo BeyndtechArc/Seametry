@@ -69,7 +69,8 @@ code is the first thing that rots.
 - `spec/`: conformance vectors shared by Go, a JavaScript receipt verifier and
   the Rust program, with a drift gate.
 - `chain/programs/hall`: the Hall, an Anchor program. All five instructions are
-  written and tested in litesvm. It is not deployed anywhere.
+  written and tested in litesvm, and deployed to devnet only, where
+  `chain/tools/devnet-demo` ran the demonstration with signatures.
 - A generated Explorer, captured mainnet fixtures and evidence, and CI.
 - Generated design tokens in `packages/ui/src/generated`, the only surviving
   member of the earlier TypeScript workspace: the rest (source adapters, a

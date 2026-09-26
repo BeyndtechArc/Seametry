@@ -44,6 +44,10 @@ type Move struct {
 	Result string     `json:"result"`
 	Reason string     `json:"reason"`
 	State  *HallState `json:"state"`
+
+	// Signature is present only on a transcript recorded against a cluster,
+	// and only for a step that landed: a refused step never reaches a block.
+	Signature string `json:"signature,omitempty"`
 }
 
 type HallState struct {
@@ -66,10 +70,10 @@ type HolderView struct {
 	StockBalances []uint64 `json:"stock_balances"`
 }
 
-// loadTranscript returns nil when no demonstration has been recorded, and the
+// loadTranscript returns nil when the named recording does not exist, and the
 // page says so instead of showing an empty table.
-func loadTranscript() *Transcript {
-	raw, err := os.ReadFile(filepath.Join("evidence", "hall-demo", "transcript.json"))
+func loadTranscript(name string) *Transcript {
+	raw, err := os.ReadFile(filepath.Join("evidence", "hall-demo", name))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -95,6 +99,12 @@ func commas(n uint64) string {
 		out.WriteRune(r)
 	}
 	return out.String()
+}
+
+// ExplorerLink is where a reader can look the signature up themselves. Only a
+// devnet transcript has signatures, so the cluster is always devnet here.
+func (m Move) ExplorerLink() string {
+	return "https://explorer.solana.com/tx/" + m.Signature + "?cluster=devnet"
 }
 
 // Where states the producer in words, for the honesty label.

@@ -180,6 +180,7 @@ type page struct {
 	BatchCount  int
 	BatchRoot   string
 	Demo        *Transcript
+	Devnet      *Transcript
 	Cost        *CostTable
 }
 
@@ -195,7 +196,8 @@ func main() {
 	instruments := loadInstruments()
 	surveyData := loadSurvey()
 	batchRaw, batchCount, batchRoot := loadBatch()
-	demo := loadTranscript()
+	demo := loadTranscript("transcript.json")
+	devnet := loadTranscript("transcript-devnet.json")
 
 	stalePct := ""
 	var splits []splitRow
@@ -221,6 +223,7 @@ func main() {
 		BatchCount:  batchCount,
 		BatchRoot:   batchRoot,
 		Demo:        demo,
+		Devnet:      devnet,
 		Cost:        costTable(demo),
 	}
 

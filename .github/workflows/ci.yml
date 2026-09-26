@@ -173,6 +173,14 @@ jobs:
         working-directory: chain
         run: cargo test --locked
 
+      # A separate workspace, so the two steps above never compile it. It
+      # only runs by hand against a cluster; this keeps it from rotting.
+      - name: The devnet runner still builds
+        working-directory: chain/tools/devnet-demo
+        run: |
+          cargo fmt --check
+          cargo build --release --locked
+
   explorer:
     name: Explorer builds
     runs-on: ubuntu-latest

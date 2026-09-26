@@ -409,7 +409,7 @@ fn transcript() -> Value {
         "not_shown": [
             "A change of the Scaled UI multiplier. Its initializer takes a floating point number and this repository allows none. The Hall never reads a multiplier.",
             "The upgrade authority. A simulator has none to show.",
-            "A run on devnet or mainnet.",
+            "A run on mainnet. The devnet run is recorded separately, above.",
         ],
         "scenarios": [
             founding(),

@@ -32,7 +32,15 @@ func TestCommasWritesWholeUnitsWithSeparators(t *testing.T) {
 // linking the two. If the producer adds a field this page does not know, the
 // page would drop it silently, so the decode refuses unknown fields.
 func TestTranscriptDecodesWithoutDroppingAnyField(t *testing.T) {
-	raw, err := os.ReadFile(filepath.Join("..", "..", "evidence", "hall-demo", "transcript.json"))
+	for _, name := range transcriptFiles {
+		t.Run(name, func(t *testing.T) { checkTranscriptShape(t, name) })
+	}
+}
+
+var transcriptFiles = []string{"transcript.json", "transcript-devnet.json"}
+
+func checkTranscriptShape(t *testing.T, name string) {
+	raw, err := os.ReadFile(filepath.Join("..", "..", "evidence", "hall-demo", name))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,6 +64,12 @@ func TestTranscriptDecodesWithoutDroppingAnyField(t *testing.T) {
 			}
 			if m.Result == "refused" && m.Reason == "" {
 				t.Errorf("scenario %q: a refusal with no reason", s.ID)
+			}
+			if m.Result == "ok" && tr.Producer.Signatures && m.Signature == "" {
+				t.Errorf("scenario %q, %q: the transcript claims signatures but this step has none", s.ID, m.Action)
+			}
+			if m.Signature != "" && !tr.Producer.Signatures {
+				t.Errorf("scenario %q, %q: a signature on a transcript that says it has none", s.ID, m.Action)
 			}
 		}
 	}
