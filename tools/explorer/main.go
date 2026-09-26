@@ -180,6 +180,7 @@ type page struct {
 	BatchCount  int
 	BatchRoot   string
 	Demo        *Transcript
+	Cost        *CostTable
 }
 
 type splitRow struct {
@@ -194,6 +195,7 @@ func main() {
 	instruments := loadInstruments()
 	surveyData := loadSurvey()
 	batchRaw, batchCount, batchRoot := loadBatch()
+	demo := loadTranscript()
 
 	stalePct := ""
 	var splits []splitRow
@@ -218,7 +220,8 @@ func main() {
 		BatchJSON:   template.JS(batchRaw),
 		BatchCount:  batchCount,
 		BatchRoot:   batchRoot,
-		Demo:        loadTranscript(),
+		Demo:        demo,
+		Cost:        costTable(demo),
 	}
 
 	if err := os.MkdirAll(*out, 0o755); err != nil {

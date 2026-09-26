@@ -172,10 +172,16 @@ fn dividend() -> Value {
         "sync leg A, half an hour later",
         &later,
     ));
+    // The ledger per share is no longer a whole number, so this strike and melt
+    // round, and the recording shows which way.
+    let strike = stage.fixture.strike(7, vec![u64::MAX, u64::MAX]);
+    steps.push(step(&stage, "holder", "strike 7 shares", &strike));
+    let melt = stage.fixture.redeem(7);
+    steps.push(step(&stage, "holder", "melt 7 shares", &melt));
     scenario(
         "dividend",
         "A dividend paid as new tokens vests instead of arriving at once",
-        "Tokens the issuer mints into the Hall are recorded as pending. They reach the ledger in a straight line over one hour, so a payment cannot change what a share is worth in a single block.",
+        "Tokens the issuer mints into the Hall are recorded as pending. They reach the ledger in a straight line over one hour, so a payment cannot change what a share is worth in a single block. Once the ledger per share is not a whole number, a strike takes the rounded up amount and a melt returns the rounded down amount, and the difference stays with the Hall.",
         "How any real issuer pays a dividend. Backpack's mechanism is unconfirmed, and xStocks reinvests through a multiplier that changes no balance, which this run does not exercise.",
         steps,
     )

@@ -14,6 +14,30 @@
     {{range .Demo.Scenario}}<a class="chip" href="#{{.ID}}">{{.Title}}</a>{{end}}
   </div>
 
+  {{with .Cost}}
+  <h2 id="cost">What a strike costs and what a melt returns</h2>
+  <p>Computed by the Go engine from the alloy as the dividend scenario leaves it: {{commas .Supply}} shares outstanding, holding
+  {{range $i, $stock := .Stocks}}{{if $i}} and {{end}}{{commas (index $.Cost.Ledgers $i)}} of {{$stock}}{{end}} in its ledger.
+  A strike takes the rounded up amount and a melt returns the rounded down amount, so whatever is left over stays with the Hall.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Shares</th>{{range .Stocks}}<th>Strike takes {{.}}</th>{{end}}{{range .Stocks}}<th>Melt returns {{.}}</th>{{end}}{{range .Stocks}}<th>Hall keeps {{.}}</th>{{end}}</tr></thead>
+    <tbody>
+    {{range .Rows}}<tr>
+      <td class="n"><strong>{{commas .Shares}}</strong></td>
+      {{range .In}}<td class="n">{{commas .}}</td>{{end}}
+      {{range .Out}}<td class="n">{{commas .}}</td>{{end}}
+      {{range .Kept}}<td class="n">{{commas .}}</td>{{end}}
+    </tr>{{end}}
+    </tbody>
+  </table>
+  </div>
+  <div class="limits">
+    <h3>What this does not show</h3>
+    <p>A price. The Hall reads none, so nothing here says what a share is worth or trades for. Comparing a share's price with the cost of assembling it is the Terminal's job, and the Terminal is not built.</p>
+  </div>
+  {{end}}
+
   {{range .Demo.Scenario}}
   <h2 id="{{.ID}}">{{.Title}}</h2>
   <p>{{.Shows}}</p>
