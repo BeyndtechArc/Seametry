@@ -64,8 +64,9 @@ Read all three before writing code. They are short on purpose.
 | Document | Owns |
 |---|---|
 | [`.claude/skills/seametry-design/`](../.claude/skills/seametry-design/SKILL.md) | **Every executable design decision.** Tokens, colour, type, space, radius, motion values, component contracts, page templates, interface voice, and the linter that enforces them. Invoked automatically for any work that creates or changes UI |
-| [BRAND_AND_WORLD.md](BRAND_AND_WORLD.md) | The world and its canon, the naming register, the world to code name map, the liturgy, which moments are ceremonies. Holds no executable design value |
+| [BRAND_AND_WORLD.md](BRAND_AND_WORLD.md) | The world and its canon, the naming register, the world to code name map, the liturgy, which moments are ceremonies, the canonical outward lines (the one-liner, the pitch, the judges' answers). Holds no executable design value |
 | [CRAFT.md](CRAFT.md) | Library evaluations and the reasoning behind them |
+| [`../STORM-VOICE-SYSTEM.md`](../STORM-VOICE-SYSTEM.md) | The process for writing and checking outward copy: a pitch line, a deck, a tweet, an email. Extends `voice.md`'s register to longer forms; does not restate it or the canonical lines in `BRAND_AND_WORLD.md` |
 
 The split is execution against canon. The skill says what a surface must do and
 fails the build when it does not. The world document says what things are
@@ -138,10 +139,6 @@ Tracked here because an untracked gap becomes folklore.
   against the current architecture. Its invariants and its list of tasks that
   cannot be delegated remain valid input.
 - No Terminal craft guidance exists in `CRAFT.md`.
-- `BRAND_AND_WORLD.md` section 7 requires all outward copy to pass through
-  `STORM-VOICE-SYSTEM.md`. That file does not exist anywhere in the repository.
-  Either it is written, or the requirement points at
-  `BRAND_AND_WORLD.md` section 7 itself and the reference is removed.
 
 **Code**
 
