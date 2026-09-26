@@ -173,3 +173,31 @@ jobs:
       - name: Rust reproduces the vectors and the program passes its tests
         working-directory: chain
         run: cargo test --locked
+
+  explorer:
+    name: Explorer builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      # The site is generated from committed evidence, so it can be rebuilt from
+      # any commit. The fonts are fetched, never committed, so this build falls
+      # back to system faces; a production build runs go run ./tools/fonts first.
+      - name: Build
+        run: go run ./tools/explorer
+
+      - name: Every page and the host configuration exist
+        run: |
+          for file in index instruments evidence hall verify; do
+            test -s "dist/explorer/$file.html" || { echo "missing dist/explorer/$file.html"; exit 1; }
+          done
+          test -s dist/explorer/vercel.json || { echo "missing dist/explorer/vercel.json"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: explorer
+          path: dist/explorer
+          if-no-files-found: error
