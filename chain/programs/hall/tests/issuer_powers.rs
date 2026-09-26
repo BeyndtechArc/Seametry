@@ -5,107 +5,18 @@
 mod common;
 
 use {
-    anchor_lang::prelude::Pubkey,
     anchor_spl::token_2022,
-    common::{alloy::*, fixture::*, issuer::*, World},
+    common::{alloy::*, issuer::*, stage::*, World},
     hall::recipe::VEST_WINDOW_SECONDS,
     solana_keypair::Keypair,
     solana_signer::Signer,
 };
 
-const FIRST: u64 = 5_000_000;
-const SECOND: u64 = 3_000_000;
-const HOLDER_FUNDS: u64 = 1_000_000_000;
-
-/// An alloy over two mock stocks that carry every issuer power, and a holder
-/// who has struck 1,000 shares.
-struct Stage {
-    fixture: Fixture,
-    issuer: Issuer,
-    stocks: [Pubkey; 2],
-}
-
-impl Stage {
-    fn new() -> Self {
-        let mut world = World::new();
-        let issuer = Issuer::new(&mut world);
-        let stocks = [
-            issuer.create_stock(&mut world, Powers::xstocks()),
-            issuer.create_stock(&mut world, Powers::xstocks()),
-        ];
-
-        let sponsor = world.sponsor();
-        let sponsor_deposits: Vec<Deposit> = stocks
-            .iter()
-            .zip([FIRST, SECOND])
-            .map(|(&mint, amount)| {
-                let source = issuer.open_account(&mut world, sponsor, mint);
-                issuer.mint_to(&mut world, mint, source, amount).unwrap();
-                Deposit {
-                    mint,
-                    source,
-                    program: token_2022::ID,
-                    amount,
-                }
-            })
-            .collect();
-        let outcome = initialize(&mut world, &sponsor_deposits, amounts(&sponsor_deposits));
-        assert!(outcome.is_ok(), "{}", logs(&outcome));
-
-        let at = addresses(sponsor);
-        let holder = Keypair::new();
-        world.svm.airdrop(&holder.pubkey(), 1_000_000_000).unwrap();
-        let holder_shares = issuer.open_account(&mut world, holder.pubkey(), at.share_mint);
-        let sources = stocks
-            .iter()
-            .map(|&mint| {
-                let source = issuer.open_account(&mut world, holder.pubkey(), mint);
-                issuer
-                    .mint_to(&mut world, mint, source, HOLDER_FUNDS)
-                    .unwrap();
-                Deposit {
-                    mint,
-                    source,
-                    program: token_2022::ID,
-                    amount: 0,
-                }
-            })
-            .collect();
-
-        let mut fixture = Fixture::from_parts(world, at, holder, holder_shares, sources);
-        fixture.world.set_clock(1_000);
-        let outcome = fixture.strike(1_000, vec![u64::MAX, u64::MAX]);
-        assert!(outcome.is_ok(), "{}", logs(&outcome));
-        Self {
-            fixture,
-            issuer,
-            stocks,
-        }
-    }
-
-    fn leg(&self, index: usize) -> hall::state::LegRecord {
-        self.fixture.world.alloy(self.fixture.at.alloy).legs[index]
-    }
-
-    fn sync(&mut self, index: usize) {
-        let outcome = self.fixture.world.send(
-            hall::instruction::Sync {
-                leg_index: index as u8,
-            },
-            hall::accounts::SyncLeg {
-                alloy: self.fixture.at.alloy,
-                hall_account: self.fixture.hall(index),
-            },
-        );
-        assert!(outcome.is_ok(), "{}", logs(&outcome));
-    }
-}
-
 /// Step 4. The issuer pays a dividend as newly minted tokens. Sync credits it
 /// as pending, and it reaches the ledger only along the vest.
 #[test]
 fn a_dividend_minted_into_the_hall_vests_instead_of_arriving_at_once() {
-    let mut stage = Stage::new();
+    let mut stage = Stage::struck();
     let hall = stage.fixture.hall(0);
     let ledger_before = stage.leg(0).ledger;
 
@@ -135,7 +46,7 @@ fn a_dividend_minted_into_the_hall_vests_instead_of_arriving_at_once() {
 /// still succeeds, the other leg delivers, and the frozen leg stays a claim.
 #[test]
 fn a_frozen_constituent_cannot_stop_a_melt_and_the_frozen_leg_waits_as_a_claim() {
-    let mut stage = Stage::new();
+    let mut stage = Stage::struck();
     let (mint, hall) = (stage.stocks[0], stage.fixture.hall(0));
     stage
         .issuer
@@ -178,7 +89,7 @@ fn a_frozen_constituent_cannot_stop_a_melt_and_the_frozen_leg_waits_as_a_claim()
 /// the melt, and the claim withdraws once the issuer resumes.
 #[test]
 fn a_paused_constituent_cannot_stop_a_melt() {
-    let mut stage = Stage::new();
+    let mut stage = Stage::struck();
     let mint = stage.stocks[0];
     stage.issuer.pause(&mut stage.fixture.world, mint).unwrap();
 
@@ -199,7 +110,7 @@ fn a_paused_constituent_cannot_stop_a_melt() {
 /// The next sync applies the loss to holders and claimants in proportion.
 #[test]
 fn a_seizure_by_the_permanent_delegate_is_applied_to_holders_and_claimants_together() {
-    let mut stage = Stage::new();
+    let mut stage = Stage::struck();
     stage.fixture.redeem(400).unwrap();
     let before = stage.leg(0);
     let claim_before = stage.fixture.claim(stage.fixture.striker_key()).entries[0].units;
@@ -246,7 +157,7 @@ fn a_seizure_by_the_permanent_delegate_is_applied_to_holders_and_claimants_toget
 /// with less than they started with.
 #[test]
 fn an_attackers_donation_does_not_move_the_price_and_costs_the_attacker() {
-    let mut stage = Stage::new();
+    let mut stage = Stage::struck();
     let (mint, hall) = (stage.stocks[0], stage.fixture.hall(0));
     let attacker = Keypair::new();
     stage

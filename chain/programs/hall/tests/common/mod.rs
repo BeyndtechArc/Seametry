@@ -9,6 +9,7 @@
 pub mod alloy;
 pub mod fixture;
 pub mod issuer;
+pub mod stage;
 
 use {
     anchor_lang::{

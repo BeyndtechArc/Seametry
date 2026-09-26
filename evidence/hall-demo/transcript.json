@@ -1,0 +1,866 @@
+{
+  "not_shown": [
+    "A change of the Scaled UI multiplier. Its initializer takes a floating point number and this repository allows none. The Hall never reads a multiplier.",
+    "The upgrade authority. A simulator has none to show.",
+    "A run on devnet or mainnet."
+  ],
+  "note": "The Hall demonstration of HALL.md section 7, run against real Token-2022 mints that carry the extension set reported for xStocks. Regenerate with WRITE_TRANSCRIPT=1 cargo test --test demo_transcript. The test fails if this file differs from what the run produces.",
+  "producer": {
+    "cluster": null,
+    "description": "A local simulator running the compiled program and the real Token-2022 program. Nothing here was sent to a cluster.",
+    "kind": "litesvm",
+    "program_id": "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx",
+    "signatures": false
+  },
+  "scenarios": [
+    {
+      "does_not_show": "Whether anyone will hold these shares, or what the shares trade for. The Hall has no price and this run has no market.",
+      "id": "founding",
+      "shows": "Anyone can found an alloy without asking Seametry. The genesis shares are held by an account the program cannot move from, and a second wallet strikes an exact number of shares, paying the amounts the Hall computes and rounds up.",
+      "steps": [
+        {
+          "action": "initialize_alloy with 5,000,000 of A and 3,000,000 of B, and 1,000,000 genesis shares locked",
+          "actor": "sponsor",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 0,
+              "stock_balances": [
+                1000000000,
+                1000000000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5000000,
+                "ledger": 5000000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3000000,
+                "ledger": 3000000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1000000
+          }
+        },
+        {
+          "action": "strike 1,000 shares",
+          "actor": "holder",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 1000,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5005000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3003000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1001000
+          }
+        }
+      ],
+      "title": "Founding an alloy and striking shares"
+    },
+    {
+      "does_not_show": "How any real issuer pays a dividend. Backpack's mechanism is unconfirmed, and xStocks reinvests through a multiplier that changes no balance, which this run does not exercise.",
+      "id": "dividend",
+      "shows": "Tokens the issuer mints into the Hall are recorded as pending. They reach the ledger in a straight line over one hour, so a payment cannot change what a share is worth in a single block.",
+      "steps": [
+        {
+          "action": "mint 500,000 of A into the Hall's account, a dividend paid as new tokens",
+          "actor": "issuer",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 1000,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5505000,
+                "ledger": 5005000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3003000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1001000
+          }
+        },
+        {
+          "action": "sync leg A",
+          "actor": "anyone",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 1000,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5505000,
+                "ledger": 5005000,
+                "pending": 500000,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3003000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1001000
+          }
+        },
+        {
+          "action": "sync leg A, half an hour later",
+          "actor": "anyone",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 1000,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5505000,
+                "ledger": 5255000,
+                "pending": 250000,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3003000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1001000
+          }
+        }
+      ],
+      "title": "A dividend paid as new tokens vests instead of arriving at once"
+    },
+    {
+      "does_not_show": "That every issuer behaves like this one. This issuer is a mock that reproduces the extension set reported for xStocks, run in a simulator.",
+      "id": "freeze",
+      "shows": "The issuer freezes the Hall's account for A. A new strike is refused, because the Hall cannot take A in. A melt still succeeds, because it moves no constituent. B is delivered, the claim on A is refused while frozen and stays exactly as it was, and it is delivered once the issuer thaws the account.",
+      "steps": [
+        {
+          "action": "freeze the Hall's account for A",
+          "actor": "issuer",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 1000,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5005000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3003000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1001000
+          }
+        },
+        {
+          "action": "strike 10 shares",
+          "actor": "holder",
+          "reason": "HallAccountFrozen",
+          "result": "refused",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 1000,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5005000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3003000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1001000
+          }
+        },
+        {
+          "action": "melt 400 shares",
+          "actor": "holder",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                2000,
+                1200
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 2000
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 1200
+              }
+            ],
+            "supply": 1000600
+          }
+        },
+        {
+          "action": "withdraw the whole claim on B",
+          "actor": "holder",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                2000,
+                0
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999998200
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 2000
+              },
+              {
+                "hall_balance": 3001800,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1000600
+          }
+        },
+        {
+          "action": "withdraw the whole claim on A",
+          "actor": "holder",
+          "reason": "Account is frozen",
+          "result": "refused",
+          "state": {
+            "holder": {
+              "claims": [
+                2000,
+                0
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999998200
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 2000
+              },
+              {
+                "hall_balance": 3001800,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1000600
+          }
+        },
+        {
+          "action": "thaw the Hall's account for A",
+          "actor": "issuer",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                2000,
+                0
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999998200
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 2000
+              },
+              {
+                "hall_balance": 3001800,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1000600
+          }
+        },
+        {
+          "action": "withdraw the whole claim on A",
+          "actor": "holder",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999997000,
+                999998200
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5003000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3001800,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1000600
+          }
+        }
+      ],
+      "title": "A melt succeeds while the issuer has frozen a constituent"
+    },
+    {
+      "does_not_show": "How long an issuer may keep a constituent paused. The Hall states the delay and cannot end it.",
+      "id": "pause",
+      "shows": "A pause stops every transfer of A. The melt still succeeds and the claim on A waits until the issuer resumes.",
+      "steps": [
+        {
+          "action": "pause A everywhere",
+          "actor": "issuer",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 1000,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5005000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3003000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1001000
+          }
+        },
+        {
+          "action": "melt 400 shares",
+          "actor": "holder",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                2000,
+                1200
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 2000
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 1200
+              }
+            ],
+            "supply": 1000600
+          }
+        },
+        {
+          "action": "withdraw the whole claim on A",
+          "actor": "holder",
+          "reason": "MintPaused (raised by Token-2022)",
+          "result": "refused",
+          "state": {
+            "holder": {
+              "claims": [
+                2000,
+                1200
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 2000
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 1200
+              }
+            ],
+            "supply": 1000600
+          }
+        },
+        {
+          "action": "resume A",
+          "actor": "issuer",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                2000,
+                1200
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 2000
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 1200
+              }
+            ],
+            "supply": 1000600
+          }
+        },
+        {
+          "action": "withdraw the whole claim on A",
+          "actor": "holder",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                1200
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999997000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5003000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 1200
+              }
+            ],
+            "supply": 1000600
+          }
+        }
+      ],
+      "title": "A paused constituent cannot stop a melt"
+    },
+    {
+      "does_not_show": "Whether the issuer would do this, or under what authority. The Hall records that it happened and who bore it.",
+      "id": "seizure",
+      "shows": "The issuer takes tokens out of the Hall. The next sync notices the balance fell and applies the loss to the ledger and to unclaimed in proportion. A melt that has not yet been withdrawn shrinks with it.",
+      "steps": [
+        {
+          "action": "melt 400 shares",
+          "actor": "holder",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                2000,
+                1200
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 5005000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 2000
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 1200
+              }
+            ],
+            "supply": 1000600
+          }
+        },
+        {
+          "action": "take two fifths of A out of the Hall with its permanent delegate",
+          "actor": "issuer",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                2000,
+                1200
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 3003000,
+                "ledger": 5003000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 2000
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 1200
+              }
+            ],
+            "supply": 1000600
+          }
+        },
+        {
+          "action": "sync leg A",
+          "actor": "anyone",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                1199,
+                1200
+              ],
+              "shares": 600,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 3003000,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 1200
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3001800,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 1200
+              }
+            ],
+            "supply": 1000600
+          }
+        }
+      ],
+      "title": "A seizure is shared between holders and claimants"
+    },
+    {
+      "does_not_show": "That no attack exists. This shows the one used against vaults that price shares by ratio, and the vesting rule that answers it.",
+      "id": "donation",
+      "shows": "A raw transfer to the Hall is recorded as pending, not added to the ledger, so what a share is worth does not change at once. The sender holds no shares and cannot take the tokens back.",
+      "steps": [
+        {
+          "action": "send 9,000,000 of A straight to the Hall, holding no shares",
+          "actor": "attacker",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 1000,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 14005000,
+                "ledger": 5005000,
+                "pending": 0,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3003000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1001000
+          }
+        },
+        {
+          "action": "sync leg A",
+          "actor": "anyone",
+          "result": "ok",
+          "state": {
+            "holder": {
+              "claims": [
+                0,
+                0
+              ],
+              "shares": 1000,
+              "stock_balances": [
+                999995000,
+                999997000
+              ]
+            },
+            "legs": [
+              {
+                "hall_balance": 14005000,
+                "ledger": 5005000,
+                "pending": 9000000,
+                "stock": "A",
+                "unclaimed": 0
+              },
+              {
+                "hall_balance": 3003000,
+                "ledger": 3003000,
+                "pending": 0,
+                "stock": "B",
+                "unclaimed": 0
+              }
+            ],
+            "supply": 1001000
+          }
+        }
+      ],
+      "title": "Sending tokens to the Hall does not move the price of a share"
+    },
+    {
+      "does_not_show": "Whether some other treatment of such a constituent would be sound. This is the refusal the program makes, and the reason it gives.",
+      "id": "fee",
+      "shows": "A fee on transfer would make the Hall record units it never received, so the alloy is refused at founding, with the reason.",
+      "steps": [
+        {
+          "action": "initialize_alloy with a constituent that takes a 1 percent transfer fee",
+          "actor": "sponsor",
+          "reason": "DepositNotReceivedInFull",
+          "result": "refused"
+        }
+      ],
+      "title": "A constituent that takes a transfer fee is refused"
+    },
+    {
+      "does_not_show": "Whether some other treatment of such a constituent would be sound. This is the refusal the program makes, and the reason it gives.",
+      "id": "frozen-at-founding",
+      "shows": "The Hall's account for such a constituent would begin frozen, so the alloy is refused instead of being created unable to move it.",
+      "steps": [
+        {
+          "action": "initialize_alloy with a constituent whose new accounts start frozen",
+          "actor": "sponsor",
+          "reason": "HallAccountFrozen",
+          "result": "refused"
+        }
+      ],
+      "title": "A constituent whose new accounts start frozen is refused"
+    }
+  ]
+}
