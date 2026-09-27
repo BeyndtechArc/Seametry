@@ -1,7 +1,7 @@
-// Committed on purpose. The Go programs read evidence/, fixtures/ and spec/
-// relative to the repository root, so they run from here: go run
-// ./server/cmd/<name>, go test ./server/... See
-// docs/decisions/2026-09-27-repository-layout.md, D2.
+// Committed on purpose. The Go programs read shared/evidence/,
+// shared/fixtures/ and shared/spec/ relative to the repository root, so they
+// run from here: go run ./server/cmd/<name>, go test ./server/... See
+// docs/decisions/2026-09-27-repository-layout.md, D1 and D2.
 go 1.27.1
 
 use ./server
