@@ -60,12 +60,12 @@ World names live in the interface, brand and copy. Literal names live in on-chai
 |---|---|---|
 | The Seam | token on-chain versus claim in the world | |
 | The Hall | keyless basket program | `programs/hall` |
-| The Office | Seametry's services | `internal/*` |
+| The Office | Seametry's services | `server/internal/*` |
 | The Touchstone | the interface | `apps/terminal`, `apps/mobile`, `apps/explorer` |
 | Ore | a tokenized stock | `Constituent` |
 | Grade | legal shape of the claim | `Grade` |
 | Prerogatives | issuer powers over a token | `Prerogatives` |
-| Assay | evaluation of evidence | `internal/policy` |
+| Assay | evaluation of evidence | `server/internal/policy` |
 | Alloy | basket struck in the Hall | `Alloy` |
 | Formula | an alloy's fixed recipe | `Recipe` |
 | Strike | mint alloy shares | `create` |
@@ -76,7 +76,7 @@ World names live in the interface, brand and copy. Literal names live in on-chai
 | Hallmark | the receipt | `Hallmark` |
 | Serial | never-reused hallmark identifier | `serial` |
 | The Seal | Merkle root of hallmarks anchored on-chain | `Anchor` |
-| Good Delivery | Seametry's published standard | `internal/basket` |
+| Good Delivery | Seametry's published standard | `server/internal/basket` |
 | NGD | fails the standard, reasons printed | |
 | The Key | the transaction that makes the Hall immutable | upgrade authority set to none |
 

@@ -48,7 +48,7 @@ jobs:
       # from the spec. If the two ever disagree by a byte, this job fails and
       # the claim cannot be made.
       - name: Seal a batch with the Go engine
-        run: go run ./tools/seal
+        run: go run ./server/cmd/seal
 
       - name: Verify it with an independent implementation
         run: node tools/spec/verify-receipts.mjs
@@ -72,12 +72,12 @@ jobs:
           fi
 
       - name: Vet
-        run: go vet ./...
+        run: go vet ./server/...
 
       # Race detection is required on every run. It needs cgo, which is why it
       # runs here rather than on a developer's Windows machine.
       - name: Test
-        run: go test -race -count=1 ./...
+        run: go test -race -count=1 ./server/...
 
   design:
     name: Design system
@@ -94,10 +94,10 @@ jobs:
       - name: Tokens match their source
         run: |
           node .claude/skills/seametry-design/scripts/build-tokens.mjs \
-            .claude/skills/seametry-design/assets/tokens/seametry.tokens.json packages/ui/src/generated
-          if ! git diff --quiet -- packages/ui/src/generated; then
+            .claude/skills/seametry-design/assets/tokens/seametry.tokens.json clients/packages/ui/src/generated
+          if ! git diff --quiet -- clients/packages/ui/src/generated; then
             echo "Generated tokens differ from the source. Commit the regenerated files."
-            git --no-pager diff -- packages/ui/src/generated
+            git --no-pager diff -- clients/packages/ui/src/generated
             exit 1
           fi
 
@@ -112,7 +112,7 @@ jobs:
         run: node --test tools/design/lint_test.mjs
 
       - name: Design lint
-        run: node .claude/skills/seametry-design/scripts/design-lint.mjs tools/explorer packages/ui
+        run: node .claude/skills/seametry-design/scripts/design-lint.mjs server/cmd/explorer clients/packages/ui
 
   language:
     name: Language boundary
@@ -192,9 +192,9 @@ jobs:
 
       # The site is generated from committed evidence, so it can be rebuilt from
       # any commit. The fonts are fetched, never committed, so this build falls
-      # back to system faces; a production build runs go run ./tools/fonts first.
+      # back to system faces; a production build runs go run ./server/cmd/fonts first.
       - name: Build
-        run: go run ./tools/explorer
+        run: go run ./server/cmd/explorer
 
       - name: Every page and the host configuration exist
         run: |

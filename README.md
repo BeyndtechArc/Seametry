@@ -63,7 +63,7 @@ code is the first thing that rots.
 
 **Exists:**
 
-- The Go core in `internal/`: canonical JSON, Merkle receipts, exact decimal
+- The Go core in `server/internal/`: canonical JSON, Merkle receipts, exact decimal
   amounts, Token-2022 mint decoding, the admission policy, the Hall's
   arithmetic, Jupiter depth measurement and a rate limited transport.
 - `spec/`: conformance vectors shared by Go, a JavaScript receipt verifier and
@@ -72,18 +72,18 @@ code is the first thing that rots.
   written and tested in litesvm, and deployed to devnet only, where
   `chain/tools/devnet-demo` ran the demonstration with signatures.
 - A generated Explorer, captured mainnet fixtures and evidence, and CI.
-- Generated design tokens in `packages/ui/src/generated`, the only surviving
+- Generated design tokens in `clients/packages/ui/src/generated`, the only surviving
   member of the earlier TypeScript workspace: the rest (source adapters, a
   gateway, an Expo shell, a Next.js console) was retired once the Go core, the
   Explorer and the Hall replaced what it did.
 
-**Does not exist:** anything on devnet or mainnet. The contract in
-`api/openapi/`. The Terminal. Oracle values read from chain and consumed by the
+**Does not exist:** anything on mainnet. A running server or a database. The contract in
+`contracts/openapi/`. The Terminal. Oracle values read from chain and consumed by the
 policy.
 
 **Known gap:** the retired TypeScript `preflight` also flagged missing and
 divergent reference prices, and the retired coverage probe flagged issuer,
-Chainlink and Stork coverage the same way. `internal/policy` has no
+Chainlink and Stork coverage the same way. `server/internal/policy` has no
 counterpart for either, because oracle values are to be read from chain
 ([decision](docs/decisions/2026-09-23-oracles-on-chain.md)) and that read is not
 built.
@@ -105,16 +105,36 @@ Three foundation documents, short on purpose, read before writing code:
 - [Engineering standard](docs/ENGINEERING_STANDARD.md): the non negotiable
   rules and what enforces each one
 
+## Layout
+
+Top level folders are runtimes, plus the contract between them. Why, and what
+was measured before choosing, is in
+[the layout decision](docs/decisions/2026-09-27-repository-layout.md).
+
+| Folder | Holds |
+|---|---|
+| `server/` | The Go module. Services in `server/internal/<name>`, programs in `server/cmd/<name>` |
+| `chain/` | The Hall program and its devnet runner, in Rust |
+| `clients/` | Everything that renders: generated design tokens and fonts today, the web and mobile apps when built |
+| `contracts/` | The OpenAPI and Protobuf definitions both sides generate from. Created with the first contract |
+| `spec/` | Vectors that Go, Rust and JavaScript must all reproduce |
+| `fixtures/`, `evidence/` | Captured mainnet data, and what was derived from it |
+| `docs/` | One owner per subject, mapped in `docs/README.md` |
+| `tools/` | Repository wide Node scripts |
+
+Go commands run from the repository root, through the committed `go.work`,
+because the programs read `spec/`, `fixtures/` and `evidence/` from there.
+
 ## Run what exists today
 
 ```bash
-go test ./...                              # the Go core
-node tools/spec/generate.mjs --check       # conformance vectors must not drift
-npm run explorer                           # rebuild the Explorer
-npm run serve                              # serve it without Go
+go test ./server/...                   # the Go core, run from the repository root
+node tools/spec/generate.mjs --check   # conformance vectors must not drift
+npm run explorer                       # rebuild the Explorer
+npm run serve                          # serve it without Go
 (cd chain && cargo-build-sbf --arch v0 && cargo test --locked)   # the Hall
-npm run tokens                             # regenerate packages/ui from the design source
-npm run design:lint                        # design system compliance
+npm run tokens                         # regenerate clients/packages/ui from the design source
+npm run design:lint                    # design system compliance
 ```
 
 Copy `.env.example` to `.env` only when provider credentials are available.

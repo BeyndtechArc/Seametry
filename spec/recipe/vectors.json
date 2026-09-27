@@ -1,5 +1,5 @@
 {
-  "note": "The Hall's arithmetic, shared by the Go implementation and the Rust program. Amounts are integer atoms as strings at the stated scale; shares are plain integers. Times are seconds from the start of each scenario. Regenerate with go test ./internal/basket -update. A vector is never edited to make an implementation pass.",
+  "note": "The Hall's arithmetic, shared by the Go implementation and the Rust program. Amounts are integer atoms as strings at the stated scale; shares are plain integers. Times are seconds from the start of each scenario. Regenerate with go test ./server/internal/basket -update. A vector is never edited to make an implementation pass.",
   "vest_window_seconds": 3600,
   "scenarios": [
     {

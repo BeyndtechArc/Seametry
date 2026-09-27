@@ -37,7 +37,7 @@ async function hostHeaders() {
     return Object.fromEntries((global?.headers || []).map(h => [h.key, h.value]));
   } catch {
     console.error('warning: no vercel.json found, serving without security headers');
-    console.error('         run: go run ./tools/explorer');
+    console.error('         run: go run ./server/cmd/explorer');
     return {};
   }
 }
@@ -48,7 +48,7 @@ try {
   await stat(join(DIR, 'index.html'));
 } catch {
   console.error(`nothing to serve at ${DIR}`);
-  console.error('generate it first:  go run ./tools/explorer');
+  console.error('generate it first:  go run ./server/cmd/explorer');
   process.exit(1);
 }
 

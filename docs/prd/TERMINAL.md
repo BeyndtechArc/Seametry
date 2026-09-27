@@ -28,8 +28,8 @@ Each item names the service that produces it. The Terminal renders a result and 
 
 ## 3. What exists today
 
-- The cost to assemble and melt proceeds arithmetic, computed by `internal/basket` and shown for a demonstration alloy on the Explorer's Hall page, checked against the compiled program.
-- Admissibility decisions and depth at size, computed by `internal/policy` and `internal/liquidity` and shown for seven captured instruments on the Explorer.
+- The cost to assemble and melt proceeds arithmetic, computed by `server/internal/basket` and shown for a demonstration alloy on the Explorer's Hall page, checked against the compiled program.
+- Admissibility decisions and depth at size, computed by `server/internal/policy` and `server/internal/liquidity` and shown for seven captured instruments on the Explorer.
 - The Hall program, with all five instructions tested in a simulator and run on devnet. It is not deployed to mainnet.
 
 Nothing here is interactive. There is no input for a formula, no live quote, and no wallet connection.

@@ -1,7 +1,7 @@
 //! The Hall's arithmetic: what a strike costs, what a melt returns, and how a
 //! ledger reconciles with a balance an issuer moved.
 //!
-//! It is bound to `internal/basket` in the Go repository by
+//! It is bound to `server/internal/basket` in the Go repository by
 //! `spec/recipe/vectors.json`, which both test suites load. A one unit
 //! disagreement is a basket that does not balance, so the vectors are the
 //! specification and neither implementation is.

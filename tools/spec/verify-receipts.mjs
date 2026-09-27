@@ -1,5 +1,5 @@
 /**
- * Independently verifies the batch sealed by tools/seal.
+ * Independently verifies the batch sealed by server/cmd/seal.
  *
  * This file shares no code with the Go engine. It reimplements the
  * canonicalization, the leaf composition and the Merkle path from
@@ -72,7 +72,7 @@ try {
   batch = JSON.parse(readFileSync(batchPath, 'utf8'));
 } catch (e) {
   console.error(`cannot read ${batchPath}: ${e.message}`);
-  console.error('run: go run ./tools/seal');
+  console.error('run: go run ./server/cmd/seal');
   process.exit(1);
 }
 

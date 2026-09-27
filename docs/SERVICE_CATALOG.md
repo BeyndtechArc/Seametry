@@ -5,7 +5,7 @@ inter service contracts, deployment topology, and the criteria under which a
 module becomes a separately deployed service. It does not own product scope
 (`PRODUCT_ARCHITECTURE.md`) or engineering rules (`ENGINEERING_STANDARD.md`).
 
-**Last substantive change:** 23 September 2026.
+**Last substantive change:** 27 September 2026.
 
 ---
 
@@ -18,7 +18,7 @@ operational cost of a large one without the benefit.
 
 We define real boundaries now, and we run few processes.
 
-Every service below is a Go package under `internal/<name>`. A service becomes
+Every service below is a Go package under `server/internal/<name>`. A service becomes
 its own process only when an extraction criterion in section 5 is measured, not
 anticipated.
 
@@ -361,10 +361,30 @@ rather than tested against it afterward.
 
 ## 4. Deployment topology
 
-**One process.** `cmd/seametry` runs every service in section 3, with
+**One process.** `server/cmd/seametry` runs every service in section 3, with
 background work on internal schedulers. The boundaries in section 3 are
 enforced by package structure and tests, not by network hops, which is what
 makes splitting later a configuration change rather than a rewrite.
+
+**One database.** One Postgres database holds every service's tables, one
+schema per service. Each service connects as a role granted only its own
+schema, so rule 1 in section 2 is enforced by the database rather than by
+review alone.
+
+**Where it runs.** The process and Postgres ship as one Docker Compose file,
+so the host is a deployment choice and not a design one.
+
+| Piece | Host | Cost |
+|---|---|---|
+| Process and Postgres | Oracle Cloud Always Free VM; until an account exists, local Docker reached through Cloudflare Tunnel | 0 |
+| Raw payloads, backups, cold history | Cloudflare R2 | 0 up to 10 GB-month |
+| Web client | Cloudflare Pages, static first | 0 |
+| History, once Postgres needs relief | Tinybird, queried by the process and cached, never by a client | 0 up to its free limits |
+
+Why these and not others, with the limits checked, is in
+`decisions/2026-09-27-repository-layout.md`. Postgres is self hosted, so its
+backups are this document's concern: a nightly dump goes to R2, and CI restores
+the latest one to prove it restores.
 
 This follows the rule in section 5 rather than anticipating it. A single
 operator with no traffic gains nothing from three processes except three times
@@ -397,7 +417,8 @@ with the measurement recorded in the decision log:
 4. **Divergent change rate.** It is deployed far more or far less often than
    its peers, and the coupling is slowing both.
 5. **Isolation requirement.** A security, compliance, or key handling boundary
-   requires it. This is the criterion that already justifies `cmd/executor`.
+   requires it. This is the criterion that will justify `server/cmd/executor`,
+   and section 4 says when: once real mainnet execution exists.
 
 Anticipation is not measurement. "It will need to scale" is not a criterion.
 
@@ -405,7 +426,7 @@ Anticipation is not measurement. "It will need to scale" is not a criterion.
 
 - **Internal contracts** are Protobuf over ConnectRPC. Generated clients, no
   hand written internal HTTP.
-- **The public boundary** is REST described by OpenAPI in `api/openapi/`. It is
+- **The public boundary** is REST described by OpenAPI in `contracts/openapi/`. It is
   the source of truth for every external shape. Go server interfaces and the
   TypeScript client are generated from it, and a contract drift check
   regenerates and fails on any diff.

@@ -53,7 +53,7 @@ Closing line: *Your browser just verified this. We didn't.*
 
 This is the signature moment and it is made entirely of real computation.
 `docs/reference/explorer-verification-mock.html` is the visual and interaction
-reference; the scheme it implements is real and lives in `internal/receipt`.
+reference; the scheme it implements is real and lives in `server/internal/receipt`.
 
 **Requirements.**
 
@@ -130,12 +130,12 @@ Explorer implements both:
 
 - **Typefaces.** Sentient for figures and titles, Switzer for interface,
   Fragment Mono for digests and nothing else. All three self hosted, fetched
-  by `go run ./tools/fonts`, none committed.
+  by `go run ./server/cmd/fonts`, none committed.
 - **Default theme.** Dark is the default and the brand. Light is the
   certificate. Both are complete, and no component may exist in only one.
 
 Every colour, size, radius and duration on the page comes from
-`packages/ui/src/generated/tokens.css`, generated from the design system's
+`clients/packages/ui/src/generated/tokens.css`, generated from the design system's
 token source. The stylesheet states no colour of its own, and
 `npm run design:lint` fails on a raw value.
 
@@ -164,7 +164,7 @@ From `CRAFT.md` section 4, measured rather than assumed:
 
 ## 8. Security
 
-- The public artifact is built by `internal/receipt`, which constructs the
+- The public artifact is built by `server/internal/receipt`, which constructs the
   public body separately from the private one rather than filtering it. The
   Explorer renders what it is given and adds nothing.
 - No public artifact carries a wallet, a transaction signature, an exact amount

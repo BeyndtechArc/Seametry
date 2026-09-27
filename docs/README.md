@@ -1,6 +1,6 @@
 # Documentation
 
-**Last substantive change:** 24 September 2026.
+**Last substantive change:** 27 September 2026.
 
 ---
 
@@ -53,7 +53,7 @@ Read all three before writing code. They are short on purpose.
 | Document | Owns | Status |
 |---|---|---|
 | [prd/HALL.md](prd/HALL.md) | The Hall on-chain program: guarantees, instructions, arithmetic, prerogative handling, the devnet demonstration | Live. **The product.** Devnet is phase 1, mainnet is phase 3 |
-| [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Off chain basket valuation, weighting and drift, whole-alloy delivery evaluation, acquisition planning | Live. The holdings boundary and NAV/weighting/delivery/execution specs are written; only the holdings boundary and (via `internal/basket`) the recipe arithmetic are built |
+| [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Off chain basket valuation, weighting and drift, whole-alloy delivery evaluation, acquisition planning | Live. The holdings boundary and NAV/weighting/delivery/execution specs are written; only the holdings boundary and (via `server/internal/basket`) the recipe arithmetic are built |
 | [prd/MOBILE.md](prd/MOBILE.md) | Mobile holding, monitoring, and approval surface | Live. Phase 2. Deliberately not a consumer brokerage |
 | [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the verification ritual, instrument pages, evidence pages, the Hall demonstration | Live. Phase 1 |
 | [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Nothing interactive exists yet |
@@ -81,6 +81,7 @@ Literal names live in code and in every external contract.
 
 | Document | What it is |
 |---|---|
+| [decisions/2026-09-27-repository-layout.md](decisions/2026-09-27-repository-layout.md) | Why the repository splits into server, chain, clients and contracts, why Go runs from the root through `go.work`, and which free hosts were checked and why each was kept or excluded |
 | [decisions/2026-09-24-depth-at-size.md](decisions/2026-09-24-depth-at-size.md) | What executable depth looked like across seven live instruments, why a refusal is an observation, and every assumption made to get a ceiling |
 | [decisions/2026-09-23-oracles-on-chain.md](decisions/2026-09-23-oracles-on-chain.md) | Why oracle values are read from Solana accounts rather than credentialed APIs, what was measured, and what it costs |
 | [decisions/2026-09-23-etf-spine.md](decisions/2026-09-23-etf-spine.md) | Why baskets became the spine and intelligence became the admission standard, the open authorized participant wedge, why lending is excluded, why one process, why retention became policy |
@@ -92,7 +93,7 @@ Literal names live in code and in every external contract.
 ## Where to start
 
 **Building a service:** `ENGINEERING_STANDARD.md`, then `SERVICE_CATALOG.md`
-for the service you are touching, then the contract in `api/openapi/`.
+for the service you are touching, then the contract in `contracts/openapi/`.
 
 **Building a surface:** `PRODUCT_ARCHITECTURE.md` sections 4 and 5, then the
 surface's PRD, then `BRAND_AND_WORLD.md` sections 6 to 9 for the liturgy,
@@ -142,14 +143,14 @@ Tracked here because an untracked gap becomes folklore.
 
 **Code**
 
-Built and tested: `internal/canonical`, `merkle`, `amount`, `registry`,
+Built and tested: `server/internal/canonical`, `merkle`, `amount`, `registry`,
 `receipt`, `transport`, `solana`, `liquidity`, `policy` and `basket`, with
 shared vectors and goldens in `spec/`, captured fixtures for mainnet mints and
 aggregator responses, a generated Explorer, and CI.
 
 - The retired TypeScript `preflight` flagged missing, closed and divergent
   reference prices from Chainlink and Stork, using floating point percentages.
-  `internal/policy` has no counterpart for those three flags, because oracle
+  `server/internal/policy` has no counterpart for those three flags, because oracle
   values are to be read from chain and that read is not built. Whatever replaces
   them must use integer arithmetic.
 - `chain/programs/hall` holds the Hall's arithmetic (`recipe.rs`), which
@@ -176,12 +177,15 @@ aggregator responses, a generated Explorer, and CI.
   `--arch v0` until litesvm accepts v3.
 - Nothing is anchored on chain, so the verification ritual ends at the
   published root rather than at a transaction.
-- `api/openapi/` does not exist. The public boundary has no contract yet.
+- `contracts/openapi/` does not exist. The public boundary has no contract yet.
+- No test enforces the service boundaries `SERVICE_CATALOG.md` defines. It says
+  they are enforced by package structure and tests; the structure exists, the
+  test does not.
 - Depth is measured for buying only. Selling into USDC is unmeasured and can
   differ sharply on a thin pool.
 - The depth ceiling of 100 basis points is an assumption, recorded in
   `decisions/2026-09-24-depth-at-size.md` with the rest.
-- CI does not enforce the no-float rule outside `internal/canonical`, where it
+- CI does not enforce the no-float rule outside `server/internal/canonical`, where it
   is checked at runtime.
 - `-race` does not run on a Windows developer machine because it needs cgo.
   CI runs it on Linux.

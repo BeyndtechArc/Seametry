@@ -1,6 +1,6 @@
-> **Living document. Owns:** off chain basket valuation, weighting and drift, delivery standard evaluation for whole alloys, and execution planning for baskets. The domain concepts specific to a basket (Alloy, Allocation, Holding, Claim) as more than the narrower on-chain types `internal/basket` already implements.
-> **Does not own:** instrument identity, grade, prerogatives and live multiplier resolution (`../SERVICE_CATALOG.md` section 3.1, Registry), provider adapters and raw observation capture (section 3.2, Observation), executable routes and depth at size (section 3.4, Liquidity), the decision engine, policy documents and reason codes (section 3.5, Policy, and `../ENGINEERING_STANDARD.md` section 8 for the determinism rule it follows), and the Hall's own arithmetic (`HALL.md`, specified in `internal/basket`). None of those subjects gets restated here.
-> **Core, from phase 0 for the recipe; unbuilt for everything else.** `internal/basket` and its shared vectors exist and are load bearing. NAV, weighting, delivery evaluation for a whole alloy, and acquisition planning are specified below and not yet built; `TERMINAL.md` is the surface that will need them first.
+> **Living document. Owns:** off chain basket valuation, weighting and drift, delivery standard evaluation for whole alloys, and execution planning for baskets. The domain concepts specific to a basket (Alloy, Allocation, Holding, Claim) as more than the narrower on-chain types `server/internal/basket` already implements.
+> **Does not own:** instrument identity, grade, prerogatives and live multiplier resolution (`../SERVICE_CATALOG.md` section 3.1, Registry), provider adapters and raw observation capture (section 3.2, Observation), executable routes and depth at size (section 3.4, Liquidity), the decision engine, policy documents and reason codes (section 3.5, Policy, and `../ENGINEERING_STANDARD.md` section 8 for the determinism rule it follows), and the Hall's own arithmetic (`HALL.md`, specified in `server/internal/basket`). None of those subjects gets restated here.
+> **Core, from phase 0 for the recipe; unbuilt for everything else.** `server/internal/basket` and its shared vectors exist and are load bearing. NAV, weighting, delivery evaluation for a whole alloy, and acquisition planning are specified below and not yet built; `TERMINAL.md` is the surface that will need them first.
 
 # Basket Domain
 
@@ -10,10 +10,10 @@ What a basket is worth, how it drifts, whether it may be formed, and how to acqu
 
 ## 1. What changed, and why
 
-- **The Hall is price-blind.** NAV is computed off-chain only. The Rust conformance surface is the recipe arithmetic in `internal/basket`, not NAV. See `HALL.md`.
+- **The Hall is price-blind.** NAV is computed off-chain only. The Rust conformance surface is the recipe arithmetic in `server/internal/basket`, not NAV. See `HALL.md`.
 - **Issuer prerogatives and live multiplier resolution moved to Registry.** Both are decoded from live chain data on every read, never assumed from a published list, and both now live in one place: `../SERVICE_CATALOG.md` section 3.1.
 - **The decision engine moved to Policy.** One pure function, one place: `../SERVICE_CATALOG.md` section 3.5 and `../ENGINEERING_STANDARD.md` section 8.
-- **Canonicalization is fixed** to RFC 8785, implemented once in `internal/canonical` and used everywhere a digest is computed.
+- **Canonicalization is fixed** to RFC 8785, implemented once in `server/internal/canonical` and used everywhere a digest is computed.
 
 ---
 
@@ -37,12 +37,12 @@ HoldingsSource {
 
 Grade and Prerogatives are Registry's (`../SERVICE_CATALOG.md` section 3.1); this document does not restate their tables.
 
-What is specific to a basket, none of it built yet beyond what `internal/basket` already covers:
+What is specific to a basket, none of it built yet beyond what `server/internal/basket` already covers:
 
 - **ReferenceObservation.** Never a naked number: identity, denomination, value, observed at, source, stated methodology, market status of the underlying, verification state, computed freshness.
 - **MarkedValuation.** For constituents with no continuous reference: value, date struck, stated methodology, derived mark age in days.
-- **Recipe.** Units per share per constituent, derived from alloy state, never stored as weights. `internal/basket.Leg` and `internal/basket.Alloy` implement the on-chain-matching arithmetic; they carry ledger, pending, unclaimed and the vest and claim state the Hall needs, not the richer per-constituent identity (issuer, grade, redemption path, jurisdiction exclusions, dividend mechanism) this section originally proposed. That richer identity is Registry's, joined in at the surface that renders a basket, not duplicated into the recipe type.
-- **Alloy, Allocation, Holding, Claim, Hallmark, PolicyDocument.** Alloy and Claim exist on chain now (`chain/programs/hall/src/state.rs`) and in `internal/basket`. Allocation, Holding, Hallmark and PolicyDocument as basket-domain concepts are unbuilt.
+- **Recipe.** Units per share per constituent, derived from alloy state, never stored as weights. `server/internal/basket.Leg` and `server/internal/basket.Alloy` implement the on-chain-matching arithmetic; they carry ledger, pending, unclaimed and the vest and claim state the Hall needs, not the richer per-constituent identity (issuer, grade, redemption path, jurisdiction exclusions, dividend mechanism) this section originally proposed. That richer identity is Registry's, joined in at the surface that renders a basket, not duplicated into the recipe type.
+- **Alloy, Allocation, Holding, Claim, Hallmark, PolicyDocument.** Alloy and Claim exist on chain now (`chain/programs/hall/src/state.rs`) and in `server/internal/basket`. Allocation, Holding, Hallmark and PolicyDocument as basket-domain concepts are unbuilt.
 - **Holding** must retain raw amount, resolved live multiplier, and UI amount separately, never conflating raw and UI, once it is built.
 
 ### 3.2 NAV
@@ -109,4 +109,4 @@ Not built.
 
 ## 6. Out of scope
 
-Rendering, wallets, services outside this boundary, the program's own arithmetic (owned by `internal/basket` and specified in `HALL.md`). See `MOBILE.md`, `TERMINAL.md`, `HALL.md`, and the architecture document.
+Rendering, wallets, services outside this boundary, the program's own arithmetic (owned by `server/internal/basket` and specified in `HALL.md`). See `MOBILE.md`, `TERMINAL.md`, `HALL.md`, and the architecture document.

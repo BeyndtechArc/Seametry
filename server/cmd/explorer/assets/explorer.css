@@ -1,0 +1,465 @@
+/* Seametry Explorer.
+ *
+ * Every value here is a token from clients/packages/ui/src/generated/tokens.css, which
+ * is generated from the design system's source and never hand edited. A raw
+ * colour, font family or dash fails design-lint.
+ *
+ * Dark is the default and the brand; light is the certificate. Both come from
+ * the generated file, so this stylesheet never states a colour at all.
+ */
+
+@font-face {
+  font-family: 'Sentient'; /* design-lint-disable-line font-literal a font-face block must name the family it defines */
+  src: url('fonts/Sentient-Variable.woff2') format('woff2-variations');
+  font-weight: 200 700;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Switzer'; /* design-lint-disable-line font-literal a font-face block must name the family it defines */
+  src: url('fonts/Switzer-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Fragment Mono'; /* design-lint-disable-line font-literal a font-face block must name the family it defines */
+  src: url('fonts/FragmentMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+
+body {
+  background: var(--sm-surface-ground);
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Grain: static monochrome noise on ground, never animated. The only texture. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .04;
+  z-index: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); /* design-lint-disable-line lens-scope the ground grain is an approved texture, foundations section 7, and feTurbulence is how it is drawn */
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: var(--sm-size-content);
+  margin: 0 auto;
+  padding: var(--sm-space-8) var(--sm-space-7) var(--sm-space-12);
+}
+.num { font-variant-numeric: tabular-nums lining-nums }
+
+/* Header */
+header.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sm-space-6);
+  padding-bottom: var(--sm-space-5);
+  border-bottom: .5px solid var(--sm-line-rule);
+  flex-wrap: wrap;
+}
+.word {
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+  color: var(--sm-text-primary);
+}
+.word span {
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+  margin-left: var(--sm-space-4);
+}
+nav { display: flex; gap: var(--sm-space-1); flex-wrap: wrap }
+nav a {
+  color: var(--sm-text-secondary);
+  text-decoration: none;
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+  padding: var(--sm-space-3) var(--sm-space-4);
+  border-radius: var(--sm-radius-control);
+}
+nav a:hover { color: var(--sm-text-primary); background: var(--sm-surface-sheet) }
+nav a[aria-current="page"] { color: var(--sm-text-primary); background: var(--sm-surface-sheet) }
+
+/* The honesty line. Never hidden, at any width. */
+.honest {
+  width: 100%;
+  margin-top: var(--sm-space-4);
+  font-size: var(--sm-font-size-small);
+  color: var(--sm-text-tertiary);
+  border-left: 2px solid var(--sm-accent-provenance);
+  padding-left: var(--sm-space-4);
+}
+
+/* Type */
+h1 {
+  font-family: var(--sm-font-family-display);
+  font-weight: var(--sm-font-weight-light);
+  font-size: clamp(var(--sm-font-size-figure), 6.5vw, var(--sm-font-size-display));
+  line-height: 1.04;
+  letter-spacing: var(--sm-font-tracking-display);
+  max-width: 16ch;
+  margin-top: var(--sm-space-9);
+  color: var(--sm-text-primary);
+}
+h2 {
+  font-family: var(--sm-font-family-display);
+  font-weight: var(--sm-font-weight-regular);
+  font-size: var(--sm-font-size-title);
+  letter-spacing: var(--sm-font-tracking-title);
+  margin-top: var(--sm-space-10);
+  color: var(--sm-text-primary);
+}
+h3 {
+  font-family: var(--sm-font-family-ui);
+  font-weight: var(--sm-font-weight-semibold);
+  font-size: var(--sm-font-size-body);
+  margin-top: var(--sm-space-7);
+  color: var(--sm-text-primary);
+}
+.lede {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-lead);
+  margin-top: var(--sm-space-5);
+  max-width: var(--sm-size-readable);
+}
+p { max-width: var(--sm-size-readable); margin-top: var(--sm-space-4); color: var(--sm-text-secondary) }
+p.tight { margin-top: var(--sm-space-3) }
+a { color: var(--sm-accent-provenance) }
+
+/* Figures */
+.figures { display: flex; flex-wrap: wrap; gap: var(--sm-space-4); margin-top: var(--sm-space-7) }
+.figure {
+  background: var(--sm-surface-sheet);
+  border: .5px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-surface);
+  padding: var(--sm-space-5) var(--sm-space-6);
+  min-width: 150px;
+  flex: 1 1 150px;
+}
+.figure b {
+  display: block;
+  font-family: var(--sm-font-family-display);
+  font-weight: var(--sm-font-weight-regular);
+  font-size: var(--sm-font-size-title-l);
+  letter-spacing: var(--sm-font-tracking-display);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--sm-text-primary);
+}
+.figure span {
+  display: block;
+  font-size: var(--sm-font-size-small);
+  color: var(--sm-text-tertiary);
+  margin-top: var(--sm-space-1);
+}
+
+/* Tables are data: radius 0, rules between, no fills. */
+table { width: 100%; border-collapse: collapse; margin-top: var(--sm-space-5); font-size: var(--sm-font-size-small) }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch }
+th {
+  text-align: left;
+  font-weight: var(--sm-font-weight-semibold);
+  font-size: var(--sm-font-size-micro);
+  color: var(--sm-text-tertiary);
+  padding: var(--sm-space-3) var(--sm-space-4) var(--sm-space-3) 0;
+  border-bottom: .5px solid var(--sm-line-rule);
+  white-space: nowrap;
+}
+td {
+  padding: var(--sm-space-4) var(--sm-space-4) var(--sm-space-4) 0;
+  border-bottom: .5px solid var(--sm-line-rule);
+  color: var(--sm-text-secondary);
+  vertical-align: top;
+  border-radius: var(--sm-radius-data);
+}
+td.n { font-variant-numeric: tabular-nums lining-nums; white-space: nowrap }
+td strong { color: var(--sm-text-primary); font-weight: var(--sm-font-weight-semibold) }
+
+/* Fragment Mono is the digest face. Hashes, addresses, signatures. */
+code, .mono, .addr, dl.hashes dd, pre, .formula {
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+}
+.addr { color: var(--sm-text-tertiary); word-break: break-all }
+
+.card {
+  background: var(--sm-surface-sheet);
+  border: .5px solid var(--sm-line-rule);
+  border-top-color: var(--sm-line-highlight);
+  border-radius: var(--sm-radius-surface);
+  padding: var(--sm-space-6) var(--sm-space-7);
+  margin-top: var(--sm-space-5);
+}
+.sentence {
+  display: flex;
+  gap: var(--sm-space-4);
+  align-items: flex-start;
+  padding: var(--sm-space-2) 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-body);
+}
+.sentence::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--sm-radius-control);
+  background: var(--sm-accent-provenance);
+  margin-top: var(--sm-space-3);
+}
+
+/* Stamps. A stamp is always followed by its reasons, never a bare verdict.
+ * ALLOW is plain primary text, WARN is provenance, BLOCK is inverted.
+ * No red anywhere; the strongest signal is contrast, not hue. */
+.stamp {
+  display: inline-block;
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-semibold);
+  padding: var(--sm-space-1) var(--sm-space-3);
+  border-radius: var(--sm-radius-surface);
+  border: 1px solid var(--sm-line-rule);
+  color: var(--sm-text-tertiary);
+  white-space: nowrap;
+}
+.stamp.allow { border-color: var(--sm-line-strong); color: var(--sm-text-primary) }
+.stamp.warn { border-color: var(--sm-accent-provenance); color: var(--sm-accent-provenance) }
+.stamp.block {
+  background: var(--sm-surface-inverse);
+  color: var(--sm-text-inverse);
+  border-color: var(--sm-surface-inverse);
+}
+.stamp.done { border-color: var(--sm-line-strong); color: var(--sm-text-secondary) }
+.stamp.todo { border-color: var(--sm-line-rule); color: var(--sm-text-tertiary) }
+
+/* Controls. Green means touchable, and nothing else is green. */
+.entry { margin-top: var(--sm-space-7); display: flex; gap: var(--sm-space-4); flex-wrap: wrap }
+.field {
+  flex: 1 1 240px;
+  background: var(--sm-surface-sheet);
+  border-radius: var(--sm-radius-control);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sm-space-6);
+  min-height: var(--sm-size-key);
+  border: .5px solid var(--sm-line-rule);
+}
+.field input {
+  all: unset;
+  flex: 1;
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-lead);
+  font-weight: var(--sm-font-weight-medium);
+  letter-spacing: var(--sm-font-tracking-serial);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--sm-text-primary);
+  min-width: 0;
+}
+.field input::placeholder {
+  color: var(--sm-text-tertiary);
+  letter-spacing: var(--sm-font-tracking-body);
+  font-weight: var(--sm-font-weight-regular);
+}
+.tray { background: var(--sm-surface-tray); border-radius: var(--sm-radius-control); padding: var(--sm-size-tray); display: flex }
+button.key {
+  all: unset;
+  cursor: pointer;
+  background: var(--sm-accent-touch);
+  color: var(--sm-text-onTouch);
+  border-radius: var(--sm-radius-control);
+  padding: 0 var(--sm-space-8);
+  min-height: var(--sm-size-target);
+  display: flex;
+  align-items: center;
+  font-family: var(--sm-font-family-ui);
+  font-weight: var(--sm-font-weight-medium);
+  font-size: var(--sm-font-size-body);
+}
+button.key:active { transform: translateY(1px); background: var(--sm-accent-touchPressed) }
+button.quiet {
+  all: unset;
+  cursor: pointer;
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+  padding: var(--sm-space-3) var(--sm-space-5);
+  border-radius: var(--sm-radius-control);
+  background: var(--sm-surface-sheet);
+  border: .5px solid var(--sm-line-rule);
+  min-height: var(--sm-size-target);
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+}
+button.quiet:hover { color: var(--sm-text-primary) }
+:focus-visible { outline: 2px solid var(--sm-accent-provenance); outline-offset: 3px }
+
+.chips { margin-top: var(--sm-space-5); display: flex; flex-wrap: wrap; gap: var(--sm-space-2); align-items: center }
+.chips p { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary); margin: 0 var(--sm-space-1) 0 0 }
+.chip {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+  letter-spacing: var(--sm-font-tracking-serial);
+  font-variant-numeric: tabular-nums lining-nums;
+  padding: var(--sm-space-2) var(--sm-space-4);
+  border-radius: var(--sm-radius-control);
+  background: var(--sm-surface-sheet);
+  color: var(--sm-text-secondary);
+  border: .5px solid var(--sm-line-rule);
+}
+.chip:hover { color: var(--sm-text-primary) }
+.msg { margin-top: var(--sm-space-4); font-size: var(--sm-font-size-small); color: var(--sm-accent-provenance); min-height: 1.4em }
+
+/* The ritual */
+.steps { list-style: none; margin-top: var(--sm-space-3) }
+.step {
+  padding: var(--sm-space-7) 0 var(--sm-space-1);
+  border-top: .5px solid var(--sm-line-rule);
+  margin-top: var(--sm-space-6);
+  opacity: .3;
+  transition: opacity var(--sm-motion-duration-settle) var(--sm-motion-easing-standard);
+}
+.step.on { opacity: 1 }
+@media (prefers-reduced-motion: reduce) { .step { transition: none } }
+.step h3 {
+  display: flex;
+  gap: var(--sm-space-4);
+  align-items: baseline;
+  font-family: var(--sm-font-family-display);
+  font-weight: var(--sm-font-weight-regular);
+  font-size: var(--sm-font-size-title-s);
+  margin-top: 0;
+}
+.step h3 .n {
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-semibold);
+  color: var(--sm-text-tertiary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+pre {
+  margin-top: var(--sm-space-5);
+  background: var(--sm-surface-sheet);
+  border-radius: var(--sm-radius-surface);
+  padding: var(--sm-space-5) var(--sm-space-5);
+  line-height: 1.7;
+  color: var(--sm-text-secondary);
+  overflow-x: auto;
+}
+pre mark {
+  background: none;
+  color: var(--sm-accent-provenance);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+dl.hashes {
+  margin-top: var(--sm-space-4);
+  display: grid;
+  grid-template-columns: minmax(110px, auto) 1fr;
+  gap: var(--sm-space-2) var(--sm-space-5);
+  align-items: baseline;
+}
+dl.hashes dt { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary); font-family: var(--sm-font-family-ui) }
+dl.hashes dd { color: var(--sm-text-primary); word-break: break-all }
+.formula { margin-top: var(--sm-space-4); color: var(--sm-text-tertiary); overflow-x: auto; white-space: nowrap }
+
+.treebox {
+  margin-top: var(--sm-space-5);
+  background: var(--sm-surface-sheet);
+  border-radius: var(--sm-radius-surface);
+  padding: var(--sm-space-4) var(--sm-space-3) var(--sm-space-1);
+  overflow-x: auto;
+}
+svg.tree { display: block; height: auto }
+.tree line { stroke: var(--sm-line-rule); stroke-width: 1.2 }
+.tree line.lit { stroke: var(--sm-accent-provenance); stroke-width: 1.6 }
+.tree circle { fill: var(--sm-surface-raised); stroke: var(--sm-text-secondary); stroke-width: 1 }
+.tree circle.sib { stroke: var(--sm-accent-provenance); stroke-dasharray: 2 2 }
+.tree circle.lit { fill: var(--sm-accent-provenance); stroke: var(--sm-accent-provenance) }
+.tree text { fill: var(--sm-text-tertiary); font-family: var(--sm-font-family-ui); font-size: 10px }
+.legend { display: flex; gap: var(--sm-space-5); flex-wrap: wrap; margin-top: var(--sm-space-3); font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary) }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: var(--sm-radius-control); margin-right: var(--sm-space-2) }
+.legend i.computed { background: var(--sm-accent-provenance) }
+.legend i.sibling { border: 1px dashed var(--sm-accent-provenance) }
+
+.verdict {
+  margin-top: var(--sm-space-5);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-light);
+  letter-spacing: var(--sm-font-tracking-display);
+  color: var(--sm-text-primary);
+}
+.verdict.no { color: var(--sm-accent-provenance) }
+.closing {
+  margin-top: var(--sm-space-8);
+  font-family: var(--sm-font-family-display);
+  font-weight: var(--sm-font-weight-light);
+  font-size: clamp(var(--sm-font-size-title), 5vw, var(--sm-font-size-figure-l));
+  line-height: 1.1;
+  letter-spacing: var(--sm-font-tracking-display);
+  color: var(--sm-text-primary);
+  opacity: 0;
+  transition: opacity var(--sm-motion-duration-sheet) var(--sm-motion-easing-standard);
+}
+.closing.on { opacity: 1 }
+.after { margin-top: var(--sm-space-6); display: flex; gap: var(--sm-space-3); flex-wrap: wrap }
+
+footer {
+  margin-top: var(--sm-space-11);
+  padding-top: var(--sm-space-6);
+  border-top: .5px solid var(--sm-line-rule);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+footer p { color: var(--sm-text-tertiary); max-width: var(--sm-size-readable) }
+
+.limits {
+  margin-top: var(--sm-space-5);
+  padding: var(--sm-space-5) var(--sm-space-5);
+  border: .5px dashed var(--sm-line-rule);
+  border-radius: var(--sm-radius-surface);
+}
+.limits h3 { margin-top: 0; color: var(--sm-text-secondary) }
+.limits li {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+  margin-left: var(--sm-space-6);
+  margin-top: var(--sm-space-2);
+}
+
+/* Utility classes, so no template carries an inline style. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+h3.lead { margin-top: 0 }
+td.label { width: 34% }
+p.meta { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary) }
+code.reason-code { color: var(--sm-text-tertiary) }

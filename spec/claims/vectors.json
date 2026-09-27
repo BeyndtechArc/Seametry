@@ -1,5 +1,5 @@
 {
-  "note": "How a claim shrinks when a seizure takes part of a leg's unclaimed balance, shared by the Go implementation and the Rust program. Amounts are integer atoms as strings at the stated scale. The index is a 64 bit fixed point number, and claim_one is 1.0. Regenerate with go test ./internal/basket -update. A vector is never edited to make an implementation pass.",
+  "note": "How a claim shrinks when a seizure takes part of a leg's unclaimed balance, shared by the Go implementation and the Rust program. Amounts are integer atoms as strings at the stated scale. The index is a 64 bit fixed point number, and claim_one is 1.0. Regenerate with go test ./server/internal/basket -update. A vector is never edited to make an implementation pass.",
   "claim_one": "18446744073709551616",
   "scenarios": [
     {

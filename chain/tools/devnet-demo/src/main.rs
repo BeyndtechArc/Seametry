@@ -1,7 +1,7 @@
 //! Runs the Hall demonstration of HALL.md section 7 against a deployed devnet
 //! program, over real transactions, and writes
 //! evidence/hall-demo/transcript-devnet.json in the same shape
-//! demo_transcript.rs writes for litesvm, so tools/explorer/hall.go renders
+//! demo_transcript.rs writes for litesvm, so server/cmd/explorer/hall.go renders
 //! both without change.
 //!
 //! Every account-building and instruction-building call mirrors
@@ -698,7 +698,7 @@ impl<'a> Stage<'a> {
     }
 }
 
-// --- Transcript, matching tools/explorer/hall.go's decode ------------------
+// --- Transcript, matching server/cmd/explorer/hall.go's decode ------------------
 
 #[derive(Serialize)]
 struct Transcript {

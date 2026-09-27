@@ -19,8 +19,8 @@ Before you say a task is done, answer these in writing. Any "no" means not done.
    never by retyping, and rebuild anything generated from the broken source
    (a compiled `.so`, a golden file) so no build output outlives the break.
 3. **Is anything still uncertain that I have not said out loud?**
-4. **Did I leave the tree clean?** `gofmt -l .` empty, `go vet ./...` silent,
-   `go test ./...` passing, and the checks under Commands below.
+4. **Did I leave the tree clean?** `gofmt -l .` empty, `go vet ./server/...` silent,
+   `go test ./server/...` passing, and the checks under Commands below.
 
 Reporting "done" without these is the single most expensive failure here,
 because it moves the cost of finding the defect to someone who trusted you.
@@ -161,7 +161,7 @@ messages. CI fails on the first two.
   and their classification.
 - **No floating point** for a price, quantity, fee, multiplier, ratio or
   divergence. Not in tests, fixtures or example payloads. Amounts are integer
-  atoms plus an explicit scale (`internal/amount`). The one exception is
+  atoms plus an explicit scale (`server/internal/amount`). The one exception is
   `amount.FromFloat64Exact`, which exists because Token-2022 stores the Scaled
   UI multiplier as a float64 on chain, and it converts exactly, once, at that
   boundary.
@@ -184,7 +184,7 @@ reader cannot reconstruct.
 ## Commands
 
 ```bash
-gofmt -l . && go vet ./... && go test ./...   # -race needs cgo, CI runs it on Linux
+gofmt -l . && go vet ./server/... && go test ./server/...   # -race needs cgo, CI runs it on Linux
 node tools/spec/generate.mjs --check          # conformance vectors must not drift
 node tools/spec/verify-receipts.mjs           # Go seals, JavaScript verifies
 npm run design:lint                           # design system compliance

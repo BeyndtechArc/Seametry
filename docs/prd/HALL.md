@@ -78,7 +78,7 @@ Named literally. The world names live in the interface, never in a standard's in
 
 ### 4.4 Arithmetic
 
-Specified in Go in `internal/basket`, with shared vectors in `spec/recipe/vectors.json` and `spec/claims/vectors.json` that the Rust program in `chain/programs/hall` must reproduce. In short: required inputs round up, outputs round down, every rounding favours the Hall, all intermediates are u128.
+Specified in Go in `server/internal/basket`, with shared vectors in `spec/recipe/vectors.json` and `spec/claims/vectors.json` that the Rust program in `chain/programs/hall` must reproduce. In short: required inputs round up, outputs round down, every rounding favours the Hall, all intermediates are u128.
 
 **Mint by shares, never by amount.** The caller asks for `n` shares and states maximum inputs. The Hall pulls exactly the required units or fails. A depositor can never be rounded down to zero shares, which is the mechanism of the classic inflation attack.
 
@@ -96,7 +96,7 @@ deficit  (actual < expected): consumes pending first,
 - **Losses apply immediately.** Conservative in the direction that protects anyone relying on the share's value.
 - **Trade-off, stated:** a newcomer who strikes during a vest window shares in the remaining unvested credit. For multiplier-based issuers no raw credit exists, so this never arises. For mint-to issuers it is small and bounded by W. Revisit once Backpack's mechanism is confirmed.
 - **Claims are fixed quantities until a seizure.** Raw dividends attributable to unclaimed units accrue to holders. Withdraw promptly; the app notifies.
-- **A seizure shrinks every claim in the same proportion.** Each leg keeps an index that only falls, and each claim remembers the index it was last settled against. Settling scales the claim by the ratio of the two, rounded down, so the claims can never sum to more than the Hall holds for them and the rounding remainder stays in the Hall. When nothing is left to scale, the leg starts a new epoch and older claims settle to zero. A claim made after a seizure is not scaled by it. Specified in `internal/basket/claim.go` with vectors in `spec/claims/vectors.json`.
+- **A seizure shrinks every claim in the same proportion.** Each leg keeps an index that only falls, and each claim remembers the index it was last settled against. Settling scales the claim by the ratio of the two, rounded down, so the claims can never sum to more than the Hall holds for them and the rounding remainder stays in the Hall. When nothing is left to scale, the leg starts a new epoch and older claims settle to zero. A claim made after a seizure is not scaled by it. Specified in `server/internal/basket/claim.go` with vectors in `spec/claims/vectors.json`.
 
 ### 4.6 Issuer prerogatives, case by case
 
@@ -193,7 +193,7 @@ Two things do need funding: the genesis of Alloy No. 1, and seed liquidity for i
 
 ## 10. Sequencing
 
-1. Recipe specification and vectors (`internal/basket`, `spec/`).
+1. Recipe specification and vectors (`server/internal/basket`, `spec/`).
 2. Program against the vectors; property tests; fuzzing.
 3. Mock issuers and the devnet demonstration.
 4. App and console integration.

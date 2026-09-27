@@ -1,5 +1,5 @@
 {
-  "note": "Decisions pinned against real mainnet mints plus synthetic cases for the blocking paths no live xStocks mint currently exhibits. Regenerate with go test ./internal/policy -update. A case is never edited by hand to make code pass.",
+  "note": "Decisions pinned against real mainnet mints plus synthetic cases for the blocking paths no live xStocks mint currently exhibits. Regenerate with go test ./server/internal/policy -update. A case is never edited by hand to make code pass.",
   "policy": {
     "version": "policy-2026.09.2",
     "accepted_grades": [

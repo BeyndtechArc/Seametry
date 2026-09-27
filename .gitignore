@@ -15,13 +15,13 @@ dist
 coverage.txt
 
 # Fonts are fetched, never committed: the ITF Free Font License forbids
-# redistributing them through a public repository. Run: go run ./tools/fonts
-/assets/fonts/*.woff2
-/assets/fonts/*.woff
-/assets/fonts/*.ttf
-/assets/fonts/*.otf
-/assets/fonts/*.zip
-/assets/fonts/FONTSHARE-FFL.txt
+# redistributing them through a public repository. Run: go run ./server/cmd/fonts
+/clients/assets/fonts/*.woff2
+/clients/assets/fonts/*.woff
+/clients/assets/fonts/*.ttf
+/clients/assets/fonts/*.otf
+/clients/assets/fonts/*.zip
+/clients/assets/fonts/FONTSHARE-FFL.txt
 
-# Generated surfaces. Rebuild with: go run ./tools/explorer
+# Generated surfaces. Rebuild with: go run ./server/cmd/explorer
 /dist/
