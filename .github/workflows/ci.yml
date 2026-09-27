@@ -190,6 +190,15 @@ jobs:
             exit 1
           fi
 
+      # Only ligatures_test.mjs needs node_modules (playwright) or a browser;
+      # lint_test.mjs is dependency-free and ran without either until this step
+      # was added for the other test alongside it.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
       # Scoped to the surfaces that exist. apps/web and apps/mobile were the
       # retired TypeScript scaffold; the Explorer replaces the first and
       # prd/MOBILE.md specifies a rebuild of the second in phase 2, neither
@@ -197,8 +206,10 @@ jobs:
       # The linter arrives as an import and is replaced wholesale on each new
       # version of the design system, so a fix inside it does not survive unless
       # something outside it fails when the fix is gone. This is that something.
+      # ligatures_test.mjs guards explorer.css's digest-face rule the same way,
+      # against Fragment Mono's default programming ligatures (issue 13).
       - name: Linter regressions
-        run: node --test shared/tools/design/lint_test.mjs
+        run: npm run design:test
 
       - name: Design lint
         run: node .claude/skills/seametry-design/scripts/design-lint.mjs server/cmd/explorer clients/packages/ui

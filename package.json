@@ -20,6 +20,9 @@
     "serve": "node shared/tools/serve.mjs",
     "tokens": "node .claude/skills/seametry-design/scripts/build-tokens.mjs .claude/skills/seametry-design/assets/tokens/seametry.tokens.json clients/packages/ui/src/generated",
     "design:lint": "node .claude/skills/seametry-design/scripts/design-lint.mjs server/cmd/explorer clients/packages/ui",
-    "design:test": "node --test shared/tools/design/lint_test.mjs"
+    "design:test": "node --test shared/tools/design/lint_test.mjs shared/tools/design/ligatures_test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
   }
 }

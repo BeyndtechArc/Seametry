@@ -193,10 +193,15 @@ td {
 td.n { font-variant-numeric: tabular-nums lining-nums; white-space: nowrap }
 td strong { color: var(--sm-text-primary); font-weight: var(--sm-font-weight-semibold) }
 
-/* Fragment Mono is the digest face. Hashes, addresses, signatures. */
+/* Fragment Mono is the digest face. Hashes, addresses, signatures.
+   Ligatures off: proven in headless Chromium against the repo's own font
+   file that <-, == and |- draw as an arrow, one bar and a turnstile by
+   default, which corrupts anything digest-shaped that contains them. */
 code, .mono, .addr, dl.hashes dd, pre, .formula {
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-micro);
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
 }
 .addr { color: var(--sm-text-tertiary); word-break: break-all }
 

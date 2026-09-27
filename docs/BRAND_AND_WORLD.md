@@ -59,9 +59,9 @@ World names live in the interface, brand and copy. Literal names live in on-chai
 | World | Product | Code |
 |---|---|---|
 | The Seam | token on-chain versus claim in the world | |
-| The Hall | keyless basket program | `programs/hall` |
+| The Hall | keyless basket program | `chain/programs/hall` |
 | The Office | Seametry's services | `server/internal/*` |
-| The Touchstone | the interface | `apps/terminal`, `apps/mobile`, `apps/explorer` |
+| The Touchstone | the interface | `clients/web` (Terminal), `server/cmd/explorer` (Explorer), mobile not yet built |
 | Ore | a tokenized stock | `Constituent` |
 | Grade | legal shape of the claim | `Grade` |
 | Prerogatives | issuer powers over a token | `Prerogatives` |
@@ -132,7 +132,7 @@ The first hallmark the Office strikes is Alloy No. 1's genesis, serial `MMYY0000
 | Old assay | Stale, with its age | observed, but past its window |
 | No sample | Unavailable | the source said nothing. Named, never omitted |
 
-The operational label always leads. The world name sits beneath it in ink3, never instead of it.
+The operational label always leads. The world name sits beneath it in `text.tertiary`, never instead of it.
 
 ### Two stamps
 
