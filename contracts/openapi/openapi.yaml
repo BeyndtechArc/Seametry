@@ -1,0 +1,978 @@
+openapi: 3.1.0
+info:
+  title: Seametry
+  version: "1"
+  description: >
+    The public boundary described in docs/prd/API.md. This is one file, not
+    split into several: a genuine attempt to split by resource group hit real
+    friction (oapi-codegen could not resolve a $ref that crossed back into the
+    root file without an explicit import mapping), and a bundler dependency
+    was not worth adding for organization alone. Resource groups are kept as
+    clearly commented sections and as tags on every operation instead, which
+    both generators and any documentation tool render the same way a physical
+    split would.
+
+    This document covers what docs/prd/API.md section 12 calls A0: the
+    contract clients build against first, plus every resource the Explorer's
+    own pages (docs/prd/EXPLORER.md section 3) read. It does not yet cover
+    every Phase 1 resource API.md names, only the ones with a real consumer
+    today; a resource is added here when something needs it, not ahead of
+    that.
+servers:
+  - url: /v1
+
+tags:
+  - name: instruments
+    description: Registry. Identity, grade, decoded prerogatives, the live multiplier.
+  - name: findings
+    description: Registry and Liquidity. Published findings a visitor can reproduce.
+  - name: hall
+    description: Basket. The Hall's recorded demonstrations and its cost arithmetic.
+  - name: receipts
+    description: Receipt and Audit. Public bodies, proofs, batches, anchor keys.
+  - name: status
+    description: Gateway. Seametry's own freshness, held to the standard it holds sources to.
+
+paths:
+  # --- instruments -----------------------------------------------------
+  /instruments:
+    get:
+      operationId: listInstruments
+      tags: [instruments]
+      summary: Every instrument in the registry.
+      parameters:
+        - $ref: '#/components/parameters/AsOf'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        "200":
+          description: A page of instruments.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Instrument'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /instruments/{mint}:
+    get:
+      operationId: getInstrument
+      tags: [instruments]
+      summary: >
+        Identity, grade, decoded prerogatives with their sentences, the live
+        multiplier and the field it came from, unknown extensions, and the
+        capture slot.
+      parameters:
+        - $ref: '#/components/parameters/Mint'
+        - $ref: '#/components/parameters/AsOf'
+      responses:
+        "200":
+          description: The instrument.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Instrument'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /instruments/{mint}/admissibility:
+    get:
+      operationId: getInstrumentAdmissibility
+      tags: [instruments]
+      summary: The policy decision for this instrument, with reasons, version and digest.
+      parameters:
+        - $ref: '#/components/parameters/Mint'
+        - $ref: '#/components/parameters/AsOf'
+      responses:
+        "200":
+          description: The decision.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Decision'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /instruments/{mint}/depth:
+    get:
+      operationId: getInstrumentDepth
+      tags: [instruments]
+      summary: >
+        Depth at size as a curve, with each quote's age and expiry. Selling
+        reports unavailable until it is measured (docs/prd/API.md 5.1).
+      parameters:
+        - $ref: '#/components/parameters/Mint'
+        - name: direction
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [buy, sell]
+            default: buy
+      responses:
+        "200":
+          description: The depth curve.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DepthCurve'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  # --- findings ---------------------------------------------------------
+  /findings:
+    get:
+      operationId: listFindings
+      tags: [findings]
+      summary: Every published finding a visitor can reproduce by running one command.
+      responses:
+        "200":
+          description: The findings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Finding'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /findings/{slug}:
+    get:
+      operationId: getFinding
+      tags: [findings]
+      summary: One finding, with what it does not establish stated beside it.
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: multiplier-staleness
+      responses:
+        "200":
+          description: The finding.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Finding'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  # --- hall ---------------------------------------------------------------
+  /hall/demonstration:
+    get:
+      operationId: getHallDemonstration
+      tags: [hall]
+      summary: >
+        The demonstration transcript for one cluster: every scenario, its
+        steps, actors, results, reasons, and, on devnet, transaction
+        signatures. docs/prd/HALL.md section 7.
+      parameters:
+        - name: cluster
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [simulator, devnet]
+      responses:
+        "200":
+          description: The transcript.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/HallTranscript'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /alloys/{address}/strike-cost:
+    get:
+      operationId: getAlloyStrikeCost
+      tags: [hall]
+      summary: What a strike of n shares takes per leg, rounded up.
+      parameters:
+        - $ref: '#/components/parameters/AlloyAddress'
+        - $ref: '#/components/parameters/Shares'
+      responses:
+        "200":
+          description: The strike cost.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CostRow'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /alloys/{address}/melt-proceeds:
+    get:
+      operationId: getAlloyMeltProceeds
+      tags: [hall]
+      summary: >
+        What a melt of n shares returns per leg, rounded down, and what the
+        Hall keeps.
+      parameters:
+        - $ref: '#/components/parameters/AlloyAddress'
+        - $ref: '#/components/parameters/Shares'
+      responses:
+        "200":
+          description: The melt proceeds.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CostRow'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  # --- receipts -----------------------------------------------------------
+  /receipts/{serial}:
+    get:
+      operationId: getReceipt
+      tags: [receipts]
+      summary: >
+        The public body, its inclusion proof, its batch root and the anchor
+        transaction. Shaped so the verification ritual needs nothing else
+        (docs/prd/EXPLORER.md section 3.1).
+      parameters:
+        - name: serial
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "09260000005"
+      responses:
+        "200":
+          description: The receipt's proof.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Proof'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /batches/{root}:
+    get:
+      operationId: getBatch
+      tags: [receipts]
+      summary: A sealed batch, its leaves' public digests and its anchor.
+      parameters:
+        - name: root
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The batch.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Batch'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /anchor-keys:
+    get:
+      operationId: listAnchorKeys
+      tags: [receipts]
+      summary: The published list of keys allowed to anchor a root, with rotation dates.
+      responses:
+        "200":
+          description: The anchor keys.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AnchorKey'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  # --- status ---------------------------------------------------------------
+  /status:
+    get:
+      operationId: getStatus
+      tags: [status]
+      summary: >
+        Seametry's own freshness: ledger lag, observer age per instrument and
+        source, seal backlog, in the same evidence shape as any source.
+      responses:
+        "200":
+          description: Current status.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/StatusReport'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+components:
+  parameters:
+    Mint:
+      name: mint
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The mint's base58 address.
+    AlloyAddress:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: string
+    Shares:
+      name: shares
+      in: query
+      required: true
+      schema:
+        type: string
+      description: A share count, as a string since it may exceed 2^53 (docs/prd/API.md section 4.1).
+    AsOf:
+      name: as_of
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+      description: >
+        What Seametry held as true at this instant. Omitted means now
+        (docs/prd/API.md section 4.5).
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+      description: An opaque cursor from a previous page.
+
+  responses:
+    Problem:
+      description: >
+        An error, as an RFC 9457 problem detail (docs/prd/API.md section 4.4).
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+  schemas:
+    # --- common ------------------------------------------------------------
+    Amount:
+      type: object
+      description: >
+        Integer atoms plus an explicit scale. Never a JSON number
+        (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+      required: [atoms, scale]
+      properties:
+        atoms:
+          type: string
+          description: Integer atoms, as a decimal string.
+          example: "1000000"
+        scale:
+          type: integer
+          example: 6
+
+    Observation:
+      type: object
+      description: >
+        A value that came from outside Seametry, or was computed from
+        something that did (docs/prd/API.md section 4.2).
+      required: [source, source_event_at, received_at, persisted_at, evidence_state]
+      properties:
+        value:
+          description: Absent when evidence_state is unavailable.
+          $ref: '#/components/schemas/Amount'
+        source:
+          type: string
+          example: "solana:mainnet:getAccountInfo"
+        source_event_at:
+          type: string
+          format: date-time
+        received_at:
+          type: string
+          format: date-time
+        persisted_at:
+          type: string
+          format: date-time
+        slot:
+          type: string
+          description: A slot number, as a string since it may exceed 2^53.
+        evidence_state:
+          type: string
+          enum: [verified, unverified, stale, unavailable, pruned]
+        age_seconds:
+          type: integer
+          description: Derived at read time against the served time, never stored.
+        raw:
+          type: string
+          description: The content address (sha256:...) of the payload this value was derived from.
+
+    Meta:
+      type: object
+      description: The outer envelope every response carries (docs/prd/API.md section 4.3).
+      required: [served_at, as_of, completeness]
+      properties:
+        served_at:
+          type: string
+          format: date-time
+        as_of:
+          type: string
+          format: date-time
+        completeness:
+          type: string
+          enum: [complete, partial]
+        missing:
+          type: array
+          items:
+            $ref: '#/components/schemas/MissingPart'
+        cluster:
+          type: string
+          description: Named wherever chain state is involved.
+          enum: [devnet, mainnet]
+
+    MissingPart:
+      type: object
+      required: [part, state, reason]
+      properties:
+        part:
+          type: string
+        state:
+          type: string
+          enum: [unavailable, stale, pruned]
+        reason:
+          type: string
+          description: A stable reason code.
+
+    Problem:
+      type: object
+      description: RFC 9457.
+      required: [type, title, status, detail]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+          description: Names the value, the expectation, and where it came from.
+
+    # --- instruments ---------------------------------------------------------
+    Pubkey:
+      type: string
+      description: A base58 Solana address, or null when the authority is absent.
+
+    Prerogative:
+      type: object
+      description: >
+        One decoded issuer power, as a plain sentence
+        (registry.Prerogatives.Sentences; docs/prd/EXPLORER.md section 3.2).
+      required: [sentence]
+      properties:
+        sentence:
+          type: string
+        extension_number:
+          type: integer
+          description: Present only for an unrecognised extension.
+
+    ResolvedMultiplier:
+      type: object
+      description: The live Scaled UI multiplier and the evidence for it (registry.ResolvedMultiplier).
+      required: [value, source, effective_at, activation_pending, naive_value, naive_is_stale]
+      properties:
+        value:
+          $ref: '#/components/schemas/Amount'
+        source:
+          type: string
+          enum: [multiplier, new_multiplier]
+        effective_at:
+          type: string
+          format: date-time
+        activation_pending:
+          type: boolean
+        naive_value:
+          $ref: '#/components/schemas/Amount'
+          description: What reading the field named multiplier alone would give.
+        naive_is_stale:
+          type: boolean
+
+    Instrument:
+      type: object
+      required: [mint, grade, prerogatives, unknown_extensions, capture]
+      properties:
+        mint:
+          type: string
+        symbol:
+          type: string
+        grade:
+          type: string
+          description: The legal shape of the claim. Never a quality judgment.
+        prerogatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/Prerogative'
+        multiplier:
+          $ref: '#/components/schemas/ResolvedMultiplier'
+        unknown_extensions:
+          type: array
+          items:
+            type: integer
+          description: Named by number, never dropped.
+        quarantined:
+          type: boolean
+        capture:
+          type: object
+          required: [slot]
+          properties:
+            slot:
+              type: string
+            commitment:
+              type: string
+            captured_at:
+              type: string
+              format: date-time
+
+    Decision:
+      type: object
+      required: [decision, reasons, policy_version, input_digest]
+      properties:
+        decision:
+          type: string
+          enum: [ALLOW, WARN, BLOCK]
+        reasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reason'
+        policy_version:
+          type: string
+        input_digest:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+          description: >
+            Populated by the gateway, per SERVICE_CATALOG.md section 3.5's
+            documented output shape. internal/policy's own Result does not
+            carry this field yet; it is specified here ahead of that.
+
+    Reason:
+      type: object
+      required: [code, severity, fact]
+      properties:
+        code:
+          type: string
+        severity:
+          type: string
+          enum: [ALLOW, WARN, BLOCK]
+        fact:
+          type: string
+          description: Describes; never advises.
+
+    DepthCurve:
+      type: object
+      required: [points, reference_index]
+      properties:
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepthPoint'
+        reference_index:
+          type: integer
+          description: -1 when no size priced.
+
+    DepthPoint:
+      type: object
+      required: [size, availability]
+      properties:
+        size:
+          $ref: '#/components/schemas/Amount'
+        availability:
+          type: string
+          enum: [available, unavailable]
+        provider_code:
+          type: string
+        shortfall_bps:
+          type: integer
+          description: Absent when there is no quote here or no reference to compare against.
+
+    # --- findings --------------------------------------------------------
+    Finding:
+      type: object
+      required: [slug, title, summary, reproduce_with, does_not_establish]
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        reproduce_with:
+          type: string
+          description: The one command a visitor runs to reproduce it.
+        does_not_establish:
+          type: array
+          items:
+            type: string
+        published_at:
+          type: string
+          format: date-time
+
+    # --- hall ------------------------------------------------------------
+    HallTranscript:
+      type: object
+      description: >
+        The shape server/cmd/explorer/hall.go decodes today, published at
+        this contract's field names (docs/prd/HALL.md section 7).
+      required: [note, producer, not_shown, scenarios]
+      properties:
+        note:
+          type: string
+        producer:
+          $ref: '#/components/schemas/HallProducer'
+        not_shown:
+          type: array
+          items:
+            type: string
+        scenarios:
+          type: array
+          items:
+            $ref: '#/components/schemas/HallScene'
+
+    HallProducer:
+      type: object
+      required: [kind, description, program_id, signatures]
+      properties:
+        kind:
+          type: string
+          enum: [litesvm, devnet]
+        description:
+          type: string
+        program_id:
+          type: string
+        cluster:
+          type: string
+          description: Absent for a simulator run.
+        signatures:
+          type: boolean
+
+    HallScene:
+      type: object
+      required: [id, title, shows, does_not_show, steps]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        shows:
+          type: string
+        does_not_show:
+          type: string
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/HallMove'
+
+    HallMove:
+      type: object
+      required: [actor, action, result]
+      properties:
+        actor:
+          type: string
+        action:
+          type: string
+        result:
+          type: string
+          enum: [ok, refused]
+        reason:
+          type: string
+          description: Present only when result is refused.
+        signature:
+          type: string
+          description: Present only on a devnet run, and only for a step that landed.
+        state:
+          $ref: '#/components/schemas/HallState'
+
+    HallState:
+      type: object
+      required: [supply, legs, holder]
+      properties:
+        supply:
+          type: string
+        legs:
+          type: array
+          items:
+            $ref: '#/components/schemas/HallLegState'
+        holder:
+          $ref: '#/components/schemas/HallHolderView'
+
+    HallLegState:
+      type: object
+      required: [stock, hall_balance, ledger, pending, unclaimed]
+      properties:
+        stock:
+          type: string
+        hall_balance:
+          type: string
+        ledger:
+          type: string
+        pending:
+          type: string
+        unclaimed:
+          type: string
+
+    HallHolderView:
+      type: object
+      required: [shares, claims, stock_balances]
+      properties:
+        shares:
+          type: string
+        claims:
+          type: array
+          items:
+            type: string
+        stock_balances:
+          type: array
+          items:
+            type: string
+
+    CostRow:
+      type: object
+      description: What a strike takes or a melt returns, per leg, at one share count.
+      required: [shares, legs]
+      properties:
+        shares:
+          type: string
+        legs:
+          type: array
+          items:
+            type: object
+            required: [stock, amount]
+            properties:
+              stock:
+                type: string
+              amount:
+                $ref: '#/components/schemas/Amount'
+              kept:
+                $ref: '#/components/schemas/Amount'
+                description: "Present on melt-proceeds only: what the Hall keeps to rounding."
+
+    # --- receipts ----------------------------------------------------------
+    ReceiptPublic:
+      type: object
+      description: receipt.PublicBody. Never a signature, a wallet, or an exact amount.
+      required: [serial, kind, month, basket, constituents, weakest_evidence, size_band, policy_version, settlement, office]
+      properties:
+        serial:
+          type: string
+        kind:
+          type: string
+        month:
+          type: string
+        basket:
+          type: string
+        constituents:
+          type: array
+          items:
+            type: object
+            required: [ticker, mint, grade, issuer_can]
+            properties:
+              ticker:
+                type: string
+              mint:
+                type: string
+              grade:
+                type: string
+              issuer_can:
+                type: array
+                items:
+                  type: string
+        weakest_evidence:
+          type: string
+        size_band:
+          type: string
+        venues:
+          type: array
+          items:
+            type: string
+        policy_version:
+          type: string
+        settlement:
+          type: string
+        office:
+          type: string
+
+    ProofStep:
+      type: object
+      required: [side, hash]
+      properties:
+        side:
+          type: string
+          enum: [left, right]
+        hash:
+          type: string
+
+    Proof:
+      type: object
+      required: [serial, public_body, private_commitment, path, root]
+      properties:
+        serial:
+          type: string
+        public_body:
+          $ref: '#/components/schemas/ReceiptPublic'
+        private_commitment:
+          type: string
+          description: The private body's digest, never the body.
+        path:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProofStep'
+        root:
+          type: string
+        anchor:
+          type: object
+          description: Absent until a batch root is anchored on chain.
+          properties:
+            transaction:
+              type: string
+            cluster:
+              type: string
+
+    Batch:
+      type: object
+      required: [root, leaves]
+      properties:
+        root:
+          type: string
+        leaves:
+          type: array
+          items:
+            type: object
+            required: [serial, public_digest]
+            properties:
+              serial:
+                type: string
+              public_digest:
+                type: string
+        anchor:
+          type: object
+          properties:
+            transaction:
+              type: string
+            cluster:
+              type: string
+
+    AnchorKey:
+      type: object
+      required: [key, active_from]
+      properties:
+        key:
+          type: string
+        active_from:
+          type: string
+          format: date-time
+        active_to:
+          type: string
+          format: date-time
+          description: Absent for the currently active key.
+
+    # --- status --------------------------------------------------------------
+    StatusReport:
+      type: object
+      required: [ledger_lag_seconds, sources]
+      properties:
+        ledger_lag_seconds:
+          type: integer
+        seal_backlog:
+          type: integer
+        sources:
+          type: array
+          items:
+            type: object
+            required: [source, evidence_state]
+            properties:
+              source:
+                type: string
+              evidence_state:
+                type: string
+                enum: [verified, unverified, stale, unavailable]
+              age_seconds:
+                type: integer

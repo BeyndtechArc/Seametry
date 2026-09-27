@@ -1,0 +1,12 @@
+{
+  "name": "@seametry/api-types",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "generate": "openapi-typescript ../../../contracts/openapi/openapi.yaml -o src/schema.d.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0"
+  }
+}

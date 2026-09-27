@@ -1,6 +1,6 @@
 > **Living document. Owns:** the public API: its contract, the shape of every response, the resources and who may read them, sign-in, sessions and API keys, entitlements and metering, streaming, the storage layout behind it, and the order the server is built in.
 > **Does not own:** service boundaries and deployment topology (`../SERVICE_CATALOG.md`), rules that hold everywhere such as decimals, time and idempotency (`../ENGINEERING_STANDARD.md`, cited here, never restated), product scope and phasing (`../PRODUCT_ARCHITECTURE.md`), or what each surface shows (`EXPLORER.md`, `TERMINAL.md`, `MOBILE.md`).
-> **Specified, not built.** Nothing in this document runs yet. Section 12 is the order it gets built in.
+> **Specified, mostly not built.** Section 12 is the order it gets built in. Step A0 is built: `contracts/openapi/openapi.yaml`, generation into `server/internal/gateway/api` and `clients/packages/api`, the drift check, and the service boundary test in `server/boundary_test.go`. Everything after A0 runs nowhere yet.
 
 # The API
 
@@ -35,7 +35,7 @@ These follow from the engineering standard and apply to every endpoint.
 
 | Piece | Tool | Version checked 27 September 2026 | Output |
 |---|---|---|---|
-| Public contract | OpenAPI 3.1, one file per resource group under `contracts/openapi/` | | The source of truth |
+| Public contract | OpenAPI 3.1, one file, `contracts/openapi/openapi.yaml`. A genuine attempt to split it by resource group hit real friction, oapi-codegen could not resolve a `$ref` crossing back into the root file without an explicit import mapping, and a bundler dependency was not worth adding for organization alone; resource groups are tags on every operation instead | | The source of truth |
 | Go server | `oapi-codegen`, strict server over the standard library `net/http` | v2.8.0 | Typed request and response structs and a handler interface in `server/internal/gateway/api` |
 | TypeScript client | `openapi-typescript`, with `openapi-fetch` for calls | 7.13.0 and 0.17.0 | Types in `clients/packages/api` |
 | Contract validation | `kin-openapi`, from a Go test | v0.149.0 | Fails CI on an invalid document |
@@ -297,7 +297,7 @@ Each step ends the way every step in this repository does: the command and its o
 
 | Step | Builds | Proven by | Unlocks |
 |---|---|---|---|
-| **A0** | The boundary test (section 10). `contracts/openapi/` with the envelope, amount, observation and problem types and `GET /v1/status`. Generation for Go and TypeScript, and the drift check in CI | The boundary test fails when a deliberate cross-service import is added. The drift check fails when a generated file is edited by hand | A contract clients can build against |
+| **A0, built** | The boundary test (section 10). `contracts/openapi/` with the envelope, amount, observation and problem types and `GET /v1/status`, and every resource the Explorer's own pages read (docs/prd/EXPLORER.md section 3). Generation for Go and TypeScript, and the drift check in CI | The boundary test fails when a deliberate cross-service import is added, naming both packages. The drift check fails when a generated file is edited by hand. `contract_test.go` caught a real YAML syntax error in the document while it was being written | A contract clients can build against |
 | **A1** | `server/cmd/seametry` serving `/v1/status`. Compose with Postgres 18. goose, one role per schema, the grants. CI gains a Postgres service | A role reading another schema is refused by Postgres, in a test. `/v1/status` answers in the envelope | A running process with a database |
 | **A2** | Observation persisted: raw to the object store before anything else, the index and normalized rows in Postgres, adapters for Solana accounts and Jupiter. The capture and depth programs become scheduled jobs inside the process, at the cadence in policy data | Replaying stored raw payloads reproduces normalized rows byte for byte. Ingestion fails when the object store is unavailable (standard section 5) | Evidence that accumulates on its own |
 | **A3** | Registry, Market State, Liquidity and Policy behind the public reads in section 5.1: instruments, prerogatives, depth, admissibility, policies, reason codes, evidence. `as_of` on each | Each figure in a response traces to a stored raw digest. A late observation changes a recomputed snapshot and leaves an issued one intact (standard section 4) | The Explorer and Terminal can read live data |

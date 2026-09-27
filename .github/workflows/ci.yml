@@ -53,6 +53,44 @@ jobs:
       - name: Verify it with an independent implementation
         run: node shared/tools/spec/verify-receipts.mjs
 
+  contract:
+    name: Contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      # contracts/openapi/openapi.yaml is the source of truth (docs/prd/API.md
+      # section 3). Both generated sides are committed, and regenerating must
+      # produce no diff, the same discipline the design job holds tokens to.
+      - name: Go types match their source
+        working-directory: server
+        run: go generate ./internal/gateway/api/...
+
+      - name: TypeScript types match their source
+        working-directory: clients/packages/api
+        run: |
+          npm ci --no-audit --no-fund
+          npm run generate
+
+      - name: No generated file differs from what is committed
+        run: |
+          if ! git diff --quiet -- server/internal/gateway/api/types.gen.go clients/packages/api/src/schema.d.ts; then
+            echo "Generated contract types differ from the source. Commit the regenerated files."
+            git --no-pager diff -- server/internal/gateway/api/types.gen.go clients/packages/api/src/schema.d.ts
+            exit 1
+          fi
+
+      # go test ./server/... (the go job) already runs contract_test.go, which
+      # loads and validates this same document with kin-openapi, and
+      # boundary_test.go, which is the test SERVICE_CATALOG.md section 4 says
+      # enforces the service boundaries. Neither is repeated here.
+
   go:
     name: Go
     runs-on: ubuntu-latest

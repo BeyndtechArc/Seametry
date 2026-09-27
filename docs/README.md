@@ -58,7 +58,7 @@ Read all three before writing code. They are short on purpose.
 | [prd/SITE.md](prd/SITE.md) | The business pages: landing, how it works, the Key, and later pricing and legal | Live. Phase 1. Front door to the Explorer, same app, not a fifth surface |
 | [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the catalogue, the verification ritual, instrument pages, evidence pages, the Hall demonstration, hallmarks | Live. Phase 1. Evidence only, since 27 September 2026 |
 | [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Nothing interactive exists yet |
-| [prd/API.md](prd/API.md) | The public API: contract, response model, resources, sign-in and keys, entitlements and metering, streaming, the storage behind it, and the order the server is built in | Live. Specified, not built. Serves the Explorer from phase 1; the metered product is phase 3 |
+| [prd/API.md](prd/API.md) | The public API: contract, response model, resources, sign-in and keys, entitlements and metering, streaming, the storage behind it, and the order the server is built in | Live. Step A0 (the contract, its Go and TypeScript generation, the drift check, and the service boundary test) is built; the rest is specified, not built. Serves the Explorer from phase 1; the metered product is phase 3 |
 
 ### Brand, and the design system
 
@@ -179,10 +179,6 @@ aggregator responses, a generated Explorer, and CI.
   `--arch v0` until litesvm accepts v3.
 - Nothing is anchored on chain, so the verification ritual ends at the
   published root rather than at a transaction.
-- `contracts/openapi/` does not exist. The public boundary has no contract yet.
-- No test enforces the service boundaries `SERVICE_CATALOG.md` defines. It says
-  they are enforced by package structure and tests; the structure exists, the
-  test does not.
 - Depth is measured for buying only. Selling into USDC is unmeasured and can
   differ sharply on a thin pool.
 - The depth ceiling of 100 basis points is an assumption, recorded in
