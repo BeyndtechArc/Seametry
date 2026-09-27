@@ -378,13 +378,16 @@ so the host is a deployment choice and not a design one.
 |---|---|---|
 | Process and Postgres | Fly.io, on Storm's legacy plan allowance, until an Oracle Cloud Always Free account can be opened | 0, within that allowance |
 | Raw payloads, backups, cold history | Cloudflare R2 | 0 up to 10 GB-month |
-| Web client | Vercel | 0 on Hobby, pre-revenue; Pro at the first paid feature |
+| Web client: the Terminal and the business pages, `clients/web` | Vercel | 0 on Hobby, pre-revenue; Pro at the first paid feature |
+| The Explorer: its own static site, not part of `clients/web` | Cloudflare Pages | 0, unlimited sites and bandwidth |
 | History, once Postgres needs relief | Tinybird, queried by the process and cached, never by a client | 0 up to its free limits |
 
-Cloudflare stays for DNS, R2, and edge caching in front of the public API; it
-does not host the process or the web client, per
-`decisions/2026-09-27-web-app-and-payments.md`. Why these and not others, with
-the limits checked, is in that record and in
+Cloudflare fronts every one of these as DNS and CDN, and separately hosts the
+Explorer outright; it does not run the process. Why the Explorer is not part
+of `clients/web`, with the CSP conflict that forced the split proven rather
+than assumed, is `decisions/2026-09-27-explorer-stays-separate.md`. Why these
+hosts and not others, with the limits checked, is that record together with
+`decisions/2026-09-27-web-app-and-payments.md` and
 `decisions/2026-09-27-repository-layout.md`. Postgres is self hosted, so its
 backups are this document's concern: a nightly dump goes to R2, and CI restores
 the latest one to prove it restores.

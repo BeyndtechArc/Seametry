@@ -1,6 +1,6 @@
 > **Living document. Owns:** the business pages: landing, how it works, the Key, and later pricing and legal.
 > **Does not own:** the world's canon, naming, liturgy, and outward lines (`../BRAND_AND_WORLD.md`), the copy process for writing them (`../STORM-VOICE-SYSTEM.md`), the Explorer's evidence pages (`EXPLORER.md`), or the Terminal (`TERMINAL.md`). This document cites those rather than restating them.
-> **Phase 1.** Ships with the Explorer, as its front door, in the same `clients/web` app. Pricing and legal are gated separately, below.
+> **Phase 1.** Ships in `clients/web`, alongside the Terminal, linking to the Explorer as its own separately hosted site rather than sharing a deployment with it. Pricing and legal are gated separately, below.
 
 # Site
 
@@ -9,7 +9,8 @@ what it is, why an ETF and not a bundle, and what the Key means. They are the
 front door to the Explorer for the same audience `PRODUCT_ARCHITECTURE.md`
 section 6 names for it: the public, researchers, press, judges. They are not a
 fifth surface with their own users or phase; they are how that audience
-arrives.
+arrives. Linking to the Explorer, not embedding it: the two are deployed
+separately, `decisions/2026-09-27-web-app-and-payments.md` records why.
 
 **Why this document exists.** No document owned these pages before it. They
 had drifted into the Explorer's own generator, alongside an engineering status

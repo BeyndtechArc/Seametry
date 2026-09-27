@@ -438,7 +438,7 @@ func copyFonts(out string) {
 	}
 	copied := 0
 	for _, name := range []string{"Sentient-Variable.woff2", "Switzer-Variable.woff2", "FragmentMono-Regular.woff2"} {
-		data, err := os.ReadFile(filepath.Join("clients", "assets", "fonts", name))
+		data, err := os.ReadFile(filepath.Join("clients", "web", "fonts", name))
 		if err != nil {
 			continue
 		}
@@ -448,7 +448,7 @@ func copyFonts(out string) {
 		copied++
 	}
 	if copied < 3 {
-		fmt.Fprintln(os.Stderr, "explorer: fonts not found, the page will fall back to system faces; run: go run ./server/cmd/fonts")
+		fmt.Fprintln(os.Stderr, "explorer: fonts not found, the page will fall back to system faces; run: npm run fonts --workspace=clients/web")
 	}
 }
 

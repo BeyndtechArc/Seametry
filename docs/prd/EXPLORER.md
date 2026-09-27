@@ -171,13 +171,19 @@ Every colour, size, radius and duration on the page comes from
 token source. The stylesheet states no colour of its own, and
 `npm run design:lint` fails on a raw value.
 
-**Where it is built.** The Explorer is the evidence route group of one
-Next.js app in `clients/web`, alongside the business pages (`SITE.md`) and
-the Terminal (`TERMINAL.md`), decided in
-`../decisions/2026-09-27-web-app-and-payments.md`. Not built yet: today's
-Explorer is still generated as static HTML by `server/cmd/explorer`, which
-fetches fonts with `go run ./server/cmd/fonts`. The Go generator is retired
-once every page here exists in the Next app.
+**Where it is built.** The Explorer stays its own separately deployed static
+site, generated as HTML by `server/cmd/explorer`, deliberately not folded
+into the Next.js app that holds the Terminal and the business pages
+(`SITE.md`, `TERMINAL.md`). That app was never going to be static, wallet
+connections and live data both need a request in hand, so it uses a
+per-request CSP nonce, which only a real page-serving process can supply. The
+Explorer has no such need and keeps the stricter, simpler policy a static
+site can hold, on its own host, at its own subdomain: settled in
+`../decisions/2026-09-27-web-app-and-payments.md` after the two were
+briefly built as one and found to fight each other on exactly this point.
+Fonts come from `clients/web/fonts`, fetched by `npm run fonts
+--workspace=clients/web`, falling back to system faces if that has not been
+run; the two apps share the same three faces without sharing a deployment.
 
 ## 6. Accessibility
 

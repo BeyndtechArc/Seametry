@@ -6,7 +6,7 @@
 
 The authorized participant's console. An open authorized participant set is worth nothing without tooling that makes being one practical, and no such tooling exists for on chain baskets. The Terminal is that tooling. It is a professional surface and deliberately not a retail broker.
 
-It is a web application, the signed-in half of `clients/web`, beside the public Explorer in the same app, as Storm decided on 27 September 2026. Everything it shows comes from the API in `API.md`.
+It is a web application, the signed-in half of `clients/web`, alongside the public business pages (`SITE.md`) in the same app; the Explorer is its own separately deployed static site, not part of this app, per `../decisions/2026-09-27-explorer-stays-separate.md`. Everything it shows comes from the API in `API.md`.
 
 ---
 

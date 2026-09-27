@@ -1,0 +1,11 @@
+{
+  "name": "@seametry/ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Generated design tokens. The source is .claude/skills/seametry-design/assets/tokens/seametry.tokens.json; nothing here is hand written.",
+  "exports": {
+    "./tokens.css": "./src/generated/tokens.css",
+    "./tokens": "./src/generated/tokens.ts"
+  }
+}

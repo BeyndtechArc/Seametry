@@ -73,10 +73,9 @@ jobs:
         run: go generate ./internal/gateway/api/...
 
       - name: TypeScript types match their source
-        working-directory: clients/packages/api
         run: |
           npm ci --no-audit --no-fund
-          npm run generate
+          npm run generate --workspace=clients/packages/api
 
       - name: No generated file differs from what is committed
         run: |
@@ -90,6 +89,49 @@ jobs:
       # loads and validates this same document with kin-openapi, and
       # boundary_test.go, which is the test SERVICE_CATALOG.md section 4 says
       # enforces the service boundaries. Neither is repeated here.
+
+  web:
+    name: Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Fonts
+        run: npm run fonts --workspace=clients/web
+
+      - name: Typecheck
+        working-directory: clients/web
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        working-directory: clients/web
+        run: npx eslint .
+
+      - name: Build
+        working-directory: clients/web
+        run: npx next build
+
+      # The CSP is proven against a real browser, not assumed. This is what
+      # found the inline hydration script the Explorer's stricter policy
+      # could not tolerate, which is why the Explorer is its own deployment
+      # (docs/decisions/2026-09-27-explorer-stays-separate.md) and this app
+      # resolves its own CSP with a per-request nonce instead.
+      - name: Install Chromium for the CSP test
+        working-directory: clients/web
+        run: npx playwright install --with-deps chromium
+
+      - name: CSP test
+        working-directory: clients/web
+        run: npx playwright test
+
+      - name: Design lint
+        run: node .claude/skills/seametry-design/scripts/design-lint.mjs clients/web
 
   go:
     name: Go
@@ -230,7 +272,8 @@ jobs:
 
       # The site is generated from committed evidence, so it can be rebuilt from
       # any commit. The fonts are fetched, never committed, so this build falls
-      # back to system faces; a production build runs go run ./server/cmd/fonts first.
+      # back to system faces; a production build runs npm run fonts
+      # --workspace=clients/web first.
       - name: Build
         run: go run ./server/cmd/explorer
 
