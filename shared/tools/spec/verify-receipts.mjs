@@ -12,7 +12,7 @@
  * our server. This is the smallest honest version of that test, and it runs in
  * CI on every change.
  *
- * Run: node tools/spec/verify-receipts.mjs
+ * Run: node shared/tools/spec/verify-receipts.mjs
  */
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';

@@ -15,7 +15,7 @@ import (
 	"github.com/BeyndtechArc/Seametry/server/internal/transport"
 )
 
-var fixtureDir = filepath.Join("..", "..", "..", "fixtures", "jupiter")
+var fixtureDir = filepath.Join("..", "..", "..", "shared", "fixtures", "jupiter")
 
 var receivedAt = time.Date(2026, 9, 24, 12, 0, 0, 0, time.UTC)
 

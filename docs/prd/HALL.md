@@ -78,7 +78,7 @@ Named literally. The world names live in the interface, never in a standard's in
 
 ### 4.4 Arithmetic
 
-Specified in Go in `server/internal/basket`, with shared vectors in `spec/recipe/vectors.json` and `spec/claims/vectors.json` that the Rust program in `chain/programs/hall` must reproduce. In short: required inputs round up, outputs round down, every rounding favours the Hall, all intermediates are u128.
+Specified in Go in `server/internal/basket`, with shared vectors in `shared/spec/recipe/vectors.json` and `shared/spec/claims/vectors.json` that the Rust program in `chain/programs/hall` must reproduce. In short: required inputs round up, outputs round down, every rounding favours the Hall, all intermediates are u128.
 
 **Mint by shares, never by amount.** The caller asks for `n` shares and states maximum inputs. The Hall pulls exactly the required units or fails. A depositor can never be rounded down to zero shares, which is the mechanism of the classic inflation attack.
 
@@ -193,7 +193,7 @@ Two things do need funding: the genesis of Alloy No. 1, and seed liquidity for i
 
 ## 10. Sequencing
 
-1. Recipe specification and vectors (`server/internal/basket`, `spec/`).
+1. Recipe specification and vectors (`server/internal/basket`, `shared/spec/`).
 2. Program against the vectors; property tests; fuzzing.
 3. Mock issuers and the devnet demonstration.
 4. App and console integration.
@@ -212,7 +212,7 @@ Two things do need funding: the genesis of Alloy No. 1, and seed liquidity for i
 - A seizure reduces holders and claimants pro rata after consuming unvested credit.
 - The share mint has no freeze authority, delegate, pause, or hook, verifiable on-chain.
 - The program contains no instruction that alters a formula, moves a holder's assets outside `withdraw`, or blocks `redeem`, verifiable from the deployed bytecode.
-- Rust passes every vector in `spec/recipe` and `spec/claims`.
+- Rust passes every vector in `shared/spec/recipe` and `shared/spec/claims`.
 - Twelve constituents, half with enabled hooks, strike successfully in one transaction.
 - A second wallet initializes a new alloy without Seametry's permission.
 

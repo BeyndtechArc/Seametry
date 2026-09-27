@@ -32,7 +32,7 @@ import (
 
 const slippageBps = 50
 
-var fixtureDir = filepath.Join("fixtures", "jupiter")
+var fixtureDir = filepath.Join("shared", "fixtures", "jupiter")
 
 // sizesUSDC are the notional sizes the policy measures depth at.
 var sizesUSDC = []int64{100, 1000, 10000}
@@ -120,7 +120,7 @@ func main() {
 	rep.Spent = client.Usage().String()
 
 	stamp := rep.CapturedAt.Format("2006-01-02")
-	jsonPath := filepath.Join("evidence", "depth-"+stamp+".json")
+	jsonPath := filepath.Join("shared", "evidence", "depth-"+stamp+".json")
 	body, err := json.MarshalIndent(rep, "", "  ")
 	if err != nil {
 		fail(err)
@@ -128,7 +128,7 @@ func main() {
 	if err := os.WriteFile(jsonPath, append(body, '\n'), 0o644); err != nil {
 		fail(err)
 	}
-	mdPath := filepath.Join("evidence", "depth-"+stamp+".md")
+	mdPath := filepath.Join("shared", "evidence", "depth-"+stamp+".md")
 	if err := os.WriteFile(mdPath, []byte(renderNote(rep)), 0o644); err != nil {
 		fail(err)
 	}
@@ -165,7 +165,7 @@ type mint struct {
 // loadMints reads the captured mainnet fixtures, taking decimals from the mint
 // itself rather than assuming the common value.
 func loadMints() ([]mint, error) {
-	dir := filepath.Join("fixtures", "mainnet")
+	dir := filepath.Join("shared", "fixtures", "mainnet")
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, fmt.Errorf("read %s: %w (run: go run ./server/cmd/capture)", dir, err)

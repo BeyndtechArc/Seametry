@@ -6,7 +6,7 @@
  * unless something outside it fails when the fix is gone. This file is that
  * something, and it lives here rather than in the skill for exactly that reason.
  *
- * Run: node --test tools/design/lint_test.mjs
+ * Run: node --test shared/tools/design/lint_test.mjs
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

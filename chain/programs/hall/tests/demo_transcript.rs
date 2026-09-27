@@ -1,5 +1,5 @@
 //! Runs the Hall demonstration of HALL.md section 7 against real Token-2022
-//! mints and records it as `evidence/hall-demo/transcript.json`, which the
+//! mints and records it as `shared/evidence/hall-demo/transcript.json`, which the
 //! Explorer renders.
 //!
 //! The producer is a local simulator (litesvm), and the file says so. A later
@@ -24,7 +24,7 @@ use {
 
 const PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/../../../evidence/hall-demo/transcript.json"
+    "/../../../shared/evidence/hall-demo/transcript.json"
 );
 
 const STOCKS: [&str; 2] = ["A", "B"];
@@ -451,6 +451,6 @@ fn the_demonstration_transcript_matches_the_committed_file() {
     });
     assert!(
         produced == committed,
-        "the transcript drifted from evidence/hall-demo/transcript.json. Regenerate deliberately with WRITE_TRANSCRIPT=1 and review the diff."
+        "the transcript drifted from shared/evidence/hall-demo/transcript.json. Regenerate deliberately with WRITE_TRANSCRIPT=1 and review the diff."
     );
 }

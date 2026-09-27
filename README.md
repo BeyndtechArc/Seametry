@@ -66,8 +66,8 @@ code is the first thing that rots.
 - The Go core in `server/internal/`: canonical JSON, Merkle receipts, exact decimal
   amounts, Token-2022 mint decoding, the admission policy, the Hall's
   arithmetic, Jupiter depth measurement and a rate limited transport.
-- `spec/`: conformance vectors shared by Go, a JavaScript receipt verifier and
-  the Rust program, with a drift gate.
+- `shared/spec/`: conformance vectors shared by Go, a JavaScript receipt
+  verifier and the Rust program, with a drift gate.
 - `chain/programs/hall`: the Hall, an Anchor program. All five instructions are
   written and tested in litesvm, and deployed to devnet only, where
   `chain/tools/devnet-demo` ran the demonstration with signatures.
@@ -117,28 +117,27 @@ was measured before choosing, is in
 | `chain/` | The Hall program and its devnet runner, in Rust |
 | `clients/` | Everything that renders: generated design tokens and fonts today, the web and mobile apps when built |
 | `contracts/` | The OpenAPI and Protobuf definitions both sides generate from. Created with the first contract |
-| `spec/` | Vectors that Go, Rust and JavaScript must all reproduce |
-| `fixtures/`, `evidence/` | Captured mainnet data, and what was derived from it |
+| `shared/` | Material every runtime reads: `spec/` (vectors Go, Rust and JavaScript must all reproduce), `fixtures/` and `evidence/` (captured mainnet data and what was derived from it), `tools/` (repository wide Node scripts) |
 | `docs/` | One owner per subject, mapped in `docs/README.md` |
-| `tools/` | Repository wide Node scripts |
 
 Go commands run from the repository root, through the committed `go.work`,
-because the programs read `spec/`, `fixtures/` and `evidence/` from there.
+because the programs read `shared/spec/`, `shared/fixtures/` and
+`shared/evidence/` from there.
 
 ## Run what exists today
 
 ```bash
-go test ./server/...                   # the Go core, run from the repository root
-node tools/spec/generate.mjs --check   # conformance vectors must not drift
-npm run explorer                       # rebuild the Explorer
-npm run serve                          # serve it without Go
+go test ./server/...                          # the Go core, run from the repository root
+node shared/tools/spec/generate.mjs --check   # conformance vectors must not drift
+npm run explorer                              # rebuild the Explorer
+npm run serve                                 # serve it without Go
 (cd chain && cargo-build-sbf --arch v0 && cargo test --locked)   # the Hall
-npm run tokens                         # regenerate clients/packages/ui from the design source
-npm run design:lint                    # design system compliance
+npm run tokens                                # regenerate clients/packages/ui from the design source
+npm run design:lint                           # design system compliance
 ```
 
-Copy `.env.example` to `.env` only when provider credentials are available.
-Public discovery works without secrets; signed oracle reads do not.
+Copy `server/.env.example` to `server/.env` only when provider credentials are
+available. Public discovery works without secrets; signed oracle reads do not.
 
 ## Source roles
 

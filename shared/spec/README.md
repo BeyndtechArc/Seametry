@@ -5,11 +5,11 @@ Rust program, and the browser side verifier in the Explorer. They exist because
 determinism across implementations is either a property of shared vectors or it
 is a hope.
 
-**Generated and self-checked by `tools/spec/generate.mjs`.** Never hand edited.
+**Generated and self-checked by `shared/tools/spec/generate.mjs`.** Never hand edited.
 
 ```bash
-node tools/spec/generate.mjs           # regenerate, runs every self-check
-node tools/spec/generate.mjs --check   # verify on-disk vectors match, write nothing
+node shared/tools/spec/generate.mjs           # regenerate, runs every self-check
+node shared/tools/spec/generate.mjs --check   # verify on-disk vectors match, write nothing
 ```
 
 The `--check` form is the drift gate. It belongs in CI, and it fails if anyone

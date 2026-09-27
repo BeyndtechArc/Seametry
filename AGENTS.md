@@ -128,7 +128,7 @@ A bare suppression is a lie with a comment character in front of it.
 
 **Imported code that you fix needs a test outside it.** Anything vendored is
 replaced wholesale on the next import, so a fix inside it does not survive.
-`tools/design/lint_test.mjs` exists for exactly this reason.
+`shared/tools/design/lint_test.mjs` exists for exactly this reason.
 
 **Never edit a vector, fixture or golden file to make code pass.** If one looks
 wrong, escalate it. Changing the expected value to match the implementation
@@ -185,8 +185,8 @@ reader cannot reconstruct.
 
 ```bash
 gofmt -l . && go vet ./server/... && go test ./server/...   # -race needs cgo, CI runs it on Linux
-node tools/spec/generate.mjs --check          # conformance vectors must not drift
-node tools/spec/verify-receipts.mjs           # Go seals, JavaScript verifies
+node shared/tools/spec/generate.mjs --check          # conformance vectors must not drift
+node shared/tools/spec/verify-receipts.mjs           # Go seals, JavaScript verifies
 npm run design:lint                           # design system compliance
 npm run design:test                           # linter regressions
 npm run tokens                                # regenerate design tokens

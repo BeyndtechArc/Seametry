@@ -19,7 +19,7 @@ import (
 // the code pass.
 var update = flag.Bool("update", false, "rewrite spec/policy/golden/decisions.json")
 
-const goldenPath = "../../../spec/policy/golden/decisions.json"
+const goldenPath = "../../../shared/spec/policy/golden/decisions.json"
 
 // referenceTime pins every decision. A policy that read the clock could not be
 // reproduced, and a receipt citing it would be unverifiable a day later.
@@ -49,7 +49,7 @@ type fixture struct {
 // than against ones convenient to the rules.
 func inputsFromFixtures(t *testing.T) []Input {
 	t.Helper()
-	dir := filepath.Join("..", "..", "..", "fixtures", "mainnet")
+	dir := filepath.Join("..", "..", "..", "shared", "fixtures", "mainnet")
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		t.Fatalf("read %s: %v", dir, err)
@@ -96,7 +96,7 @@ func inputsFromFixtures(t *testing.T) []Input {
 // needs no network.
 func depthFromFixtures(t *testing.T, symbol, mint string, decimals uint8) DepthFacts {
 	t.Helper()
-	curve, err := liquidity.LoadCurve(filepath.Join("..", "..", "..", "fixtures", "jupiter"),
+	curve, err := liquidity.LoadCurve(filepath.Join("..", "..", "..", "shared", "fixtures", "jupiter"),
 		symbol, mint, int32(decimals), []int64{100, 1000, 10000}, referenceTime)
 	if err != nil {
 		t.Fatal(err)

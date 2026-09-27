@@ -40,7 +40,7 @@ type privateReveal struct {
 }
 
 func main() {
-	out := "evidence/demo-batch"
+	out := "shared/evidence/demo-batch"
 	if len(os.Args) > 2 && os.Args[1] == "-out" {
 		out = os.Args[2]
 	}

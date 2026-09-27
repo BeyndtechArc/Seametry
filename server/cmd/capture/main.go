@@ -89,7 +89,7 @@ type multipleAccountsResponse struct {
 
 func main() {
 	rpc := flag.String("rpc", defaultRPC, "Solana JSON-RPC endpoint")
-	dir := flag.String("dir", filepath.Join("fixtures", "mainnet"), "fixture directory")
+	dir := flag.String("dir", filepath.Join("shared", "fixtures", "mainnet"), "fixture directory")
 	commitment := flag.String("commitment", "finalized", "commitment level")
 	flag.Parse()
 

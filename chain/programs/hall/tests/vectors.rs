@@ -9,7 +9,7 @@
 use hall::recipe::{self, Leg, SyncKind};
 use serde_json::Value;
 
-const VECTORS: &str = include_str!("../../../../spec/recipe/vectors.json");
+const VECTORS: &str = include_str!("../../../../shared/spec/recipe/vectors.json");
 
 fn field<'a>(step: &'a Value, name: &str) -> &'a str {
     step[name]

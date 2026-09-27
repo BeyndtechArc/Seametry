@@ -26,7 +26,7 @@ jobs:
       # an implementation pass. It also reruns every generator self-check,
       # including the CVE-2012-2459 non-collision.
       - name: Vectors match their generator
-        run: node tools/spec/generate.mjs --check
+        run: node shared/tools/spec/generate.mjs --check
 
   cross-implementation:
     name: Go seals, JavaScript verifies
@@ -43,7 +43,7 @@ jobs:
       # The Explorer tells a visitor "your browser just verified this, we
       # didn't." That is only honest if a receipt sealed by the Go engine
       # genuinely verifies under an implementation that is not the Go engine.
-      # tools/spec/verify-receipts.mjs shares no code with the server: it
+      # shared/tools/spec/verify-receipts.mjs shares no code with the server: it
       # reimplements canonicalization, leaf composition and the Merkle path
       # from the spec. If the two ever disagree by a byte, this job fails and
       # the claim cannot be made.
@@ -51,7 +51,7 @@ jobs:
         run: go run ./server/cmd/seal
 
       - name: Verify it with an independent implementation
-        run: node tools/spec/verify-receipts.mjs
+        run: node shared/tools/spec/verify-receipts.mjs
 
   go:
     name: Go
@@ -109,7 +109,7 @@ jobs:
       # version of the design system, so a fix inside it does not survive unless
       # something outside it fails when the fix is gone. This is that something.
       - name: Linter regressions
-        run: node --test tools/design/lint_test.mjs
+        run: node --test shared/tools/design/lint_test.mjs
 
       - name: Design lint
         run: node .claude/skills/seametry-design/scripts/design-lint.mjs server/cmd/explorer clients/packages/ui

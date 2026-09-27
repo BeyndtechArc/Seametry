@@ -5,15 +5,15 @@
   "version": "0.1.0",
   "packageManager": "npm@11.9.0",
   "scripts": {
-    "spec": "node tools/spec/generate.mjs",
-    "spec:check": "node tools/spec/generate.mjs --check",
-    "verify:receipts": "node tools/spec/verify-receipts.mjs",
+    "spec": "node shared/tools/spec/generate.mjs",
+    "spec:check": "node shared/tools/spec/generate.mjs --check",
+    "verify:receipts": "node shared/tools/spec/verify-receipts.mjs",
     "explorer": "go run ./server/cmd/explorer",
     "survey": "go run ./server/cmd/survey",
     "fonts": "go run ./server/cmd/fonts",
-    "serve": "node tools/serve.mjs",
+    "serve": "node shared/tools/serve.mjs",
     "tokens": "node .claude/skills/seametry-design/scripts/build-tokens.mjs .claude/skills/seametry-design/assets/tokens/seametry.tokens.json clients/packages/ui/src/generated",
     "design:lint": "node .claude/skills/seametry-design/scripts/design-lint.mjs server/cmd/explorer clients/packages/ui",
-    "design:test": "node --test tools/design/lint_test.mjs"
+    "design:test": "node --test shared/tools/design/lint_test.mjs"
   }
 }

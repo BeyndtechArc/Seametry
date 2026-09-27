@@ -217,7 +217,7 @@ suitability.
 **Depends on.** Nothing at runtime. It is a function.
 
 **Failure.** A pure function's failure is a bug, caught by golden vectors in
-`spec/policy/golden/`.
+`shared/spec/policy/golden/`.
 
 ### 3.6 Execution
 

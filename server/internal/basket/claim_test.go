@@ -13,7 +13,7 @@ import (
 	"github.com/BeyndtechArc/Seametry/server/internal/amount"
 )
 
-const claimGoldenPath = "../../../spec/claims/vectors.json"
+const claimGoldenPath = "../../../shared/spec/claims/vectors.json"
 
 type claimOp struct {
 	Op     string

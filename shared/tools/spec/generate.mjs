@@ -5,8 +5,8 @@
  * browser side verifier in the Explorer. A vector is never edited to make an
  * implementation pass. See docs/ENGINEERING_STANDARD.md sections 8 and 17.
  *
- * Run: node tools/spec/generate.mjs        (writes vectors, exits non-zero on any self-check failure)
- *      node tools/spec/generate.mjs --check (verifies on-disk vectors match, writes nothing)
+ * Run: node shared/tools/spec/generate.mjs        (writes vectors, exits non-zero on any self-check failure)
+ *      node shared/tools/spec/generate.mjs --check (verifies on-disk vectors match, writes nothing)
  */
 import { createHash } from 'node:crypto';
 import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs';

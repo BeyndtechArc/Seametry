@@ -10,7 +10,7 @@
  * a policy cannot be strict in review and loose in production by drifting
  * between two copies.
  *
- * Run: node tools/serve.mjs [port]
+ * Run: node shared/tools/serve.mjs [port]
  */
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';

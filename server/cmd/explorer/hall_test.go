@@ -40,7 +40,7 @@ func TestTranscriptDecodesWithoutDroppingAnyField(t *testing.T) {
 var transcriptFiles = []string{"transcript.json", "transcript-devnet.json"}
 
 func checkTranscriptShape(t *testing.T, name string) {
-	raw, err := os.ReadFile(filepath.Join("..", "..", "..", "evidence", "hall-demo", name))
+	raw, err := os.ReadFile(filepath.Join("..", "..", "..", "shared", "evidence", "hall-demo", name))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ func checkTranscriptShape(t *testing.T, name string) {
 
 func readTranscript(t *testing.T) *Transcript {
 	t.Helper()
-	raw, err := os.ReadFile(filepath.Join("..", "..", "..", "evidence", "hall-demo", "transcript.json"))
+	raw, err := os.ReadFile(filepath.Join("..", "..", "..", "shared", "evidence", "hall-demo", "transcript.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

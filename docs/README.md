@@ -66,7 +66,7 @@ Read all three before writing code. They are short on purpose.
 | [`.claude/skills/seametry-design/`](../.claude/skills/seametry-design/SKILL.md) | **Every executable design decision.** Tokens, colour, type, space, radius, motion values, component contracts, page templates, interface voice, and the linter that enforces them. Invoked automatically for any work that creates or changes UI |
 | [BRAND_AND_WORLD.md](BRAND_AND_WORLD.md) | The world and its canon, the naming register, the world to code name map, the liturgy, which moments are ceremonies, the canonical outward lines (the one-liner, the pitch, the judges' answers). Holds no executable design value |
 | [CRAFT.md](CRAFT.md) | Library evaluations and the reasoning behind them |
-| [`../STORM-VOICE-SYSTEM.md`](../STORM-VOICE-SYSTEM.md) | The process for writing and checking outward copy: a pitch line, a deck, a tweet, an email. Extends `voice.md`'s register to longer forms; does not restate it or the canonical lines in `BRAND_AND_WORLD.md` |
+| [STORM-VOICE-SYSTEM.md](STORM-VOICE-SYSTEM.md) | The process for writing and checking outward copy: a pitch line, a deck, a tweet, an email. Extends `voice.md`'s register to longer forms; does not restate it or the canonical lines in `BRAND_AND_WORLD.md` |
 
 The split is execution against canon. The skill says what a surface must do and
 fails the build when it does not. The world document says what things are
@@ -132,7 +132,8 @@ Tracked here because an untracked gap becomes folklore.
   pitch clinic's exact date, which is currently recorded only as
   "September 2026, ahead of Stocklana".
 - `archive/CLAIMS_AND_LIMITATIONS.md` claims a reproduced UNHx transaction and
-  state split, but no raw UNHx payload exists in `fixtures/` or `evidence/`.
+  state split, but no raw UNHx payload exists in `shared/fixtures/` or
+  `shared/evidence/`.
   It stays archived, not moved, until UNHx is captured and the claim
   reproduced, or the specific claims are dropped.
 - The build prompt set in `archive/seametry-03-prompts.md` needs regenerating
@@ -144,7 +145,7 @@ Tracked here because an untracked gap becomes folklore.
 
 Built and tested: `server/internal/canonical`, `merkle`, `amount`, `registry`,
 `receipt`, `transport`, `solana`, `liquidity`, `policy` and `basket`, with
-shared vectors and goldens in `spec/`, captured fixtures for mainnet mints and
+shared vectors and goldens in `shared/spec/`, captured fixtures for mainnet mints and
 aggregator responses, a generated Explorer, and CI.
 
 - The retired TypeScript `preflight` flagged missing, closed and divergent
@@ -153,8 +154,8 @@ aggregator responses, a generated Explorer, and CI.
   values are to be read from chain and that read is not built. Whatever replaces
   them must use integer arithmetic.
 - `chain/programs/hall` holds the Hall's arithmetic (`recipe.rs`), which
-  reproduces every scenario in `spec/recipe/vectors.json` and
-  `spec/claims/vectors.json`. All five instructions (`initialize_alloy`,
+  reproduces every scenario in `shared/spec/recipe/vectors.json` and
+  `shared/spec/claims/vectors.json`. All five instructions (`initialize_alloy`,
   `create`, `redeem`, `withdraw`, `sync`) are written and tested in litesvm.
   Seeded random sequences check the HALL section 5 properties over strikes,
   melts, withdrawals, donations, seizures and freezes
@@ -163,7 +164,7 @@ aggregator responses, a generated Explorer, and CI.
   the extension set reported for xStocks, in litesvm. The program is deployed
   to devnet at `4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx` and
   `chain/tools/devnet-demo` ran the same eight scenarios there, recorded with
-  signatures in `evidence/hall-demo/transcript-devnet.json` and shown on the
+  signatures in `shared/evidence/hall-demo/transcript-devnet.json` and shown on the
   Explorer's Hall page beside the simulator run. Not done: the multiplier
   step (its initializer takes a float), a devnet run that waits out a vest,
   Trident fuzzing, the twelve constituent transaction and transfer-hook
@@ -193,7 +194,7 @@ aggregator responses, a generated Explorer, and CI.
 
 - Backpack Securities' dividend mechanism is unconfirmed: a multiplier change
   or newly minted tokens. It is settled by capturing mint fixtures, not by
-  reading documentation. The survey in `evidence/` covers xStocks only.
+  reading documentation. The survey in `shared/evidence/` covers xStocks only.
 - Stocklana submission closes 25 September 2026, 16:00 ET, judging through
   2 October. Confirmed at hackathons.solana.com on 23 September 2026. The
   deadline shapes which release is cut and nothing else.

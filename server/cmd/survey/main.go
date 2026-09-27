@@ -89,7 +89,7 @@ type report struct {
 
 func main() {
 	rpc := flag.String("rpc", solana.EndpointFromEnv(defaultRPC), "Solana JSON-RPC endpoint")
-	out := flag.String("out", "evidence", "output directory")
+	out := flag.String("out", filepath.Join("shared", "evidence"), "output directory")
 	flag.Parse()
 
 	assets, err := fetchAssets()

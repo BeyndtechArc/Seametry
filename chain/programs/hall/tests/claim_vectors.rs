@@ -8,7 +8,7 @@ use hall::recipe::{self, ClaimLeg, Leg, CLAIM_ONE};
 use serde_json::Value;
 use std::collections::HashMap;
 
-const VECTORS: &str = include_str!("../../../../spec/claims/vectors.json");
+const VECTORS: &str = include_str!("../../../../shared/spec/claims/vectors.json");
 
 fn text<'a>(step: &'a Value, name: &str) -> &'a str {
     step[name]

@@ -15,7 +15,7 @@ import (
 
 var update = flag.Bool("update", false, "rewrite spec/recipe/vectors.json")
 
-const goldenPath = "../../../spec/recipe/vectors.json"
+const goldenPath = "../../../shared/spec/recipe/vectors.json"
 
 // vestWindow is the compiled constant the Hall will ship with. One hour is long
 // enough that a donation cannot move share value within a block and short

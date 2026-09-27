@@ -73,7 +73,7 @@ type HolderView struct {
 // loadTranscript returns nil when the named recording does not exist, and the
 // page says so instead of showing an empty table.
 func loadTranscript(name string) *Transcript {
-	raw, err := os.ReadFile(filepath.Join("evidence", "hall-demo", name))
+	raw, err := os.ReadFile(filepath.Join("shared", "evidence", "hall-demo", name))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil

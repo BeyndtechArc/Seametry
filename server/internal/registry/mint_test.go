@@ -47,7 +47,7 @@ func (f fixture) bytes(t *testing.T) []byte {
 
 func loadFixtures(t *testing.T) map[string]fixture {
 	t.Helper()
-	dir := filepath.Join("..", "..", "..", "fixtures", "mainnet")
+	dir := filepath.Join("..", "..", "..", "shared", "fixtures", "mainnet")
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		t.Fatalf("read %s: %v", dir, err)

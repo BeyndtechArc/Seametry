@@ -44,7 +44,7 @@ type vectorFile struct {
 
 func loadVectors(t *testing.T) vectorFile {
 	t.Helper()
-	path := filepath.Join("..", "..", "..", "spec", "amount", "vectors.json")
+	path := filepath.Join("..", "..", "..", "shared", "spec", "amount", "vectors.json")
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read %s: %v", path, err)

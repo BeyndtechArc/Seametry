@@ -1,6 +1,6 @@
 //! Runs the Hall demonstration of HALL.md section 7 against a deployed devnet
 //! program, over real transactions, and writes
-//! evidence/hall-demo/transcript-devnet.json in the same shape
+//! shared/evidence/hall-demo/transcript-devnet.json in the same shape
 //! demo_transcript.rs writes for litesvm, so server/cmd/explorer/hall.go renders
 //! both without change.
 //!
@@ -65,7 +65,7 @@ const FIRST_DEPOSIT: u64 = 5_000_000;
 const SECOND_DEPOSIT: u64 = 3_000_000;
 const HOLDER_FUNDS: u64 = 1_000_000_000;
 const GENESIS_SHARES: u64 = 1_000_000;
-const OUTPUT: &str = "../../../evidence/hall-demo/transcript-devnet.json";
+const OUTPUT: &str = "../../../shared/evidence/hall-demo/transcript-devnet.json";
 
 /// A signed, ready-to-send transaction over one or more instructions, and the
 /// run loop that turns it into a confirmed step or a refusal.
@@ -1312,7 +1312,8 @@ fn main() {
     };
 
     let out_path = Path::new(OUTPUT);
-    fs::create_dir_all(out_path.parent().unwrap()).expect("cannot create evidence/hall-demo");
+    fs::create_dir_all(out_path.parent().unwrap())
+        .expect("cannot create shared/evidence/hall-demo");
     fs::write(
         out_path,
         format!("{}\n", serde_json::to_string_pretty(&transcript).unwrap()),

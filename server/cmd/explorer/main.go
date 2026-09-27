@@ -104,7 +104,7 @@ func decide(f fixture, mint *registry.Mint, asOf time.Time) (policy.Result, []De
 		return policy.Result{}, nil, err
 	}
 
-	curve, err := liquidity.LoadCurve(filepath.Join("fixtures", "jupiter"), f.Symbol, f.Address,
+	curve, err := liquidity.LoadCurve(filepath.Join("shared", "fixtures", "jupiter"), f.Symbol, f.Address,
 		int32(mint.Decimals), depthSizes, asOf)
 	if err != nil {
 		return policy.Result{}, nil, err
@@ -297,7 +297,7 @@ func main() {
 }
 
 func loadInstruments() []Instrument {
-	dir := filepath.Join("fixtures", "mainnet")
+	dir := filepath.Join("shared", "fixtures", "mainnet")
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "explorer: no fixtures (%v); run: go run ./server/cmd/capture\n", err)
@@ -380,7 +380,7 @@ func loadInstruments() []Instrument {
 }
 
 func loadSurvey() *survey {
-	matches, _ := filepath.Glob(filepath.Join("evidence", "multiplier-staleness-*.json"))
+	matches, _ := filepath.Glob(filepath.Join("shared", "evidence", "multiplier-staleness-*.json"))
 	if len(matches) == 0 {
 		fmt.Fprintln(os.Stderr, "explorer: no survey yet; run: go run ./server/cmd/survey")
 		return nil
@@ -398,7 +398,7 @@ func loadSurvey() *survey {
 }
 
 func loadBatch() (string, int, string) {
-	raw, err := os.ReadFile(filepath.Join("evidence", "demo-batch", "batch.json"))
+	raw, err := os.ReadFile(filepath.Join("shared", "evidence", "demo-batch", "batch.json"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "explorer: no sealed batch; run: go run ./server/cmd/seal")
 		return "null", 0, ""

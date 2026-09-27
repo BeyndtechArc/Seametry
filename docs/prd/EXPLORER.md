@@ -90,7 +90,7 @@ For any instrument in the registry, the facts decoded from its mint:
 
 Published findings, each reproducible by a visitor running one command.
 
-The first is the multiplier survey in `evidence/`: 1026 mints, 385 with a stale
+The first is the multiplier survey in `shared/evidence/`: 1026 mints, 385 with a stale
 `multiplier` field, every mint carrying a permanent delegate, a freeze
 authority, and a transfer hook that exists and is switched off. Each page
 states what the finding does not establish, in its own section, at the same
@@ -169,7 +169,7 @@ From `CRAFT.md` section 4, measured rather than assumed:
   Explorer renders what it is given and adds nothing.
 - No public artifact carries a wallet, a transaction signature, an exact amount
   or a salt. Enforced by a scan test in Go and again in
-  `tools/spec/verify-receipts.mjs`, on the side a stranger reads.
+  `shared/tools/spec/verify-receipts.mjs`, on the side a stranger reads.
 - A visitor pasting their own private body does so entirely client side.
 - Content security policy permits no third party script origin.
 

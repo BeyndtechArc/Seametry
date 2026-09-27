@@ -32,7 +32,7 @@ bound by shared vectors. The first is simpler and removes an entire class of
 divergence.
 
 The one unavoidable second implementation is the Hall program in Rust. It is
-bound to Go by shared vectors in `spec/recipe/vectors/`, loaded by both test
+bound to Go by shared vectors in `shared/spec/recipe/vectors/`, loaded by both test
 suites. Any divergence is a failing test, not a negotiation.
 
 TypeScript types are generated from the versioned contract. A hand written
@@ -199,7 +199,7 @@ the output; exhaustive switch linting in the core.
 - **Reason codes are versioned and stable.** A reason code's meaning never
   changes. A new meaning is a new code.
 
-**Enforced by:** golden decision vectors in `spec/policy/golden/`; a digest
+**Enforced by:** golden decision vectors in `shared/spec/policy/golden/`; a digest
 stability test run in CI on more than one platform.
 
 ## 9. Idempotency
