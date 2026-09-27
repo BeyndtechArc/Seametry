@@ -105,17 +105,26 @@ jobs:
       - name: Fonts
         run: npm run fonts --workspace=clients/web
 
-      - name: Typecheck
-        working-directory: clients/web
-        run: npx tsc --noEmit
-
       - name: ESLint
         working-directory: clients/web
         run: npx eslint .
 
+      # Build before Typecheck, not after: Next writes route-checking types
+      # (LayoutProps and friends) to .next/types/ only once a build has run,
+      # and tsconfig.json's include only picks them up from there. Committed
+      # nowhere, since .next/ is gitignored build output. Running tsc --noEmit
+      # first, on a checkout that has never been built, fails with "Cannot
+      # find name 'LayoutProps'", exactly the way this job first did: reading
+      # green from a working directory that had already been built many
+      # times over, then red on a fresh clone of the same commit CI actually
+      # runs, which is what forced finding this.
       - name: Build
         working-directory: clients/web
         run: npx next build
+
+      - name: Typecheck
+        working-directory: clients/web
+        run: npx tsc --noEmit
 
       # The CSP is proven against a real browser, not assumed. This is what
       # found the inline hydration script the Explorer's stricter policy
