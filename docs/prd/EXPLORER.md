@@ -189,8 +189,6 @@ From `CRAFT.md` section 4, measured rather than assumed:
 
 ## 10. Open
 
-- `prd/TERMINAL.md` and `prd/API.md` do not exist, and the Explorer shares
-  components with both.
 - The anchoring step is unbuilt: no batch root is written on chain yet, so the
   ritual currently ends at the published root. Until then the page says so.
 - Whether the Explorer serves proofs from the gateway or from static files at
