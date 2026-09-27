@@ -28,8 +28,8 @@ package-lock.json  -diff linguist-generated
 
 # Captured evidence and fixtures are bytes as the source sent them. Never
 # transform these: a normalized payload no longer hashes to its recorded digest.
-fixtures/**  -text
-evidence/**  -text
+shared/fixtures/**  -text
+shared/evidence/**  -text
 
 *.png binary
 *.jpg binary
