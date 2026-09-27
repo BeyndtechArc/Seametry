@@ -6,6 +6,8 @@
 
 The authorized participant's console. An open authorized participant set is worth nothing without tooling that makes being one practical, and no such tooling exists for on chain baskets. The Terminal is that tooling. It is a professional surface and deliberately not a retail broker.
 
+It is a web application, the signed-in half of `clients/web`, beside the public Explorer in the same app, as Storm decided on 27 September 2026. Everything it shows comes from the API in `API.md`.
+
 ---
 
 ## 1. Who and for what
@@ -51,6 +53,5 @@ Nothing here is interactive. There is no input for a formula, no live quote, and
 
 ## 6. Open questions
 
-- Whether the workbench is a web application or part of the mobile app. The architecture says professional, which points at a desktop web surface, and nothing decides it.
 - Which market data the first version uses to show a share price, given that oracle reads are not built and no share pool exists.
 - Whether a formula can be saved, and where. A saved formula is stored user data, and decision D9 in `../decisions/2026-09-23-etf-spine.md` makes storage the cost driver on a free tier.

@@ -57,7 +57,7 @@ Read all three before writing code. They are short on purpose.
 | [prd/MOBILE.md](prd/MOBILE.md) | Mobile holding, monitoring, and approval surface | Live. Phase 2. Deliberately not a consumer brokerage |
 | [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the verification ritual, instrument pages, evidence pages, the Hall demonstration | Live. Phase 1 |
 | [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Nothing interactive exists yet |
-| `prd/API.md` | The assay as a metered service, entitlements | Not written. Phase 3 |
+| [prd/API.md](prd/API.md) | The public API: contract, response model, resources, sign-in and keys, entitlements and metering, streaming, the storage behind it, and the order the server is built in | Live. Specified, not built. Serves the Explorer from phase 1; the metered product is phase 3 |
 
 ### Brand, and the design system
 
@@ -128,7 +128,6 @@ Tracked here because an untracked gap becomes folklore.
 
 **Documentation**
 
-- `prd/API.md` does not exist.
 - The validation record in `PRODUCT_ARCHITECTURE.md` section 11 needs the
   pitch clinic's exact date, which is currently recorded only as
   "September 2026, ahead of Stocklana".
