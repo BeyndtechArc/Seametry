@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -23,45 +22,29 @@ var securityHeaders = [][2]string{
 	{"X-Content-Type-Options", "nosniff"},
 }
 
-// writeHostConfig emits a vercel.json beside the generated files.
+// writeHostConfig emits a Cloudflare Pages _headers file beside the generated
+// files.
 //
 // The static output deploys as is, and this keeps the hosted headers identical
 // to the ones served locally. Headers that differ between review and
 // production are how a content security policy ends up enforced in exactly one
 // of the two places it matters.
+//
+// No _redirects file is needed for clean URLs: Pages serves a matching HTML
+// file for an extension-less path automatically ("If an HTML file is found
+// with a matching path to the current route requested, Pages will serve it",
+// per Cloudflare's serving-pages docs, checked 27 September 2026), so
+// /evidence already serves evidence.html without configuration.
 func writeHostConfig(out string) {
-	var rules []string
+	var b strings.Builder
+	b.WriteString("/*\n")
 	for _, h := range securityHeaders {
-		rules = append(rules, `          { "key": `+strconv.Quote(h[0])+`, "value": `+strconv.Quote(h[1])+` }`)
+		b.WriteString("  " + h[0] + ": " + h[1] + "\n")
 	}
+	b.WriteString("\n/fonts/*\n  Cache-Control: public, max-age=31536000, immutable\n")
+	b.WriteString("\n/*.html\n  Cache-Control: public, max-age=0, must-revalidate\n")
 
-	config := `{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-` + strings.Join(rules, ",\n") + `
-      ]
-    },
-    {
-      "source": "/fonts/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
-      "source": "/(.*).html",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
-      ]
-    }
-  ]
-}
-`
-	if err := os.WriteFile(filepath.Join(out, "vercel.json"), []byte(config), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(out, "_headers"), []byte(b.String()), 0o644); err != nil {
 		fail(err)
 	}
 }

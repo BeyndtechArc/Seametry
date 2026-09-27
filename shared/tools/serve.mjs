@@ -5,10 +5,10 @@
  * This exists for that, and for the common case of a terminal opened before Go
  * was installed, which cannot see it on PATH yet.
  *
- * Headers are read from the generated vercel.json rather than restated here.
- * That keeps one source of truth: whatever the host will send, this sends, and
- * a policy cannot be strict in review and loose in production by drifting
- * between two copies.
+ * Headers are read from the generated _headers file rather than restated
+ * here. That keeps one source of truth: whatever the host will send, this
+ * sends, and a policy cannot be strict in review and loose in production by
+ * drifting between two copies.
  *
  * Run: node shared/tools/serve.mjs [port]
  */
@@ -29,14 +29,26 @@ const TYPES = {
   '.png': 'image/png',
 };
 
-/** Reads the headers the host will send, so local review matches production. */
+/**
+ * Reads the headers the host will send, so local review matches production.
+ *
+ * Parses only the first block of the Cloudflare Pages _headers file (the `/*`
+ * rule, which is every other rule's superset here); host.go is the one place
+ * that decides what ships, this only mirrors it for local review.
+ */
 async function hostHeaders() {
   try {
-    const config = JSON.parse(await readFile(join(DIR, 'vercel.json'), 'utf8'));
-    const global = (config.headers || []).find(r => r.source === '/(.*)');
-    return Object.fromEntries((global?.headers || []).map(h => [h.key, h.value]));
+    const text = await readFile(join(DIR, '_headers'), 'utf8');
+    const blocks = text.split(/\n(?=\S)/); // a block starts at an unindented line
+    const global = blocks.find(b => b.startsWith('/*\n') || b === '/*');
+    const headers = {};
+    for (const line of (global || '').split('\n').slice(1)) {
+      const m = /^\s+([^:]+):\s*(.+)$/.exec(line);
+      if (m) headers[m[1]] = m[2];
+    }
+    return headers;
   } catch {
-    console.error('warning: no vercel.json found, serving without security headers');
+    console.error('warning: no _headers found, serving without security headers');
     console.error('         run: go run ./server/cmd/explorer');
     return {};
   }

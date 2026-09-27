@@ -286,12 +286,16 @@ jobs:
       - name: Build
         run: go run ./server/cmd/explorer
 
+      # The _headers file's CSP staying identical to securityHeaders in host.go
+      # is checked by TestHostConfigCSPMatchesSecurityHeaders, which the `go`
+      # job runs; asserting it again here in shell would be a second, weaker
+      # copy of the same check rather than a reason to add one.
       - name: Every page and the host configuration exist
         run: |
           for file in index instruments evidence hall verify; do
             test -s "dist/explorer/$file.html" || { echo "missing dist/explorer/$file.html"; exit 1; }
           done
-          test -s dist/explorer/vercel.json || { echo "missing dist/explorer/vercel.json"; exit 1; }
+          test -s dist/explorer/_headers || { echo "missing dist/explorer/_headers"; exit 1; }
 
       - uses: actions/upload-artifact@v4
         with:
