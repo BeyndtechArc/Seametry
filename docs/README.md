@@ -55,7 +55,8 @@ Read all three before writing code. They are short on purpose.
 | [prd/HALL.md](prd/HALL.md) | The Hall on-chain program: guarantees, instructions, arithmetic, prerogative handling, the devnet demonstration | Live. **The product.** Devnet is phase 1, mainnet is phase 3 |
 | [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Off chain basket valuation, weighting and drift, whole-alloy delivery evaluation, acquisition planning | Live. The holdings boundary and NAV/weighting/delivery/execution specs are written; only the holdings boundary and (via `server/internal/basket`) the recipe arithmetic are built |
 | [prd/MOBILE.md](prd/MOBILE.md) | Mobile holding, monitoring, and approval surface | Live. Phase 2. Deliberately not a consumer brokerage |
-| [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the verification ritual, instrument pages, evidence pages, the Hall demonstration | Live. Phase 1 |
+| [prd/SITE.md](prd/SITE.md) | The business pages: landing, how it works, the Key, and later pricing and legal | Live. Phase 1. Front door to the Explorer, same app, not a fifth surface |
+| [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the catalogue, the verification ritual, instrument pages, evidence pages, the Hall demonstration, hallmarks | Live. Phase 1. Evidence only, since 27 September 2026 |
 | [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Nothing interactive exists yet |
 | [prd/API.md](prd/API.md) | The public API: contract, response model, resources, sign-in and keys, entitlements and metering, streaming, the storage behind it, and the order the server is built in | Live. Specified, not built. Serves the Explorer from phase 1; the metered product is phase 3 |
 
@@ -81,6 +82,7 @@ Literal names live in code and in every external contract.
 
 | Document | What it is |
 |---|---|
+| [decisions/2026-09-27-web-app-and-payments.md](decisions/2026-09-27-web-app-and-payments.md) | Why the Explorer, Terminal and business pages became one Next.js app, why the Explorer narrowed to evidence only, and why Vercel, Fly and x402 with USDC replaced the earlier hosting and payment shape |
 | [decisions/2026-09-27-repository-layout.md](decisions/2026-09-27-repository-layout.md) | Why the repository splits into server, chain, clients and contracts, why Go runs from the root through `go.work`, and which free hosts were checked and why each was kept or excluded |
 | [decisions/2026-09-24-depth-at-size.md](decisions/2026-09-24-depth-at-size.md) | What executable depth looked like across seven live instruments, why a refusal is an observation, and every assumption made to get a ceiling |
 | [decisions/2026-09-23-oracles-on-chain.md](decisions/2026-09-23-oracles-on-chain.md) | Why oracle values are read from Solana accounts rather than credentialed APIs, what was measured, and what it costs |

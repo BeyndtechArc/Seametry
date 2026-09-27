@@ -103,4 +103,6 @@ The Explorer's first screen is the UNHx replay itself: the scheduled corporate a
 
 ## 5. Fonts on the web
 
-Sentient and Switzer come from Fontshare. Self-host them on the Explorer rather than loading from a third-party CDN, both for speed and so a strict content security policy does not block them. Confirm the Fontshare licence covers web embedding and app bundling before shipping.
+Sentient and Switzer come from Fontshare. Self-host them rather than loading from a third-party CDN, both for speed and so a strict content security policy does not block them.
+
+**The licence question is answered, from the ITF Free Font License 2.0 itself (`clients/assets/fonts/FONTSHARE-FFL.txt`).** Section 01 grants commercial use, self-hosting on a website via `@font-face`, and embedding in mobile or desktop applications, all for free. Section 02 forbids one thing that matters here: modifying, subsetting, or format converting the font files. The official WOFF2 files are served exactly as downloaded, never run through a subsetter or a converter, on the Explorer, the Terminal, and mobile alike.

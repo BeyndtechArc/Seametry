@@ -7,7 +7,7 @@
 
 # PRD: The Explorer
 
-**Last substantive change:** 23 September 2026.
+**Last substantive change:** 27 September 2026.
 
 ---
 
@@ -23,6 +23,15 @@ able to come here and confirm it themselves in under a minute.
 It comes first because it is the only phase that can be built and published
 without a legal read, an audit, or a single user's money.
 
+**What it is not.** It does not carry business positioning, product claims, or
+a pitch; that is `SITE.md`'s job, and its pages are the front door a visitor
+passes through before arriving here. It does not carry engineering status,
+what is built and what is not; the README owns that, once, and a second copy
+of it inside the evidence layer is the same defect as two documents
+disagreeing about anything else. An earlier build of this surface carried
+both, which is the drift `../decisions/2026-09-27-web-app-and-payments.md`
+corrects.
+
 ## 2. Who arrives, and what they need in the first thirty seconds
 
 | Visitor | Arrives from | Needs to leave with |
@@ -36,6 +45,14 @@ without a legal read, an audit, or a single user's money.
 None of them should have to read a paragraph before seeing something true.
 
 ## 3. The surfaces
+
+### 3.0 The catalogue
+
+The list every instrument page in 3.2 is reached from. The Catalogue template
+in `.claude/skills/seametry-design/references/patterns.md` section 2: a title
+and one sentence on the Good Delivery rules with a link to the published rule
+set, filterable by stamp, grade and issuer, with NGD entries visible, never
+hidden.
 
 ### 3.1 The verification ritual
 
@@ -96,13 +113,28 @@ authority, and a transfer hook that exists and is switched off. Each page
 states what the finding does not establish, in its own section, at the same
 visual weight as the finding.
 
-### 3.4 The Hall demonstration (when phase 1 of the program lands)
+### 3.4 The Hall demonstration
 
 The devnet demonstration from `HALL.md` section 7, published as a scrubbable
-record: nine scenarios, each with its transaction signatures and before and
-after state. The one that matters is the melt that succeeds while an issuer has
-frozen one constituent, delivering every other leg and leaving exactly one
-claim.
+record, run against the Hall program deployed on devnet, alongside the same
+demonstration recorded in a local simulator: eight scenarios each, every
+devnet step carrying its transaction signature. The one that matters is the
+melt that succeeds while an issuer has frozen one constituent, delivering
+every other leg and leaving exactly one claim.
+
+### 3.5 Hallmarks
+
+One page per receipt, at its serial. The Hallmark template: the hallmark row,
+large; the public record, readable; seal status; then the verification
+ritual from 3.1, prefilled with this serial; links to the alloy or allocation
+it settled, the policy version behind it, and the evidence that produced it.
+
+### 3.6 Status (not yet built)
+
+Seametry's own freshness, held to the standard it holds sources to: every
+source and service as an Evidence row about itself, its last observation, its
+lag, its state (`patterns.md` section 2, Status). Waits on `GET /v1/status`
+(`API.md` section 5.1, step A1).
 
 ## 4. What the Explorer must never do
 
@@ -129,8 +161,8 @@ Both decisions this section previously left open are now settled there, and the
 Explorer implements both:
 
 - **Typefaces.** Sentient for figures and titles, Switzer for interface,
-  Fragment Mono for digests and nothing else. All three self hosted, fetched
-  by `go run ./server/cmd/fonts`, none committed.
+  Fragment Mono for digests and nothing else. All three self hosted, never
+  subset or format converted, per the licence's own terms.
 - **Default theme.** Dark is the default and the brand. Light is the
   certificate. Both are complete, and no component may exist in only one.
 
@@ -138,6 +170,14 @@ Every colour, size, radius and duration on the page comes from
 `clients/packages/ui/src/generated/tokens.css`, generated from the design system's
 token source. The stylesheet states no colour of its own, and
 `npm run design:lint` fails on a raw value.
+
+**Where it is built.** The Explorer is the evidence route group of one
+Next.js app in `clients/web`, alongside the business pages (`SITE.md`) and
+the Terminal (`TERMINAL.md`), decided in
+`../decisions/2026-09-27-web-app-and-payments.md`. Not built yet: today's
+Explorer is still generated as static HTML by `server/cmd/explorer`, which
+fetches fonts with `go run ./server/cmd/fonts`. The Go generator is retired
+once every page here exists in the Next app.
 
 ## 6. Accessibility
 
@@ -171,7 +211,9 @@ From `CRAFT.md` section 4, measured rather than assumed:
   or a salt. Enforced by a scan test in Go and again in
   `shared/tools/spec/verify-receipts.mjs`, on the side a stranger reads.
 - A visitor pasting their own private body does so entirely client side.
-- Content security policy permits no third party script origin.
+- Content security policy permits no third party script origin, carried from
+  today's Go generated headers into `clients/web`'s `next.config.ts`, proven
+  against the built app rather than assumed to have survived the move.
 
 ## 9. Acceptance
 
@@ -191,6 +233,13 @@ From `CRAFT.md` section 4, measured rather than assumed:
 
 - The anchoring step is unbuilt: no batch root is written on chain yet, so the
   ritual currently ends at the published root. Until then the page says so.
-- Whether the Explorer serves proofs from the gateway or from static files at
-  phase 1 is undecided. Static is sufficient for the demonstration and removes
-  a dependency from the critical path.
+- What real, already captured evidence the landing hero in `SITE.md` opens on
+  is Storm's decision, not this document's.
+- No raw UNHx payload exists to reproduce the corporate action replay the
+  landing template describes (`README.md`'s open items). The Explorer itself
+  does not need it; `SITE.md` does, for the same reason.
+
+Settled, no longer open: whether the Explorer serves proofs from static files
+or the gateway at phase 1. It serves published, committed data with a drift
+check, per `../decisions/2026-09-27-web-app-and-payments.md` D2, switching to
+the live API with no change of shape once it exists.

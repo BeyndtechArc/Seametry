@@ -134,6 +134,7 @@ Grouped by the service that owns the answer. The gateway owns none of this data.
 | `GET /v1/instruments/{mint}` | Identity, grade, decoded prerogatives with their sentences, the live multiplier and the field it came from, unknown extensions, quarantine, and the capture slot | Registry | public | 1 |
 | `GET /v1/instruments/{mint}/prerogatives/history` | Every change to decoded prerogatives, effective dated | Registry | public | 1 |
 | `GET /v1/instruments/{mint}/corporate-actions` | Scheduled and effective corporate actions and multiplier changes | Registry | public | 2 |
+| `GET /v1/findings`, `GET /v1/findings/{slug}` | Published findings a visitor can reproduce by running one command, each with what it does not establish stated beside it: the multiplier survey, depth at size | Registry, Liquidity | public | 1 |
 | `GET /v1/instruments/{mint}/observations` | Observations by source over a range, with pruned ranges named | Market State | public, range limited; api for full range | 2 |
 | `GET /v1/instruments/{mint}/depth` | Depth at size as a curve, per direction, with each quote's age and expiry. Selling reports `unavailable` until it is measured | Liquidity | public | 1 |
 | `GET /v1/instruments/{mint}/admissibility` | The policy decision for this instrument, with reasons, version and digest | Policy | public | 1 |
@@ -143,6 +144,7 @@ Grouped by the service that owns the answer. The gateway owns none of this data.
 | `GET /v1/alloys/{address}/strike-cost?shares=n` | What a strike of n shares takes per leg, rounded up | Basket | public | 1 |
 | `GET /v1/alloys/{address}/melt-proceeds?shares=n` | What a melt of n shares returns per leg, rounded down, and what the Hall keeps | Basket | public | 1 |
 | `GET /v1/alloys/{address}/nav` | Off-chain NAV with the weakest evidence it contains, or refused when any constituent lacks an acceptable observation | Basket, Market State | public | 2 |
+| `GET /v1/hall/demonstration?cluster=simulator\|devnet` | The demonstration transcript for that cluster: every scenario, its steps, actors, results, reasons, and, on devnet, transaction signatures, per `HALL.md` section 7 | Basket | public | 1 |
 | `GET /v1/receipts/{serial}` | The public body, its inclusion proof, its batch root and the anchor transaction | Receipt and Audit | public | 1 |
 | `GET /v1/batches/{root}` | A sealed batch, its leaves' public digests and its anchor | Receipt and Audit | public | 1 |
 | `GET /v1/anchor-keys` | The published list of keys allowed to anchor a root, with rotation dates | Receipt and Audit | public | 1 |
@@ -220,11 +222,12 @@ Signing in proves control of an address. It grants a view of that address's data
 | `public` | Anyone, no credential | Section 5.1, with observation history range limited | Per IP, at the edge |
 | `account` | A signed-in wallet | Adds section 5.2 and execution | Per account |
 | `pro` | A Terminal subscription | Adds full observation history, formula workspaces, depth monitoring and alert volume (`PRODUCT_ARCHITECTURE.md` section 8) | Per account, higher |
-| `api` | An integrator with a key | Section 5.1 at full range, metered | Per key, by plan |
+| `api` | An integrator with a key, or no account at all, paying per call | Section 5.1 at full range, metered | Per key, by plan; unmetered per call under x402 |
 
 - Limits are enforced in the gateway, per identity and per key (standard section 19), and answered with `429` and `Retry-After`.
 - Usage is counted per key per day in the Identity schema and returned by `GET /v1/me`. Metering records calls, not bytes, because the assay is what is sold.
-- Payment is open (section 14). Whatever takes payment must keep card details off Seametry's servers entirely, and off Cloudflare's free services, whose terms (section 2.2.1(h)) forbid processing or collecting card information on a property receiving them. A payment page hosted by the provider itself satisfies both.
+- **Payment is x402, settled in USDC on Solana.** A request to a metered resource with no valid entitlement gets `402 Payment Required` and an `X-Payment-Required` header naming the price, the asset, and the pay-to address. The caller retries with an `X-Payment` header carrying a signed transfer; the gateway verifies it against a facilitator (a public one to start, per `github.com/x402-foundation/x402/go`) before serving the resource. No card ever reaches Seametry or its host, so Cloudflare's terms (section 2.2.1(h)) on card processing and PCI scope both stop applying.
+- **Two shapes of the same mechanism.** A metered call pays once, per request, with no account and no key: this is what an agent calling the API directly uses. A `pro` subscription pays once for a stated period; the gateway records the entitlement against the account with an `expires_at`, the same way a decision carries one, and the account reaches `pro` resources until then with no further payment. `api-keys` (section 5.2) remain for an integrator who wants a stored balance and one invoice instead of paying per call.
 
 ## 9. Storage
 
@@ -281,12 +284,12 @@ A test enforces the boundaries. It lists every package's imports and fails when 
 
 The topology and hosts are owned by `SERVICE_CATALOG.md` section 4. What the API adds:
 
-- `server/deploy/Dockerfile` builds one static binary into a minimal image. `server/deploy/compose.yaml` runs it with Postgres and a volume. The same file runs locally and on the host.
-- Cloudflare Tunnel is the only way in. The host opens no inbound port.
+- `server/deploy/Dockerfile` builds one static binary into a minimal image. `server/deploy/compose.yaml` runs it with Postgres and a volume, the same file used locally, on Fly, and later on Oracle.
+- The host is Fly.io, on Storm's legacy plan allowance, until an Oracle account exists (`SERVICE_CATALOG.md` section 4). Fly terminates TLS and exposes the process at its own address; Cloudflare sits in front for DNS and edge caching, proxied rather than tunneled, since nothing here runs on a machine with no public address of its own.
 - Public reads are cached at Cloudflare's edge by the headers in section 4.5.
 - Secrets come from the host's environment, never from the repository (standard section 19).
 - A nightly `pg_dump` goes to R2. A CI job restores the latest dump into a fresh Postgres and runs a read against it, so the backup is known to restore.
-- `/metrics` and the health check are reachable only through the Tunnel's access rules, not publicly. What the public needs to know about Seametry's freshness is `GET /v1/status`.
+- `/metrics` and the health check are reachable only from Storm's own network, not publicly. What the public needs to know about Seametry's freshness is `GET /v1/status`.
 
 ## 12. Build order
 
@@ -302,8 +305,8 @@ Each step ends the way every step in this repository does: the command and its o
 | **A5** | The Hall read from chain: alloys, strike cost, melt proceeds. The outbox dispatcher and `GET /v1/stream` | Strike cost and melt proceeds equal what the program took and credited in the devnet transcript. A duplicated event is applied once (standard section 9) | The Terminal's cost views, live updates |
 | **A6** | Identity: sign-in, sessions, watchlists, saved formulas, deletion, private receipt bodies | A reused nonce, a signature over another domain, and an expired message are each refused. Deletion leaves receipts intact and detached | Signed-in Terminal and mobile |
 | **A7** | Execution on devnet: intents, approval digests, the program allowlist, simulation, submission, confirmation, receipts issued on settlement | Changing any bound input invalidates the approval. An unlisted program is refused before handoff. An expired quote is refused at submission (standard section 11) | Strike, melt and withdraw from the Terminal on devnet |
-| **A8** | Entitlements, limits and metering, API keys | A key past its limit gets `429` with `Retry-After`. A revoked key is refused. Usage counts match calls made in the test | The metered API |
-| **A9** | Deployment: Dockerfile, compose on the host, Tunnel, edge caching, backups and the restore job | The restore job passes in CI against the latest dump | Online, at no cost |
+| **A8** | Entitlements, limits and metering, API keys, and x402: the `402` challenge, verifying a payment against a facilitator using `github.com/x402-foundation/x402/go`, and granting the `pro` entitlement an `expires_at` on a subscription payment | A key past its limit gets `429` with `Retry-After`. A revoked key is refused. A request with no valid payment gets `402` with the price and asset named; a verified payment is served once and not replayable. Usage counts match calls made in the test | The metered API, and per-call access with no account |
+| **A9** | Deployment: Dockerfile, compose on the host, edge caching, backups and the restore job | The restore job passes in CI against the latest dump | Online, at no cost |
 
 A0 to A5 need no account and no signing. They are what the clients build against first.
 
@@ -319,7 +322,6 @@ A0 to A5 need no account and no signing. They are what the clients build against
 ## 14. Open
 
 - **The API's domain.** Which of Storm's domains carries the API and the web client. The session cookie's scope depends on it.
-- **Payment.** Which provider takes Terminal subscriptions and API plans, and in which countries it can pay out. Not chosen.
 - **Provider payload publication.** Whether Jupiter's terms allow its quote payloads to be republished (section 5.1). Not read yet.
 - **Saved formula storage.** `TERMINAL.md` asks whether formulas are stored. This document provides the resource. Whether the free-tier storage budget allows it for `account`, or only for `pro`, is a cost decision against `ENGINEERING_STANDARD.md` section 5.1.
 - **Oracle's idle reclamation.** Whether a pay-as-you-go account exempts Always Free instances from reclamation (`decisions/2026-09-27-repository-layout.md`). It decides whether the host needs a keep-busy job.
