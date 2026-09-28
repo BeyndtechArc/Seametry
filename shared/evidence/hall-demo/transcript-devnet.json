@@ -23,7 +23,7 @@
           "actor": "sponsor",
           "action": "initialize_alloy with 5,000,000 of A and 3,000,000 of B, and 1,000,000 genesis shares locked",
           "result": "ok",
-          "signature": "5tbwbK7VAtUtvf4RtpewdvzyNBbYMnDUCCe8B3d141QTqnRiw3Y5qysFRi7K8dYDHjG8dTTKzJT9mEHJFXxNL3tD",
+          "signature": "XP6t4Da5uuWxTsAXizyeQeWfKAdQpX8r1W4QUNTrSPdUVVHPAHGMF9xMJjxfehN2ggXqHU1ZQuhmvd8oXSy6yyH",
           "state": {
             "supply": 1001000,
             "legs": [
@@ -59,7 +59,7 @@
           "actor": "holder",
           "action": "strike 1,000 shares",
           "result": "ok",
-          "signature": "5g4M59Wa8hCCdeWrisyiFQ7Jf36RtTUAMvSy5kxM4tx8TMKgJyACofRBHhwwCzfbrsqrFFCqrrANCP8cEkqT5696",
+          "signature": "n142CEzD1cU6bH46zmV5b9DYkWGuGCB3byn5WfQbS1saBPc1YkHXNun6TTiQBkZPZjNcpVPMWMK3r9rRMhQuwbr",
           "state": {
             "supply": 1001000,
             "legs": [
@@ -103,7 +103,7 @@
           "actor": "issuer",
           "action": "mint 500,000 of A into the Hall's account, a dividend paid as new tokens",
           "result": "ok",
-          "signature": "4EwC8NRr212wsF2srfjXeD5dWao8HPj2ZMKmkzEabxja2hkX1CayadxKoyoBKVYD57ftrLi2dMbBvsR8szoLbEy2",
+          "signature": "3gNpzVyJXD7s6qRyPYrkH74zNt7jep5FqSCzmkbo92V1eVAnL3cphXfMuMS56yk1XJZNDTMXPw76iJhCgMc494pZ",
           "state": {
             "supply": 1001000,
             "legs": [
@@ -139,7 +139,7 @@
           "actor": "anyone",
           "action": "sync leg A",
           "result": "ok",
-          "signature": "4qkwquaNk1wiNejF3SRe8HbL94zycQCu95Lrr6vA8ceTX4fKCciU67eWfuZfDaxdYh5RBeTaJ7L8c8Tdj8GVxBPh",
+          "signature": "3BajPQjBJzRzyxxfyabqq5JGez2kk61nNLk8hhbiMfmivnVJ8KZS73XH2MmWrXRdZFysTj1MrQyu4jvhYZj8ruq1",
           "state": {
             "supply": 1001000,
             "legs": [
@@ -183,7 +183,7 @@
           "actor": "issuer",
           "action": "freeze the Hall's account for A",
           "result": "ok",
-          "signature": "3Rp3i13ic9reLPVpHwGDWh7QB31Fdduw9b43838GoC2zAytdYUxYg5pY1w3qEuyZ8PDT6bHZQRwXoqpUsmatJn6T",
+          "signature": "2T1Gza2mVAgNfFdNBXZdSiZLNVgVQGeRaDAcMq3GrSSbJhVXqGvf9kErtKrUWdiyZj11g7WN3Cn8P4LNm1bTYreE",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -255,7 +255,7 @@
           "actor": "holder",
           "action": "melt 400 shares",
           "result": "ok",
-          "signature": "3mZ1EjZ2hsLN3ojbmUWX32Eb8WK1KTAYKuYeJzeYXXdhbNUBppye9Lc5Cfzy3oAJ9FLxRUbChi13qdQP4FzMW6JS",
+          "signature": "TaLVQoHRXGDPL1T2r6RZCYpmU3FaxfPf1i3vCihBG7omsiT2Px9fgjwQRwFkJ1u9ztsxPQRCFNiW2oHyjZYroig",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -291,7 +291,7 @@
           "actor": "holder",
           "action": "withdraw the whole claim on B",
           "result": "ok",
-          "signature": "38SmF7CFDYFGnqNVnYw7WpJV4uZh52s6keM7AmLaK2QnYrz1d97ckdwDSFWD4DdgsryevLx4WzMnBCoQWTYNZdUo",
+          "signature": "3Y2kKPZYFy5StrfFuecDe69XajVUZ36EAUqu5K9iq7hFvUTQDocv7Z3XYjzc8ZjwpfufTYKFMWu49zibjz1SRh96",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -363,7 +363,7 @@
           "actor": "issuer",
           "action": "thaw the Hall's account for A",
           "result": "ok",
-          "signature": "5ufvfL1GSbUrbEHZDCfFVcSm52aC855u1FQus7sByxqCe8YJ6a5PdXgxbCn8nbX2LMNjpdRXjNTkoR9rgaZaLhCW",
+          "signature": "2rxNKGeL4XAHxgnFB1VV1g8UYTufoCfDMtT1R2McTzXVhNH9FWCabLwhFjWzd5afF5VfmMaSM2eWWSMSJSpapfKM",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -399,7 +399,7 @@
           "actor": "holder",
           "action": "withdraw the whole claim on A",
           "result": "ok",
-          "signature": "SVpZi5kisubhp9zLQMopK3NExVxURtPesbV5cMyNv6JmrcarhLuEYECs9iy3bWccUzg2WhTPAmFjUkaLirKwMdV",
+          "signature": "62RpocunNt6tduwVaXq2VT4Qa2BsifmW2S7ZdVU7QKts2L9Z3D8tW4z9yEXxbbPdQYWF7RE6XikVfooGWy1H68Mz",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -443,7 +443,7 @@
           "actor": "issuer",
           "action": "pause A everywhere",
           "result": "ok",
-          "signature": "5LLJwzzgFC7A4KfrnzGjQPp1PYNC8zCP6Y62HZFM9w5HY6v1XhrVYnEJ4rxdCndGFmguNPkkidMUWcUH12Q5E57z",
+          "signature": "284G8DyBcarNxPynmGc8NajqNv5Vc5edo8BM8SCi7sbScLQA47bAMnhYA2VMjgVXAF1rqjjMjMAtQZsPKkXa2KHn",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -479,7 +479,7 @@
           "actor": "holder",
           "action": "melt 400 shares",
           "result": "ok",
-          "signature": "2wVCLpvrJrgYbGJSZhBdU2eajUiCb6jqMN8QWbN632b9Ps8G2sB9NNnHviQmkaGkdMBk4HeuT24esksytcaHeF76",
+          "signature": "2TCbDt3fvgbBB2SXdyVNMMfksP3LXPg2UjQjAvCyAnH8SqiVwp2Ntoew1q695PEc2VmwtpQ49CpHvHuTj8kVdAfh",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -551,7 +551,7 @@
           "actor": "issuer",
           "action": "resume A",
           "result": "ok",
-          "signature": "3xxWjs43F7pXx2o8EjiFcVT9hLk4byE2CcfPsfq1ZmNMj8Av3MSznTVfaf6k2RQ2ktJsNFPEjcisf7ykZFHAJnzJ",
+          "signature": "2cLEHKjyV8KBNdVY4eT5gwF5ssfoWDsNYuFt9zpqKBw94khzbJ646FA5ZDrYLC1dhxRkgjCDFyGVL26r33ckunsk",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -587,7 +587,7 @@
           "actor": "holder",
           "action": "withdraw the whole claim on A",
           "result": "ok",
-          "signature": "e6D5twUSyq5F9J1UKgQpY47gQ58EE3Lnq13CJyUrhCHJ5Gh9nNTGAPTtWZE3UpFrrsHj4vrJaMnUM3tPMEeeZro",
+          "signature": "5Uw3g4NrobrEHyMmo9Sx7rJcHBuK9oiA6Hxwiu11w3VFLKhD1Sd9cgvzyZma1mB4h38DvgzqZCLmrpKFShofhLsi",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -631,7 +631,7 @@
           "actor": "holder",
           "action": "melt 400 shares",
           "result": "ok",
-          "signature": "3UeFLwkSGB3j7E53dR4cpcPdFfsp9uGSxabPJU89NTxZ1KAkLaPM4km9RdoB7jAXYgMJtFjQVqxUQysTecxjv1j3",
+          "signature": "2PPHTuxbq5nY66arVzFSJG4i57UiRLGHsZoWfmvMshPq4Pb1RzP8yvV6YWPyMrb1AjrtWjERJFDcePJ8Y5sPQSfn",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -667,7 +667,7 @@
           "actor": "issuer",
           "action": "take two fifths of A out of the Hall with its permanent delegate",
           "result": "ok",
-          "signature": "55BHB8zpgmB3kxswjWfRxGNp1Am713EHy44Ftr2M26nnC8JD2MWPprT3dZPneuWR9zJfyDGsT9pUtFFR9jpwpDk4",
+          "signature": "31uGiEMzCFUrPHUkGbidFctRNop3z5ZEnoAySQooHjzsDGkufaifmSTAZC8VzL7yCzzTE6sTjJJd6kEQ4VbkkTdP",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -703,7 +703,7 @@
           "actor": "anyone",
           "action": "sync leg A",
           "result": "ok",
-          "signature": "53fUsXivMKyFbfhujSvfM6b4Ls44KDmHvWSCjdZJLyjCdNqTGUzS6RQKXG1ZxUKhB7napsx1nDnzj2H5bi4S6Jvd",
+          "signature": "3uxfdvCRLVaf8vr44dTpgJd3Gu8iemiMPZQRHmJQMBNJQSL8xVBQ132gDQ5pYo7u9B1SyBogg7n3GcAtFTKLVeLo",
           "state": {
             "supply": 1000600,
             "legs": [
@@ -747,7 +747,7 @@
           "actor": "attacker",
           "action": "send 9,000,000 of A straight to the Hall, holding no shares",
           "result": "ok",
-          "signature": "5V1Mro7ftpPVMWk7LJ2LC8Vds3NLGu56K3nts2drazqGfmrABoNpuo9u6b1i7PUqyEWjEXSAsqh2P1iJPVnjRZcR",
+          "signature": "2st3H8ixGt2jx5ssTteJ9z86XVmgtHw9LFwZ7LVpeoMprgnFu4XCg72MJDfiaGZTKPnUjzQWrjDk1rbswsVJh5YY",
           "state": {
             "supply": 1001000,
             "legs": [
@@ -783,7 +783,7 @@
           "actor": "anyone",
           "action": "sync leg A",
           "result": "ok",
-          "signature": "4Eoebzgu5XEkQ48BpXXcsMbfHhguBg9GrU46bNVEWS5svEuFHDZidq8GHHeDH37a9Wrbxxb4y8NxgN9mwyJHUcrb",
+          "signature": "4YRghYfku75kpmNmwBZZA7eAUn6tDAPQ8Hj19oJeCgu7bRTcwBGoC8AXK5vwjxcZNNnm44FCuByGsAhaFSHGhjxv",
           "state": {
             "supply": 1001000,
             "legs": [
