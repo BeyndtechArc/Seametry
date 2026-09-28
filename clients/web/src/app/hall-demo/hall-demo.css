@@ -1,0 +1,165 @@
+/* The Hall demo page. Tokens only, matching server/cmd/explorer/assets/explorer.css's
+   vocabulary (.card, .stamp, .tray, .sentence, .addr) rather than inventing a
+   second one for the same ideas. */
+
+.hall-demo-page {
+  max-width: var(--sm-size-content);
+  margin: 0 auto;
+  padding: var(--sm-space-8) var(--sm-space-5);
+}
+
+.hall-demo-page h1 {
+  font-family: var(--sm-font-family-display);
+  font-weight: var(--sm-font-weight-light);
+  font-size: clamp(var(--sm-font-size-figure), 6vw, var(--sm-font-size-display));
+  line-height: 1.04;
+  color: var(--sm-text-primary);
+}
+
+.lede {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-lead);
+  margin-top: var(--sm-space-5);
+  max-width: var(--sm-size-readable);
+}
+
+.devnet-line {
+  margin-top: var(--sm-space-6);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.hall-demo .card {
+  background: var(--sm-surface-sheet);
+  border: 0.5px solid var(--sm-line-rule);
+  border-top-color: var(--sm-line-highlight);
+  border-radius: var(--sm-radius-surface);
+  padding: var(--sm-space-6) var(--sm-space-7);
+  margin-top: var(--sm-space-5);
+}
+
+.hall-demo .lead {
+  font-family: var(--sm-font-family-ui);
+  font-weight: var(--sm-font-weight-semibold);
+  font-size: var(--sm-font-size-body);
+  color: var(--sm-text-primary);
+  margin: 0 0 var(--sm-space-3);
+}
+
+.hall-demo .tight {
+  color: var(--sm-text-secondary);
+  margin-top: var(--sm-space-3);
+}
+
+.hall-demo .addr {
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+  color: var(--sm-text-tertiary);
+  word-break: break-all;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.hall-demo code {
+  font-family: var(--sm-font-family-digest);
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+.hall-demo .row {
+  margin-top: var(--sm-space-5);
+  padding-top: var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-rule);
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) 1fr;
+  gap: var(--sm-space-3) var(--sm-space-7);
+  align-items: baseline;
+}
+.hall-demo .row dt {
+  font-size: var(--sm-font-size-small);
+  color: var(--sm-text-tertiary);
+}
+.hall-demo .row dd {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* One Key at a time is live in the flow's own sequence; the tray still holds
+   several because each step is a distinct, separately timed action, not
+   alternatives to the same one. */
+.hall-demo .tray {
+  margin-top: var(--sm-space-5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sm-space-3);
+}
+
+.hall-demo .key {
+  font-family: var(--sm-font-family-ui);
+  font-weight: var(--sm-font-weight-medium);
+  font-size: var(--sm-font-size-body);
+  background: var(--sm-accent-touch);
+  color: var(--sm-text-onTouch);
+  border: none;
+  border-radius: var(--sm-radius-control);
+  padding: var(--sm-space-3) var(--sm-space-6);
+  cursor: pointer;
+}
+.hall-demo .key:disabled {
+  background: var(--sm-surface-tray);
+  color: var(--sm-text-tertiary);
+  cursor: default;
+}
+
+.hall-demo .quiet {
+  font-family: var(--sm-font-family-ui);
+  font-weight: var(--sm-font-weight-medium);
+  font-size: var(--sm-font-size-body);
+  background: var(--sm-surface-sheet);
+  color: var(--sm-text-secondary);
+  border: 0.5px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-control);
+  padding: var(--sm-space-3) var(--sm-space-6);
+  cursor: pointer;
+}
+.hall-demo .quiet:disabled {
+  color: var(--sm-text-tertiary);
+  cursor: default;
+}
+
+.hall-demo .sentence {
+  display: flex;
+  gap: var(--sm-space-4);
+  align-items: flex-start;
+  padding: var(--sm-space-3) 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-body);
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+.hall-demo .sentence:first-child {
+  border-top: none;
+}
+
+.hall-demo .stamp {
+  display: inline-block;
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-semibold);
+  padding: var(--sm-space-1) var(--sm-space-3);
+  border-radius: var(--sm-radius-surface);
+  border: 1px solid var(--sm-line-rule);
+  color: var(--sm-text-tertiary);
+  white-space: nowrap;
+}
+.hall-demo .stamp.allow {
+  border-color: var(--sm-line-strong);
+  color: var(--sm-text-primary);
+}
+.hall-demo .stamp.warn {
+  border-color: var(--sm-accent-provenance);
+  color: var(--sm-accent-provenance);
+}
+
+.hall-demo a {
+  color: var(--sm-accent-provenance);
+}
