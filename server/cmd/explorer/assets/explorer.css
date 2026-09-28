@@ -388,6 +388,31 @@ dl.hashes {
 }
 dl.hashes dt { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary); font-family: var(--sm-font-family-ui) }
 dl.hashes dd { color: var(--sm-text-primary); word-break: break-all }
+
+/* A serial is never truncated (components.md, Serial). Semibold, positive
+ * tracking and tabular figures, so it reads as an identifier, not a headline. */
+h1.serial {
+  font-family: var(--sm-font-family-ui);
+  font-weight: var(--sm-font-weight-semibold);
+  font-size: var(--sm-font-size-figure);
+  letter-spacing: var(--sm-font-tracking-serial);
+  font-variant-numeric: tabular-nums lining-nums;
+  max-width: none;
+  margin-top: var(--sm-space-3);
+  overflow-wrap: anywhere;
+}
+/* Facts about one record, labelled, separated by rules rather than boxes. */
+dl.row {
+  margin-top: var(--sm-space-5);
+  padding-top: var(--sm-space-4);
+  border-top: .5px solid var(--sm-line-rule);
+  display: grid;
+  grid-template-columns: minmax(120px, max-content) 1fr;
+  gap: var(--sm-space-3) var(--sm-space-7);
+  align-items: baseline;
+}
+dl.row dt { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary) }
+dl.row dd { margin: 0; color: var(--sm-text-primary); overflow-wrap: anywhere }
 .formula { margin-top: var(--sm-space-4); color: var(--sm-text-tertiary); overflow-x: auto; white-space: nowrap }
 
 .treebox {

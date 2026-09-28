@@ -1,17 +1,9 @@
-{{define "verify.html"}}{{template "head" .}}
-
-  <h1>Check a hallmark yourself.</h1>
-  <p class="lede">Enter a serial. Your browser recomputes every hash from the public record up to the batch root, using its own Web Crypto. Nothing here is taken on trust, including us.</p>
-
-  {{if .BatchCount}}
-  <form class="entry" id="form" autocomplete="off">
-    <label class="field"><input id="serial" inputmode="text" maxlength="11" placeholder="Serial, for example 09260000001" aria-label="Hallmark serial"></label>
-    <div class="tray"><button class="key" type="submit">Verify</button></div>
-  </form>
-  <div class="chips" id="chips"><p>Serials in this batch</p></div>
-  <div class="msg" id="msg" role="status"></div>
-
-  <section id="result" hidden>
+{{/* The four steps of the ritual and the element ids verify.js drives. Shared
+     with hallmark.html: a second copy of this markup would drift from the ids
+     the script depends on. The argument says whether the result starts hidden,
+     which it does on verify.html and does not on a hallmark page. */}}
+{{define "ritual"}}
+  <section id="result"{{if .}} hidden{{end}}>
     <ol class="steps">
       <li class="step" id="s1">
         <h3><span class="n">1</span>The public record</h3>
@@ -57,6 +49,24 @@
   <!-- The verdict is announced here, once. The hashes above update every frame
        and are deliberately outside any live region. -->
   <p id="announce" class="sr-only" role="status" aria-live="polite"></p>
+{{end}}
+
+{{define "verify.html"}}{{template "head" .}}
+
+  <h1>Check a hallmark yourself.</h1>
+  <p class="lede">Enter a serial. Your browser recomputes every hash from the public record up to the batch root, using its own Web Crypto. Nothing here is taken on trust, including us.</p>
+
+  {{if .BatchCount}}
+  <form class="entry" id="form" autocomplete="off">
+    <label class="field"><input id="serial" inputmode="text" maxlength="11" placeholder="Serial, for example 09260000001" aria-label="Hallmark serial"></label>
+    <div class="tray"><button class="key" type="submit">Verify</button></div>
+  </form>
+  <div class="chips" id="chips"><p>Serials in this batch</p></div>
+  <div class="msg" id="msg" role="status"></div>
+
+  <p class="tight" id="permalink-line" hidden>This record has its own page: <a id="permalink" href="#"></a></p>
+
+  {{template "ritual" true}}
 
   <div class="limits">
     <h3>What this demonstration is and is not</h3>

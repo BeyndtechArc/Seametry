@@ -8,7 +8,7 @@
   {{end}}
 
   {{range .Instruments}}
-  <h2>{{.Symbol}}</h2>
+  <h2 id="{{.Symbol}}">{{.Symbol}}</h2>
   <p class="tight addr">{{.Address}}</p>
   <p class="tight">{{.Issuer}} · {{.Decimals}} decimals · read at slot <span class="num">{{.Slot}}</span> on {{.CapturedAt}}</p>
 

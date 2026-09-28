@@ -86,11 +86,12 @@
   var bySerial = {};
   batch.proofs.forEach(function (p) { bySerial[p.serial] = p; });
 
+  // Absent on a hallmark page, where the serial is fixed by the URL.
   var chips = $('chips');
-  batch.proofs.forEach(function (p) {
+  if (chips) batch.proofs.forEach(function (p) {
     var c = document.createElement('button');
     c.type = 'button'; c.className = 'chip'; c.textContent = p.serial;
-    c.addEventListener('click', function () { $('serial').value = p.serial; run(p.serial, false); });
+    c.addEventListener('click', function () { $('serial').value = p.serial; show(p.serial, false); });
     chips.appendChild(c);
   });
 
@@ -208,23 +209,40 @@
 
   var busy = false, current = null;
 
-  async function run(serial, tamper) {
-    if (busy) return;
+  /** Finds the proof for what a visitor typed, or says why there is none. */
+  function lookup(serial) {
     var s = (serial || '').trim().toUpperCase().replace(/[IL]/g, '1').replace(/O/g, '0');
     var proof = bySerial[s];
     if (!proof) {
       $('msg').textContent = s
         ? 'No hallmark with serial ' + s + ' is in this batch. Choose one above.'
         : 'Enter a serial, or choose one above.';
-      return;
     }
-    busy = true; current = s; $('msg').textContent = '';
+    return proof || null;
+  }
+
+  /** A visitor asked for this: reveal the result and bring it into view. */
+  function show(serial, tamper) {
+    var proof = lookup(serial);
+    if (!proof || busy) return;
+    // Only verify.html has this line; a hallmark page already is the page.
+    var link = $('permalink');
+    if (link) {
+      link.href = 'hallmark-' + proof.serial + '.html';
+      link.textContent = proof.serial;
+      $('permalink-line').hidden = false;
+    }
     $('result').hidden = false;
+    $('result').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    return run(proof, tamper);
+  }
+
+  async function run(proof, tamper) {
+    busy = true; current = proof.serial; $('msg').textContent = '';
     ['s1', 's2', 's3', 's4'].forEach(function (id) { $(id).classList.remove('on'); });
     ['hp', 'hq', 'hl', 'rc', 'rp'].forEach(function (id) { $(id).textContent = ' '; });
     $('levels').innerHTML = ''; $('verdict').textContent = ''; $('verdict').className = 'verdict';
     $('closing').classList.remove('on');
-    $('result').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
 
     var body = JSON.parse(JSON.stringify(proof.public_body));
     var shown = JSON.stringify(body, null, 2);
@@ -302,7 +320,13 @@
     busy = false;
   }
 
-  $('form').addEventListener('submit', function (e) { e.preventDefault(); run($('serial').value, false); });
-  $('tamper').addEventListener('click', function () { if (current) run(current, true); });
-  $('again').addEventListener('click', function () { if (current) run(current, false); });
+  $('form').addEventListener('submit', function (e) { e.preventDefault(); show($('serial').value, false); });
+  $('tamper').addEventListener('click', function () { if (current) show(current, true); });
+  $('again').addEventListener('click', function () { if (current) show(current, false); });
+
+  // A hallmark page fixes the serial in the URL, so its ritual starts on its
+  // own and stays where it is: the visitor arrived to see this record, and
+  // scrolling them past it to the working would hide the record itself.
+  var prefill = $('serial').dataset.prefill;
+  if (prefill) { var first = lookup(prefill); if (first) run(first, false); }
 })();

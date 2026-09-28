@@ -32,6 +32,7 @@ import (
 
 	"github.com/BeyndtechArc/Seametry/server/internal/liquidity"
 	"github.com/BeyndtechArc/Seametry/server/internal/policy"
+	"github.com/BeyndtechArc/Seametry/server/internal/receipt"
 	"github.com/BeyndtechArc/Seametry/server/internal/registry"
 )
 
@@ -182,6 +183,7 @@ type page struct {
 	Demo        *Transcript
 	Devnet      *Transcript
 	Cost        *CostTable
+	Proof       *receipt.Proof
 }
 
 type splitRow struct {
@@ -195,7 +197,7 @@ func main() {
 
 	instruments := loadInstruments()
 	surveyData := loadSurvey()
-	batchRaw, batchCount, batchRoot := loadBatch()
+	batchRaw, batchCount, batchRoot, proofs := loadBatch()
 	demo := loadTranscript("transcript.json")
 	devnet := loadTranscript("transcript-devnet.json")
 
@@ -231,21 +233,7 @@ func main() {
 		fail(err)
 	}
 
-	tmpl := template.Must(template.New("").Funcs(template.FuncMap{
-		"short": func(s string) string {
-			if len(s) <= 18 {
-				return s
-			}
-			return s[:8] + "…" + s[len(s)-6:]
-		},
-		"commas": commas,
-		"trunc": func(n int, s string) string {
-			if len(s) <= n {
-				return s
-			}
-			return s[:n] + "…"
-		},
-	}).ParseFS(templates, "templates/*.html"))
+	tmpl := loadTemplates()
 
 	pages := []struct{ file, tmpl, title, nav string }{
 		{"index.html", "index.html", "Seametry Explorer", "index"},
@@ -267,6 +255,10 @@ func main() {
 		}
 		file.Close()
 		fmt.Printf("  %s\n", filepath.Join(*out, p.file))
+	}
+
+	if n := writeHallmarkPages(*out, tmpl, base, proofs); n > 0 {
+		fmt.Printf("  %d hallmark pages (hallmark-<serial>.html)\n", n)
 	}
 
 	// Static assets, plus the fonts if they have been fetched.
@@ -294,6 +286,25 @@ func main() {
 	if *addr != "" {
 		serve(*out, *addr)
 	}
+}
+
+func loadTemplates() *template.Template {
+	return template.Must(template.New("").Funcs(template.FuncMap{
+		"short": func(s string) string {
+			if len(s) <= 18 {
+				return s
+			}
+			return s[:8] + "…" + s[len(s)-6:]
+		},
+		"commas": commas,
+		"grades": distinctGrades,
+		"trunc": func(n int, s string) string {
+			if len(s) <= n {
+				return s
+			}
+			return s[:n] + "…"
+		},
+	}).ParseFS(templates, "templates/*.html"))
 }
 
 func loadInstruments() []Instrument {
@@ -397,11 +408,16 @@ func loadSurvey() *survey {
 	return &s
 }
 
-func loadBatch() (string, int, string) {
+// loadBatch returns the sealed batch three ways: the raw JSON that ships to
+// the browser as batch.js (proofs only, never the private bodies), the count
+// and root for the pages that only need those two facts, and the proofs
+// parsed into receipt.Proof so hallmark.html can be generated once per
+// serial without round-tripping through JSON a second time.
+func loadBatch() (string, int, string, []receipt.Proof) {
 	raw, err := os.ReadFile(filepath.Join("shared", "evidence", "demo-batch", "batch.json"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "explorer: no sealed batch; run: go run ./server/cmd/seal")
-		return "null", 0, ""
+		return "null", 0, "", nil
 	}
 	var parsed struct {
 		Root   string            `json:"root"`
@@ -409,16 +425,24 @@ func loadBatch() (string, int, string) {
 		Proofs []json.RawMessage `json:"proofs"`
 	}
 	if err := json.Unmarshal(raw, &parsed); err != nil {
-		return "null", 0, ""
+		return "null", 0, "", nil
+	}
+	proofs := make([]receipt.Proof, 0, len(parsed.Proofs))
+	for _, p := range parsed.Proofs {
+		var proof receipt.Proof
+		if err := json.Unmarshal(p, &proof); err != nil {
+			fail(fmt.Errorf("loadBatch: proof did not parse as receipt.Proof: %w", err))
+		}
+		proofs = append(proofs, proof)
 	}
 	// Only the proofs reach the page. The private bodies in that file exist for
 	// the cross-implementation check and have no business in a public surface.
 	public := map[string]any{"root": parsed.Root, "proofs": parsed.Proofs}
 	encoded, err := json.Marshal(public)
 	if err != nil {
-		return "null", 0, ""
+		return "null", 0, "", nil
 	}
-	return string(encoded), parsed.Count, parsed.Root
+	return string(encoded), parsed.Count, parsed.Root, proofs
 }
 
 func copyEmbedded(out, from, to string) {

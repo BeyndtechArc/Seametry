@@ -1,0 +1,58 @@
+{{define "hallmark.html"}}{{template "head" .}}
+{{with .Proof}}
+
+  <p class="tight meta">Hallmark</p>
+  <h1 class="serial">{{.Serial}}</h1>
+  <p class="lede">A record of one {{.Public.Kind}} in {{.Public.Basket}}, vouched for by {{.Public.Office}}, sealed into a batch anyone can check.</p>
+
+  <dl class="row">
+    <dt>Kind</dt><dd>{{.Public.Kind}}</dd>
+    <dt>Alloy</dt><dd>{{.Public.Basket}}</dd>
+    <dt>Month</dt><dd class="n">{{.Public.Month}}</dd>
+    <dt>Office</dt><dd>{{.Public.Office}}</dd>
+    <dt>Grades present</dt><dd>{{range $i, $g := grades .Public.Constituents}}{{if $i}}, {{end}}{{$g}}{{end}}</dd>
+    <dt>Sponsor's mark</dt><dd>Not carried by this record. The public body has no field for one yet.</dd>
+  </dl>
+
+  <h2>The public record, read plainly</h2>
+  <dl class="row">
+    <dt>Weakest evidence</dt><dd>{{.Public.WeakestEvidence}}</dd>
+    <dt>Size band</dt><dd class="n">{{.Public.SizeBand}}</dd>
+    <dt>Venues</dt><dd>{{range $i, $v := .Public.Venues}}{{if $i}}, {{end}}{{$v}}{{end}}</dd>
+    <dt>Policy</dt><dd><code>{{.Public.PolicyVersion}}</code></dd>
+    <dt>Settlement</dt><dd>{{.Public.Settlement}}</dd>
+  </dl>
+
+  {{range .Public.Constituents}}
+  {{$c := .}}
+  <div class="card">
+    <h3 class="lead">{{.Ticker}} <span class="stamp done">{{.Grade}}</span></h3>
+    <p class="tight addr">{{.Mint}}</p>
+    {{range .IssuerCan}}<div class="sentence">{{.}}</div>{{end}}
+    {{range $.Instruments}}{{if eq .Symbol $c.Ticker}}<p class="tight"><a href="instruments.html#{{.Symbol}}">What the mint account says now</a>. This record states what was known when it was signed, not what is true today.</p>{{end}}{{end}}
+  </div>
+  {{end}}
+
+  <h2>Seal</h2>
+  <p>One of {{$.BatchCount}} hallmarks sealed together. The batch root is <code class="addr">{{$.BatchRoot}}</code>. It is not written on-chain yet, so this seal has not been checked against a Solana transaction.</p>
+  <p class="tight meta">Demonstration record. The bodies are invented, because no mainnet transaction has been made yet. The seal scheme is not.</p>
+
+  <form class="entry" id="form" autocomplete="off">
+    <label class="field"><input id="serial" value="{{.Serial}}" data-prefill="{{.Serial}}" readonly aria-label="Hallmark serial"></label>
+    <div class="tray"><button class="key" type="submit">Verify</button></div>
+  </form>
+  <div class="msg" id="msg" role="status"></div>
+
+  {{template "ritual" false}}
+
+  <h2>Where this record leads</h2>
+  <ul>
+    <li><a href="hall.html">The Hall, run against an issuer that uses every power it has</a></li>
+    <li><a href="evidence.html">The survey behind the issuer powers listed above</a></li>
+    <li><a href="verify.html">Check a different hallmark</a></li>
+  </ul>
+
+  <script src="batch.js"></script>
+  <script src="verify.js"></script>
+{{end}}
+{{template "foot" .}}{{end}}
