@@ -21,6 +21,10 @@
  * property under test. Same page, same box, one property toggled removes
  * every one of those confounds at once.
  *
+ * Needs the fetched font files, which are gitignored: run
+ * npm run fonts --workspace=clients/web first. The first CI run of this test
+ * failed with ENOENT for exactly that reason, after passing locally.
+ *
  * Run: node --test shared/tools/design/ligatures_test.mjs
  */
 import { test } from 'node:test';

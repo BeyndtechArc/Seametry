@@ -199,6 +199,12 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      # The fonts are gitignored (their licence forbids redistribution through
+      # a public repository), so a clean checkout has none, and
+      # ligatures_test.mjs measures Fragment Mono itself.
+      - name: Fonts
+        run: npm run fonts --workspace=clients/web
+
       # Scoped to the surfaces that exist. apps/web and apps/mobile were the
       # retired TypeScript scaffold; the Explorer replaces the first and
       # prd/MOBILE.md specifies a rebuild of the second in phase 2, neither
