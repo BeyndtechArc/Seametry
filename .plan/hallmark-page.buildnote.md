@@ -60,17 +60,22 @@ Assumptions: 1. Punches (sponsor's mark, grade, office, date) have no drawn
              hall.html's cost table section instead of a page that does not
              exist, named as what it actually is rather than implying a
              page this build does not have.
-             5. OPEN, for Storm: the Hallmark row is specified as four punches,
-             the second being "the weakest grade present"
-             (BRAND_AND_WORLD.md section 8, MOBILE.md). No document defines an
-             order between grades, and BRAND_AND_WORLD.md section 2 says grades
-             never imply quality, so an order would contradict it. This page
-             lists the grades present, in the order first met, and ranks
-             nothing. If a "weakest" is wanted, it needs a definition that
-             survives that rule first.
-             6. OPEN, for Storm: the first punch is the sponsor's mark, and
-             receipt.PublicBody has no field for one. The page says so in a
-             row rather than omitting it, since a silently absent mark cannot
-             be told from one that does not exist. Adding a field changes what
-             the seal commits to, which is a decision about what the world may
-             know about a holder (receipt.go says so), so it was not made here.
+             5. RESOLVED, 29 September 2026: Storm said the world-building
+             vocabulary should not be forced where it adds complexity rather
+             than aiding understanding, and confirmed no order between
+             grades should be invented. The "weakest grade present" phrasing
+             stays unimplemented; this page continues to list grades
+             present, in the order first met, ranking nothing. The phrase
+             itself is flagged for removal from BRAND_AND_WORLD.md and
+             MOBILE.md on Storm's own next pass over those documents (both
+             are living docs Opus does not own editing without being asked).
+             6. RESOLVED, 29 September 2026: receipt.PublicBody now carries
+             SponsorMark (hex, mirroring the on-chain Alloy account's own
+             sponsor_mark field exactly, empty until a mark is registered).
+             Storm has not designed a mark yet (BRAND_AND_WORLD.md section 5
+             is that brief); the field exists so a page never has to guess
+             at what "not carried yet" versus "registered but empty" means
+             once one is drawn. The Hallmark page shows "No mark registered
+             yet" for every hallmark today, honestly, since every alloy so
+             far, including the devnet demo's, was founded with an all-zero
+             sponsor_mark.

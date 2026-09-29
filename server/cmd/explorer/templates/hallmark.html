@@ -11,7 +11,7 @@
     <dt>Month</dt><dd class="n">{{.Public.Month}}</dd>
     <dt>Office</dt><dd>{{.Public.Office}}</dd>
     <dt>Grades present</dt><dd>{{range $i, $g := grades .Public.Constituents}}{{if $i}}, {{end}}{{$g}}{{end}}</dd>
-    <dt>Sponsor's mark</dt><dd>Not carried by this record. The public body has no field for one yet.</dd>
+    <dt>Sponsor's mark</dt><dd>{{if .Public.SponsorMark}}<code class="addr">{{.Public.SponsorMark}}</code>{{else}}No mark registered yet.{{end}}</dd>
   </dl>
 
   <h2>The public record, read plainly</h2>

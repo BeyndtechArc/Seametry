@@ -90,6 +90,11 @@ type PublicBody struct {
 	PolicyVersion   string        `json:"policy_version"`
 	Settlement      string        `json:"settlement"`
 	Office          string        `json:"office"`
+	// SponsorMark mirrors the on-chain Alloy account's own sponsor_mark field
+	// (chain/programs/hall/src/state.rs), hex-encoded. Empty until a sponsor
+	// has designed and registered a mark; Go's zero value for a string already
+	// means exactly that, so no explicit "unregistered" sentinel is needed.
+	SponsorMark string `json:"sponsor_mark"`
 }
 
 // PrivateBody is the full record. It never leaves its owner, and the seal
