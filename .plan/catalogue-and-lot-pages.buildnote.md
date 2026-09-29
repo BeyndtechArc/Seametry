@@ -56,7 +56,7 @@ Assumptions: 1. Grade: no code anywhere in this repository classifies an
              data. Rather than invent a classification, every instrument
              here shows "Ungraded", which the register itself defines:
              "Not yet classified." This is not a placeholder pretending to
-             be data; it is the literally correct value given what is
+             be data; it is the value that literally matches what is
              actually known.
              2. Provenance line has no data source. No code decodes or
              stores a chain from company to depository to custodian to
