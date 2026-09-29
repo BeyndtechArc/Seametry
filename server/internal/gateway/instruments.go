@@ -61,7 +61,7 @@ func (s Server) loadMint(ctx context.Context, mint string, asOf time.Time) (*dec
 
 // toAPIInstrument builds the response shape from a decoded mint. Grade is
 // "certificate" for every instrument: nothing in this codebase classifies
-// grade from real data yet (docs/cmd/explorer/main.go's loadInstruments
+// grade from real data yet (server/cmd/explorer/main.go's loadInstruments
 // hardcodes the same value for its own static build), and Storm chose to
 // match that existing behavior rather than report every instrument as
 // ungraded, which would block every one of them on CodeUngraded before
@@ -83,10 +83,14 @@ func toAPIInstrument(d *decodedMint, mint string) api.Instrument {
 	// predates the field existing, leaves Slot at its zero value rather
 	// than fabricating one.
 	var p struct {
-		Slot uint64 `json:"slot"`
+		Symbol string `json:"symbol"`
+		Slot   uint64 `json:"slot"`
 	}
 	json.Unmarshal(d.Observation.Payload, &p)
 	inst.Capture.Slot = fmt.Sprintf("%d", p.Slot)
+	if p.Symbol != "" {
+		inst.Symbol = &p.Symbol
+	}
 	if d.Observation.SourceEventAt.Valid {
 		t := d.Observation.SourceEventAt.Time
 		inst.Capture.CapturedAt = &t
@@ -123,10 +127,18 @@ func (s Server) ListInstruments(ctx context.Context, request api.ListInstruments
 	}
 
 	data := make([]api.Instrument, 0, len(mints))
+	var missing []api.MissingPart
 	for _, mint := range mints {
 		d, ok, err := s.loadMint(ctx, mint, asOf)
 		if err != nil {
-			return nil, err
+			// One mint's raw bytes failing to read or decode does not take
+			// the rest of the list down with it (docs/SERVICE_CATALOG.md
+			// section 2, rule 5: "failure is contained at the boundary...
+			// it never takes a neighbour down with it"). Named in missing,
+			// never silently dropped and never a 500 for every instrument
+			// this build ever captured because one of them has a problem.
+			missing = append(missing, api.MissingPart{Part: "instrument:" + mint, State: api.MissingPartStateUnavailable, Reason: "INSTRUMENT_LOAD_FAILED"})
+			continue
 		}
 		if !ok {
 			continue // nothing observed for this mint as of asOf; not an error, just not yet true
@@ -135,10 +147,12 @@ func (s Server) ListInstruments(ctx context.Context, request api.ListInstruments
 	}
 
 	now := time.Now().UTC()
-	return api.ListInstruments200JSONResponse{
-		Data: data,
-		Meta: api.Meta{ServedAt: now, AsOf: asOf, Completeness: api.Complete},
-	}, nil
+	meta := api.Meta{ServedAt: now, AsOf: asOf, Completeness: api.Complete}
+	if len(missing) > 0 {
+		meta.Completeness = api.Partial
+		meta.Missing = &missing
+	}
+	return api.ListInstruments200JSONResponse{Data: data, Meta: meta}, nil
 }
 
 func (s Server) GetInstrument(ctx context.Context, request api.GetInstrumentRequestObject) (api.GetInstrumentResponseObject, error) {

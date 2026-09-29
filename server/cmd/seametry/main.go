@@ -142,10 +142,11 @@ func serve() error {
 // migrate applies every schema's migrations against SEAMETRY_DATABASE_URL,
 // an admin connection: creating a schema and its role needs privileges no
 // service's own scoped role has. It is a separate, explicit step from serve,
-// run once per deploy by an operator or CI, not on every process boot, so a
-// server that cannot yet reach a fresh database still starts and answers
-// /v1/status (docs/prd/API.md section 12 step A1: "/v1/status answers in the
-// envelope" is proven independently of the role-boundary proof).
+// run once per deploy by an operator or CI, not on every process boot: a
+// fresh database needs its schemas before serve's own connection (which
+// uses no elevated privilege) can do anything with them. Since A3, serve
+// itself requires a reachable, already migrated database to start at all
+// (see serve's own comment); migrate is what gets it into that state first.
 func migrate() error {
 	dsn := os.Getenv("SEAMETRY_DATABASE_URL")
 	if dsn == "" {

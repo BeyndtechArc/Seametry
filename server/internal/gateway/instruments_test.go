@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
+
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway/api"
 	"github.com/BeyndtechArc/Seametry/server/internal/liquidity"
@@ -158,7 +160,13 @@ func seedAAPLx(t *testing.T, ctx context.Context, queries *observationdb.Queries
 // newSeededTestServer skips, naming the variable, when
 // SEAMETRY_TEST_DATABASE_URL is unset, the same gate every other Postgres
 // test in this repository uses.
-func newSeededTestServer(t *testing.T) (*httptest.Server, string, int32) {
+// newTestBackend skips, naming the variable, when SEAMETRY_TEST_DATABASE_URL
+// is unset, the same gate every other Postgres test in this repository
+// uses. It migrates a real Postgres and returns a fresh, empty object store
+// alongside it: shared by newSeededTestServer and any test that needs to
+// insert its own rows directly, such as one proving a single bad mint does
+// not take the rest of a list down with it.
+func newTestBackend(t *testing.T) (*observationdb.Queries, store.ObjectStore) {
 	t.Helper()
 	dsn := os.Getenv("SEAMETRY_TEST_DATABASE_URL")
 	if dsn == "" {
@@ -180,10 +188,13 @@ func newSeededTestServer(t *testing.T) (*httptest.Server, string, int32) {
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	queries := observationdb.New(pool)
-	objects := store.NewDirObjectStore(t.TempDir())
+	return observationdb.New(pool), store.NewDirObjectStore(t.TempDir())
+}
 
-	mint, decimals := seedAAPLx(t, ctx, queries, objects)
+func newSeededTestServer(t *testing.T) (*httptest.Server, string, int32) {
+	t.Helper()
+	queries, objects := newTestBackend(t)
+	mint, decimals := seedAAPLx(t, context.Background(), queries, objects)
 
 	srv := httptest.NewServer(gateway.NewHandler(gateway.NewServer(queries, objects)))
 	t.Cleanup(srv.Close)
@@ -220,6 +231,88 @@ func TestListInstrumentsIncludesASeededMint(t *testing.T) {
 	}
 	if !found {
 		t.Errorf("ListInstruments did not include %s, the mint this test just seeded", mint)
+	}
+}
+
+// TestListInstrumentsSurvivesOneMintWithNoRawBytes is what this session's
+// own CI run found the hard way: a second test package sharing this same
+// Postgres (every Postgres-gated test in this repository shares one CI
+// service container) had inserted an observation whose raw bytes lived in
+// a different test's own, already-cleaned-up object store, and
+// ListInstruments answered 500 for every instrument because one of them
+// could not be read. Fixed in instruments.go, not by hiding the scenario:
+// this test recreates it directly, inserting an observation row whose raw
+// bytes were never written to this test's own object store at all.
+func TestListInstrumentsSurvivesOneMintWithNoRawBytes(t *testing.T) {
+	queries, objects := newTestBackend(t)
+	ctx := context.Background()
+	goodMint, _ := seedAAPLx(t, ctx, queries, objects)
+
+	const badMint = "BrokenMint11111111111111111111111111111111"
+	const badDigest = "0000000000000000000000000000000000000000000000000000000000000000"
+	now := time.Now().UTC()
+	if err := queries.InsertRawPayload(ctx, observationdb.InsertRawPayloadParams{
+		Digest: badDigest, Source: "solana:mainnet:getMultipleAccounts", AdapterVersion: "test",
+		SourceEventAt: pgtype.Timestamptz{Time: now, Valid: true}, ReceivedAt: pgtype.Timestamptz{Time: now, Valid: true},
+		PersistedAt: pgtype.Timestamptz{Time: now, Valid: true}, ObjectKey: badDigest,
+	}); err != nil {
+		t.Fatalf("inserting the raw_payloads row for the deliberately broken mint: %v", err)
+	}
+	if _, err := queries.InsertObservation(ctx, observationdb.InsertObservationParams{
+		SourceEventAt: pgtype.Timestamptz{Time: now, Valid: true}, ReceivedAt: pgtype.Timestamptz{Time: now, Valid: true},
+		PersistedAt: pgtype.Timestamptz{Time: now, Valid: true}, Source: "solana:mainnet:getMultipleAccounts",
+		AdapterVersion: "test", VerificationState: "unverified", RawDigest: badDigest, Mint: badMint, RequestKey: badMint,
+		Payload: []byte(`{}`),
+	}); err != nil {
+		t.Fatalf("inserting the observations row for the deliberately broken mint: %v", err)
+	}
+	// Deliberately no objects.Put for badDigest: this is the missing raw
+	// bytes the real CI failure had.
+
+	srv := httptest.NewServer(gateway.NewHandler(gateway.NewServer(queries, objects)))
+	t.Cleanup(srv.Close)
+
+	resp, err := http.Get(srv.URL + "/v1/instruments")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200: one mint's missing raw bytes must not fail the whole list", resp.StatusCode)
+	}
+	var body struct {
+		Data []api.Instrument `json:"data"`
+		Meta api.Meta         `json:"meta"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, inst := range body.Data {
+		if inst.Mint == goodMint {
+			found = true
+		}
+		if inst.Mint == badMint {
+			t.Errorf("the broken mint appears in data; it should be named in meta.missing instead")
+		}
+	}
+	if !found {
+		t.Errorf("the good mint (%s) is missing from a list that should only be missing the broken one", goodMint)
+	}
+	if body.Meta.Completeness != api.Partial {
+		t.Errorf("completeness = %q, want %q", body.Meta.Completeness, api.Partial)
+	}
+	if body.Meta.Missing == nil {
+		t.Fatal("meta.missing is nil, want an entry naming the broken mint")
+	}
+	namesIt := false
+	for _, m := range *body.Meta.Missing {
+		if m.Part == "instrument:"+badMint {
+			namesIt = true
+		}
+	}
+	if !namesIt {
+		t.Errorf("meta.missing = %v, want an entry for instrument:%s", *body.Meta.Missing, badMint)
 	}
 }
 
@@ -314,8 +407,15 @@ func TestGetInstrumentDepthSellIsUnavailable(t *testing.T) {
 
 func TestGetInstrumentAdmissibilityProducesAReproducibleDigest(t *testing.T) {
 	srv, mint, _ := newSeededTestServer(t)
+	// The same, explicit as_of on both calls: policy.Input.AsOf is itself
+	// part of what canonical.Digest hashes (policy.go: "so the same inputs
+	// always give the same answer"), so two calls each defaulting to their
+	// own now() would legitimately get different digests, correctly, not
+	// as a bug. Reproducibility means the same as_of gives the same
+	// digest, not that time standing still is assumed.
+	asOf := time.Now().UTC().Format(time.RFC3339)
 	get := func() api.Decision {
-		resp, err := http.Get(srv.URL + "/v1/instruments/" + mint + "/admissibility")
+		resp, err := http.Get(srv.URL + "/v1/instruments/" + mint + "/admissibility?as_of=" + asOf)
 		if err != nil {
 			t.Fatal(err)
 		}
