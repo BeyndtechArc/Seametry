@@ -14,10 +14,12 @@ info:
 
     This document covers what docs/prd/API.md section 12 calls A0: the
     contract clients build against first, plus every resource the Explorer's
-    own pages (docs/prd/EXPLORER.md section 3) read. It does not yet cover
-    every Phase 1 resource API.md names, only the ones with a real consumer
-    today; a resource is added here when something needs it, not ahead of
-    that.
+    own pages (docs/prd/EXPLORER.md section 3) read; and T0: every resource
+    the Terminal's seven views (docs/prd/TERMINAL.md section 2) need, added
+    ahead of any handler so the Terminal has generated types on day one. It
+    does not yet cover every Phase 1 resource API.md names beyond those two
+    consumers; a resource is added here when something needs it, not ahead
+    of that.
 servers:
   - url: /v1
 
@@ -27,11 +29,22 @@ tags:
   - name: findings
     description: Registry and Liquidity. Published findings a visitor can reproduce.
   - name: hall
-    description: Basket. The Hall's recorded demonstrations and its cost arithmetic.
+    description: >
+      Basket. The Hall's recorded demonstrations, its live alloys read from
+      chain, and its cost arithmetic.
+  - name: formulas
+    description: >
+      Basket, Policy, Liquidity. A formula not yet on chain: what it would
+      cost to assemble and whether it would be admitted, before a sponsor
+      strikes it.
+  - name: policy
+    description: Policy. Policy documents as data, and the fixed meaning of every reason code.
   - name: receipts
     description: Receipt and Audit. Public bodies, proofs, batches, anchor keys.
   - name: status
     description: Gateway. Seametry's own freshness, held to the standard it holds sources to.
+  - name: stream
+    description: Gateway. Live change over server-sent events.
 
 paths:
   # --- instruments -----------------------------------------------------
@@ -228,6 +241,93 @@ paths:
         default:
           $ref: '#/components/responses/Problem'
 
+  /alloys:
+    get:
+      operationId: listAlloys
+      tags: [hall]
+      summary: Every alloy, read from chain.
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - name: cluster
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [devnet, mainnet]
+      responses:
+        "200":
+          description: A page of alloys.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alloy'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /alloys/{address}:
+    get:
+      operationId: getAlloy
+      tags: [hall]
+      summary: >
+        An alloy's recipe, supply, each leg's ledger, pending and unclaimed
+        balances, and held-back legs (chain/programs/hall/src/state.rs::Alloy,
+        with held_back derived by checking each leg's own account for a
+        freeze, since the program stores no such flag).
+      parameters:
+        - $ref: '#/components/parameters/AlloyAddress'
+        - $ref: '#/components/parameters/AsOf'
+      responses:
+        "200":
+          description: The alloy.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Alloy'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /alloys/{address}/nav:
+    get:
+      operationId: getAlloyNav
+      tags: [hall]
+      summary: >
+        Off-chain NAV against share price. Until an oracle read and a share
+        pool exist (docs/prd/API.md section 14) this always answers
+        completeness: partial, with missing parts nav (NAV_NO_PRICE_SOURCE)
+        and share_price (SHARE_PRICE_NO_POOL), never a placeholder figure.
+      parameters:
+        - $ref: '#/components/parameters/AlloyAddress'
+        - $ref: '#/components/parameters/AsOf'
+      responses:
+        "200":
+          description: NAV against share price, or why it is not available yet.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Nav'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
   /alloys/{address}/strike-cost:
     get:
       operationId: getAlloyStrikeCost
@@ -275,6 +375,128 @@ paths:
                     $ref: '#/components/schemas/CostRow'
                   meta:
                     $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  # --- formulas -----------------------------------------------------------
+  /formulas/evaluate:
+    post:
+      operationId: evaluateFormula
+      tags: [formulas]
+      summary: >
+        Admissibility, required atoms and stored depth for a formula not yet
+        on chain, per leg, at most MAX_CONSTITUENTS (12,
+        chain/programs/hall/src/state.rs).
+      description: >
+        required_atoms is an exact units_per_share * shares, never
+        basket.RequiredIn or basket.Out (server/internal/basket/recipe.go):
+        those round a ratio between an existing ledger and supply, which a
+        formula not yet struck does not have. Strike and melt need the same
+        atoms here. A live buy quote is attached per leg where the shared
+        Jupiter budget (docs/prd/API.md section 12, step A2) allows one; a
+        total_quote is produced only when every leg carries an unexpired
+        quote, and it is summed here, never by a client (section 2, rule 4).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormulaEvaluateRequest'
+      responses:
+        "200":
+          description: The evaluated formula.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/FormulaEvaluateResult'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  # --- policy ---------------------------------------------------------------
+  /policies/{version}:
+    get:
+      operationId: getPolicy
+      tags: [policy]
+      summary: A policy document, as data (server/internal/policy.Document).
+      parameters:
+        - $ref: '#/components/parameters/PolicyVersion'
+      responses:
+        "200":
+          description: The policy document.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PolicyDocument'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  /reason-codes:
+    get:
+      operationId: listReasonCodes
+      tags: [policy]
+      summary: Every reason code and its fixed meaning.
+      description: >
+        A client must show a code it does not recognise, never map it to one
+        it does (docs/prd/API.md section 4.7). This resource is how a client
+        gets the meaning of a code it does not yet know.
+      responses:
+        "200":
+          description: The reason codes.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReasonCodeEntry'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
+  # --- stream -----------------------------------------------------------
+  /stream:
+    get:
+      operationId: streamEvents
+      tags: [stream]
+      summary: Public live change over server-sent events (docs/prd/API.md section 6).
+      description: >
+        GET /v1/me/stream, which adds the account's own events, is specified
+        alongside identity (docs/prd/API.md section 12, step A6), not here.
+      parameters:
+        - name: Last-Event-ID
+          in: header
+          required: false
+          schema:
+            type: string
+          description: >
+            Resumes from this outbox sequence. A pruned point is named
+            before resuming from the oldest retained event, rather than
+            skipping silently.
+      responses:
+        "200":
+          description: >
+            A stream of server-sent events, one per outbox row
+            (docs/SERVICE_CATALOG.md section 7).
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/StreamEvent'
         default:
           $ref: '#/components/responses/Problem'
 
@@ -423,6 +645,13 @@ components:
       schema:
         type: string
       description: An opaque cursor from a previous page.
+    PolicyVersion:
+      name: version
+      in: path
+      required: true
+      schema:
+        type: string
+      example: policy-2026.09.2
 
   responses:
     Problem:
@@ -673,6 +902,22 @@ components:
         shortfall_bps:
           type: integer
           description: Absent when there is no quote here or no reference to compare against.
+        received_at:
+          type: string
+          format: date-time
+          description: >
+            When this quote was captured (liquidity.Quote.ReceivedAt).
+            Present only when availability is available. Added so this
+            schema actually carries what docs/prd/API.md section 5.1 and
+            docs/prd/TERMINAL.md section 2 already promise ("each quote's
+            age and expiry"); it did not until this field was added.
+        expires_at:
+          type: string
+          format: date-time
+          description: Past this instant the quote cannot be acted on (liquidity.Quote.ExpiresAt).
+        age_seconds:
+          type: integer
+          description: Derived at read time against the served time, never stored.
 
     # --- findings --------------------------------------------------------
     Finding:
@@ -834,6 +1079,215 @@ components:
               kept:
                 $ref: '#/components/schemas/Amount'
                 description: "Present on melt-proceeds only: what the Hall keeps to rounding."
+
+    Alloy:
+      type: object
+      description: An alloy read from chain (chain/programs/hall/src/state.rs::Alloy).
+      required: [address, sponsor, share_mint, id, supply, legs, cluster]
+      properties:
+        address:
+          type: string
+        sponsor:
+          type: string
+        sponsor_mark:
+          type: string
+          description: Hex. Empty until the sponsor registers one (server/cmd/explorer's Hallmark sponsor mark field carries the same emptiness).
+        share_mint:
+          type: string
+        id:
+          type: string
+        supply:
+          type: string
+          description: A share count. Shares have no scale; one share is one share.
+        locked_genesis:
+          type: string
+          description: The founding sponsor's shares, unrecoverable by design (docs/BRAND_AND_WORLD.md section 5).
+        legs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlloyLeg'
+        cluster:
+          type: string
+          enum: [devnet, mainnet]
+
+    AlloyLeg:
+      type: object
+      description: >
+        One constituent's position (chain/programs/hall/src/state.rs::LegRecord).
+        held_back is not a chain field: the program stores none, so the
+        gateway derives it by checking whether this leg's own Hall-owned
+        token account is frozen (Registry).
+      required: [mint, ledger, pending, unclaimed, held_back]
+      properties:
+        mint:
+          type: string
+        ledger:
+          $ref: '#/components/schemas/Amount'
+          description: What backs outstanding shares.
+        pending:
+          $ref: '#/components/schemas/Amount'
+          description: Credited but not yet vested.
+        unclaimed:
+          $ref: '#/components/schemas/Amount'
+          description: Owed to holders who have melted but not withdrawn.
+        vest_start:
+          type: string
+          format: date-time
+        vest_end:
+          type: string
+          format: date-time
+        held_back:
+          type: boolean
+          description: The issuer currently prevents delivering this leg.
+        held_back_reason:
+          type: string
+          description: Present only when held_back is true. Never a smaller amount in its place (docs/prd/TERMINAL.md section 5).
+
+    Nav:
+      type: object
+      description: >
+        Every field is absent until its source exists; meta.missing names
+        why (docs/prd/API.md section 14). Never a placeholder figure.
+      properties:
+        value:
+          $ref: '#/components/schemas/Amount'
+        share_price:
+          $ref: '#/components/schemas/Amount'
+        premium_bps:
+          type: integer
+          description: The gap between value and share_price. Never described as fair or correct (ENGINEERING_STANDARD.md section 16).
+
+    # --- formulas ------------------------------------------------------------
+    FormulaConstituent:
+      type: object
+      required: [mint, units_per_share]
+      properties:
+        mint:
+          type: string
+        units_per_share:
+          $ref: '#/components/schemas/Amount'
+          description: Atoms of this constituent backing one share.
+
+    FormulaEvaluateRequest:
+      type: object
+      required: [constituents, shares]
+      properties:
+        constituents:
+          type: array
+          minItems: 1
+          maxItems: 12
+          description: MAX_CONSTITUENTS (chain/programs/hall/src/state.rs). Over the limit is refused, naming the count and the limit.
+          items:
+            $ref: '#/components/schemas/FormulaConstituent'
+        shares:
+          type: string
+          description: A share count, as a string (docs/prd/API.md section 4.1).
+        cluster:
+          type: string
+          enum: [devnet, mainnet]
+
+    FormulaLeg:
+      type: object
+      required: [mint, admissibility, required_atoms]
+      properties:
+        mint:
+          type: string
+        admissibility:
+          $ref: '#/components/schemas/Decision'
+        required_atoms:
+          $ref: '#/components/schemas/Amount'
+          description: units_per_share * shares. The same value for a strike and a melt (see the operation description).
+        depth:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepthPoint'
+        quote:
+          $ref: '#/components/schemas/Amount'
+          description: A live buy quote for required_atoms. Absent when unavailable; meta.missing names why.
+
+    FormulaEvaluateResult:
+      type: object
+      required: [shares, legs]
+      properties:
+        shares:
+          type: string
+        legs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormulaLeg'
+        total_quote:
+          $ref: '#/components/schemas/Amount'
+          description: The sum of every leg's quote, in USDC atoms. Present only when every leg carries an unexpired quote.
+
+    # --- policy --------------------------------------------------------------
+    PolicyDocument:
+      type: object
+      description: server/internal/policy.Document, as published.
+      required: [version, accepted_grades, allowed_hook_programs, block_on_unknown_extension, block_on_issuer_halt, depth_reference_usdc, depth_ceiling_bps]
+      properties:
+        version:
+          type: string
+        accepted_grades:
+          type: array
+          items:
+            type: string
+        allowed_hook_programs:
+          type: array
+          items:
+            type: string
+        block_on_unknown_extension:
+          type: boolean
+        block_on_issuer_halt:
+          type: boolean
+        depth_reference_usdc:
+          type: integer
+        depth_ceiling_bps:
+          type: integer
+
+    ReasonCodeEntry:
+      type: object
+      description: >
+        One entry per server/internal/policy.Code constant. meaning is this
+        repository's fixed sentence for the code, not the Fact text a
+        particular decision carries.
+      required: [code, meaning]
+      properties:
+        code:
+          type: string
+        meaning:
+          type: string
+
+    # --- stream ----------------------------------------------------------
+    StreamEvent:
+      type: object
+      description: >
+        One outbox event (docs/SERVICE_CATALOG.md section 7). id is the
+        outbox sequence, used as the SSE id field for Last-Event-ID resume.
+        Per-event payload schemas are added here as each producing step
+        lands; data stays an open object until then, never a guess at
+        fields nobody has decided.
+      required: [id, event, emitted_at, data]
+      properties:
+        id:
+          type: string
+        event:
+          type: string
+          enum:
+            - instrument.quarantined
+            - prerogative.changed
+            - corporate_action.effective
+            - observation.degraded
+            - divergence.crossed
+            - session.changed
+            - execution.settled
+            - execution.deviated
+            - receipt.sealed
+        emitted_at:
+          type: string
+          format: date-time
+        data:
+          type: object
+          description: Payload shape not yet fixed; see the description above.
 
     # --- receipts ----------------------------------------------------------
     ReceiptPublic:

@@ -79,9 +79,9 @@ jobs:
 
       - name: No generated file differs from what is committed
         run: |
-          if ! git diff --quiet -- server/internal/gateway/api/types.gen.go clients/packages/api/src/schema.d.ts; then
+          if ! git diff --quiet -- server/internal/gateway/api/types.gen.go server/internal/gateway/api/server.gen.go clients/packages/api/src/schema.d.ts; then
             echo "Generated contract types differ from the source. Commit the regenerated files."
-            git --no-pager diff -- server/internal/gateway/api/types.gen.go clients/packages/api/src/schema.d.ts
+            git --no-pager diff -- server/internal/gateway/api/types.gen.go server/internal/gateway/api/server.gen.go clients/packages/api/src/schema.d.ts
             exit 1
           fi
 

@@ -123,6 +123,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/alloys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every alloy, read from chain. */
+        get: operations["listAlloys"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/alloys/{address}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** An alloy's recipe, supply, each leg's ledger, pending and unclaimed balances, and held-back legs (chain/programs/hall/src/state.rs::Alloy, with held_back derived by checking each leg's own account for a freeze, since the program stores no such flag). */
+        get: operations["getAlloy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/alloys/{address}/nav": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Off-chain NAV against share price. Until an oracle read and a share pool exist (docs/prd/API.md section 14) this always answers completeness: partial, with missing parts nav (NAV_NO_PRICE_SOURCE) and share_price (SHARE_PRICE_NO_POOL), never a placeholder figure. */
+        get: operations["getAlloyNav"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/alloys/{address}/strike-cost": {
         parameters: {
             query?: never;
@@ -149,6 +200,83 @@ export interface paths {
         };
         /** What a melt of n shares returns per leg, rounded down, and what the Hall keeps. */
         get: operations["getAlloyMeltProceeds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/formulas/evaluate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Admissibility, required atoms and stored depth for a formula not yet on chain, per leg, at most MAX_CONSTITUENTS (12, chain/programs/hall/src/state.rs).
+         * @description required_atoms is an exact units_per_share * shares, never basket.RequiredIn or basket.Out (server/internal/basket/recipe.go): those round a ratio between an existing ledger and supply, which a formula not yet struck does not have. Strike and melt need the same atoms here. A live buy quote is attached per leg where the shared Jupiter budget (docs/prd/API.md section 12, step A2) allows one; a total_quote is produced only when every leg carries an unexpired quote, and it is summed here, never by a client (section 2, rule 4).
+         */
+        post: operations["evaluateFormula"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/policies/{version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A policy document, as data (server/internal/policy.Document). */
+        get: operations["getPolicy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reason-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Every reason code and its fixed meaning.
+         * @description A client must show a code it does not recognise, never map it to one it does (docs/prd/API.md section 4.7). This resource is how a client gets the meaning of a code it does not yet know.
+         */
+        get: operations["listReasonCodes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Public live change over server-sent events (docs/prd/API.md section 6).
+         * @description GET /v1/me/stream, which adds the account's own events, is specified alongside identity (docs/prd/API.md section 12, step A6), not here.
+         */
+        get: operations["streamEvents"];
         put?: never;
         post?: never;
         delete?: never;
@@ -358,6 +486,18 @@ export interface components {
             provider_code?: string;
             /** @description Absent when there is no quote here or no reference to compare against. */
             shortfall_bps?: number;
+            /**
+             * Format: date-time
+             * @description When this quote was captured (liquidity.Quote.ReceivedAt). Present only when availability is available. Added so this schema actually carries what docs/prd/API.md section 5.1 and docs/prd/TERMINAL.md section 2 already promise ("each quote's age and expiry"); it did not until this field was added.
+             */
+            received_at?: string;
+            /**
+             * Format: date-time
+             * @description Past this instant the quote cannot be acted on (liquidity.Quote.ExpiresAt).
+             */
+            expires_at?: string;
+            /** @description Derived at read time against the served time, never stored. */
+            age_seconds?: number;
         };
         Finding: {
             slug: string;
@@ -429,6 +569,100 @@ export interface components {
                 /** @description Present on melt-proceeds only: what the Hall keeps to rounding. */
                 kept?: components["schemas"]["Amount"];
             }[];
+        };
+        /** @description An alloy read from chain (chain/programs/hall/src/state.rs::Alloy). */
+        Alloy: {
+            address: string;
+            sponsor: string;
+            /** @description Hex. Empty until the sponsor registers one (server/cmd/explorer's Hallmark sponsor mark field carries the same emptiness). */
+            sponsor_mark?: string;
+            share_mint: string;
+            id: string;
+            /** @description A share count. Shares have no scale; one share is one share. */
+            supply: string;
+            /** @description The founding sponsor's shares, unrecoverable by design (docs/BRAND_AND_WORLD.md section 5). */
+            locked_genesis?: string;
+            legs: components["schemas"]["AlloyLeg"][];
+            /** @enum {string} */
+            cluster: "devnet" | "mainnet";
+        };
+        /** @description One constituent's position (chain/programs/hall/src/state.rs::LegRecord). held_back is not a chain field: the program stores none, so the gateway derives it by checking whether this leg's own Hall-owned token account is frozen (Registry). */
+        AlloyLeg: {
+            mint: string;
+            /** @description What backs outstanding shares. */
+            ledger: components["schemas"]["Amount"];
+            /** @description Credited but not yet vested. */
+            pending: components["schemas"]["Amount"];
+            /** @description Owed to holders who have melted but not withdrawn. */
+            unclaimed: components["schemas"]["Amount"];
+            /** Format: date-time */
+            vest_start?: string;
+            /** Format: date-time */
+            vest_end?: string;
+            /** @description The issuer currently prevents delivering this leg. */
+            held_back: boolean;
+            /** @description Present only when held_back is true. Never a smaller amount in its place (docs/prd/TERMINAL.md section 5). */
+            held_back_reason?: string;
+        };
+        /** @description Every field is absent until its source exists; meta.missing names why (docs/prd/API.md section 14). Never a placeholder figure. */
+        Nav: {
+            value?: components["schemas"]["Amount"];
+            share_price?: components["schemas"]["Amount"];
+            /** @description The gap between value and share_price. Never described as fair or correct (ENGINEERING_STANDARD.md section 16). */
+            premium_bps?: number;
+        };
+        FormulaConstituent: {
+            mint: string;
+            /** @description Atoms of this constituent backing one share. */
+            units_per_share: components["schemas"]["Amount"];
+        };
+        FormulaEvaluateRequest: {
+            /** @description MAX_CONSTITUENTS (chain/programs/hall/src/state.rs). Over the limit is refused, naming the count and the limit. */
+            constituents: components["schemas"]["FormulaConstituent"][];
+            /** @description A share count, as a string (docs/prd/API.md section 4.1). */
+            shares: string;
+            /** @enum {string} */
+            cluster?: "devnet" | "mainnet";
+        };
+        FormulaLeg: {
+            mint: string;
+            admissibility: components["schemas"]["Decision"];
+            /** @description units_per_share * shares. The same value for a strike and a melt (see the operation description). */
+            required_atoms: components["schemas"]["Amount"];
+            depth?: components["schemas"]["DepthPoint"][];
+            /** @description A live buy quote for required_atoms. Absent when unavailable; meta.missing names why. */
+            quote?: components["schemas"]["Amount"];
+        };
+        FormulaEvaluateResult: {
+            shares: string;
+            legs: components["schemas"]["FormulaLeg"][];
+            /** @description The sum of every leg's quote, in USDC atoms. Present only when every leg carries an unexpired quote. */
+            total_quote?: components["schemas"]["Amount"];
+        };
+        /** @description server/internal/policy.Document, as published. */
+        PolicyDocument: {
+            version: string;
+            accepted_grades: string[];
+            allowed_hook_programs: string[];
+            block_on_unknown_extension: boolean;
+            block_on_issuer_halt: boolean;
+            depth_reference_usdc: number;
+            depth_ceiling_bps: number;
+        };
+        /** @description One entry per server/internal/policy.Code constant. meaning is this repository's fixed sentence for the code, not the Fact text a particular decision carries. */
+        ReasonCodeEntry: {
+            code: string;
+            meaning: string;
+        };
+        /** @description One outbox event (docs/SERVICE_CATALOG.md section 7). id is the outbox sequence, used as the SSE id field for Last-Event-ID resume. Per-event payload schemas are added here as each producing step lands; data stays an open object until then, never a guess at fields nobody has decided. */
+        StreamEvent: {
+            id: string;
+            /** @enum {string} */
+            event: "instrument.quarantined" | "prerogative.changed" | "corporate_action.effective" | "observation.degraded" | "divergence.crossed" | "session.changed" | "execution.settled" | "execution.deviated" | "receipt.sealed";
+            /** Format: date-time */
+            emitted_at: string;
+            /** @description Payload shape not yet fixed; see the description above. */
+            data: Record<string, never>;
         };
         /** @description receipt.PublicBody. Never a signature, a wallet, or an exact amount. */
         ReceiptPublic: {
@@ -520,6 +754,8 @@ export interface components {
         AsOf: string;
         /** @description An opaque cursor from a previous page. */
         Cursor: string;
+        /** @example policy-2026.09.2 */
+        PolicyVersion: string;
     };
     requestBodies: never;
     headers: never;
@@ -722,6 +958,92 @@ export interface operations {
             default: components["responses"]["Problem"];
         };
     };
+    listAlloys: {
+        parameters: {
+            query?: {
+                /** @description An opaque cursor from a previous page. */
+                cursor?: components["parameters"]["Cursor"];
+                cluster?: "devnet" | "mainnet";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of alloys. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Alloy"][];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAlloy: {
+        parameters: {
+            query?: {
+                /** @description What Seametry held as true at this instant. Omitted means now (docs/prd/API.md section 4.5). */
+                as_of?: components["parameters"]["AsOf"];
+            };
+            header?: never;
+            path: {
+                address: components["parameters"]["AlloyAddress"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The alloy. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Alloy"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAlloyNav: {
+        parameters: {
+            query?: {
+                /** @description What Seametry held as true at this instant. Omitted means now (docs/prd/API.md section 4.5). */
+                as_of?: components["parameters"]["AsOf"];
+            };
+            header?: never;
+            path: {
+                address: components["parameters"]["AlloyAddress"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description NAV against share price, or why it is not available yet. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Nav"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
     getAlloyStrikeCost: {
         parameters: {
             query: {
@@ -775,6 +1097,109 @@ export interface operations {
                         data: components["schemas"]["CostRow"];
                         meta: components["schemas"]["Meta"];
                     };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    evaluateFormula: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FormulaEvaluateRequest"];
+            };
+        };
+        responses: {
+            /** @description The evaluated formula. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["FormulaEvaluateResult"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @example policy-2026.09.2 */
+                version: components["parameters"]["PolicyVersion"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The policy document. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["PolicyDocument"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    listReasonCodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The reason codes. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ReasonCodeEntry"][];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    streamEvents: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Resumes from this outbox sequence. A pruned point is named before resuming from the oldest retained event, rather than skipping silently. */
+                "Last-Event-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A stream of server-sent events, one per outbox row (docs/SERVICE_CATALOG.md section 7). */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["StreamEvent"];
                 };
             };
             default: components["responses"]["Problem"];

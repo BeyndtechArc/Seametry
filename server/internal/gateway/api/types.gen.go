@@ -7,6 +7,24 @@ import (
 	"time"
 )
 
+// Defines values for AlloyCluster.
+const (
+	AlloyClusterDevnet  AlloyCluster = "devnet"
+	AlloyClusterMainnet AlloyCluster = "mainnet"
+)
+
+// Valid indicates whether the value is a known member of the AlloyCluster enum.
+func (e AlloyCluster) Valid() bool {
+	switch e {
+	case AlloyClusterDevnet:
+		return true
+	case AlloyClusterMainnet:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for DecisionDecision.
 const (
 	DecisionDecisionALLOW DecisionDecision = "ALLOW"
@@ -40,6 +58,24 @@ func (e DepthPointAvailability) Valid() bool {
 	case DepthPointAvailabilityAvailable:
 		return true
 	case DepthPointAvailabilityUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FormulaEvaluateRequestCluster.
+const (
+	FormulaEvaluateRequestClusterDevnet  FormulaEvaluateRequestCluster = "devnet"
+	FormulaEvaluateRequestClusterMainnet FormulaEvaluateRequestCluster = "mainnet"
+)
+
+// Valid indicates whether the value is a known member of the FormulaEvaluateRequestCluster enum.
+func (e FormulaEvaluateRequestCluster) Valid() bool {
+	switch e {
+	case FormulaEvaluateRequestClusterDevnet:
+		return true
+	case FormulaEvaluateRequestClusterMainnet:
 		return true
 	default:
 		return false
@@ -220,6 +256,63 @@ func (e StatusReportSourcesEvidenceState) Valid() bool {
 	}
 }
 
+// Defines values for StreamEventEvent.
+const (
+	CorporateActionEffective StreamEventEvent = "corporate_action.effective"
+	DivergenceCrossed        StreamEventEvent = "divergence.crossed"
+	ExecutionDeviated        StreamEventEvent = "execution.deviated"
+	ExecutionSettled         StreamEventEvent = "execution.settled"
+	InstrumentQuarantined    StreamEventEvent = "instrument.quarantined"
+	ObservationDegraded      StreamEventEvent = "observation.degraded"
+	PrerogativeChanged       StreamEventEvent = "prerogative.changed"
+	ReceiptSealed            StreamEventEvent = "receipt.sealed"
+	SessionChanged           StreamEventEvent = "session.changed"
+)
+
+// Valid indicates whether the value is a known member of the StreamEventEvent enum.
+func (e StreamEventEvent) Valid() bool {
+	switch e {
+	case CorporateActionEffective:
+		return true
+	case DivergenceCrossed:
+		return true
+	case ExecutionDeviated:
+		return true
+	case ExecutionSettled:
+		return true
+	case InstrumentQuarantined:
+		return true
+	case ObservationDegraded:
+		return true
+	case PrerogativeChanged:
+		return true
+	case ReceiptSealed:
+		return true
+	case SessionChanged:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListAlloysParamsCluster.
+const (
+	ListAlloysParamsClusterDevnet  ListAlloysParamsCluster = "devnet"
+	ListAlloysParamsClusterMainnet ListAlloysParamsCluster = "mainnet"
+)
+
+// Valid indicates whether the value is a known member of the ListAlloysParamsCluster enum.
+func (e ListAlloysParamsCluster) Valid() bool {
+	switch e {
+	case ListAlloysParamsClusterDevnet:
+		return true
+	case ListAlloysParamsClusterMainnet:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetHallDemonstrationParamsCluster.
 const (
 	GetHallDemonstrationParamsClusterDevnet    GetHallDemonstrationParamsCluster = "devnet"
@@ -254,6 +347,49 @@ func (e GetInstrumentDepthParamsDirection) Valid() bool {
 	default:
 		return false
 	}
+}
+
+// Alloy An alloy read from chain (chain/programs/hall/src/state.rs::Alloy).
+type Alloy struct {
+	Address string       `json:"address"`
+	Cluster AlloyCluster `json:"cluster"`
+	Id      string       `json:"id"`
+	Legs    []AlloyLeg   `json:"legs"`
+
+	// LockedGenesis The founding sponsor's shares, unrecoverable by design (docs/BRAND_AND_WORLD.md section 5).
+	LockedGenesis *string `json:"locked_genesis,omitempty"`
+	ShareMint     string  `json:"share_mint"`
+	Sponsor       string  `json:"sponsor"`
+
+	// SponsorMark Hex. Empty until the sponsor registers one (server/cmd/explorer's Hallmark sponsor mark field carries the same emptiness).
+	SponsorMark *string `json:"sponsor_mark,omitempty"`
+
+	// Supply A share count. Shares have no scale; one share is one share.
+	Supply string `json:"supply"`
+}
+
+// AlloyCluster defines model for Alloy.Cluster.
+type AlloyCluster string
+
+// AlloyLeg One constituent's position (chain/programs/hall/src/state.rs::LegRecord). held_back is not a chain field: the program stores none, so the gateway derives it by checking whether this leg's own Hall-owned token account is frozen (Registry).
+type AlloyLeg struct {
+	// HeldBack The issuer currently prevents delivering this leg.
+	HeldBack bool `json:"held_back"`
+
+	// HeldBackReason Present only when held_back is true. Never a smaller amount in its place (docs/prd/TERMINAL.md section 5).
+	HeldBackReason *string `json:"held_back_reason,omitempty"`
+
+	// Ledger What backs outstanding shares.
+	Ledger Amount `json:"ledger"`
+	Mint   string `json:"mint"`
+
+	// Pending Credited but not yet vested.
+	Pending Amount `json:"pending"`
+
+	// Unclaimed Owed to holders who have melted but not withdrawn.
+	Unclaimed Amount     `json:"unclaimed"`
+	VestEnd   *time.Time `json:"vest_end,omitempty"`
+	VestStart *time.Time `json:"vest_start,omitempty"`
 }
 
 // Amount Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
@@ -322,8 +458,16 @@ type DepthCurve struct {
 
 // DepthPoint defines model for DepthPoint.
 type DepthPoint struct {
+	// AgeSeconds Derived at read time against the served time, never stored.
+	AgeSeconds   *int                   `json:"age_seconds,omitempty"`
 	Availability DepthPointAvailability `json:"availability"`
-	ProviderCode *string                `json:"provider_code,omitempty"`
+
+	// ExpiresAt Past this instant the quote cannot be acted on (liquidity.Quote.ExpiresAt).
+	ExpiresAt    *time.Time `json:"expires_at,omitempty"`
+	ProviderCode *string    `json:"provider_code,omitempty"`
+
+	// ReceivedAt When this quote was captured (liquidity.Quote.ReceivedAt). Present only when availability is available. Added so this schema actually carries what docs/prd/API.md section 5.1 and docs/prd/TERMINAL.md section 2 already promise ("each quote's age and expiry"); it did not until this field was added.
+	ReceivedAt *time.Time `json:"received_at,omitempty"`
 
 	// ShortfallBps Absent when there is no quote here or no reference to compare against.
 	ShortfallBps *int `json:"shortfall_bps,omitempty"`
@@ -345,6 +489,50 @@ type Finding struct {
 	Slug          string `json:"slug"`
 	Summary       string `json:"summary"`
 	Title         string `json:"title"`
+}
+
+// FormulaConstituent defines model for FormulaConstituent.
+type FormulaConstituent struct {
+	Mint string `json:"mint"`
+
+	// UnitsPerShare Atoms of this constituent backing one share.
+	UnitsPerShare Amount `json:"units_per_share"`
+}
+
+// FormulaEvaluateRequest defines model for FormulaEvaluateRequest.
+type FormulaEvaluateRequest struct {
+	Cluster *FormulaEvaluateRequestCluster `json:"cluster,omitempty"`
+
+	// Constituents MAX_CONSTITUENTS (chain/programs/hall/src/state.rs). Over the limit is refused, naming the count and the limit.
+	Constituents []FormulaConstituent `json:"constituents"`
+
+	// Shares A share count, as a string (docs/prd/API.md section 4.1).
+	Shares string `json:"shares"`
+}
+
+// FormulaEvaluateRequestCluster defines model for FormulaEvaluateRequest.Cluster.
+type FormulaEvaluateRequestCluster string
+
+// FormulaEvaluateResult defines model for FormulaEvaluateResult.
+type FormulaEvaluateResult struct {
+	Legs   []FormulaLeg `json:"legs"`
+	Shares string       `json:"shares"`
+
+	// TotalQuote The sum of every leg's quote, in USDC atoms. Present only when every leg carries an unexpired quote.
+	TotalQuote *Amount `json:"total_quote,omitempty"`
+}
+
+// FormulaLeg defines model for FormulaLeg.
+type FormulaLeg struct {
+	Admissibility Decision      `json:"admissibility"`
+	Depth         *[]DepthPoint `json:"depth,omitempty"`
+	Mint          string        `json:"mint"`
+
+	// Quote A live buy quote for required_atoms. Absent when unavailable; meta.missing names why.
+	Quote *Amount `json:"quote,omitempty"`
+
+	// RequiredAtoms units_per_share * shares. The same value for a strike and a melt (see the operation description).
+	RequiredAtoms Amount `json:"required_atoms"`
 }
 
 // HallHolderView defines model for HallHolderView.
@@ -468,6 +656,29 @@ type MissingPart struct {
 // MissingPartState defines model for MissingPart.State.
 type MissingPartState string
 
+// Nav Every field is absent until its source exists; meta.missing names why (docs/prd/API.md section 14). Never a placeholder figure.
+type Nav struct {
+	// PremiumBps The gap between value and share_price. Never described as fair or correct (ENGINEERING_STANDARD.md section 16).
+	PremiumBps *int `json:"premium_bps,omitempty"`
+
+	// SharePrice Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	SharePrice *Amount `json:"share_price,omitempty"`
+
+	// Value Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	Value *Amount `json:"value,omitempty"`
+}
+
+// PolicyDocument server/internal/policy.Document, as published.
+type PolicyDocument struct {
+	AcceptedGrades          []string `json:"accepted_grades"`
+	AllowedHookPrograms     []string `json:"allowed_hook_programs"`
+	BlockOnIssuerHalt       bool     `json:"block_on_issuer_halt"`
+	BlockOnUnknownExtension bool     `json:"block_on_unknown_extension"`
+	DepthCeilingBps         int      `json:"depth_ceiling_bps"`
+	DepthReferenceUsdc      int      `json:"depth_reference_usdc"`
+	Version                 string   `json:"version"`
+}
+
 // Prerogative One decoded issuer power, as a plain sentence (registry.Prerogatives.Sentences; docs/prd/EXPLORER.md section 3.2).
 type Prerogative struct {
 	// ExtensionNumber Present only for an unrecognised extension.
@@ -523,6 +734,12 @@ type Reason struct {
 // ReasonSeverity defines model for Reason.Severity.
 type ReasonSeverity string
 
+// ReasonCodeEntry One entry per server/internal/policy.Code constant. meaning is this repository's fixed sentence for the code, not the Fact text a particular decision carries.
+type ReasonCodeEntry struct {
+	Code    string `json:"code"`
+	Meaning string `json:"meaning"`
+}
+
 // ReceiptPublic receipt.PublicBody. Never a signature, a wallet, or an exact amount.
 type ReceiptPublic struct {
 	Basket       string `json:"basket"`
@@ -574,6 +791,18 @@ type StatusReport struct {
 // StatusReportSourcesEvidenceState defines model for StatusReport.Sources.EvidenceState.
 type StatusReportSourcesEvidenceState string
 
+// StreamEvent One outbox event (docs/SERVICE_CATALOG.md section 7). id is the outbox sequence, used as the SSE id field for Last-Event-ID resume. Per-event payload schemas are added here as each producing step lands; data stays an open object until then, never a guess at fields nobody has decided.
+type StreamEvent struct {
+	// Data Payload shape not yet fixed; see the description above.
+	Data      map[string]interface{} `json:"data"`
+	EmittedAt time.Time              `json:"emitted_at"`
+	Event     StreamEventEvent       `json:"event"`
+	Id        string                 `json:"id"`
+}
+
+// StreamEventEvent defines model for StreamEvent.Event.
+type StreamEventEvent string
+
 // AlloyAddress defines model for AlloyAddress.
 type AlloyAddress = string
 
@@ -586,13 +815,38 @@ type Cursor = string
 // Mint defines model for Mint.
 type Mint = string
 
+// PolicyVersion defines model for PolicyVersion.
+type PolicyVersion = string
+
 // Shares defines model for Shares.
 type Shares = string
+
+// ListAlloysParams defines parameters for ListAlloys.
+type ListAlloysParams struct {
+	// Cursor An opaque cursor from a previous page.
+	Cursor  *Cursor                  `form:"cursor,omitempty" json:"cursor,omitempty"`
+	Cluster *ListAlloysParamsCluster `form:"cluster,omitempty" json:"cluster,omitempty"`
+}
+
+// ListAlloysParamsCluster defines parameters for ListAlloys.
+type ListAlloysParamsCluster string
+
+// GetAlloyParams defines parameters for GetAlloy.
+type GetAlloyParams struct {
+	// AsOf What Seametry held as true at this instant. Omitted means now (docs/prd/API.md section 4.5).
+	AsOf *AsOf `form:"as_of,omitempty" json:"as_of,omitempty"`
+}
 
 // GetAlloyMeltProceedsParams defines parameters for GetAlloyMeltProceeds.
 type GetAlloyMeltProceedsParams struct {
 	// Shares A share count, as a string since it may exceed 2^53 (docs/prd/API.md section 4.1).
 	Shares Shares `form:"shares" json:"shares"`
+}
+
+// GetAlloyNavParams defines parameters for GetAlloyNav.
+type GetAlloyNavParams struct {
+	// AsOf What Seametry held as true at this instant. Omitted means now (docs/prd/API.md section 4.5).
+	AsOf *AsOf `form:"as_of,omitempty" json:"as_of,omitempty"`
 }
 
 // GetAlloyStrikeCostParams defines parameters for GetAlloyStrikeCost.
@@ -637,3 +891,12 @@ type GetInstrumentDepthParams struct {
 
 // GetInstrumentDepthParamsDirection defines parameters for GetInstrumentDepth.
 type GetInstrumentDepthParamsDirection string
+
+// StreamEventsParams defines parameters for StreamEvents.
+type StreamEventsParams struct {
+	// LastEventID Resumes from this outbox sequence. A pruned point is named before resuming from the oldest retained event, rather than skipping silently.
+	LastEventID *string `json:"Last-Event-ID,omitempty"`
+}
+
+// EvaluateFormulaJSONRequestBody defines body for EvaluateFormula for application/json ContentType.
+type EvaluateFormulaJSONRequestBody = FormulaEvaluateRequest
