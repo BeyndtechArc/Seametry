@@ -17,7 +17,17 @@ import (
 // file's siblings: adapter_solana.go, adapter_jupiter.go) produces these;
 // Ingest persists them.
 type IngestInput struct {
-	Mint              string
+	Mint string
+	// RequestKey identifies the request, not only the instrument: for
+	// Solana accounts it is the mint, since one request reads one account;
+	// for Jupiter it is mint plus size, since the same mint at different
+	// sizes is a different request whose response can, and in real
+	// evidence does, come back byte-identical (a "no route" refusal
+	// carries no size-specific data). It is part of what makes an
+	// observation unique (migrations/observation/00002_raw_and_
+	// observations.sql), never left to raw_digest or source_event_at
+	// alone.
+	RequestKey        string
 	Source            string
 	AdapterVersion    string
 	SourceEventAt     time.Time
@@ -64,6 +74,7 @@ func Ingest(ctx context.Context, objects ObjectStore, queries *observationdb.Que
 		VerificationState: in.VerificationState,
 		RawDigest:         digest,
 		Mint:              in.Mint,
+		RequestKey:        in.RequestKey,
 		Payload:           in.Payload,
 	})
 	if err != nil {

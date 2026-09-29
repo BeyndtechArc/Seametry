@@ -7,9 +7,9 @@ ON CONFLICT (digest) DO NOTHING;
 -- DO UPDATE with a no-op assignment, not DO NOTHING: RETURNING produces zero
 -- rows on a DO NOTHING conflict, and this query's caller (store.Ingest)
 -- needs the row's id whether this call inserted it or a replay already had.
-INSERT INTO observation.observations (source_event_at, received_at, persisted_at, source, adapter_version, verification_state, raw_digest, mint, payload)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-ON CONFLICT (raw_digest, adapter_version) DO UPDATE SET raw_digest = EXCLUDED.raw_digest
+INSERT INTO observation.observations (source_event_at, received_at, persisted_at, source, adapter_version, verification_state, raw_digest, mint, request_key, payload)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+ON CONFLICT (source, request_key, source_event_at) DO UPDATE SET raw_digest = EXCLUDED.raw_digest
 RETURNING id;
 
 -- name: LatestObservationForMint :one

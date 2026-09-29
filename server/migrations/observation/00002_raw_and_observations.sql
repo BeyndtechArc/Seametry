@@ -36,16 +36,23 @@ CREATE TABLE observation.observations (
     verification_state text NOT NULL,
     raw_digest        text NOT NULL REFERENCES observation.raw_payloads (digest),
     mint              text NOT NULL,
+    -- What was asked for, not only what it is about: for Jupiter this is
+    -- the mint plus the size queried, since two real fixtures in this
+    -- repository (AAPLx at 100 and at 1000 USDC) share both mint and
+    -- source_event_at at second resolution, and a third (CATx at three
+    -- sizes) separately shares mint and a byte-identical "no route"
+    -- response. Neither raw_digest nor (mint, source, source_event_at)
+    -- alone survived a real replay of the committed evidence before this
+    -- column was added; request_key is what actually distinguishes a
+    -- request from a different one to the same source about the same
+    -- mint. For an adapter with no sub-mint dimension (Solana accounts),
+    -- request_key is the mint itself.
+    request_key       text NOT NULL,
     payload           jsonb NOT NULL,
-    -- One observation per raw payload per adapter version: replaying the
-    -- same evidence twice (or a live adapter retrying) must not double an
-    -- instrument's history (ENGINEERING_STANDARD.md section 9: "every
-    -- ingested external record has a natural key"). Reprocessing the same
-    -- raw bytes under a NEW adapter version adds a row rather than
-    -- conflicting, so an old observation stays exactly as the version that
-    -- produced it left it (section 5: "old observations remain
-    -- interpretable under the version that produced them").
-    UNIQUE (raw_digest, adapter_version)
+    -- The natural key (ENGINEERING_STANDARD.md section 9: "every ingested
+    -- external record has a natural key"): this source, this request, at
+    -- this moment.
+    UNIQUE (source, request_key, source_event_at)
 );
 
 CREATE INDEX observations_mint_idx ON observation.observations (mint, source_event_at DESC);

@@ -18,6 +18,7 @@ type ObservationObservation struct {
 	VerificationState string             `db:"verification_state" json:"verification_state"`
 	RawDigest         string             `db:"raw_digest" json:"raw_digest"`
 	Mint              string             `db:"mint" json:"mint"`
+	RequestKey        string             `db:"request_key" json:"request_key"`
 	Payload           []byte             `db:"payload" json:"payload"`
 }
 

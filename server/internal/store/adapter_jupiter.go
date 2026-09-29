@@ -55,6 +55,7 @@ func NormalizeJupiterObservation(mint string, sizeUSDC int64, obs liquidity.Obse
 
 	return IngestInput{
 		Mint:              mint,
+		RequestKey:        fmt.Sprintf("%s@%d", mint, sizeUSDC), // mint alone collapses different sizes: proven by a real replay of committed evidence (migrations/observation/00002_raw_and_observations.sql)
 		Source:            "jupiter:quote",
 		AdapterVersion:    JupiterAdapterVersion,
 		SourceEventAt:     obs.ReceivedAt,

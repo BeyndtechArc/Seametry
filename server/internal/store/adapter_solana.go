@@ -46,6 +46,7 @@ func NormalizeSolanaAccount(mint, owner string, lamports uint64, data []byte, so
 	}
 	return IngestInput{
 		Mint:              mint,
+		RequestKey:        mint, // one request per account: nothing else distinguishes it
 		Source:            "solana:mainnet:getMultipleAccounts",
 		AdapterVersion:    SolanaAdapterVersion,
 		SourceEventAt:     sourceEventAt,

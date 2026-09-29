@@ -31,9 +31,9 @@ func (q *Queries) GetRawPayload(ctx context.Context, digest string) (Observation
 }
 
 const insertObservation = `-- name: InsertObservation :one
-INSERT INTO observation.observations (source_event_at, received_at, persisted_at, source, adapter_version, verification_state, raw_digest, mint, payload)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-ON CONFLICT (raw_digest, adapter_version) DO UPDATE SET raw_digest = EXCLUDED.raw_digest
+INSERT INTO observation.observations (source_event_at, received_at, persisted_at, source, adapter_version, verification_state, raw_digest, mint, request_key, payload)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+ON CONFLICT (source, request_key, source_event_at) DO UPDATE SET raw_digest = EXCLUDED.raw_digest
 RETURNING id
 `
 
@@ -46,6 +46,7 @@ type InsertObservationParams struct {
 	VerificationState string             `db:"verification_state" json:"verification_state"`
 	RawDigest         string             `db:"raw_digest" json:"raw_digest"`
 	Mint              string             `db:"mint" json:"mint"`
+	RequestKey        string             `db:"request_key" json:"request_key"`
 	Payload           []byte             `db:"payload" json:"payload"`
 }
 
@@ -62,6 +63,7 @@ func (q *Queries) InsertObservation(ctx context.Context, arg InsertObservationPa
 		arg.VerificationState,
 		arg.RawDigest,
 		arg.Mint,
+		arg.RequestKey,
 		arg.Payload,
 	)
 	var id int64
@@ -99,7 +101,7 @@ func (q *Queries) InsertRawPayload(ctx context.Context, arg InsertRawPayloadPara
 }
 
 const latestObservationForMint = `-- name: LatestObservationForMint :one
-SELECT id, source_event_at, received_at, persisted_at, source, adapter_version, verification_state, raw_digest, mint, payload FROM observation.observations
+SELECT id, source_event_at, received_at, persisted_at, source, adapter_version, verification_state, raw_digest, mint, request_key, payload FROM observation.observations
 WHERE mint = $1 AND source = $2
 ORDER BY source_event_at DESC
 LIMIT 1
@@ -123,6 +125,7 @@ func (q *Queries) LatestObservationForMint(ctx context.Context, arg LatestObserv
 		&i.VerificationState,
 		&i.RawDigest,
 		&i.Mint,
+		&i.RequestKey,
 		&i.Payload,
 	)
 	return i, err
