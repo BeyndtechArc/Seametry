@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { ClaimLine, KeyLink, Stamp } from "@seametry/ui";
+import { ClaimLine, RouteAction, Stamp } from "@seametry/ui";
 import { PublicShell, SectionHeading } from "../public-shell";
 import styles from "../site.module.css";
 
@@ -67,7 +67,7 @@ export default async function HowItWorksPage() {
       </section>
 
       <section className={styles.section}>
-        <KeyLink href="/hall-demo">Inspect the mechanism</KeyLink>
+        <RouteAction href="/hall-demo">Inspect the mechanism</RouteAction>
       </section>
     </PublicShell>
   );

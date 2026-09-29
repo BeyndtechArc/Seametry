@@ -40,39 +40,39 @@ export const theme = {
   },
   "light": {
     "surface": {
-      "ground": "#D8D4C8",
-      "sheet": "#E2DED2",
-      "raised": "#ECE8DE",
-      "tray": "#C8C3B6",
-      "inverse": "#1F1E1D"
+      "ground": "#C9C8B7",
+      "sheet": "#D5D4C5",
+      "raised": "#E2E1D5",
+      "tray": "#B8B8A5",
+      "inverse": "#20231B"
     },
     "text": {
-      "primary": "#1F1E1D",
-      "secondary": "#45423C",
-      "tertiary": "#545049",
-      "faint": "#A8A49A",
+      "primary": "#20231B",
+      "secondary": "#3E4136",
+      "tertiary": "#505347",
+      "faint": "#999A89",
       "onTouch": "#16200B",
       "inverse": "#F5F5F3"
     },
     "line": {
-      "rule": "#C4BFB2",
-      "strong": "#AAA497",
-      "highlight": "rgba(255,255,255,0.70)"
+      "rule": "#B5B5A4",
+      "strong": "#969783",
+      "highlight": "rgba(255,255,255,0.55)"
     },
     "accent": {
       "touch": "#8DA32C",
       "touchPressed": "#7A8E23",
-      "provenance": "#3A20D6",
-      "provenanceField": "#3A20D6",
-      "touchText": "#6E8320"
+      "provenance": "#3520C0",
+      "provenanceField": "#3520C0",
+      "touchText": "#43540B"
     },
     "feature": {
-      "ground": "#DCE0CC",
-      "sheet": "#E6E9D8",
-      "raised": "#F0F2E6",
+      "ground": "#B8C56A",
+      "sheet": "#C5D17C",
+      "raised": "#D3DC94",
       "text": {
-        "primary": "#2A2E1F",
-        "secondary": "#565B45"
+        "primary": "#20231B",
+        "secondary": "#3E432D"
       }
     }
   }

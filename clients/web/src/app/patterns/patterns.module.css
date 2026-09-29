@@ -284,7 +284,6 @@
 
 .markStack,
 .stampStudy,
-.controlStudy,
 .fieldStudy {
   display: grid;
   justify-items: start;
@@ -293,6 +292,41 @@
 
 .keyPurpose {
   max-width: 32ch;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.55;
+}
+
+.actionRegister {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 0.5px solid var(--sm-line-strong);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.actionRegister article {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--sm-space-5);
+  min-width: 0;
+  padding: var(--sm-space-7);
+  border-right: 0.5px solid var(--sm-line-rule);
+}
+
+.actionRegister article:last-child {
+  border-right: 0;
+}
+
+.actionRegister h3 {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-light);
+}
+
+.actionRegister p {
+  min-height: calc(var(--sm-space-8) * 2);
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
   line-height: 1.55;
@@ -401,6 +435,19 @@
 
   .edgeGrid {
     grid-template-columns: 1fr;
+  }
+
+  .actionRegister {
+    grid-template-columns: 1fr;
+  }
+
+  .actionRegister article {
+    border-right: 0;
+    border-bottom: 0.5px solid var(--sm-line-rule);
+  }
+
+  .actionRegister article:last-child {
+    border-bottom: 0;
   }
 
   .edgeGrid article,

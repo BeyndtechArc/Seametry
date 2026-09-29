@@ -8,18 +8,19 @@ import styles from "./site.module.css";
 type PublicDestination = "home" | "how" | "key" | "terminal" | "sign-in";
 
 const primaryLinks = [
-  { id: "how", label: "How it works", href: "/how-it-works" },
+  { id: "home", label: "Overview", href: "/" },
+  { id: "how", label: "Mechanism", href: "/how-it-works" },
   { id: "key", label: "The Key", href: "/the-key" },
   { id: "terminal", label: "Terminal", href: "/terminal/alloys/storm" },
-  { id: "sign-in", label: "Sign in", href: "/sign-in" },
+  { id: "sign-in", label: "Access", href: "/sign-in" },
 ] as const;
 
 export function HouseRail({ current }: { current: PublicDestination }) {
   return (
     <header className={styles.houseRail}>
-      <Link className={styles.wordmark} href="/" aria-current={current === "home" ? "page" : undefined}>
+      <Link className={styles.wordmark} href="/">
         <b>Seametry</b>
-        <span>The Office</span>
+        <span>Public</span>
       </Link>
       <nav className={styles.primaryNav} aria-label="Primary">
         {primaryLinks.map((link) => (
@@ -30,6 +31,41 @@ export function HouseRail({ current }: { current: PublicDestination }) {
       </nav>
       <ThemeControl />
     </header>
+  );
+}
+
+export function OpenAPField() {
+  return (
+    <figure className={styles.apField} data-testid="open-ap-field">
+      <header>
+        <span>Open participant loop</span>
+        <span>No permission list</span>
+      </header>
+      <div className={styles.apMechanism}>
+        <div className={`${styles.apNode} ${styles.apWallet}`}>
+          <span>Any wallet</span>
+          <small>Holds the Formula</small>
+        </div>
+        <div className={`${styles.apPath} ${styles.apStrike}`}>
+          <b>Strike</b>
+          <span>Deposit constituents</span>
+        </div>
+        <div className={styles.apCore}>
+          <span>Alloy</span>
+          <b>Share</b>
+          <small>Fixed Formula</small>
+        </div>
+        <div className={`${styles.apPath} ${styles.apMelt}`}>
+          <b>Melt</b>
+          <span>Destroy shares</span>
+        </div>
+        <div className={`${styles.apNode} ${styles.apClaims}`}>
+          <span>Claims</span>
+          <small>One per constituent</small>
+        </div>
+      </div>
+      <figcaption>The Hall moves quantities. No oracle, quote or NAV enters Strike or Melt.</figcaption>
+    </figure>
   );
 }
 

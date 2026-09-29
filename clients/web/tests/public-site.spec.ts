@@ -3,11 +3,15 @@ import { expect, test } from "@playwright/test";
 test("the landing leads with the recorded issuer-freeze incident", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Know what it's made of." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Open AP ETFs" })).toBeVisible();
+  const apField = page.getByTestId("open-ap-field");
+  for (const label of ["Any wallet", "Strike", "Alloy", "Melt", "Claims"]) {
+    await expect(apField.getByText(label, { exact: true })).toBeVisible();
+  }
   await expect(page.getByText("Recorded on Solana devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A melt survives the freeze." })).toBeVisible();
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Inspect the demonstration" })).toHaveAttribute("href", "/hall-demo");
+  await expect(page.getByRole("link", { name: "Inspect demonstration" })).toHaveAttribute("href", "/hall-demo");
 
   for (const section of ["What changes", "The instrument, opened", "Why an ETF", "What you can inspect now"]) {
     await expect(page.getByRole("heading", { level: 2, name: section })).toBeVisible();
@@ -40,9 +44,10 @@ test("the public rail reaches every available destination", async ({ page }) => 
   await page.goto("/");
 
   const navigation = page.getByRole("navigation", { name: "Primary" });
-  await expect(navigation.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "/how-it-works");
+  await expect(navigation.getByRole("link", { name: "Overview" })).toHaveAttribute("href", "/");
+  await expect(navigation.getByRole("link", { name: "Mechanism" })).toHaveAttribute("href", "/how-it-works");
   await expect(navigation.getByRole("link", { name: "The Key" })).toHaveAttribute("href", "/the-key");
   await expect(navigation.getByRole("link", { name: "Terminal" })).toHaveAttribute("href", "/terminal/alloys/storm");
-  await expect(navigation.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/sign-in");
+  await expect(navigation.getByRole("link", { name: "Access" })).toHaveAttribute("href", "/sign-in");
   await expect(page.getByRole("button", { name: "Use light mode" })).toBeVisible();
 });

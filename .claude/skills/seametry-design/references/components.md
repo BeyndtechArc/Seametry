@@ -75,6 +75,30 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 **States:** default, pressed (drops 1px, `accent.touchPressed`), disabled (tray only, label in `text.tertiary`, reason available), busy (label becomes the action in progress: "Signing").
 **Rules:** verb plus object ("Approve and sign"). One key per view. Quieter than the figures above it.
 
+### Route action
+**Answers:** which destination begins the next part of this journey?
+**Anatomy:** full-round `accent.touch` fill, `text.onTouch`, no tray, minimum target height.
+**Identity:** one uninterrupted green lozenge. Its lack of housing distinguishes navigation from the Key's custody-changing keyway.
+**States:** default, pressed, keyboard focus, unavailable with its reason adjacent.
+**Data:** a real route that resolves.
+**Rules:** verb plus object. Navigation only. Never submits, signs, approves or changes custody.
+
+### Quiet link
+**Answers:** which secondary destination can I inspect without leaving the current decision context?
+**Anatomy:** full-round `surface.sheet`, hairline edge, `text.secondary`.
+**Identity:** the Quiet action silhouette rendered as a link, with no fill hue and no tray.
+**States:** default, hover, keyboard focus, unavailable.
+**Data:** a real route that resolves.
+**Rules:** secondary navigation only. Never green-filled.
+
+### Text action
+**Answers:** where can I read the supporting record or contract?
+**Anatomy:** verb-led text in `accent.touchText`; a short rule extends from the final word.
+**Identity:** reads like a catalogue cross-reference rather than a button. The terminal rule is its fixed signature.
+**States:** default, hover, keyboard focus, unavailable.
+**Data:** a real evidence, contract or literature destination.
+**Rules:** lowest action emphasis. Never used for the view's Key or route entry.
+
 ### Quiet action
 **Answers:** which secondary or reversible action is available?
 **Anatomy:** full-round, `surface.sheet`, 0.5px `line.rule` edge, `text.secondary`.
@@ -83,8 +107,8 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 
 ### Mode control
 **Answers:** which complete colour mode is the surface using?
-**Anatomy:** one full-round tray containing Dark and Light actions; the selected action uses `surface.raised` and a registration dot.
-**Identity:** two round controls share one tight tray, while the selected mode carries a small square registration mark. It reads as an instrument setting, not a marketing toggle.
+**Anatomy:** Dark and Light as two independent full-round text targets; the selected action uses a registration dot and a bottom rule.
+**Identity:** the shared baseline makes this an instrument setting without wrapping it in a third control. The selected mode carries a small square registration mark.
 **States:** dark selected, light selected, keyboard focus.
 **Data:** the selected mode, persisted in local browser storage.
 **Rules:** both labels remain visible. Never use an icon alone. The control changes the full surface, not an isolated specimen.
@@ -219,6 +243,14 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **States:** default; loading names the transcript; empty names the absent scenario; stale keeps the sequence and attaches capture age; unavailable links to the specification; error names the unreadable evidence source.
 **Data:** one scenario from the Hall demonstration transcript, including producer, actor, action, result, reason and signature.
 **Rules:** event order is source order. Never infer a result, shorten a reason, or imply that controlled mock issuers establish how another issuer behaves.
+
+### Open AP field
+**Answers:** who can create and redeem an Alloy, and what moves in each direction?
+**Anatomy:** Formula rail; central Alloy register; Strike path from any wallet; Melt path back to claims; issuer boundary.
+**Identity:** a static mechanism diagram drawn from the same registration lines, square evidence nodes and round action nodes as the product. It is a functioning component composition, not a decorative illustration or screenshot.
+**States:** default; narrow layout stacks the two paths while retaining direction in words; unavailable replaces the centre with the missing Hall state.
+**Data:** Hall mechanism guarantees only. No market quantity, price or participant count.
+**Rules:** no arrows without text, animation, invented market activity or implication that a wallet without the required assets can Strike.
 
 ### Pattern Register
 **Answers:** does each shared component retain Seametry's identity across states, themes, widths and difficult content?

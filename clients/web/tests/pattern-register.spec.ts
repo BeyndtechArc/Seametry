@@ -40,7 +40,7 @@ test("the Pattern Register lets the reader compare muted light and dark modes", 
   await expect(lightMode).toHaveAttribute("aria-pressed", "true");
 
   const lightGround = await page.locator("body").evaluate((node) => getComputedStyle(node).backgroundColor);
-  expect(lightGround).toBe("rgb(216, 212, 200)");
+  expect(lightGround).toBe("rgb(201, 200, 183)");
 
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
@@ -59,4 +59,18 @@ test("the Pattern Register states the edge grammar and reserves one Key", async 
 
   await expect(page.getByRole("button", { name: "Approve and sign" })).toHaveCount(1);
   await expect(page.getByText("Reserved for the action that changes custody or state.", { exact: true })).toBeVisible();
+});
+
+test("the Pattern Register maps action emphasis to purpose", async ({ page }) => {
+  await page.goto("/patterns");
+
+  const register = page.getByTestId("action-register");
+  for (const action of ["Route action", "Quiet link", "Text action", "The Key"]) {
+    await expect(register.getByRole("heading", { level: 3, name: action })).toBeVisible();
+  }
+
+  await expect(register.getByRole("link", { name: "Inspect demonstration" })).toBeVisible();
+  await expect(register.getByRole("link", { name: "Compare evidence" })).toBeVisible();
+  await expect(register.getByRole("link", { name: "Read contract" })).toBeVisible();
+  await expect(register.getByRole("button", { name: "Approve and sign" })).toHaveCount(1);
 });

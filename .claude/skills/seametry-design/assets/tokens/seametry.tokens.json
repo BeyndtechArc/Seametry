@@ -114,36 +114,36 @@
       "surface": {
         "$type": "color",
         "ground": {
-          "$value": "#D8D4C8",
-          "$description": "Muted certificate stock. Light enough to separate from the touchstone without reading as white."
+          "$value": "#C9C8B7",
+          "$description": "Mineral certificate stock. Dark primary text measures 9.43:1 and tertiary text measures 4.66:1 against it."
         },
         "sheet": {
-          "$value": "#E2DED2"
+          "$value": "#D5D4C5"
         },
         "raised": {
-          "$value": "#ECE8DE"
+          "$value": "#E2E1D5"
         },
         "tray": {
-          "$value": "#C8C3B6"
+          "$value": "#B8B8A5"
         },
         "inverse": {
-          "$value": "#1F1E1D"
+          "$value": "#20231B"
         }
       },
       "text": {
         "$type": "color",
         "primary": {
-          "$value": "#1F1E1D"
+          "$value": "#20231B"
         },
         "secondary": {
-          "$value": "#45423C"
+          "$value": "#3E4136"
         },
         "tertiary": {
-          "$value": "#545049",
-          "$description": "5.41:1 on muted certificate ground and 4.56:1 on tray."
+          "$value": "#505347",
+          "$description": "4.66:1 on mineral certificate ground."
         },
         "faint": {
-          "$value": "#A8A49A",
+          "$value": "#999A89",
           "$description": "Decorative only."
         },
         "onTouch": {
@@ -156,13 +156,13 @@
       "line": {
         "$type": "color",
         "rule": {
-          "$value": "#C4BFB2"
+          "$value": "#B5B5A4"
         },
         "strong": {
-          "$value": "#AAA497"
+          "$value": "#969783"
         },
         "highlight": {
-          "$value": "rgba(255,255,255,0.70)"
+          "$value": "rgba(255,255,255,0.55)"
         }
       },
       "accent": {
@@ -175,36 +175,37 @@
           "$value": "#7A8E23"
         },
         "provenance": {
-          "$value": "#3A20D6"
+          "$value": "#3520C0"
         },
         "provenanceField": {
-          "$value": "#3A20D6"
+          "$value": "#3520C0"
         },
         "touchText": {
           "$type": "color",
-          "$value": "#6E8320",
-          "$description": "Deepened olive for links/marks on paper. Fill token fails contrast as text on light."
+          "$value": "#43540B",
+          "$description": "Deep olive for links and marks on mineral paper. Measures 4.95:1 on surface.ground."
         }
       },
       "feature": {
         "$type": "color",
         "$description": "Light-mode olive track, same restriction as dark.",
         "ground": {
-          "$value": "#DCE0CC"
+          "$value": "#B8C56A"
         },
         "sheet": {
-          "$value": "#E6E9D8"
+          "$value": "#C5D17C"
         },
         "raised": {
-          "$value": "#F0F2E6"
+          "$value": "#D3DC94"
         },
         "text": {
           "$type": "color",
           "primary": {
-            "$value": "#2A2E1F"
+            "$value": "#20231B"
           },
           "secondary": {
-            "$value": "#565B45"
+            "$value": "#3E432D",
+            "$description": "5.49:1 on feature.ground."
           }
         }
       }

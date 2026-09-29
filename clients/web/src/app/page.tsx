@@ -5,12 +5,13 @@ import {
   ClaimLine,
   ConditionReport,
   Grade,
-  KeyLink,
   ProofStrip,
   ProvenanceLine,
+  RouteAction,
   Stamp,
+  TextAction,
 } from "@seametry/ui";
-import { IncidentLedger, PublicShell, SectionHeading } from "./public-shell";
+import { IncidentLedger, OpenAPField, PublicShell, SectionHeading } from "./public-shell";
 import styles from "./site.module.css";
 
 export const metadata: Metadata = {
@@ -33,23 +34,22 @@ export default async function Home() {
     <PublicShell current="home">
       <section className={styles.hero} aria-labelledby="home-title">
         <div className={styles.heroCopy}>
-          <span>The Touchstone for tokenized stocks</span>
-          <h1 id="home-title">Know what it&apos;s made of.</h1>
-          <p>Seametry strikes baskets of tokenized stocks, grades every claim inside them, and hallmarks every trade.</p>
-          <KeyLink href="/hall-demo">Inspect the demonstration</KeyLink>
+          <span>Exchange traded funds on Solana</span>
+          <h1 id="home-title"><span>Open</span> <span>AP ETFs</span></h1>
+          <p>Any wallet can create or redeem shares from a fixed Formula. Seametry opens every constituent and its issuer powers before the basket moves.</p>
+          <div className={styles.heroActions}>
+            <RouteAction href="/hall-demo">Inspect demonstration</RouteAction>
+            <TextAction href="/how-it-works">Read mechanism</TextAction>
+          </div>
         </div>
-        <div className={styles.heroEvidence}>
-          <span className={styles.plateLabel}>The collision</span>
-          <blockquote>A token can keep trading while the claim beneath it has changed.</blockquote>
-          <p>The issuer can freeze it, pause it, take it back, gate who receives it, or change how many appear in a wallet. Seametry opens that condition before the basket is assembled.</p>
-        </div>
+        <OpenAPField />
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.incidentSection}`}>
         <IncidentLedger />
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.claimsSection}`}>
         <SectionHeading index="01" title="What changes" question="What does the Hall make observable or structurally different?" />
         <div className={styles.claimGrid}>
           <ClaimLine lead="Keyless by design.">No instruction can alter a Formula, move a holder&apos;s assets, or stop a Melt.</ClaimLine>
@@ -59,7 +59,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.instrumentSection}`}>
         <SectionHeading index="02" title="The instrument, opened" question="What sits between a company and the wallet holding its token?" />
         <div className={styles.fragmentGrid}>
           <article className={styles.fragmentPlate}>
@@ -87,7 +87,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.comparisonSection}`}>
         <SectionHeading index="03" title="Why an ETF" question="Where does the mechanism begin after one-step assembly ends?" />
         <div className={styles.comparison}>
           <article>
@@ -103,7 +103,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.workingSection}`}>
         <SectionHeading index="04" title="The working" question="How does evidence travel from observation to a checkable record?" />
         <div className={styles.loop}>
           {loop.map(([title, description], index) => (
@@ -116,7 +116,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.proofSection}`}>
         <SectionHeading index="05" title="What you can inspect now" question="Which claims have a public artifact behind them today?" />
         <ProofStrip items={[
           { label: "Hall program", value: "Devnet program", href: "https://explorer.solana.com/address/4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx?cluster=devnet" },
@@ -126,7 +126,7 @@ export default async function Home() {
         ]} />
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.boundarySection}`}>
         <SectionHeading index="06" title="Verification boundary" question="What can a visitor verify, and what remains unanchored?" />
         <div className={styles.unavailablePanel}>
           <div>

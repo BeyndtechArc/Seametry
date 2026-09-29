@@ -236,18 +236,37 @@ export function Key({
   );
 }
 
-export function KeyLink({
+export function RouteAction({
   children,
   ...anchorProps
 }: AnchorHTMLAttributes<HTMLAnchorElement> & { children: ReactNode }) {
   return (
-    <span className={styles.keyGroup}>
-      <span className={styles.keyTray}>
-        <a {...anchorProps} className={classes(styles.key, styles.keyLink, anchorProps.className)}>
-          {children}
-        </a>
-      </span>
-    </span>
+    <a {...anchorProps} className={classes(styles.routeAction, anchorProps.className)}>
+      {children}
+    </a>
+  );
+}
+
+export function QuietLink({
+  children,
+  ...anchorProps
+}: AnchorHTMLAttributes<HTMLAnchorElement> & { children: ReactNode }) {
+  return (
+    <a {...anchorProps} className={classes(styles.quietAction, styles.quietLink, anchorProps.className)}>
+      {children}
+    </a>
+  );
+}
+
+export function TextAction({
+  children,
+  ...anchorProps
+}: AnchorHTMLAttributes<HTMLAnchorElement> & { children: ReactNode }) {
+  return (
+    <a {...anchorProps} className={classes(styles.textAction, anchorProps.className)}>
+      <span>{children}</span>
+      <span aria-hidden="true" />
+    </a>
   );
 }
 

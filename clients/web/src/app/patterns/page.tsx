@@ -12,10 +12,12 @@ import {
   Key,
   Punch,
   ProvenanceLine,
-  QuietAction,
+  QuietLink,
+  RouteAction,
   Rule,
   Serial,
   Stamp,
+  TextAction,
   Timestamp,
   type EvidenceState,
 } from "@seametry/ui";
@@ -188,11 +190,28 @@ export default async function PatternRegisterPage() {
             </div>
           </Specimen>
 
-          <Specimen name="The Key" question="Which action is allowed to dominate this view?">
-            <div className={styles.controlStudy}>
-              <p className={styles.keyPurpose}>Reserved for the action that changes custody or state.</p>
-              <Key>Approve and sign</Key>
-              <QuietAction>Inspect public record</QuietAction>
+          <Specimen name="Action register" question="Which silhouette matches the consequence of an action?" wide>
+            <div className={styles.actionRegister} data-testid="action-register">
+              <article>
+                <h3>Route action</h3>
+                <p>Moves a visitor into a product route without implying custody.</p>
+                <RouteAction href="/hall-demo">Inspect demonstration</RouteAction>
+              </article>
+              <article>
+                <h3>Quiet link</h3>
+                <p>Offers a secondary route when comparison matters more than arrival.</p>
+                <QuietLink href="/terminal/alloys/storm">Compare evidence</QuietLink>
+              </article>
+              <article>
+                <h3>Text action</h3>
+                <p>Continues reading or opens a technical source without a button plate.</p>
+                <TextAction href="https://github.com/BeyndtechArc/Seametry/blob/main/contracts/openapi/openapi.yaml">Read contract</TextAction>
+              </article>
+              <article>
+                <h3>The Key</h3>
+                <p className={styles.keyPurpose}>Reserved for the action that changes custody or state.</p>
+                <Key>Approve and sign</Key>
+              </article>
             </div>
           </Specimen>
 

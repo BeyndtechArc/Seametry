@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Digest, KeyLink, Stamp } from "@seametry/ui";
+import { Digest, RouteAction, Stamp } from "@seametry/ui";
 import { publicIncident } from "@/lib/public-evidence";
 import { PublicShell, SectionHeading } from "../public-shell";
 import styles from "../site.module.css";
@@ -64,7 +64,7 @@ export default async function TheKeyPage() {
           </div>
           <div>
             <p>There is no transaction to cite yet because the devnet program has not been made final. This page will carry that transaction when it exists.</p>
-            <KeyLink href="https://explorer.solana.com/address/4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx?cluster=devnet">Inspect the program</KeyLink>
+            <RouteAction href="https://explorer.solana.com/address/4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx?cluster=devnet">Inspect the program</RouteAction>
           </div>
         </div>
       </section>
