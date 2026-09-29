@@ -145,6 +145,25 @@ jobs:
   go:
     name: Go
     runs-on: ubuntu-latest
+    # docs/prd/API.md section 12 step A1: "a role reading another schema is
+    # refused by Postgres, in a test." That test needs a real Postgres to
+    # refuse against, not a mock of one.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: seametry_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      SEAMETRY_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/seametry_test?sslmode=disable
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
@@ -165,8 +184,20 @@ jobs:
 
       # Race detection is required on every run. It needs cgo, which is why it
       # runs here rather than on a developer's Windows machine.
+      #
+      # -v, piped through a check for SKIP: SEAMETRY_TEST_DATABASE_URL is set
+      # above, so no test gated behind it should ever skip here. A skip in
+      # this job is silence, and silence is not success (AGENTS.md).
       - name: Test
-        run: go test -race -count=1 ./server/...
+        run: |
+          set -o pipefail
+          go test -race -count=1 -v ./server/... | tee /tmp/go-test.log
+          if grep -q '^--- SKIP' /tmp/go-test.log; then
+            echo
+            echo "A test skipped with SEAMETRY_TEST_DATABASE_URL set. It should have run."
+            grep -B1 '^--- SKIP' /tmp/go-test.log
+            exit 1
+          fi
 
   design:
     name: Design system
