@@ -7,6 +7,7 @@ import type { NextConfig } from "next";
 // headers on one response, which browsers enforce as their intersection
 // rather than as one overriding the other.
 const nextConfig: NextConfig = {
+  devIndicators: false,
   experimental: {
     sri: {
       algorithm: "sha256",
