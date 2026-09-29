@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { theme } from "@seametry/ui/tokens";
 
 test("the Pattern Register exposes identity, states, and stress specimens", async ({ page }) => {
   await page.goto("/patterns");
@@ -40,7 +41,15 @@ test("the Pattern Register lets the reader compare muted light and dark modes", 
   await expect(lightMode).toHaveAttribute("aria-pressed", "true");
 
   const lightGround = await page.locator("body").evaluate((node) => getComputedStyle(node).backgroundColor);
-  expect(lightGround).toBe("rgb(201, 200, 183)");
+  const tokenGround = await page.evaluate((ground) => {
+    const probe = document.createElement("div");
+    probe.style.color = ground;
+    document.body.append(probe);
+    const renderedGround = getComputedStyle(probe).color;
+    probe.remove();
+    return renderedGround;
+  }, theme.light.surface.ground);
+  expect(lightGround).toBe(tokenGround);
 
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
