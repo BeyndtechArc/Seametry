@@ -886,6 +886,8 @@ type GetInstrumentAdmissibilityParams struct {
 
 // GetInstrumentDepthParams defines parameters for GetInstrumentDepth.
 type GetInstrumentDepthParams struct {
+	// AsOf What Seametry held as true at this instant. Omitted means now (docs/prd/API.md section 4.5).
+	AsOf      *AsOf                              `form:"as_of,omitempty" json:"as_of,omitempty"`
 	Direction *GetInstrumentDepthParamsDirection `form:"direction,omitempty" json:"direction,omitempty"`
 }
 

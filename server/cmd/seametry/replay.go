@@ -155,7 +155,7 @@ func loadSolanaFixtureInputs(dir string) ([]store.IngestInput, error) {
 			return nil, fmt.Errorf("%s: captured_at %q does not parse: %w", path, f.CapturedAt, err)
 		}
 
-		input, err := store.NormalizeSolanaAccount(f.Address, f.Owner, f.Lamports, data, capturedAt, capturedAt)
+		input, err := store.NormalizeSolanaAccount(f.Address, f.Symbol, f.Owner, f.Lamports, f.Slot, data, capturedAt, capturedAt)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", path, err)
 		}

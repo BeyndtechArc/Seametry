@@ -102,18 +102,23 @@ func (q *Queries) InsertRawPayload(ctx context.Context, arg InsertRawPayloadPara
 
 const latestObservationForMint = `-- name: LatestObservationForMint :one
 SELECT id, source_event_at, received_at, persisted_at, source, adapter_version, verification_state, raw_digest, mint, request_key, payload FROM observation.observations
-WHERE mint = $1 AND source = $2
+WHERE mint = $1 AND source = $2 AND source_event_at <= $3
 ORDER BY source_event_at DESC
 LIMIT 1
 `
 
 type LatestObservationForMintParams struct {
-	Mint   string `db:"mint" json:"mint"`
-	Source string `db:"source" json:"source"`
+	Mint          string             `db:"mint" json:"mint"`
+	Source        string             `db:"source" json:"source"`
+	SourceEventAt pgtype.Timestamptz `db:"source_event_at" json:"source_event_at"`
 }
 
+// as_of is never optional here: every caller passes now() when the request
+// itself did not name one (docs/prd/API.md section 4.5, "omitted means
+// now"), so this one query answers both cases and "what did Seametry know
+// at time T" is never silently collapsed to "what does it know now".
 func (q *Queries) LatestObservationForMint(ctx context.Context, arg LatestObservationForMintParams) (ObservationObservation, error) {
-	row := q.db.QueryRow(ctx, latestObservationForMint, arg.Mint, arg.Source)
+	row := q.db.QueryRow(ctx, latestObservationForMint, arg.Mint, arg.Source, arg.SourceEventAt)
 	var i ObservationObservation
 	err := row.Scan(
 		&i.ID,
@@ -129,4 +134,78 @@ func (q *Queries) LatestObservationForMint(ctx context.Context, arg LatestObserv
 		&i.Payload,
 	)
 	return i, err
+}
+
+const latestObservationsPerRequestKey = `-- name: LatestObservationsPerRequestKey :many
+SELECT DISTINCT ON (request_key) id, source_event_at, received_at, persisted_at, source, adapter_version, verification_state, raw_digest, mint, request_key, payload
+FROM observation.observations
+WHERE mint = $1 AND source = $2 AND source_event_at <= $3
+ORDER BY request_key, source_event_at DESC
+`
+
+type LatestObservationsPerRequestKeyParams struct {
+	Mint          string             `db:"mint" json:"mint"`
+	Source        string             `db:"source" json:"source"`
+	SourceEventAt pgtype.Timestamptz `db:"source_event_at" json:"source_event_at"`
+}
+
+// One row per distinct request_key as of the given instant: the depth
+// curve for a mint is one observation per size queried
+// (adapter_jupiter.go's request_key is mint@size), and DISTINCT ON with
+// this ORDER BY keeps only the latest of however many times that size has
+// been observed at or before as_of.
+func (q *Queries) LatestObservationsPerRequestKey(ctx context.Context, arg LatestObservationsPerRequestKeyParams) ([]ObservationObservation, error) {
+	rows, err := q.db.Query(ctx, latestObservationsPerRequestKey, arg.Mint, arg.Source, arg.SourceEventAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ObservationObservation
+	for rows.Next() {
+		var i ObservationObservation
+		if err := rows.Scan(
+			&i.ID,
+			&i.SourceEventAt,
+			&i.ReceivedAt,
+			&i.PersistedAt,
+			&i.Source,
+			&i.AdapterVersion,
+			&i.VerificationState,
+			&i.RawDigest,
+			&i.Mint,
+			&i.RequestKey,
+			&i.Payload,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMintsWithObservations = `-- name: ListMintsWithObservations :many
+SELECT DISTINCT mint FROM observation.observations WHERE source = $1 ORDER BY mint
+`
+
+func (q *Queries) ListMintsWithObservations(ctx context.Context, source string) ([]string, error) {
+	rows, err := q.db.Query(ctx, listMintsWithObservations, source)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var mint string
+		if err := rows.Scan(&mint); err != nil {
+			return nil, err
+		}
+		items = append(items, mint)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

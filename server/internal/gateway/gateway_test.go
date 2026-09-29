@@ -52,7 +52,10 @@ func TestStatusAnswersInTheEnvelope(t *testing.T) {
 
 // TestEveryOtherOperationAnswers501NamingAStep is docs/prd/API.md section 12
 // step A1's own text: "Every generated operation with no handler yet answers
-// 501, naming the step that builds it, never an empty 200."
+// 501, naming the step that builds it, never an empty 200." Six operations
+// this originally listed are real as of A3 (instruments_test.go and
+// policy_handlers_test.go now check them) and are gone from this list, not
+// silently left to a stale expectation.
 func TestEveryOtherOperationAnswers501NamingAStep(t *testing.T) {
 	srv := newTestServer(t)
 	cases := []struct {
@@ -69,12 +72,6 @@ func TestEveryOtherOperationAnswers501NamingAStep(t *testing.T) {
 		{"GET", "/v1/findings/slug"},
 		{"POST", "/v1/formulas/evaluate"},
 		{"GET", "/v1/hall/demonstration?cluster=devnet"},
-		{"GET", "/v1/instruments"},
-		{"GET", "/v1/instruments/mint"},
-		{"GET", "/v1/instruments/mint/admissibility"},
-		{"GET", "/v1/instruments/mint/depth"},
-		{"GET", "/v1/policies/v1"},
-		{"GET", "/v1/reason-codes"},
 		{"GET", "/v1/receipts/serial"},
 		{"GET", "/v1/stream"},
 	}

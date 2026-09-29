@@ -22,11 +22,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
 	"github.com/BeyndtechArc/Seametry/server/internal/store"
+	"github.com/BeyndtechArc/Seametry/server/internal/store/observationdb"
 )
 
 func main() {
@@ -74,7 +76,38 @@ func serve() error {
 		return err
 	}
 
-	handler := gateway.NewHandler(gateway.Server{})
+	// Real from A3 on: ListInstruments, GetInstrument, GetInstrumentDepth
+	// and GetInstrumentAdmissibility read what A2 persisted, so a process
+	// that cannot reach Postgres cannot honestly answer /v1/status as
+	// healthy while every one of those would fail. It fails to start
+	// instead (ENGINEERING_STANDARD.md section 13: "failure is typed... a
+	// service that cannot answer returns a typed degradation, never an
+	// empty success" applies to boot, not only to one request).
+	dsn := os.Getenv("SEAMETRY_DATABASE_URL")
+	if dsn == "" {
+		return errors.New("SEAMETRY_DATABASE_URL is not set; serve needs it to answer the real reads A3 built")
+	}
+	objectDir := os.Getenv("SEAMETRY_OBJECT_STORE_DIR")
+	if objectDir == "" {
+		objectDir = filepath.Join("server", "data", "objects")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	pool, err := store.OpenPool(ctx, dsn)
+	cancel()
+	if err != nil {
+		return fmt.Errorf("opening SEAMETRY_DATABASE_URL: %w", err)
+	}
+	defer pool.Close()
+	pingCtx, pingCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	err = pool.Ping(pingCtx)
+	pingCancel()
+	if err != nil {
+		return fmt.Errorf("pinging SEAMETRY_DATABASE_URL: %w", err)
+	}
+
+	gwServer := gateway.NewServer(observationdb.New(pool), store.NewDirObjectStore(objectDir))
+	handler := gateway.NewHandler(gwServer)
 	srv := &http.Server{
 		Addr:              ":" + p,
 		Handler:           handler,

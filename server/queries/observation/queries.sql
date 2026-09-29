@@ -13,10 +13,28 @@ ON CONFLICT (source, request_key, source_event_at) DO UPDATE SET raw_digest = EX
 RETURNING id;
 
 -- name: LatestObservationForMint :one
+-- as_of is never optional here: every caller passes now() when the request
+-- itself did not name one (docs/prd/API.md section 4.5, "omitted means
+-- now"), so this one query answers both cases and "what did Seametry know
+-- at time T" is never silently collapsed to "what does it know now".
 SELECT * FROM observation.observations
-WHERE mint = $1 AND source = $2
+WHERE mint = $1 AND source = $2 AND source_event_at <= $3
 ORDER BY source_event_at DESC
 LIMIT 1;
+
+-- name: LatestObservationsPerRequestKey :many
+-- One row per distinct request_key as of the given instant: the depth
+-- curve for a mint is one observation per size queried
+-- (adapter_jupiter.go's request_key is mint@size), and DISTINCT ON with
+-- this ORDER BY keeps only the latest of however many times that size has
+-- been observed at or before as_of.
+SELECT DISTINCT ON (request_key) *
+FROM observation.observations
+WHERE mint = $1 AND source = $2 AND source_event_at <= $3
+ORDER BY request_key, source_event_at DESC;
+
+-- name: ListMintsWithObservations :many
+SELECT DISTINCT mint FROM observation.observations WHERE source = $1 ORDER BY mint;
 
 -- name: GetRawPayload :one
 SELECT * FROM observation.raw_payloads WHERE digest = $1;

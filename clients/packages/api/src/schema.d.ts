@@ -855,6 +855,8 @@ export interface operations {
     getInstrumentDepth: {
         parameters: {
             query?: {
+                /** @description What Seametry held as true at this instant. Omitted means now (docs/prd/API.md section 4.5). */
+                as_of?: components["parameters"]["AsOf"];
                 direction?: "buy" | "sell";
             };
             header?: never;

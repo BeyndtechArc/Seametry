@@ -134,6 +134,7 @@ paths:
         reports unavailable until it is measured (docs/prd/API.md 5.1).
       parameters:
         - $ref: '#/components/parameters/Mint'
+        - $ref: '#/components/parameters/AsOf'
         - name: direction
           in: query
           required: false

@@ -5,13 +5,22 @@ import (
 	"time"
 
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway/api"
+	"github.com/BeyndtechArc/Seametry/server/internal/store"
+	"github.com/BeyndtechArc/Seametry/server/internal/store/observationdb"
 )
 
-// Server implements api.StrictServerInterface. Every operation but GetStatus
-// answers 501 until the build step named in its stub lands; docs/prd/API.md
-// section 12 is the order of record, kept current there, not duplicated into
-// a comment on each method that would drift from it.
-type Server struct{}
+// Server implements api.StrictServerInterface. An operation with no handler
+// below still answers 501 until the build step named in its stub lands;
+// docs/prd/API.md section 12 is the order of record, kept current there, not
+// duplicated into a comment on each method that would drift from it.
+type Server struct {
+	Queries *observationdb.Queries
+	Objects store.ObjectStore
+}
+
+func NewServer(queries *observationdb.Queries, objects store.ObjectStore) Server {
+	return Server{Queries: queries, Objects: objects}
+}
 
 var _ api.StrictServerInterface = Server{}
 
@@ -67,14 +76,6 @@ func (Server) GetBatch(ctx context.Context, request api.GetBatchRequestObject) (
 	return api.GetBatchdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetBatch", "A4"), StatusCode: 501}, nil
 }
 
-func (Server) ListFindings(ctx context.Context, request api.ListFindingsRequestObject) (api.ListFindingsResponseObject, error) {
-	return api.ListFindingsdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("ListFindings", "A3"), StatusCode: 501}, nil
-}
-
-func (Server) GetFinding(ctx context.Context, request api.GetFindingRequestObject) (api.GetFindingResponseObject, error) {
-	return api.GetFindingdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetFinding", "A3"), StatusCode: 501}, nil
-}
-
 func (Server) EvaluateFormula(ctx context.Context, request api.EvaluateFormulaRequestObject) (api.EvaluateFormulaResponseObject, error) {
 	return api.EvaluateFormuladefaultApplicationProblemPlusJSONResponse{Body: notBuilt("EvaluateFormula", "F1"), StatusCode: 501}, nil
 }
@@ -83,28 +84,17 @@ func (Server) GetHallDemonstration(ctx context.Context, request api.GetHallDemon
 	return api.GetHallDemonstrationdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetHallDemonstration", "A5"), StatusCode: 501}, nil
 }
 
-func (Server) ListInstruments(ctx context.Context, request api.ListInstrumentsRequestObject) (api.ListInstrumentsResponseObject, error) {
-	return api.ListInstrumentsdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("ListInstruments", "A3"), StatusCode: 501}, nil
+// ListInstruments, GetInstrument, GetInstrumentAdmissibility,
+// GetInstrumentDepth, GetPolicy and ListReasonCodes are implemented in
+// instruments.go, admissibility.go, depth.go and policy_handlers.go: real
+// handlers, not stubs, now that A3 reads what A2 persisted.
+
+func (Server) ListFindings(ctx context.Context, request api.ListFindingsRequestObject) (api.ListFindingsResponseObject, error) {
+	return api.ListFindingsdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("ListFindings", "A3f"), StatusCode: 501}, nil
 }
 
-func (Server) GetInstrument(ctx context.Context, request api.GetInstrumentRequestObject) (api.GetInstrumentResponseObject, error) {
-	return api.GetInstrumentdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetInstrument", "A3"), StatusCode: 501}, nil
-}
-
-func (Server) GetInstrumentAdmissibility(ctx context.Context, request api.GetInstrumentAdmissibilityRequestObject) (api.GetInstrumentAdmissibilityResponseObject, error) {
-	return api.GetInstrumentAdmissibilitydefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetInstrumentAdmissibility", "A3"), StatusCode: 501}, nil
-}
-
-func (Server) GetInstrumentDepth(ctx context.Context, request api.GetInstrumentDepthRequestObject) (api.GetInstrumentDepthResponseObject, error) {
-	return api.GetInstrumentDepthdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetInstrumentDepth", "A3"), StatusCode: 501}, nil
-}
-
-func (Server) GetPolicy(ctx context.Context, request api.GetPolicyRequestObject) (api.GetPolicyResponseObject, error) {
-	return api.GetPolicydefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetPolicy", "A3"), StatusCode: 501}, nil
-}
-
-func (Server) ListReasonCodes(ctx context.Context, request api.ListReasonCodesRequestObject) (api.ListReasonCodesResponseObject, error) {
-	return api.ListReasonCodesdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("ListReasonCodes", "A3"), StatusCode: 501}, nil
+func (Server) GetFinding(ctx context.Context, request api.GetFindingRequestObject) (api.GetFindingResponseObject, error) {
+	return api.GetFindingdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetFinding", "A3f"), StatusCode: 501}, nil
 }
 
 func (Server) GetReceipt(ctx context.Context, request api.GetReceiptRequestObject) (api.GetReceiptResponseObject, error) {
