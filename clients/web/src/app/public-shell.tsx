@@ -11,7 +11,7 @@ const primaryLinks = [
   { id: "home", label: "Overview", href: "/" },
   { id: "how", label: "Mechanism", href: "/how-it-works" },
   { id: "key", label: "The Key", href: "/the-key" },
-  { id: "terminal", label: "Terminal", href: "/terminal/alloys/storm" },
+  { id: "terminal", label: "Terminal", href: "/terminal" },
   { id: "sign-in", label: "Access", href: "/sign-in" },
 ] as const;
 
@@ -86,7 +86,7 @@ export function PublicShell({
             title: "Product",
             links: [
               { label: "How it works", href: "/how-it-works" },
-              { label: "Terminal", href: "/terminal/alloys/storm" },
+              { label: "Terminal", href: "/terminal" },
               { label: "Hall demonstration", href: "/hall-demo" },
             ],
           },

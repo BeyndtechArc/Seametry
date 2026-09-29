@@ -3,6 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "types": "./src/schema.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/schema.d.ts"
+    }
+  },
   "scripts": {
     "generate": "openapi-typescript ../../../contracts/openapi/openapi.yaml -o src/schema.d.ts"
   },

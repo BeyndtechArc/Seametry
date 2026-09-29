@@ -47,7 +47,7 @@ test("the public rail reaches every available destination", async ({ page }) => 
   await expect(navigation.getByRole("link", { name: "Overview" })).toHaveAttribute("href", "/");
   await expect(navigation.getByRole("link", { name: "Mechanism" })).toHaveAttribute("href", "/how-it-works");
   await expect(navigation.getByRole("link", { name: "The Key" })).toHaveAttribute("href", "/the-key");
-  await expect(navigation.getByRole("link", { name: "Terminal" })).toHaveAttribute("href", "/terminal/alloys/storm");
+  await expect(navigation.getByRole("link", { name: "Terminal" })).toHaveAttribute("href", "/terminal");
   await expect(navigation.getByRole("link", { name: "Access" })).toHaveAttribute("href", "/sign-in");
   await expect(page.getByRole("button", { name: "Use light mode" })).toBeVisible();
 });

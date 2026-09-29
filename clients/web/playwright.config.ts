@@ -13,10 +13,19 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:3847",
   },
-  webServer: {
-    command: "npm run build && npm run start -- -p 3847",
-    url: "http://localhost:3847",
-    reuseExistingServer: false,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: "node tests/terminal-api-fixture.mjs",
+      url: "http://127.0.0.1:3846/health",
+      reuseExistingServer: false,
+      timeout: 30_000,
+    },
+    {
+      command: "npm run build && npm run start -- -p 3847",
+      url: "http://localhost:3847",
+      reuseExistingServer: false,
+      timeout: 120_000,
+      env: { SEAMETRY_API_URL: "http://127.0.0.1:3846" },
+    },
+  ],
 });

@@ -19,7 +19,7 @@
 // Usage: node clients/web/scripts/fonts.mjs
 
 import AdmZip from 'adm-zip';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, stat, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -55,6 +55,22 @@ const FRAGMENT_MONO_CSS = 'https://fonts.googleapis.com/css2?family=Fragment+Mon
 // Google serves WOFF2 only to a user agent it believes supports it.
 const MODERN_UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
+const expectedFiles = [
+  ...new Set(families.flatMap((family) => Object.values(family.want))),
+  'FragmentMono-Regular.woff2',
+];
+
+async function localFontSetPresent() {
+  const states = await Promise.all(expectedFiles.map(async (name) => {
+    try {
+      return (await stat(join(dir, name))).size > 0;
+    } catch {
+      return false;
+    }
+  }));
+  return states.every(Boolean);
+}
 
 async function fetchFamily(family) {
   console.log(`fetching ${family.slug}`);
@@ -113,6 +129,12 @@ function fail(message) {
 
 async function main() {
   await mkdir(dir, { recursive: true });
+  // Fontshare forbids repository redistribution, but it does not require a
+  // machine to redownload the same licensed files on every local build.
+  if (await localFontSetPresent()) {
+    console.log(`${expectedFiles.length} local font files present; download skipped`);
+    return;
+  }
   let total = 0;
   for (const family of families) {
     total += await fetchFamily(family);
