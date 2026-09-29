@@ -1,16 +1,17 @@
-# Builds the one static binary docs/prd/API.md section 11 names. Build
-# context is server/ (the module root), so this runs as:
-#   docker build -f deploy/Dockerfile .
-# from inside server/, which is what compose.yaml's build.context does.
+# Builds the one static binary docs/prd/API.md section 11 names and carries
+# the recorded Hall evidence published by /v1/hall/demonstration. The build
+# context is the repository root so the image can include both server/ and
+# shared/evidence/ without keeping a second copy of the transcript.
 
 FROM golang:1.27.1 AS build
-WORKDIR /src
-COPY go.mod go.sum ./
+WORKDIR /src/server
+COPY server/go.mod server/go.sum ./
 RUN go mod download
-COPY . .
+COPY server/ .
 RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/seametry ./cmd/seametry
 
 FROM gcr.io/distroless/static-debian12
 COPY --from=build /out/seametry /seametry
+COPY shared/evidence/hall-demo /shared/evidence/hall-demo
 EXPOSE 8080
 ENTRYPOINT ["/seametry"]

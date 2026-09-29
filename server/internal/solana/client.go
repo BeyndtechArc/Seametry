@@ -201,6 +201,70 @@ func decodeAccount(address string, value *accountValue) (*Account, error) {
 	}, nil
 }
 
+// GetAccountInfo reads one account. It returns (nil, nil) when the account
+// does not exist, the same "absent, not an error" shape decodeAccount
+// already gives a missing entry inside GetMultipleAccounts.
+func (c *Client) GetAccountInfo(ctx context.Context, address, commitment string) (*Account, error) {
+	if commitment == "" {
+		commitment = "finalized"
+	}
+	raw, err := c.Call(ctx, "getAccountInfo", []any{address, map[string]string{
+		"encoding": "base64", "commitment": commitment,
+	}})
+	if err != nil {
+		return nil, err
+	}
+	var result struct {
+		Value *accountValue `json:"value"`
+	}
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return nil, fmt.Errorf("solana: getAccountInfo: %w", err)
+	}
+	return decodeAccount(address, result.Value)
+}
+
+// GetProgramAccounts lists every account a program owns whose data is
+// exactly dataSize bytes. dataSize is the RPC's own filter, cheaper than
+// fetching every account a program owns and discarding most of them, but
+// it is not this package's only safety net: a caller decoding the result
+// (basket.DecodeAlloy, for one) checks its own account discriminator
+// too, so a same-sized account of a different type is still refused, not
+// silently accepted.
+//
+// getProgramAccounts costs ten credits against the one credit an ordinary
+// call costs (this file's own creditCost table), which is why it takes a
+// size filter rather than returning everything a program owns.
+func (c *Client) GetProgramAccounts(ctx context.Context, programID string, dataSize int, commitment string) ([]*Account, error) {
+	if commitment == "" {
+		commitment = "finalized"
+	}
+	raw, err := c.Call(ctx, "getProgramAccounts", []any{programID, map[string]any{
+		"encoding": "base64", "commitment": commitment,
+		"filters": []any{map[string]any{"dataSize": dataSize}},
+	}})
+	if err != nil {
+		return nil, err
+	}
+	var entries []struct {
+		Pubkey  string        `json:"pubkey"`
+		Account *accountValue `json:"account"`
+	}
+	if err := json.Unmarshal(raw, &entries); err != nil {
+		return nil, fmt.Errorf("solana: getProgramAccounts: %w", err)
+	}
+	out := make([]*Account, 0, len(entries))
+	for _, e := range entries {
+		account, err := decodeAccount(e.Pubkey, e.Account)
+		if err != nil {
+			return nil, err
+		}
+		if account != nil {
+			out = append(out, account)
+		}
+	}
+	return out, nil
+}
+
 // GetSlot returns the current slot at a commitment.
 func (c *Client) GetSlot(ctx context.Context, commitment string) (uint64, error) {
 	if commitment == "" {

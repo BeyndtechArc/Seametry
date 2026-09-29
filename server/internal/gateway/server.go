@@ -14,12 +14,26 @@ import (
 // docs/prd/API.md section 12 is the order of record, kept current there, not
 // duplicated into a comment on each method that would drift from it.
 type Server struct {
-	Queries *observationdb.Queries
-	Objects store.ObjectStore
+	Queries         *observationdb.Queries
+	Objects         store.ObjectStore
+	Hall            HallReader
+	HallProgramID   string
+	HallCluster     string
+	HallEvidenceDir string
+	Now             func() time.Time
 }
 
 func NewServer(queries *observationdb.Queries, objects store.ObjectStore) Server {
-	return Server{Queries: queries, Objects: objects}
+	return Server{Queries: queries, Objects: objects, HallEvidenceDir: "shared/evidence/hall-demo", Now: time.Now}
+}
+
+// WithHall gives the Gateway the deployed Hall reader without changing the
+// database constructor used by tests and by services that only need A3 reads.
+func (s Server) WithHall(client HallReader, programID, cluster string) Server {
+	s.Hall = client
+	s.HallProgramID = programID
+	s.HallCluster = cluster
+	return s
 }
 
 var _ api.StrictServerInterface = Server{}
@@ -48,24 +62,8 @@ func (Server) GetStatus(ctx context.Context, request api.GetStatusRequestObject)
 	}, nil
 }
 
-func (Server) ListAlloys(ctx context.Context, request api.ListAlloysRequestObject) (api.ListAlloysResponseObject, error) {
-	return api.ListAlloysdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("ListAlloys", "A5"), StatusCode: 501}, nil
-}
-
-func (Server) GetAlloy(ctx context.Context, request api.GetAlloyRequestObject) (api.GetAlloyResponseObject, error) {
-	return api.GetAlloydefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetAlloy", "A5"), StatusCode: 501}, nil
-}
-
 func (Server) GetAlloyNav(ctx context.Context, request api.GetAlloyNavRequestObject) (api.GetAlloyNavResponseObject, error) {
 	return api.GetAlloyNavdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetAlloyNav", "A5"), StatusCode: 501}, nil
-}
-
-func (Server) GetAlloyStrikeCost(ctx context.Context, request api.GetAlloyStrikeCostRequestObject) (api.GetAlloyStrikeCostResponseObject, error) {
-	return api.GetAlloyStrikeCostdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetAlloyStrikeCost", "A5"), StatusCode: 501}, nil
-}
-
-func (Server) GetAlloyMeltProceeds(ctx context.Context, request api.GetAlloyMeltProceedsRequestObject) (api.GetAlloyMeltProceedsResponseObject, error) {
-	return api.GetAlloyMeltProceedsdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetAlloyMeltProceeds", "A5"), StatusCode: 501}, nil
 }
 
 func (Server) ListAnchorKeys(ctx context.Context, request api.ListAnchorKeysRequestObject) (api.ListAnchorKeysResponseObject, error) {
@@ -78,10 +76,6 @@ func (Server) GetBatch(ctx context.Context, request api.GetBatchRequestObject) (
 
 func (Server) EvaluateFormula(ctx context.Context, request api.EvaluateFormulaRequestObject) (api.EvaluateFormulaResponseObject, error) {
 	return api.EvaluateFormuladefaultApplicationProblemPlusJSONResponse{Body: notBuilt("EvaluateFormula", "F1"), StatusCode: 501}, nil
-}
-
-func (Server) GetHallDemonstration(ctx context.Context, request api.GetHallDemonstrationRequestObject) (api.GetHallDemonstrationResponseObject, error) {
-	return api.GetHallDemonstrationdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetHallDemonstration", "A5"), StatusCode: 501}, nil
 }
 
 // ListInstruments, GetInstrument, GetInstrumentAdmissibility,

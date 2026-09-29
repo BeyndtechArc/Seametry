@@ -61,17 +61,12 @@ func TestEveryOtherOperationAnswers501NamingAStep(t *testing.T) {
 	cases := []struct {
 		method, path string
 	}{
-		{"GET", "/v1/alloys"},
-		{"GET", "/v1/alloys/addr"},
 		{"GET", "/v1/alloys/addr/nav"},
-		{"GET", "/v1/alloys/addr/strike-cost?shares=1"},
-		{"GET", "/v1/alloys/addr/melt-proceeds?shares=1"},
 		{"GET", "/v1/anchor-keys"},
 		{"GET", "/v1/batches/root"},
 		{"GET", "/v1/findings"},
 		{"GET", "/v1/findings/slug"},
 		{"POST", "/v1/formulas/evaluate"},
-		{"GET", "/v1/hall/demonstration?cluster=devnet"},
 		{"GET", "/v1/receipts/serial"},
 		{"GET", "/v1/stream"},
 	}

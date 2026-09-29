@@ -1,0 +1,13 @@
+{
+  "symbol": "Leg0HallAccount",
+  "address": "3sxKhEGGstwDtgCKSAX575RWLHrN7jMoMhEdvorYwM7Z",
+  "cluster": "https://api.devnet.solana.com",
+  "commitment": "finalized",
+  "slot": 505629981,
+  "captured_at": "2026-09-29T18:53:36.866Z",
+  "owner": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "lamports": 1559560,
+  "data_sha256": "8c41e9c0302535f4f9bc9dde66b3b7ed35ec9be94b634ab335cec8531a67c425",
+  "data_len": 179,
+  "data_base64": "d7fj1Qa9hBqSxoKMJ0wXRyNCDE/Xlann7a2YLDmvnUABU3JjpTeRzoLjARppvmgPdrPX888z/5/ihTH4IB6Wf0BLTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgcAAAAbAAAADwABAAA="
+}

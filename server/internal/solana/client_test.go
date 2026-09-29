@@ -3,6 +3,7 @@ package solana
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -157,6 +158,79 @@ func TestMissingAccountKeepsItsPosition(t *testing.T) {
 	}
 	if accounts[2].Address != "c" || string(accounts[2].Data) != "c" {
 		t.Error("index 2 lost its alignment with its address")
+	}
+}
+
+func TestGetAccountInfoUsesFinalizedAndKeepsAbsence(t *testing.T) {
+	var requests []map[string]any
+	client := newTestClient(t, func(r *http.Request) (*http.Response, error) {
+		var request map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Fatal(err)
+		}
+		requests = append(requests, request)
+		if len(requests) == 1 {
+			data := base64.StdEncoding.EncodeToString([]byte("alloy"))
+			return reply(200, fmt.Sprintf(`{"result":{"context":{"slot":42},"value":{"data":[%q,"base64"],"owner":"hall","lamports":9,"executable":false}}}`, data)), nil
+		}
+		return reply(200, `{"result":{"context":{"slot":43},"value":null}}`), nil
+	})
+
+	account, err := client.GetAccountInfo(context.Background(), "address", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if account == nil || account.Address != "address" || account.Owner != "hall" || string(account.Data) != "alloy" {
+		t.Fatalf("account = %#v", account)
+	}
+	missing, err := client.GetAccountInfo(context.Background(), "missing", "confirmed")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if missing != nil {
+		t.Fatalf("missing account = %#v, want nil", missing)
+	}
+
+	firstParams := requests[0]["params"].([]any)
+	firstConfig := firstParams[1].(map[string]any)
+	if firstConfig["commitment"] != "finalized" {
+		t.Errorf("empty commitment became %v, want finalized", firstConfig["commitment"])
+	}
+	secondParams := requests[1]["params"].([]any)
+	secondConfig := secondParams[1].(map[string]any)
+	if secondConfig["commitment"] != "confirmed" {
+		t.Errorf("explicit commitment became %v, want confirmed", secondConfig["commitment"])
+	}
+}
+
+func TestGetProgramAccountsSendsSizeFilterAndDecodesAddresses(t *testing.T) {
+	client := newTestClient(t, func(r *http.Request) (*http.Response, error) {
+		var request struct {
+			Method string `json:"method"`
+			Params []any  `json:"params"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			t.Fatal(err)
+		}
+		if request.Method != "getProgramAccounts" {
+			t.Errorf("method = %q, want getProgramAccounts", request.Method)
+		}
+		config := request.Params[1].(map[string]any)
+		filters := config["filters"].([]any)
+		filter := filters[0].(map[string]any)
+		if filter["dataSize"] != float64(2080) {
+			t.Errorf("dataSize = %v, want 2080", filter["dataSize"])
+		}
+		data := base64.StdEncoding.EncodeToString([]byte("alloy"))
+		return reply(200, fmt.Sprintf(`{"result":[{"pubkey":"one","account":{"data":[%q,"base64"],"owner":"hall","lamports":9,"executable":false}}]}`, data)), nil
+	})
+
+	accounts, err := client.GetProgramAccounts(context.Background(), "program", 2080, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(accounts) != 1 || accounts[0].Address != "one" || string(accounts[0].Data) != "alloy" {
+		t.Fatalf("accounts = %#v", accounts)
 	}
 }
 

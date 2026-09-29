@@ -23,10 +23,13 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
+	"github.com/BeyndtechArc/Seametry/server/internal/basket"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
+	"github.com/BeyndtechArc/Seametry/server/internal/solana"
 	"github.com/BeyndtechArc/Seametry/server/internal/store"
 	"github.com/BeyndtechArc/Seametry/server/internal/store/observationdb"
 )
@@ -106,7 +109,16 @@ func serve() error {
 		return fmt.Errorf("pinging SEAMETRY_DATABASE_URL: %w", err)
 	}
 
-	gwServer := gateway.NewServer(observationdb.New(pool), store.NewDirObjectStore(objectDir))
+	hallEndpoint := strings.TrimSpace(os.Getenv("SEAMETRY_HALL_DEVNET_RPC_URL"))
+	if hallEndpoint == "" {
+		hallEndpoint = "https://api.devnet.solana.com"
+	}
+	hall, err := solana.New(hallEndpoint, solana.Options{})
+	if err != nil {
+		return fmt.Errorf("configuring the devnet Hall reader: %w", err)
+	}
+	gwServer := gateway.NewServer(observationdb.New(pool), store.NewDirObjectStore(objectDir)).
+		WithHall(hall, basket.HallDevnetProgramID, "devnet")
 	handler := gateway.NewHandler(gwServer)
 	srv := &http.Server{
 		Addr:              ":" + p,
