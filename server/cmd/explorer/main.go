@@ -236,7 +236,7 @@ func main() {
 	tmpl := loadTemplates()
 
 	pages := []struct{ file, tmpl, title, nav string }{
-		{"index.html", "index.html", "Seametry Explorer", "index"},
+		{"index.html", "index.html", "Catalogue", "index"},
 		{"instruments.html", "instruments.html", "Instruments", "instruments"},
 		{"evidence.html", "evidence.html", "Evidence", "evidence"},
 		{"hall.html", "hall.html", "The Hall", "hall"},
@@ -304,6 +304,8 @@ func loadTemplates() *template.Template {
 			}
 			return s[:n] + "…"
 		},
+		"lower": strings.ToLower,
+		"add":   func(a, b int) int { return a + b },
 	}).ParseFS(templates, "templates/*.html"))
 }
 

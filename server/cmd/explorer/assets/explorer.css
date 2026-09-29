@@ -171,6 +171,56 @@ a { color: var(--sm-accent-provenance) }
   margin-top: var(--sm-space-1);
 }
 
+/* The catalogue filter: no script. Anchor targets sit before the table in
+ * the DOM so :target plus the general sibling combinator can reach into it;
+ * each anchor is a real fragment link, so it works with JavaScript off,
+ * bookmarks and back/forward, unlike a checkbox that needs script to filter. */
+.anchor-target { display: block; height: 0; visibility: hidden }
+.filters { display: flex; gap: var(--sm-space-5); margin-top: var(--sm-space-6); flex-wrap: wrap }
+.filters a { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary); padding-bottom: var(--sm-space-1); border-bottom: 1px solid transparent }
+.filters a:hover { color: var(--sm-text-primary) }
+#all:target ~ .filters a[href="#all"],
+#allow:target ~ .filters a[href="#allow"],
+#warn:target ~ .filters a[href="#warn"],
+#block:target ~ .filters a[href="#block"] { color: var(--sm-text-primary); border-bottom-color: var(--sm-line-strong) }
+#allow:target ~ .scroll tr[data-stamp]:not([data-stamp="allow"]),
+#warn:target ~ .scroll tr[data-stamp]:not([data-stamp="warn"]),
+#block:target ~ .scroll tr[data-stamp]:not([data-stamp="block"]) { display: none }
+
+.lot { margin-top: var(--sm-space-12); padding-top: var(--sm-space-9); border-top: .5px solid var(--sm-line-rule) }
+.lot:first-of-type { margin-top: var(--sm-space-9) }
+/* Grade: components.md's own rule, "no colour, no ranking, no metal
+ * metaphors". Never the Stamp's allow/warn/block styling. */
+.grade {
+  display: inline-block;
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-regular);
+  padding: var(--sm-space-1) var(--sm-space-3);
+  border-radius: var(--sm-radius-surface);
+  border: 1px solid var(--sm-line-rule);
+  color: var(--sm-text-tertiary);
+}
+.hero-figure {
+  font-family: var(--sm-font-family-display);
+  font-weight: var(--sm-font-weight-light);
+  font-size: var(--sm-font-size-figure);
+  letter-spacing: var(--sm-font-tracking-display);
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  margin-top: var(--sm-space-5);
+}
+.hero-figure.not-available { font-size: var(--sm-font-size-title); color: var(--sm-text-tertiary) }
+.not-available { color: var(--sm-text-tertiary) }
+
+/* An unverified or stale figure: dotted underline in provenance blue, never
+ * colour alone (foundations.md's evidence-state rule; accessibility floor). */
+.evidence-dotted {
+  color: var(--sm-accent-provenance);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+}
+
 /* Tables are data: radius 0, rules between, no fills. */
 table { width: 100%; border-collapse: collapse; margin-top: var(--sm-space-5); font-size: var(--sm-font-size-small) }
 .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch }
@@ -491,5 +541,5 @@ footer p { color: var(--sm-text-tertiary); max-width: var(--sm-size-readable) }
 }
 h3.lead { margin-top: 0 }
 td.label { width: 34% }
-p.meta { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary) }
+p.meta, .meta { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary) }
 code.reason-code { color: var(--sm-text-tertiary) }
