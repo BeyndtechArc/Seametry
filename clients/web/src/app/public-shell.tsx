@@ -5,17 +5,17 @@ import { ThemeControl } from "@seametry/ui/theme-control";
 import { publicIncident, publicIncidentAge } from "@/lib/public-evidence";
 import styles from "./site.module.css";
 
-type PublicDestination = "home" | "how" | "key" | "terminal" | "sign-in";
+type PublicDestination = "home" | "how" | "hall" | "key" | "terminal" | "sign-in";
 
 const primaryLinks = [
   { id: "home", label: "Overview", href: "/" },
-  { id: "how", label: "Mechanism", href: "/how-it-works" },
-  { id: "key", label: "The Key", href: "/the-key" },
+  { id: "how", label: "How it works", href: "/how-it-works" },
+  { id: "hall", label: "Hall demo", href: "/hall-demo" },
   { id: "terminal", label: "Terminal", href: "/terminal" },
-  { id: "sign-in", label: "Access", href: "/sign-in" },
+  { id: "key", label: "The Key", href: "/the-key" },
 ] as const;
 
-export function HouseRail({ current }: { current: PublicDestination }) {
+export function HouseRail({ current }: { current?: PublicDestination }) {
   return (
     <header className={styles.houseRail}>
       <Link className={styles.wordmark} href="/">
@@ -73,7 +73,7 @@ export function PublicShell({
   current,
   children,
 }: {
-  current: PublicDestination;
+  current?: PublicDestination;
   children: ReactNode;
 }) {
   return (

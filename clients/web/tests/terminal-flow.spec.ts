@@ -103,6 +103,8 @@ test("the Terminal names the API boundary when no deployment is connected", asyn
   await expect(page.getByRole("heading", { level: 1, name: "Instrument desk" })).toBeVisible();
   await expect(page.getByText("Terminal API unavailable", { exact: true })).toBeVisible();
   await expect(page.getByText("Set SEAMETRY_API_URL to a deployed or local Gateway.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Inspect Alloy 01" })).toHaveAttribute("href", "/terminal/alloys/storm");
+  await expect(page.getByRole("link", { name: "Return to public site" })).toHaveAttribute("href", "/");
 });
 
 test("the Terminal distinguishes an empty persisted register from an unavailable Gateway", async ({ page }) => {
@@ -110,4 +112,5 @@ test("the Terminal distinguishes an empty persisted register from an unavailable
   await expect(page.getByText("No persisted instruments", { exact: true })).toBeVisible();
   await expect(page.getByText("The Gateway answered with an empty instrument register as of Sep 29, 2026, 12:00 PM UTC.", { exact: true })).toBeVisible();
   await expect(page.getByText("Terminal API unavailable", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Inspect Alloy 01" })).toHaveAttribute("href", "/terminal/alloys/storm");
 });

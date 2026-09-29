@@ -17,6 +17,33 @@ const routes = [
   "/the-key",
 ];
 
+test("an unknown route returns the house 404 under the application policy", async ({ page }) => {
+  const violations: string[] = [];
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await page.addInitScript(() => {
+    window.addEventListener("securitypolicyviolation", (event) => {
+      (window as unknown as { __cspViolations: string[] }).__cspViolations ??= [];
+      (window as unknown as { __cspViolations: string[] }).__cspViolations.push(
+        `${event.violatedDirective}: ${event.blockedURI}`,
+      );
+    });
+  });
+
+  const response = await page.goto("/a-route-that-is-not-registered", { waitUntil: "networkidle" });
+  const policy = response?.headers()["content-security-policy"] ?? "";
+  violations.push(...await page.evaluate(
+    () => (window as unknown as { __cspViolations?: string[] }).__cspViolations ?? [],
+  ));
+
+  expect(response?.status()).toBe(404);
+  expect(policy).toContain("default-src 'self'");
+  expect(policy).toMatch(/'nonce-[^']+'/);
+  expect(violations).toEqual([]);
+  expect(pageErrors).toEqual([]);
+  await expect(page.getByRole("heading", { level: 1, name: "That route is not in the register." })).toBeVisible();
+});
+
 for (const route of routes) {
   test(`${route} sends the required security headers, with a fresh nonce`, async ({ page }) => {
     const first = await page.goto(route);

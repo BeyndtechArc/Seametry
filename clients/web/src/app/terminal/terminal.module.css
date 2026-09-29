@@ -33,7 +33,7 @@
 .deskHero span,
 .sectionHeading > span,
 .assayIdentity > span,
-.boundary > span,
+.boundaryTitle > span,
 .loading > span,
 .unknownRegister > span {
   color: var(--sm-text-tertiary);
@@ -157,6 +157,18 @@
   align-items: center;
   border-top: 0.5px solid var(--sm-line-strong);
   border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.boundaryTitle,
+.boundaryCopy,
+.boundaryActions {
+  display: grid;
+  align-content: start;
+  gap: var(--sm-space-4);
+}
+
+.boundaryActions {
+  justify-items: start;
 }
 
 .boundary h2 {

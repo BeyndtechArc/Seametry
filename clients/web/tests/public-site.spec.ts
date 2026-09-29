@@ -45,9 +45,26 @@ test("the public rail reaches every available destination", async ({ page }) => 
 
   const navigation = page.getByRole("navigation", { name: "Primary" });
   await expect(navigation.getByRole("link", { name: "Overview" })).toHaveAttribute("href", "/");
-  await expect(navigation.getByRole("link", { name: "Mechanism" })).toHaveAttribute("href", "/how-it-works");
-  await expect(navigation.getByRole("link", { name: "The Key" })).toHaveAttribute("href", "/the-key");
+  await expect(navigation.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "/how-it-works");
+  await expect(navigation.getByRole("link", { name: "Hall demo" })).toHaveAttribute("href", "/hall-demo");
   await expect(navigation.getByRole("link", { name: "Terminal" })).toHaveAttribute("href", "/terminal");
-  await expect(navigation.getByRole("link", { name: "Access" })).toHaveAttribute("href", "/sign-in");
+  await expect(navigation.getByRole("link", { name: "The Key" })).toHaveAttribute("href", "/the-key");
+  await expect(navigation.getByRole("link", { name: "Access" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Use light mode" })).toBeVisible();
+});
+
+test("the live Hall demonstration remains inside the public journey", async ({ page }) => {
+  await page.goto("/hall-demo");
+
+  await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Hall demo" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { level: 1, name: "The Hall, live on devnet" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Seametry Public" })).toHaveAttribute("href", "/");
+});
+
+test("an unknown public route returns a useful route index", async ({ page }) => {
+  await page.goto("/a-route-that-is-not-registered");
+
+  await expect(page.getByRole("heading", { level: 1, name: "That route is not in the register." })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the overview" })).toHaveAttribute("href", "/");
+  await expect(page.getByRole("link", { name: "Open the Terminal" })).toHaveAttribute("href", "/terminal");
 });

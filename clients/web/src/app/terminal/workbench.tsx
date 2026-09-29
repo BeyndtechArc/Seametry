@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
-import { Digest, Rule, Stamp, TextAction } from "@seametry/ui";
+import { Digest, RouteAction, Rule, Stamp, TextAction } from "@seametry/ui";
 import { ThemeControl } from "@seametry/ui/theme-control";
 import type {
   InstrumentAssayResponse,
@@ -53,7 +53,7 @@ function TerminalFrame({ current, children }: { current: "desk" | "storm"; child
         <nav aria-label="Terminal">
           <Link href="/terminal" aria-current={current === "desk" ? "page" : undefined}>Instrument desk</Link>
           <Link href="/terminal/alloys/storm" aria-current={current === "storm" ? "page" : undefined}>Alloy 01</Link>
-          <Link href="/">Public register</Link>
+          <Link href="/">Public site</Link>
         </nav>
         <ThemeControl />
       </header>
@@ -65,10 +65,18 @@ function TerminalFrame({ current, children }: { current: "desk" | "storm"; child
 function Boundary({ problem }: { problem: TerminalProblem }) {
   return (
     <section className={styles.boundary} role="status">
-      <span>Gateway boundary</span>
-      <h2>{problem.title}</h2>
-      <p>{problem.detail}</p>
-      <code>HTTP {problem.status}</code>
+      <div className={styles.boundaryTitle}>
+        <span>Gateway boundary</span>
+        <h2>{problem.title}</h2>
+      </div>
+      <div className={styles.boundaryCopy}>
+        <p>{problem.detail}</p>
+        <code>HTTP {problem.status}</code>
+      </div>
+      <div className={styles.boundaryActions}>
+        <RouteAction href="/terminal/alloys/storm">Inspect Alloy 01</RouteAction>
+        <TextAction href="/">Return to public site</TextAction>
+      </div>
     </section>
   );
 }
@@ -85,10 +93,18 @@ function LoadingRegister() {
 function EmptyRegister({ asOf }: { asOf: string }) {
   return (
     <section className={styles.boundary} role="status">
-      <span>Registry state</span>
-      <h2>No persisted instruments</h2>
-      <p>The Gateway answered with an empty instrument register as of {captureLabel(asOf)} UTC.</p>
-      <code>0 records</code>
+      <div className={styles.boundaryTitle}>
+        <span>Registry state</span>
+        <h2>No persisted instruments</h2>
+      </div>
+      <div className={styles.boundaryCopy}>
+        <p>The Gateway answered with an empty instrument register as of {captureLabel(asOf)} UTC.</p>
+        <code>0 records</code>
+      </div>
+      <div className={styles.boundaryActions}>
+        <RouteAction href="/terminal/alloys/storm">Inspect Alloy 01</RouteAction>
+        <TextAction href="/">Return to public site</TextAction>
+      </div>
     </section>
   );
 }
