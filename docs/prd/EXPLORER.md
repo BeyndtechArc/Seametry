@@ -49,14 +49,26 @@ None of them should have to read a paragraph before seeing something true.
 ### 3.0 The catalogue
 
 The list every instrument page in 3.2 is reached from. The Catalogue template
-in `.claude/skills/seametry-design/references/patterns.md` section 2: a title
-and one sentence on the Good Delivery rules with a link to the published rule
-set, filterable by stamp, grade and issuer, with NGD entries visible, never
+in `.claude/skills/seametry-design/references/patterns.md` section 2: a title,
+one sentence, then one row per lot with refused entries visible, never
 hidden.
+
+The issuer powers every listed instrument shares are stated once, above the
+table, and a row names only the powers that instrument adds. Repeating the
+same six sentences on every lot hid the one column that differs: the
+shortfall at the policy's reference size, and the verdict it produced. A
+refused row carries its first blocking reason in a few words; the policy's
+full sentence is on the lot page.
+
+There is no filter while the catalogue holds seven lots: a filter over seven
+rows is a control with nothing to do. It returns when the list outgrows one
+screen.
 
 ### 3.1 The verification ritual
 
-A visitor pastes a serial and watches their own machine do the work.
+A visitor pastes a serial and watches their own machine do the work. This is
+the Explorer's first page (`index.html`): every visitor in section 2 arrives
+wanting something checked, and this is the one page where they check it.
 
 1. The public body is shown in full, and its digest computes in the browser via
    Web Crypto.
@@ -79,7 +91,9 @@ reference; the scheme it implements is real and lives in `server/internal/receip
   verify offline.
 - The tamper control stays. Changing one character and watching the root become
   unrecognisable is the guarantee made visceral, and it does more work than any
-  explanation.
+  explanation. Once a run finishes, the public record is editable in place
+  and the visitor's own edit is what gets verified; a control that changes
+  one character for them stays beside it for anyone who would rather not type.
 - Until a batch root is anchored on chain, the page says so in those words. The
   mock's line is correct and stays: *its root is not yet written on-chain.*
 - The tree visualisation generalises to any batch size. Real batches are not
@@ -90,7 +104,8 @@ reference; the scheme it implements is real and lives in `server/internal/receip
 
 ### 3.2 The instrument page
 
-For any instrument in the registry, the facts decoded from its mint:
+One page per instrument (`lot-<symbol>.html`): one object per view. For any
+instrument in the registry, the facts decoded from its mint:
 
 - **Grade**, as a plain sentence, describing the legal shape of the claim and
   nothing about quality.

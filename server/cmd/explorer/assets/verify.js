@@ -91,7 +91,7 @@
   if (chips) batch.proofs.forEach(function (p) {
     var c = document.createElement('button');
     c.type = 'button'; c.className = 'chip'; c.textContent = p.serial;
-    c.addEventListener('click', function () { $('serial').value = p.serial; show(p.serial, false); });
+    c.addEventListener('click', function () { $('serial').value = p.serial; show(p.serial, 'original'); });
     chips.appendChild(c);
   });
 
@@ -221,11 +221,50 @@
     return proof || null;
   }
 
+  var pre = $('pub');
+
+  /**
+   * While a check runs, every control that would start another is disabled
+   * and says so. Clicks used to be ignored silently mid-run, which read as a
+   * broken button. Between runs the public record itself becomes editable:
+   * the page flipping one digit proves less than a visitor changing any
+   * character they like and watching the root refuse it.
+   */
+  function setBusy(on) {
+    busy = on;
+    ['tamper', 'again', 'mine'].forEach(function (id) { if ($(id)) $(id).disabled = on; });
+    var editable = !on && current !== null;
+    pre.contentEditable = editable ? 'plaintext-only' : 'false';
+    // Older engines without plaintext-only fall back to ordinary editing;
+    // only the text is ever read back, so pasted formatting cannot matter.
+    if (editable && pre.contentEditable !== 'plaintext-only') pre.contentEditable = 'true';
+    pre.classList.toggle('editable', editable);
+    if (editable) {
+      pre.setAttribute('role', 'textbox');
+      pre.setAttribute('aria-multiline', 'true');
+      pre.setAttribute('aria-label', 'Public record, editable');
+    } else {
+      pre.removeAttribute('role');
+    }
+    if ($('edit-hint')) $('edit-hint').hidden = !editable;
+  }
+
+  function original(proof) { return JSON.parse(JSON.stringify(proof.public_body)); }
+
+  /** One character changed, by the page: the last digit of the policy version. */
+  function tampered(proof) {
+    var body = original(proof);
+    body.policy_version = body.policy_version.replace(/(\d)$/, function (d) {
+      return String((parseInt(d, 10) + 1) % 10);
+    });
+    return { body: body, changed: '"' + body.policy_version + '"' };
+  }
+
   /** A visitor asked for this: reveal the result and bring it into view. */
-  function show(serial, tamper) {
+  function show(serial, mode) {
     var proof = lookup(serial);
     if (!proof || busy) return;
-    // Only verify.html has this line; a hallmark page already is the page.
+    // Only the front page has this line; a hallmark page already is the page.
     var link = $('permalink');
     if (link) {
       link.href = 'hallmark-' + proof.serial + '.html';
@@ -234,40 +273,50 @@
     }
     $('result').hidden = false;
     $('result').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-    return run(proof, tamper);
+    if (mode === 'tamper') { var t = tampered(proof); return run(proof, t.body, t.changed); }
+    return run(proof, original(proof), null);
   }
 
-  async function run(proof, tamper) {
-    busy = true; current = proof.serial; $('msg').textContent = '';
+  /** Hashes whatever the visitor left in the record, if it still parses. */
+  function verifyEdit() {
+    if (busy || current === null) return;
+    var body;
+    try {
+      body = JSON.parse(pre.textContent);
+    } catch (e) {
+      $('edit-msg').textContent = 'That is no longer valid JSON, so there is nothing to hash. Restore a quote or comma and try again.';
+      return;
+    }
+    $('result').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    return run(bySerial[current], body, null);
+  }
+
+  /**
+   * Recomputes the root for `body` against the proof's path. `changed`, when
+   * given, is the exact text the page altered, marked so the visitor can see it.
+   */
+  async function run(proof, body, changed) {
+    current = proof.serial; setBusy(true);
+    $('msg').textContent = ''; if ($('edit-msg')) $('edit-msg').textContent = '';
     ['s1', 's2', 's3', 's4'].forEach(function (id) { $(id).classList.remove('on'); });
     ['hp', 'hq', 'hl', 'rc', 'rp'].forEach(function (id) { $(id).textContent = ' '; });
     $('levels').innerHTML = ''; $('verdict').textContent = ''; $('verdict').className = 'verdict';
     $('closing').classList.remove('on');
 
-    var body = JSON.parse(JSON.stringify(proof.public_body));
     var shown = JSON.stringify(body, null, 2);
-    if (tamper) {
-      body.policy_version = body.policy_version.replace(/(\d)$/, function (d) {
-        return String((parseInt(d, 10) + 1) % 10);
-      });
-      shown = JSON.stringify(body, null, 2);
-    }
-
     var index = batch.proofs.indexOf(proof);
     drawTree(batch.proofs.length, null);
 
     // Build the DOM rather than splicing HTML, so a public body can never
     // carry markup into the page.
-    var pre = $('pub');
     pre.textContent = '';
-    if (tamper) {
-      var needle = '"' + body.policy_version + '"';
-      var at = shown.indexOf(needle);
+    var at = changed ? shown.indexOf(changed) : -1;
+    if (at >= 0) {
       pre.appendChild(document.createTextNode(shown.slice(0, at)));
       var mark = document.createElement('mark');
-      mark.textContent = needle;
+      mark.textContent = changed;
       pre.appendChild(mark);
-      pre.appendChild(document.createTextNode(shown.slice(at + needle.length)));
+      pre.appendChild(document.createTextNode(shown.slice(at + changed.length)));
     } else {
       pre.textContent = shown;
     }
@@ -310,23 +359,24 @@
     if (!ok) $('verdict').className = 'verdict no';
     $('seal').textContent = ok
       ? 'This batch root is not written on-chain yet. Once it is, this step also checks it against the Solana memo transaction, signed by a published anchor key.'
-      : 'One changed character in the public record produced an entirely different root. That is the property the seal rests on.';
+      : 'The public record changed, so the root changed with it, beyond recognition. That is the property the seal rests on.';
 
     // Announce the settled verdict once. The hashes above update every frame
     // and are outside any live region on purpose.
     $('announce').textContent = 'Verification complete. ' + $('verdict').textContent;
 
     if (ok) { await sleep(400); $('closing').classList.add('on'); }
-    busy = false;
+    setBusy(false);
   }
 
-  $('form').addEventListener('submit', function (e) { e.preventDefault(); show($('serial').value, false); });
-  $('tamper').addEventListener('click', function () { if (current) show(current, true); });
-  $('again').addEventListener('click', function () { if (current) show(current, false); });
+  $('form').addEventListener('submit', function (e) { e.preventDefault(); show($('serial').value, 'original'); });
+  $('tamper').addEventListener('click', function () { if (current) show(current, 'tamper'); });
+  $('again').addEventListener('click', function () { if (current) show(current, 'original'); });
+  $('mine').addEventListener('click', verifyEdit);
 
   // A hallmark page fixes the serial in the URL, so its ritual starts on its
   // own and stays where it is: the visitor arrived to see this record, and
   // scrolling them past it to the working would hide the record itself.
   var prefill = $('serial').dataset.prefill;
-  if (prefill) { var first = lookup(prefill); if (first) run(first, false); }
+  if (prefill) { var first = lookup(prefill); if (first) run(first, original(first), null); }
 })();

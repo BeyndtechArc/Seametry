@@ -54,21 +54,60 @@ body::before {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); /* design-lint-disable-line lens-scope the ground grain is an approved texture, foundations section 7, and feTurbulence is how it is drawn */
 }
 
+/* The page is narrower than the token's full content width by a gutter's
+ * worth each side: generous margins are the saleroom (foundations.md section
+ * 4), and they are where the entrance pillars stand. */
+:root {
+  --page: calc(var(--sm-size-content) - 2 * var(--sm-space-12));
+  /* Relief never outranks a rule line: both tones sit below line.strong
+   * against their own ground (measured 27 September 2026: dark 1.53 vs 1.73,
+   * light 1.28 vs 1.52). */
+  --relief-ink: var(--sm-scale-olive-100);
+}
+@media (prefers-color-scheme: light) {
+  :root { --relief-ink: var(--sm-scale-olive-800) }
+}
+
 .wrap {
   position: relative;
   z-index: 1;
-  max-width: var(--sm-size-content);
+  max-width: var(--page);
   margin: 0 auto;
   padding: var(--sm-space-8) var(--sm-space-7) var(--sm-space-12);
 }
+
+/* The entrance: two engraved pillars in the gutters of the front page's first
+ * screen, scrolling away as the visitor walks in. The capitals meet the top of
+ * the window, so the browser frame is the lintel. Drawn by pillar.go; served
+ * as a mask so the ink stays a token and the right pillar is the left one
+ * mirrored, light and all. Hidden where the gutter cannot hold one, never
+ * squeezed over content. */
+.pillar {
+  position: absolute;
+  top: 0;
+  height: 100vh;
+  width: calc((100vw - var(--page)) / 2 * 0.7);
+  background: var(--relief-ink);
+  -webkit-mask: url("pillar-light.svg") center bottom / contain no-repeat;
+  mask: url("pillar-light.svg") center bottom / contain no-repeat;
+  pointer-events: none;
+}
+.pillar.l { right: calc(100% + (100vw - var(--page)) / 2 * 0.15) }
+.pillar.r { left: calc(100% + (100vw - var(--page)) / 2 * 0.15); transform: scaleX(-1) }
+@media (prefers-color-scheme: light) {
+  .pillar {
+    -webkit-mask-image: url("pillar-dark.svg");
+    mask-image: url("pillar-dark.svg");
+  }
+}
+@media (max-width: 1279px) { .pillar { display: none } }
 .num { font-variant-numeric: tabular-nums lining-nums }
 
 /* Header */
 header.top {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--sm-space-6);
+  align-items: center;
+  gap: var(--sm-space-5);
   padding-bottom: var(--sm-space-5);
   border-bottom: .5px solid var(--sm-line-rule);
   flex-wrap: wrap;
@@ -79,6 +118,8 @@ header.top {
   font-weight: var(--sm-font-weight-regular);
   letter-spacing: var(--sm-font-tracking-title);
   color: var(--sm-text-primary);
+  text-decoration: none;
+  margin-right: auto;
 }
 .word span {
   color: var(--sm-text-tertiary);
@@ -87,7 +128,8 @@ header.top {
   font-weight: var(--sm-font-weight-medium);
   margin-left: var(--sm-space-4);
 }
-nav { display: flex; gap: var(--sm-space-1); flex-wrap: wrap }
+nav { display: flex; gap: var(--sm-space-1); flex-wrap: wrap; align-items: center }
+nav .devnet { margin-left: var(--sm-space-4) }
 nav a {
   color: var(--sm-text-secondary);
   text-decoration: none;
@@ -99,14 +141,17 @@ nav a {
 nav a:hover { color: var(--sm-text-primary); background: var(--sm-surface-sheet) }
 nav a[aria-current="page"] { color: var(--sm-text-primary); background: var(--sm-surface-sheet) }
 
-/* The honesty line. Never hidden, at any width. */
-.honest {
-  width: 100%;
-  margin-top: var(--sm-space-4);
-  font-size: var(--sm-font-size-small);
-  color: var(--sm-text-tertiary);
-  border-left: 2px solid var(--sm-accent-provenance);
-  padding-left: var(--sm-space-4);
+/* Where this runs. Shrunk from a paragraph to one word, never removed:
+ * EXPLORER.md section 4 lets an operational fact shrink, never disappear.
+ * Provenance blue, since which cluster a thing lives on is provenance. */
+.devnet {
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-semibold);
+  letter-spacing: var(--sm-font-tracking-serial);
+  color: var(--sm-accent-provenance);
+  border: 1px solid var(--sm-accent-provenance);
+  border-radius: var(--sm-radius-data);
+  padding: var(--sm-space-1) var(--sm-space-3);
 }
 
 /* Type */
@@ -143,7 +188,38 @@ h3 {
 }
 p { max-width: var(--sm-size-readable); margin-top: var(--sm-space-4); color: var(--sm-text-secondary) }
 p.tight { margin-top: var(--sm-space-3) }
-a { color: var(--sm-accent-provenance) }
+/* Links read as text with a hairline beneath, not as blue: blue is kept for
+ * provenance, and a page of blue links spends it on navigation. Inside
+ * tables and navigation the hairline goes too, until hovered. */
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: .5px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--sm-line-strong);
+}
+a:hover { text-decoration-color: currentColor }
+td a, nav a { text-decoration: none }
+td a:hover { text-decoration: underline; text-decoration-thickness: .5px }
+
+/* A section label: small, quiet, above content set larger. A catalogue sets
+ * labels in the margin's voice and the object in its own. */
+h2.label {
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-semibold);
+  letter-spacing: var(--sm-font-tracking-body);
+  color: var(--sm-text-tertiary);
+  margin-top: 0;
+}
+.powers { list-style: none; margin-top: var(--sm-space-4); columns: 2 22rem; column-gap: var(--sm-space-9) }
+.powers li {
+  position: relative;
+  break-inside: avoid;
+  padding: var(--sm-space-2) 0 var(--sm-space-2) var(--sm-space-5);
+  color: var(--sm-text-primary);
+}
+.shared { margin-top: var(--sm-space-9) }
 
 /* Figures */
 .figures { display: flex; flex-wrap: wrap; gap: var(--sm-space-4); margin-top: var(--sm-space-7) }
@@ -171,55 +247,68 @@ a { color: var(--sm-accent-provenance) }
   margin-top: var(--sm-space-1);
 }
 
-/* The catalogue filter: no script. Anchor targets sit before the table in
- * the DOM so :target plus the general sibling combinator can reach into it;
- * each anchor is a real fragment link, so it works with JavaScript off,
- * bookmarks and back/forward, unlike a checkbox that needs script to filter. */
-.anchor-target { display: block; height: 0; visibility: hidden }
-.filters { display: flex; gap: var(--sm-space-5); margin-top: var(--sm-space-6); flex-wrap: wrap }
-.filters a { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary); padding-bottom: var(--sm-space-1); border-bottom: 1px solid transparent }
-.filters a:hover { color: var(--sm-text-primary) }
-#all:target ~ .filters a[href="#all"],
-#allow:target ~ .filters a[href="#allow"],
-#warn:target ~ .filters a[href="#warn"],
-#block:target ~ .filters a[href="#block"] { color: var(--sm-text-primary); border-bottom-color: var(--sm-line-strong) }
-#allow:target ~ .scroll tr[data-stamp]:not([data-stamp="allow"]),
-#warn:target ~ .scroll tr[data-stamp]:not([data-stamp="warn"]),
-#block:target ~ .scroll tr[data-stamp]:not([data-stamp="block"]) { display: none }
-
-.lot { margin-top: var(--sm-space-12); padding-top: var(--sm-space-9); border-top: .5px solid var(--sm-line-rule) }
-.lot:first-of-type { margin-top: var(--sm-space-9) }
-/* Grade: components.md's own rule, "no colour, no ranking, no metal
- * metaphors". Never the Stamp's allow/warn/block styling. */
-.grade {
-  display: inline-block;
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-regular);
-  padding: var(--sm-space-1) var(--sm-space-3);
-  border-radius: var(--sm-radius-surface);
-  border: 1px solid var(--sm-line-rule);
-  color: var(--sm-text-tertiary);
+/* The catalogue. Names set in the display serif, details in the interface
+ * face, hairline rules between entries, no fills: a printed catalogue, not a
+ * dashboard. */
+table.catalogue { margin-top: var(--sm-space-9) }
+table.catalogue td { padding-top: var(--sm-space-5); padding-bottom: var(--sm-space-5) }
+td.name a {
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  color: var(--sm-text-primary);
 }
-.hero-figure {
+td.lot-n { color: var(--sm-text-tertiary) }
+.reason { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary); margin-top: var(--sm-space-2); max-width: 32ch }
+
+/* On a phone each row becomes an entry: the name and verdict on one line,
+ * its two facts beneath, labelled, rather than a table scrolled sideways
+ * until the verdict, the column that matters, is off screen. */
+@media (max-width: 639px) {
+  table.catalogue thead { display: none }
+  table.catalogue tr {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    column-gap: var(--sm-space-4);
+    padding: var(--sm-space-5) 0;
+    border-bottom: .5px solid var(--sm-line-rule);
+  }
+  table.catalogue td { border: none; padding: 0 }
+  table.catalogue td.lot-n { grid-column: 1; grid-row: 1 }
+  table.catalogue td.name { grid-column: 2; grid-row: 1 }
+  table.catalogue td.verdict { grid-column: 3; grid-row: 1; text-align: right }
+  table.catalogue td.fact { grid-column: 2 / 4; margin-top: var(--sm-space-2); font-size: var(--sm-font-size-small) }
+  table.catalogue td.fact::before { content: attr(data-label) ": "; color: var(--sm-text-tertiary) }
+  table.catalogue .reason { max-width: none }
+}
+
+/* A lot: one object per view, parts separated by rules, never boxed. */
+.crumb { font-size: var(--sm-font-size-small); color: var(--sm-text-tertiary); margin-top: var(--sm-space-9) }
+h1.lot-name { margin-top: var(--sm-space-3) }
+.verdict-line { display: flex; gap: var(--sm-space-4); align-items: baseline; flex-wrap: wrap; margin-top: var(--sm-space-5) }
+.verdict-line .reason { margin-top: 0; max-width: var(--sm-size-readable) }
+.figure-block { margin-top: var(--sm-space-9) }
+.figure-hero {
   font-family: var(--sm-font-family-display);
   font-weight: var(--sm-font-weight-light);
-  font-size: var(--sm-font-size-figure);
+  font-size: var(--sm-font-size-figure-l);
   letter-spacing: var(--sm-font-tracking-display);
-  color: var(--sm-text-primary);
   font-variant-numeric: tabular-nums lining-nums;
-  margin-top: var(--sm-space-5);
+  line-height: 1;
+  color: var(--sm-text-primary);
+  margin-top: 0;
 }
-.hero-figure.not-available { font-size: var(--sm-font-size-title); color: var(--sm-text-tertiary) }
-.not-available { color: var(--sm-text-tertiary) }
-
-/* An unverified or stale figure: dotted underline in provenance blue, never
- * colour alone (foundations.md's evidence-state rule; accessibility floor). */
-.evidence-dotted {
-  color: var(--sm-accent-provenance);
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 3px;
+section.part { margin-top: var(--sm-space-10); padding-top: var(--sm-space-6); border-top: .5px solid var(--sm-line-rule) }
+section.part dl.row { border-top: none; padding-top: 0 }
+/* A decision in words: ALLOW in primary text, WARN in provenance blue, BLOCK
+ * inverted (components.md, Stamp). */
+.decision {
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  letter-spacing: var(--sm-font-tracking-title);
+  color: var(--sm-text-primary);
 }
+.decision.warn { color: var(--sm-accent-provenance) }
+.decision.block { display: inline-block; background: var(--sm-surface-inverse); color: var(--sm-text-inverse); padding: 0 var(--sm-space-3) }
 
 /* Tables are data: radius 0, rules between, no fills. */
 table { width: 100%; border-collapse: collapse; margin-top: var(--sm-space-5); font-size: var(--sm-font-size-small) }
@@ -271,32 +360,46 @@ code, .mono, .addr, dl.hashes dd, pre, .formula {
   color: var(--sm-text-primary);
   font-size: var(--sm-font-size-body);
 }
+/* A list mark is decoration, so it takes the one colour reserved for
+ * decoration, and it is square: nothing here is touched. */
 .sentence::before {
   content: "";
   flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: var(--sm-radius-control);
-  background: var(--sm-accent-provenance);
+  width: 5px;
+  height: 5px;
+  background: var(--sm-text-faint);
   margin-top: var(--sm-space-3);
 }
+.powers li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: calc(var(--sm-space-2) + .7em);
+  width: 5px;
+  height: 5px;
+  background: var(--sm-text-faint);
+}
 
-/* Stamps. A stamp is always followed by its reasons, never a bare verdict.
- * ALLOW is plain primary text, WARN is provenance, BLOCK is inverted.
- * No red anywhere; the strongest signal is contrast, not hue. */
+/* Stamps. Struck, not tapped: square corners, since radius in this system
+ * means touch and nobody presses a verdict, and a double rule, the border of
+ * an assay certificate or a bar's stamped cartouche. A stamp is always
+ * followed by its reasons. No red anywhere; contrast is the signal. */
 .stamp {
   display: inline-block;
   font-size: var(--sm-font-size-micro);
   font-weight: var(--sm-font-weight-semibold);
+  letter-spacing: var(--sm-font-tracking-serial);
   padding: var(--sm-space-1) var(--sm-space-3);
-  border-radius: var(--sm-radius-surface);
-  border: 1px solid var(--sm-line-rule);
+  border: 3px double var(--sm-line-strong);
+  border-radius: var(--sm-radius-data);
   color: var(--sm-text-tertiary);
   white-space: nowrap;
+  line-height: 1.4;
 }
-.stamp.allow { border-color: var(--sm-line-strong); color: var(--sm-text-primary) }
+.stamp.admitted, .stamp.allow { border-color: var(--sm-text-primary); color: var(--sm-text-primary) }
 .stamp.warn { border-color: var(--sm-accent-provenance); color: var(--sm-accent-provenance) }
-.stamp.block {
+/* Refused is only ever a BLOCK; blue would claim it is provenance. */
+.stamp.refused, .stamp.block {
   background: var(--sm-surface-inverse);
   color: var(--sm-text-inverse);
   border-color: var(--sm-surface-inverse);
@@ -365,6 +468,13 @@ button.quiet {
   align-items: center;
 }
 button.quiet:hover { color: var(--sm-text-primary) }
+/* Disabled while a check runs, and visibly so: a control that ignores a
+ * click without saying why reads as broken. */
+button.quiet:disabled { color: var(--sm-text-tertiary); cursor: default; background: var(--sm-surface-ground) }
+/* The record, once a check has finished: a hairline and a text cursor say it
+ * can be typed into. */
+pre.editable { border: .5px solid var(--sm-line-strong); cursor: text }
+pre.editable:focus { outline: 2px solid var(--sm-accent-provenance); outline-offset: 3px }
 :focus-visible { outline: 2px solid var(--sm-accent-provenance); outline-offset: 3px }
 
 .chips { margin-top: var(--sm-space-5); display: flex; flex-wrap: wrap; gap: var(--sm-space-2); align-items: center }

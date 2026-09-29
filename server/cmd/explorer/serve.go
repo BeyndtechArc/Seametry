@@ -33,8 +33,8 @@ func serve(dir, addr string) {
 			w.Header().Set(h[0], h[1])
 		}
 
-		// A bare name resolves to its page, so /instruments works like a URL
-		// rather than only /instruments.html.
+		// A bare name resolves to its page, so /catalogue works like a URL
+		// rather than only /catalogue.html.
 		path := strings.TrimPrefix(r.URL.Path, "/")
 		if path != "" && !strings.Contains(path, ".") {
 			if _, err := os.Stat(dir + "/" + path + ".html"); err == nil {

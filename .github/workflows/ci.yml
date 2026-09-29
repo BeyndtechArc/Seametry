@@ -309,11 +309,11 @@ jobs:
       # copy of the same check rather than a reason to add one.
       - name: Every page and the host configuration exist
         run: |
-          for file in index instruments evidence hall verify; do
-            test -s "dist/explorer/$file.html" || { echo "missing dist/explorer/$file.html"; exit 1; }
+          for file in index.html catalogue.html evidence.html hall.html pillar-light.svg pillar-dark.svg _headers; do
+            test -s "dist/explorer/$file" || { echo "missing dist/explorer/$file"; exit 1; }
           done
-          test -s dist/explorer/_headers || { echo "missing dist/explorer/_headers"; exit 1; }
           ls dist/explorer/hallmark-*.html >/dev/null 2>&1 || { echo "no hallmark pages were generated"; exit 1; }
+          ls dist/explorer/lot-*.html >/dev/null 2>&1 || { echo "no lot pages were generated"; exit 1; }
 
       - uses: actions/upload-artifact@v4
         with:

@@ -1,14 +1,15 @@
 {{/* The four steps of the ritual and the element ids verify.js drives. Shared
      with hallmark.html: a second copy of this markup would drift from the ids
      the script depends on. The argument says whether the result starts hidden,
-     which it does on verify.html and does not on a hallmark page. */}}
+     which it does on the front page and does not on a hallmark page. */}}
 {{define "ritual"}}
   <section id="result"{{if .}} hidden{{end}}>
     <ol class="steps">
       <li class="step" id="s1">
         <h3><span class="n">1</span>The public record</h3>
         <p class="tight">What anyone may see. No wallet, no transaction signature, no exact amounts: a signature is public on-chain and would reveal all three. Hashed in canonical form.</p>
-        <pre id="pub"></pre>
+        <pre id="pub" spellcheck="false"></pre>
+        <p class="tight meta" id="edit-hint" hidden>The record above is now yours to edit. Change any character, then verify your version below.</p>
         <dl class="hashes"><dt>Public digest</dt><dd id="hp"> </dd></dl>
       </li>
       <li class="step" id="s2">
@@ -41,9 +42,11 @@
 
     <p class="closing" id="closing">Your browser just verified this. We didn't.</p>
     <div class="after">
-      <button class="quiet" id="tamper" type="button">Change one character and verify again</button>
+      <button class="quiet" id="mine" type="button">Verify my edit</button>
+      <button class="quiet" id="tamper" type="button">Change one character for me</button>
       <button class="quiet" id="again" type="button">Verify the original</button>
     </div>
+    <p class="msg" id="edit-msg" role="status"></p>
   </section>
 
   <!-- The verdict is announced here, once. The hashes above update every frame
@@ -52,9 +55,11 @@
 {{end}}
 
 {{define "verify.html"}}{{template "head" .}}
+  <div class="pillar l" aria-hidden="true"></div>
+  <div class="pillar r" aria-hidden="true"></div>
 
   <h1>Check a hallmark yourself.</h1>
-  <p class="lede">Enter a serial. Your browser recomputes every hash from the public record up to the batch root, using its own Web Crypto. Nothing here is taken on trust, including us.</p>
+  <p class="lede">Enter a serial. Your browser recomputes every hash from the public record up to the sealed root. Nothing here is taken on trust, including us.</p>
 
   {{if .BatchCount}}
   <form class="entry" id="form" autocomplete="off">
@@ -69,12 +74,12 @@
   {{template "ritual" true}}
 
   <div class="limits">
-    <h3>What this demonstration is and is not</h3>
+    <h3>What this is and is not</h3>
     <ul>
-      <li>The scheme is real. The bodies are invented, because no mainnet transaction has been made yet.</li>
-      <li>The batch was sealed by the Go engine. This page shares no code with it and reimplements the canonicalization, leaf composition and Merkle path from the specification. CI fails if the two ever disagree by a byte.</li>
-      <li><strong>This root is not written on-chain yet.</strong> Once it is, step 4 also checks it against the Solana memo transaction, signed by a published anchor key.</li>
-      <li>Disconnect your network and verify again. It still works, which is the strongest form of the claim.</li>
+      <li>The scheme is real; these five trades are invented, since no mainnet trade has been made yet.</li>
+      <li>This page shares no code with the engine that sealed them.</li>
+      <li><strong>The root is not written on-chain yet.</strong></li>
+      <li>Disconnect your network and verify again. It still works.</li>
     </ul>
   </div>
 

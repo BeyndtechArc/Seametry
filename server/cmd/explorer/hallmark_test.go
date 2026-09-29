@@ -63,7 +63,7 @@ func TestWriteHallmarkPagesWritesOnePagePerSerial(t *testing.T) {
 			`data-prefill="` + serial + `"`,
 			`src="verify.js"`,
 			"It is not written on-chain yet",
-			`href="instruments.html#AAPLx"`,
+			`href="lot-AAPLx.html"`,
 		} {
 			if !strings.Contains(html, want) {
 				t.Errorf("page for %s is missing %q", serial, want)

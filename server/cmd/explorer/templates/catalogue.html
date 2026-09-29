@@ -1,0 +1,36 @@
+{{define "catalogue.html"}}{{template "head" .}}
+
+  <h1>The catalogue.</h1>
+  <p class="lede">Every instrument this Office has assayed, and whether it was admitted.</p>
+
+  {{if .Lots}}
+  {{if .Shared}}
+  <section class="shared">
+    <h2 class="label">What every issuer here can do</h2>
+    <ul class="powers">
+      {{range .Shared}}<li>{{.}}</li>{{end}}
+    </ul>
+  </section>
+  {{end}}
+
+  <div class="scroll">
+  <table class="catalogue">
+    <thead><tr><th>Lot</th><th>Instrument</th><th>Multiplier field</th><th class="n">Shortfall at {{usdc .ReferenceUSDC}} USDC</th><th>Verdict</th></tr></thead>
+    <tbody>
+    {{range .Lots}}
+    <tr>
+      <td class="n lot-n">{{.Number}}</td>
+      <td class="name"><a href="{{lot .Instrument.Symbol}}">{{.Instrument.Symbol}}</a>{{if .Own}}<span class="meta"> and {{len .Own}} more power{{if gt (len .Own) 1}}s{{end}}</span>{{end}}</td>
+      <td class="fact" data-label="Multiplier field">{{with .Instrument}}{{if not .LiveValue}}None{{else if .Stale}}Stale since {{.EffectiveAt}}{{else}}Current{{end}}{{end}}</td>
+      <td class="n fact" data-label="Shortfall at {{usdc $.ReferenceUSDC}} USDC">{{.Shortfall}}</td>
+      <td class="verdict">{{if .Admitted}}<span class="stamp admitted">Admitted</span>{{else}}<span class="stamp refused">Refused</span><p class="reason">{{.Reason}}</p>{{end}}</td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+  </div>
+  {{else}}
+  <p class="tight">No instruments have been captured yet.</p>
+  {{end}}
+
+{{template "foot" .}}{{end}}

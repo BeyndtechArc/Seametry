@@ -57,7 +57,6 @@ type fixture struct {
 type Instrument struct {
 	Symbol      string
 	Issuer      string
-	Note        string
 	Address     string
 	Slot        uint64
 	CapturedAt  string
@@ -124,7 +123,7 @@ func decide(f fixture, mint *registry.Mint, asOf time.Time) (policy.Result, []De
 	for i, p := range curve.Points {
 		row := DepthRow{SizeUSDC: depthSizes[i], Availability: string(p.Observation.Availability), Code: p.Observation.Code, Shortfall: "no observation"}
 		if p.ShortfallBps != nil {
-			row.Shortfall = fmt.Sprintf("%d bps", *p.ShortfallBps)
+			row.Shortfall = basisPoints(*p.ShortfallBps)
 		}
 		if q := p.Observation.Quote; q != nil {
 			row.Venues = venueList(q.Hops)
@@ -184,6 +183,13 @@ type page struct {
 	Devnet      *Transcript
 	Cost        *CostTable
 	Proof       *receipt.Proof
+	Lots        []Lot
+	// Shared is the issuer-power sentences every lot carries, stated once.
+	Shared []string
+	// ReferenceUSDC is the size the admission policy judges depth at.
+	ReferenceUSDC int64
+	Lot           *Lot
+	LotReasons    []policy.Reason
 }
 
 type splitRow struct {
@@ -228,6 +234,9 @@ func main() {
 		Devnet:      devnet,
 		Cost:        costTable(demo),
 	}
+	base.ReferenceUSDC = policy.Default().DepthReferenceUSDC
+	base.Lots = buildLots(instruments, policy.Default())
+	base.Shared = sharedSentences(instruments)
 
 	if err := os.MkdirAll(*out, 0o755); err != nil {
 		fail(err)
@@ -235,12 +244,14 @@ func main() {
 
 	tmpl := loadTemplates()
 
+	// Verification opens the site: it is what a stranger arrives to do
+	// (EXPLORER.md section 2), and the one thing here that happens on their
+	// own machine the moment they ask.
 	pages := []struct{ file, tmpl, title, nav string }{
-		{"index.html", "index.html", "Catalogue", "index"},
-		{"instruments.html", "instruments.html", "Instruments", "instruments"},
+		{"index.html", "verify.html", "Verify a hallmark", "verify"},
+		{"catalogue.html", "catalogue.html", "Catalogue", "catalogue"},
 		{"evidence.html", "evidence.html", "Evidence", "evidence"},
 		{"hall.html", "hall.html", "The Hall", "hall"},
-		{"verify.html", "verify.html", "Verify a hallmark", "verify"},
 	}
 	for _, p := range pages {
 		data := base
@@ -259,6 +270,14 @@ func main() {
 
 	if n := writeHallmarkPages(*out, tmpl, base, proofs); n > 0 {
 		fmt.Printf("  %d hallmark pages (hallmark-<serial>.html)\n", n)
+	}
+	if n := writeLotPages(*out, tmpl, base); n > 0 {
+		fmt.Printf("  %d lot pages (lot-<symbol>.html)\n", n)
+	}
+	for _, ink := range []string{"light", "dark"} {
+		if err := os.WriteFile(filepath.Join(*out, "pillar-"+ink+".svg"), []byte(pillarSVG(ink)), 0o644); err != nil {
+			fail(err)
+		}
 	}
 
 	// Static assets, plus the fonts if they have been fetched.
@@ -304,8 +323,10 @@ func loadTemplates() *template.Template {
 			}
 			return s[:n] + "…"
 		},
+		"lot":   lotFile,
 		"lower": strings.ToLower,
-		"add":   func(a, b int) int { return a + b },
+		// A size in whole USDC, never negative: a depth reference size.
+		"usdc": func(n int64) string { return commas(uint64(n)) },
 	}).ParseFS(templates, "templates/*.html"))
 }
 
@@ -348,7 +369,7 @@ func loadInstruments() []Instrument {
 		}
 
 		inst := Instrument{
-			Symbol: f.Symbol, Issuer: f.Issuer, Note: f.Note, Address: f.Address,
+			Symbol: f.Symbol, Issuer: f.Issuer, Address: f.Address,
 			Slot: f.Slot, CapturedAt: f.CapturedAt,
 			Decimals: mint.Decimals, Supply: mint.Supply,
 			Sentences: prerogatives.Sentences(),

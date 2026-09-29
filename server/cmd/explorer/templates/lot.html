@@ -1,0 +1,73 @@
+{{define "lot.html"}}{{template "head" .}}
+{{with .Lot}}{{$inst := .Instrument}}
+
+  <p class="crumb"><a href="catalogue.html">Catalogue</a> · Lot {{.Number}} · {{$inst.Issuer}}</p>
+  <h1 class="lot-name">{{$inst.Symbol}}</h1>
+  <div class="verdict-line">
+    {{if .Admitted}}<span class="stamp admitted">Admitted</span>{{else}}<span class="stamp refused">Refused</span> <span class="reason">{{.Reason}}</span>{{end}}
+  </div>
+
+  <div class="figure-block">
+    <p class="figure-hero">{{.Shortfall}}</p>
+    <p class="meta">Shortfall buying {{usdc $.ReferenceUSDC}} USDC against the smallest size that priced, from stored aggregator responses.</p>
+  </div>
+
+  <section class="part">
+    <h2 class="label">What the issuer can do</h2>
+    {{if $inst.Sentences}}
+    <ul class="powers">{{range $inst.Sentences}}<li>{{.}}</li>{{end}}</ul>
+    {{else}}<p class="tight">No issuer powers decoded.</p>{{end}}
+    {{if $inst.Unknown}}<p class="tight">An unrecognised control is present: {{range $i, $u := $inst.Unknown}}{{if $i}}, {{end}}<code>{{$u}}</code>{{end}}.</p>{{end}}
+  </section>
+
+  <section class="part">
+    <h2 class="label">Depth at size</h2>
+    {{if $inst.Depth}}
+    <div class="scroll">
+    <table>
+      <thead><tr><th class="n">USDC</th><th>Route</th><th class="n">Shortfall</th><th>Venues</th></tr></thead>
+      <tbody>
+      {{range $inst.Depth}}<tr>
+        <td class="n">{{usdc .SizeUSDC}}</td>
+        <td>{{if eq .Availability "available"}}Available{{else}}No route{{end}}</td>
+        <td class="n">{{.Shortfall}}</td>
+        <td>{{if .Venues}}{{.Venues}}{{else}}<span class="meta">no observation</span>{{end}}</td>
+      </tr>{{end}}
+      </tbody>
+    </table>
+    </div>
+    {{else}}<p class="tight">No observation. No depth was captured for this instrument.</p>{{end}}
+  </section>
+
+  <section class="part">
+    <h2 class="label">Multiplier</h2>
+    {{if $inst.LiveValue}}
+    <dl class="row">
+      <dt>The obvious field reads</dt><dd class="num">{{trunc 20 $inst.NaiveValue}}</dd>
+      <dt>The live value is</dt><dd class="num">{{trunc 20 $inst.LiveValue}}</dd>
+      <dt>Effective</dt><dd>{{$inst.EffectiveAt}}{{if $inst.Pending}}, scheduled, not yet in force{{end}}</dd>
+    </dl>
+    {{if $inst.Stale}}<p class="tight">Anything reading the obvious field alone is one corporate action behind on this instrument.</p>{{end}}
+    {{else}}<p class="tight">This mint carries no Scaled UI multiplier.</p>{{end}}
+  </section>
+
+  <section class="part">
+    <h2 class="label">Decision</h2>
+    <p class="decision {{lower $inst.Decision}}">{{$inst.Decision}}</p>
+    {{range $.LotReasons}}<p class="tight">{{.Fact}} <code class="reason-code">{{.Code}}</code></p>{{end}}
+    {{if $inst.Sentences}}<p class="tight meta">Plus the {{len $inst.Sentences}} issuer powers above, each a condition the policy states but does not refuse on.</p>{{end}}
+    <p class="tight meta">Evaluated by <code>server/internal/policy</code> against <code>{{$inst.PolicyVersion}}</code>. Input digest <code>{{short $inst.InputDigest}}</code>: identical inputs give this digest on any machine.</p>
+  </section>
+
+  <section class="part">
+    <h2 class="label">Record</h2>
+    <dl class="row">
+      <dt>Mint</dt><dd><code class="addr">{{$inst.Address}}</code></dd>
+      <dt>Read at</dt><dd>slot <span class="num">{{$inst.Slot}}</span>, {{$inst.CapturedAt}}</dd>
+      <dt>Extensions</dt><dd>{{range $i, $e := $inst.Extensions}}{{if $i}}, {{end}}{{$e}}{{end}}</dd>
+      <dt>Transfer hook</dt><dd>{{if eq $inst.HookState "initialized_disabled"}}Present and switched off; its authority can switch it on{{else}}<code>{{$inst.HookState}}</code>{{end}}</dd>    </dl>
+    <p class="tight meta">Not yet captured for any lot: grade, provenance from company to wallet, corporate actions, issuer terms, custody attestations.</p>
+  </section>
+
+{{end}}
+{{template "foot" .}}{{end}}

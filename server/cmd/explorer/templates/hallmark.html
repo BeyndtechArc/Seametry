@@ -29,7 +29,7 @@
     <h3 class="lead">{{.Ticker}} <span class="stamp done">{{.Grade}}</span></h3>
     <p class="tight addr">{{.Mint}}</p>
     {{range .IssuerCan}}<div class="sentence">{{.}}</div>{{end}}
-    {{range $.Instruments}}{{if eq .Symbol $c.Ticker}}<p class="tight"><a href="instruments.html#{{.Symbol}}">What the mint account says now</a>. This record states what was known when it was signed, not what is true today.</p>{{end}}{{end}}
+    {{range $.Instruments}}{{if eq .Symbol $c.Ticker}}<p class="tight"><a href="{{lot .Symbol}}">What the mint account says now</a>. This record states what was known when it was signed, not what is true today.</p>{{end}}{{end}}
   </div>
   {{end}}
 
@@ -49,7 +49,7 @@
   <ul>
     <li><a href="hall.html">The Hall, run against an issuer that uses every power it has</a></li>
     <li><a href="evidence.html">The survey behind the issuer powers listed above</a></li>
-    <li><a href="verify.html">Check a different hallmark</a></li>
+    <li><a href="index.html">Check a different hallmark</a></li>
   </ul>
 
   <script src="batch.js"></script>
