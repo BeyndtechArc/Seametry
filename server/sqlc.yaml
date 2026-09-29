@@ -1,0 +1,18 @@
+# Regenerated with: (from server/) go tool sqlc generate
+#
+# One entry per schema with real queries today; a schema gains an entry here
+# when it gains its first query, not ahead of one (contracts/openapi/
+# openapi.yaml's own file header states the same rule for resources).
+version: "2"
+sql:
+  - schema: "migrations/observation"
+    queries: "queries/observation"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "observationdb"
+        out: "internal/store/observationdb"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_db_tags: true
+        emit_exact_table_names: false

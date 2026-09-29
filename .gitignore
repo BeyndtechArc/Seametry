@@ -17,3 +17,8 @@ coverage.txt
 
 # Generated surfaces. Rebuild with: go run ./server/cmd/explorer
 /dist/
+
+# Local object store: seametry replay's default SEAMETRY_OBJECT_STORE_DIR.
+# Runtime state, rebuilt from shared/fixtures and shared/evidence, which are
+# themselves committed.
+/server/data/

@@ -1,13 +1,17 @@
 // Command seametry is the Gateway process: the one HTTP server behind every
-// surface (docs/prd/API.md section 1). It has two subcommands.
+// surface (docs/prd/API.md section 1). It has three subcommands.
 //
-//	seametry serve    runs the HTTP server (the default with no argument)
+//	seametry serve     runs the HTTP server (the default with no argument)
 //	seametry migrate   applies every schema's goose migrations and exits
+//	seametry replay    ingests the evidence already committed under
+//	                   shared/fixtures and shared/evidence as the first raw
+//	                   payloads and observations, then exits
 //
 // Usage:
 //
 //	go run ./server/cmd/seametry
 //	go run ./server/cmd/seametry migrate
+//	go run ./server/cmd/seametry replay
 package main
 
 import (
@@ -40,8 +44,10 @@ func main() {
 		err = serve()
 	case "migrate":
 		err = migrate()
+	case "replay":
+		err = replay(".")
 	default:
-		err = fmt.Errorf("unknown command %q: usage is %q or %q", cmd, "serve", "migrate")
+		err = fmt.Errorf("unknown command %q: usage is %q, %q or %q", cmd, "serve", "migrate", "replay")
 	}
 	if err != nil {
 		slog.Error("seametry: exiting", "command", cmd, "error", err.Error())

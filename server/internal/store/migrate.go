@@ -15,6 +15,7 @@ import (
 	"io/fs"
 
 	"github.com/pressly/goose/v3"
+	gooselock "github.com/pressly/goose/v3/lock"
 
 	"github.com/BeyndtechArc/Seametry/server/migrations"
 )
@@ -31,8 +32,17 @@ func Migrate(ctx context.Context, db *sql.DB, schema string) ([]*goose.Migration
 	if err != nil {
 		return nil, fmt.Errorf("store: %s has no migrations directory: %w", schema, err)
 	}
+	// A session-level Postgres advisory lock, one shared lock ID across
+	// every schema: two processes migrating the same database at once
+	// (a live test run alongside another, or two deploys racing) serialize
+	// here instead of both attempting the same CREATE TABLE.
+	locker, err := gooselock.NewPostgresSessionLocker()
+	if err != nil {
+		return nil, fmt.Errorf("store: building the migration lock: %w", err)
+	}
 	provider, err := goose.NewProvider(goose.DialectPostgres, db, sub,
-		goose.WithTableName(fmt.Sprintf("public.goose_%s_migrations", schema)))
+		goose.WithTableName(fmt.Sprintf("public.goose_%s_migrations", schema)),
+		goose.WithSessionLocker(locker))
 	if err != nil {
 		return nil, fmt.Errorf("store: building the migration provider for %s: %w", schema, err)
 	}

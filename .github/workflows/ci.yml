@@ -72,6 +72,13 @@ jobs:
         working-directory: server
         run: go generate ./internal/gateway/api/...
 
+      # sqlc parses migrations/observation and queries/observation directly
+      # (docs/prd/API.md section 9.1); it needs no running Postgres to do it,
+      # so this stays in this job rather than the go job's Postgres service.
+      - name: Go query code matches its source
+        working-directory: server
+        run: go tool sqlc generate
+
       - name: TypeScript types match their source
         run: |
           npm ci --no-audit --no-fund
@@ -79,9 +86,9 @@ jobs:
 
       - name: No generated file differs from what is committed
         run: |
-          if ! git diff --quiet -- server/internal/gateway/api/types.gen.go server/internal/gateway/api/server.gen.go clients/packages/api/src/schema.d.ts; then
+          if ! git diff --quiet -- server/internal/gateway/api/types.gen.go server/internal/gateway/api/server.gen.go server/internal/store/observationdb clients/packages/api/src/schema.d.ts; then
             echo "Generated contract types differ from the source. Commit the regenerated files."
-            git --no-pager diff -- server/internal/gateway/api/types.gen.go server/internal/gateway/api/server.gen.go clients/packages/api/src/schema.d.ts
+            git --no-pager diff -- server/internal/gateway/api/types.gen.go server/internal/gateway/api/server.gen.go server/internal/store/observationdb clients/packages/api/src/schema.d.ts
             exit 1
           fi
 
