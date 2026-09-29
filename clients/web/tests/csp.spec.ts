@@ -12,6 +12,7 @@ const routes = [
   "/patterns",
   "/sign-in",
   "/terminal",
+  "/terminal/alloys",
   "/terminal/alloys/storm",
   "/terminal/instruments/XsTockMint111111111111111111111111111111111",
   "/the-key",

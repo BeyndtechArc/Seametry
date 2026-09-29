@@ -105,6 +105,92 @@
   z-index: 1;
 }
 
+.alloyDeskHero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--sm-space-9);
+  min-height: calc(var(--sm-space-13) * 2.4);
+  margin-top: var(--sm-space-8);
+  padding: var(--sm-space-8);
+  overflow: hidden;
+  border-top: 0.5px solid var(--sm-line-highlight);
+  background: var(--sm-surface-raised);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
+}
+
+.alloyDeskHero::before,
+.alloyDeskHero::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.alloyDeskHero::before {
+  left: 38%;
+  border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
+}
+
+.alloyDeskHero::after {
+  right: 18%;
+  border-left: 0.5px solid var(--sm-line-rule);
+}
+
+.alloyDeskHero > div,
+.alloyDeskHero > p {
+  position: relative;
+  z-index: 1;
+}
+
+.alloyDeskHero > div > span,
+.alloyDeskIndex > span,
+.liveAlloyIdentity > span,
+.executionBoundary > div > span,
+.termsQuantity > span {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.alloyDeskHero h1,
+.liveAlloyIdentity h1,
+.executionBoundary h2 {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-weight: var(--sm-font-weight-light);
+  letter-spacing: var(--sm-font-tracking-display);
+}
+
+.alloyDeskHero h1 {
+  margin-top: var(--sm-space-4);
+  font-size: clamp(var(--sm-font-size-figure-l), 8vw, var(--sm-font-size-display-l));
+  line-height: 0.9;
+}
+
+.alloyDeskHero > p {
+  max-width: 48ch;
+  color: var(--sm-text-secondary);
+  line-height: 1.65;
+}
+
+.alloyDeskIndex {
+  display: grid;
+  align-content: space-between;
+  min-width: var(--sm-space-11);
+  min-height: var(--sm-space-11);
+  padding-left: var(--sm-space-5);
+  border-left: 0.5px solid var(--sm-line-strong);
+}
+
+.alloyDeskIndex b {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-title-l);
+  font-weight: var(--sm-font-weight-regular);
+}
+
 .deskHero h1,
 .assayIdentity h1,
 .sectionHeading h2,
@@ -216,7 +302,10 @@
 }
 
 .instrumentTable,
-.depthTable {
+.depthTable,
+.alloyTable,
+.alloyLedger,
+.termsTable {
   width: 100%;
   border-collapse: collapse;
   color: var(--sm-text-secondary);
@@ -224,7 +313,10 @@
 }
 
 .instrumentTable th,
-.depthTable th {
+.depthTable th,
+.alloyTable th,
+.alloyLedger th,
+.termsTable th {
   padding: var(--sm-space-4) var(--sm-space-5);
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
@@ -232,7 +324,10 @@
 }
 
 .instrumentTable td,
-.depthTable td {
+.depthTable td,
+.alloyTable td,
+.alloyLedger td,
+.termsTable td {
   min-width: var(--sm-space-12);
   padding: var(--sm-space-6) var(--sm-space-5);
   border-top: 0.5px solid var(--sm-line-rule);
@@ -241,6 +336,32 @@
 
 .instrumentTable td:first-child {
   min-width: calc(var(--sm-space-13) * 2);
+}
+
+.alloyTable td:first-child {
+  display: grid;
+  min-width: calc(var(--sm-space-13) * 2);
+  gap: var(--sm-space-3);
+}
+
+.alloyTable b {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-regular);
+}
+
+.alloyTable a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sm-size-target);
+  color: var(--sm-accent-touchText);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.alloyTable a:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
 }
 
 .instrumentTable td:first-child,
@@ -281,6 +402,161 @@
   padding: var(--sm-space-9) 0;
   border-top: 0.5px solid var(--sm-line-strong);
   border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.liveAlloyPlate {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--sm-space-10);
+  margin-top: var(--sm-space-7);
+  padding: var(--sm-space-9);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  background: var(--sm-surface-raised);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
+}
+
+.liveAlloyIdentity {
+  display: grid;
+  align-content: end;
+  justify-items: start;
+  gap: var(--sm-space-5);
+  min-width: 0;
+  padding-left: var(--sm-space-5);
+  border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
+}
+
+.liveAlloyIdentity h1 {
+  font-size: clamp(var(--sm-font-size-figure-l), 8vw, var(--sm-font-size-display));
+  line-height: 0.9;
+}
+
+.liveAlloyRegistry {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.liveAlloyRegistry > div {
+  display: grid;
+  align-content: start;
+  gap: var(--sm-space-3);
+  min-width: 0;
+  padding: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-right: 0.5px solid var(--sm-line-rule);
+}
+
+.liveAlloyRegistry dt {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.liveAlloyRegistry dd {
+  min-width: 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+}
+
+.alloyFacts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.alloyFacts > * {
+  border-right: 0.5px solid var(--sm-line-rule);
+}
+
+.alloyFacts > *:last-child {
+  border-right: 0;
+}
+
+.alloyLedger caption {
+  padding: var(--sm-space-4) var(--sm-space-5);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+  text-align: left;
+}
+
+.alloyLedger td:first-child {
+  display: grid;
+  gap: var(--sm-space-3);
+  min-width: calc(var(--sm-space-13) * 2);
+}
+
+.alloyLedger td:not(:first-child),
+.termsTable td:not(:first-child) {
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.heldLeg {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-3);
+  min-width: calc(var(--sm-space-13) * 2);
+}
+
+.heldLeg p {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.5;
+}
+
+.termsPlate {
+  display: grid;
+  grid-template-columns: minmax(0, 0.65fr) minmax(0, 2.35fr);
+  border-top: 0.5px solid var(--sm-line-strong);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.termsQuantity {
+  display: grid;
+  align-content: center;
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-7);
+  border-right: 0.5px solid var(--sm-line-rule);
+}
+
+.termsQuantity b {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-l);
+  font-weight: var(--sm-font-weight-light);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.termsQuantity small {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+  line-height: 1.5;
+}
+
+.executionBoundary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--sm-space-10);
+  margin-top: var(--sm-space-13);
+  padding: var(--sm-space-8);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  background: var(--sm-surface-sheet);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
+}
+
+.executionBoundary > div {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-4);
+}
+
+.executionBoundary h2 {
+  font-size: var(--sm-font-size-figure);
+}
+
+.executionBoundary p {
+  max-width: 58ch;
+  color: var(--sm-text-secondary);
+  line-height: 1.6;
 }
 
 .assayIdentity {
@@ -445,9 +721,13 @@
   }
 
   .deskHero,
+  .alloyDeskHero,
   .assayHero,
+  .liveAlloyPlate,
   .decisionPanel,
-  .boundary {
+  .boundary,
+  .termsPlate,
+  .executionBoundary {
     grid-template-columns: 1fr;
   }
 
@@ -455,10 +735,46 @@
     left: var(--sm-space-5);
   }
 
+  .alloyDeskHero::before {
+    left: var(--sm-space-5);
+  }
+
+  .alloyDeskHero::after {
+    display: none;
+  }
+
   .deskHero > div,
   .deskHero > p,
   .deskIndex {
     margin-left: var(--sm-space-5);
+  }
+
+  .alloyDeskHero > div,
+  .alloyDeskHero > p,
+  .alloyDeskIndex {
+    margin-left: var(--sm-space-5);
+  }
+
+  .alloyDeskIndex {
+    min-height: 0;
+    padding-top: var(--sm-space-4);
+    padding-left: 0;
+    border-top: 0.5px solid var(--sm-line-strong);
+    border-left: 0;
+  }
+
+  .alloyFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .alloyFacts > * {
+    border-right: 0;
+    border-bottom: 0.5px solid var(--sm-line-rule);
+  }
+
+  .termsQuantity {
+    border-right: 0;
+    border-bottom: 0.5px solid var(--sm-line-rule);
   }
 
   .deskIndex {

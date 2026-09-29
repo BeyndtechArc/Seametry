@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 const mint = "XsTockMint111111111111111111111111111111111";
 const servedAt = "2026-09-29T12:00:17Z";
 const capturedAt = "2026-09-29T12:00:00Z";
+const alloyAddress = "6BD6PprLyhiLeXKTAiLRA2hyMwUqMzpQPzftabQuduQ";
 
 const instrument = {
   mint,
@@ -103,7 +104,7 @@ test("the Terminal names the API boundary when no deployment is connected", asyn
   await expect(page.getByRole("heading", { level: 1, name: "Instrument desk" })).toBeVisible();
   await expect(page.getByText("Terminal API unavailable", { exact: true })).toBeVisible();
   await expect(page.getByText("Set SEAMETRY_API_URL to a deployed or local Gateway.", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Inspect Alloy 01" })).toHaveAttribute("href", "/terminal/alloys/storm");
+  await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/terminal/alloys");
   await expect(page.getByRole("link", { name: "Return to public site" })).toHaveAttribute("href", "/");
 });
 
@@ -112,5 +113,23 @@ test("the Terminal distinguishes an empty persisted register from an unavailable
   await expect(page.getByText("No persisted instruments", { exact: true })).toBeVisible();
   await expect(page.getByText("The Gateway answered with an empty instrument register as of Sep 29, 2026, 12:00 PM UTC.", { exact: true })).toBeVisible();
   await expect(page.getByText("Terminal API unavailable", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Inspect Alloy 01" })).toHaveAttribute("href", "/terminal/alloys/storm");
+  await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/terminal/alloys");
+});
+
+test("the Terminal moves from the live Hall register into one Alloy record", async ({ page }) => {
+  const browserErrors: string[] = [];
+  page.on("pageerror", (error) => browserErrors.push(error.message));
+  await page.goto("/terminal/alloys");
+  await expect(page.getByRole("heading", { level: 1, name: "Hall register" })).toBeVisible();
+  const row = page.getByRole("row", { name: /Alloy 1790627156984/ });
+  await expect(row).toContainText("1 held as a Claim");
+  await row.getByRole("link", { name: "Open Alloy" }).click();
+
+  await expect(page).toHaveURL(`/terminal/alloys/${alloyAddress}`);
+  await expect(page.getByRole("heading", { level: 1, name: "Alloy 1790627156984" })).toBeVisible();
+  await expect(page.getByText("The issuer currently prevents this Hall account from delivering.")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Strike and Melt terms" })).toBeVisible();
+  await expect(page.getByText("1,000 shares", { exact: true })).toBeVisible();
+  await expect(page.locator("[data-nextjs-dialog]")).toHaveCount(0);
+  expect(browserErrors).toEqual([]);
 });

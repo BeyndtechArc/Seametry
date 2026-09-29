@@ -11,7 +11,7 @@ import type {
 } from "@/lib/terminal-contract";
 import styles from "./terminal.module.css";
 
-function useTerminalResource<T>(path: string) {
+export function useTerminalResource<T>(path: string) {
   const [value, setValue] = useState<T>();
   const [problem, setProblem] = useState<TerminalProblem>();
 
@@ -42,7 +42,7 @@ function useTerminalResource<T>(path: string) {
   return { value, problem, loading: !value && !problem };
 }
 
-function TerminalFrame({ current, children }: { current: "desk" | "storm"; children: ReactNode }) {
+export function TerminalFrame({ current, children }: { current: "instruments" | "alloys"; children: ReactNode }) {
   return (
     <main className={styles.terminal}>
       <header className={styles.workbenchRail}>
@@ -51,8 +51,8 @@ function TerminalFrame({ current, children }: { current: "desk" | "storm"; child
           <span>Terminal</span>
         </Link>
         <nav aria-label="Terminal">
-          <Link href="/terminal" aria-current={current === "desk" ? "page" : undefined}>Instrument desk</Link>
-          <Link href="/terminal/alloys/storm" aria-current={current === "storm" ? "page" : undefined}>Alloy 01</Link>
+          <Link href="/terminal" aria-current={current === "instruments" ? "page" : undefined}>Instruments</Link>
+          <Link href="/terminal/alloys" aria-current={current === "alloys" ? "page" : undefined}>Alloys</Link>
           <Link href="/">Public site</Link>
         </nav>
         <ThemeControl />
@@ -74,7 +74,7 @@ function Boundary({ problem }: { problem: TerminalProblem }) {
         <code>HTTP {problem.status}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/terminal/alloys/storm">Inspect Alloy 01</RouteAction>
+        <RouteAction href="/terminal/alloys">Inspect live Alloys</RouteAction>
         <TextAction href="/">Return to public site</TextAction>
       </div>
     </section>
@@ -102,7 +102,7 @@ function EmptyRegister({ asOf }: { asOf: string }) {
         <code>0 records</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/terminal/alloys/storm">Inspect Alloy 01</RouteAction>
+        <RouteAction href="/terminal/alloys">Inspect live Alloys</RouteAction>
         <TextAction href="/">Return to public site</TextAction>
       </div>
     </section>
@@ -141,7 +141,7 @@ export function InstrumentRegister() {
   const { value, problem, loading } = useTerminalResource<InstrumentRegisterResponse>("/api/terminal/instruments");
 
   return (
-    <TerminalFrame current="desk">
+    <TerminalFrame current="instruments">
       <section className={styles.deskHero}>
         <div>
           <span>Registry + Policy + Liquidity</span>
@@ -208,7 +208,7 @@ export function InstrumentAssay({ mint }: { mint: string }) {
   const decision = value?.admissibility.data;
 
   return (
-    <TerminalFrame current="desk">
+    <TerminalFrame current="instruments">
       <div className={styles.backLink}><TextAction href="/terminal">Return to instrument desk</TextAction></div>
       {loading ? <LoadingRegister /> : null}
       {problem ? <Boundary problem={problem} /> : null}

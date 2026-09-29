@@ -23,6 +23,14 @@
   max-width: var(--sm-size-readable);
 }
 
+.hall-demo-route {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-4);
+  margin-top: var(--sm-space-6);
+}
+
 .devnet-line {
   margin-top: var(--sm-space-6);
   color: var(--sm-text-tertiary);

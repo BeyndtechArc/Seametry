@@ -7,6 +7,41 @@ const meta = {
   completeness: "complete",
   cluster: "mainnet",
 };
+const alloyMeta = { ...meta, cluster: "devnet" };
+const alloyAddress = "6BD6PprLyhiLeXKTAiLRA2hyMwUqMzpQPzftabQuduQ";
+const alloy = {
+  address: alloyAddress,
+  sponsor: "Sponsor1111111111111111111111111111111111111",
+  share_mint: "ShareMint11111111111111111111111111111111111",
+  id: "1790627156984",
+  supply: "1000000",
+  locked_genesis: "1000000",
+  cluster: "devnet",
+  legs: [
+    {
+      mint: "94L9f6NLadaF9YcDffBw4Ub7tsJb9BJBmFqCUm3zovwH",
+      ledger: { atoms: "5000000", scale: 6 },
+      pending: { atoms: "0", scale: 6 },
+      unclaimed: { atoms: "0", scale: 6 },
+      held_back: false,
+    },
+    {
+      mint: "ADcBszQLxMZ4jfcvuTtYpvhDXSeLNHi4MhHFHQrerKyw",
+      ledger: { atoms: "3000000", scale: 6 },
+      pending: { atoms: "0", scale: 6 },
+      unclaimed: { atoms: "1200", scale: 6 },
+      held_back: true,
+      held_back_reason: "The issuer currently prevents this Hall account from delivering.",
+    },
+  ],
+};
+const terms = {
+  shares: "1000",
+  legs: [
+    { stock: alloy.legs[0].mint, amount: { atoms: "5000", scale: 6 }, kept: { atoms: "0", scale: 6 } },
+    { stock: alloy.legs[1].mint, amount: { atoms: "3000", scale: 6 }, kept: { atoms: "0", scale: 6 } },
+  ],
+};
 
 function writeJson(response, status, body) {
   response.writeHead(status, { "Content-Type": "application/json" });
@@ -21,6 +56,18 @@ const server = createServer((request, response) => {
   }
   if (path === "/v1/instruments") {
     writeJson(response, 200, { data: [], meta });
+    return;
+  }
+  if (path === "/v1/alloys") {
+    writeJson(response, 200, { data: [alloy], meta: alloyMeta });
+    return;
+  }
+  if (path === `/v1/alloys/${alloyAddress}`) {
+    writeJson(response, 200, { data: alloy, meta: alloyMeta });
+    return;
+  }
+  if (path === `/v1/alloys/${alloyAddress}/strike-cost` || path === `/v1/alloys/${alloyAddress}/melt-proceeds`) {
+    writeJson(response, 200, { data: terms, meta: alloyMeta });
     return;
   }
 

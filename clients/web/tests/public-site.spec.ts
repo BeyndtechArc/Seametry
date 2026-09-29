@@ -59,6 +59,7 @@ test("the live Hall demonstration remains inside the public journey", async ({ p
   await expect(page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Hall demo" })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("heading", { level: 1, name: "The Hall, live on devnet" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Seametry Public" })).toHaveAttribute("href", "/");
+  await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/terminal/alloys");
 });
 
 test("an unknown public route returns a useful route index", async ({ page }) => {
