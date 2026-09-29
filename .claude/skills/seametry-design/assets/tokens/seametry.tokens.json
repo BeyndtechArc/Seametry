@@ -114,16 +114,17 @@
       "surface": {
         "$type": "color",
         "ground": {
-          "$value": "#EDEBE3"
+          "$value": "#D8D4C8",
+          "$description": "Muted certificate stock. Light enough to separate from the touchstone without reading as white."
         },
         "sheet": {
-          "$value": "#F7F5EF"
+          "$value": "#E2DED2"
         },
         "raised": {
-          "$value": "#FCFBF7"
+          "$value": "#ECE8DE"
         },
         "tray": {
-          "$value": "#E0DDD1"
+          "$value": "#C8C3B6"
         },
         "inverse": {
           "$value": "#1F1E1D"
@@ -138,8 +139,8 @@
           "$value": "#45423C"
         },
         "tertiary": {
-          "$value": "#65615A",
-          "$description": "5.2:1 ground, 4.5:1 tray"
+          "$value": "#545049",
+          "$description": "5.41:1 on muted certificate ground and 4.56:1 on tray."
         },
         "faint": {
           "$value": "#A8A49A",
@@ -155,10 +156,10 @@
       "line": {
         "$type": "color",
         "rule": {
-          "$value": "#DBD8CD"
+          "$value": "#C4BFB2"
         },
         "strong": {
-          "$value": "#C4C0B4"
+          "$value": "#AAA497"
         },
         "highlight": {
           "$value": "rgba(255,255,255,0.70)"

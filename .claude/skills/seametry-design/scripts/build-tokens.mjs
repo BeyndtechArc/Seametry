@@ -47,6 +47,14 @@ ${block(light)}
 ${block(dark)}
   color-scheme: dark;
 }
+:where([data-sm-theme="light"]) {
+${block(light)}
+  color-scheme: light;
+}
+:where([data-sm-theme="dark"]) {
+${block(dark)}
+  color-scheme: dark;
+}
 `;
 
 // TypeScript: nested objects, px dimensions as numbers for React Native.

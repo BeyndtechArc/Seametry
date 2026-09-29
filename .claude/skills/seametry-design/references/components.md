@@ -5,6 +5,7 @@ Atomic inventory. Before creating a component, find it here. If it is missing, a
 Every component states:
 - **Answers**: the one question it answers for the user. A component that answers nothing is decoration.
 - **Anatomy**: its parts, built only from components above it in this file.
+- **Identity**: the silhouette, material and optical rule that make it recognisable as Seametry before its copy is read.
 - **States**: every state it can be in. All must be designed; none may be left to the default.
 - **Data**: the API fields it renders. Never invented values.
 - **Rules**: what it must never do.
@@ -24,6 +25,7 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 ### Figure
 **Answers:** what is the value, and how much should I trust it right now?
 **Anatomy:** numeral in `font.family.display` or `ui` by size; unit; age; evidence-state treatment.
+**Identity:** set as a ledger entry rather than a card: an open ground, a registration notch on the left rule, and one continuous provenance line beneath the figure. The notch aligns figures when several form a column.
 **States:** verified, unverified (dotted underline in `accent.provenance`), stale (age attached in `text.tertiary`), unavailable (the words "no observation"), settling (value change).
 **Data:** value as integer atoms plus scale, source, observed_at, evidence_state.
 **Rules:** tabular numerals always. Never a float conversion for display. Never shown without its state.
@@ -31,47 +33,66 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 ### Serial
 **Answers:** which exact record is this?
 **Anatomy:** `MMYY` plus seven Crockford characters, Switzer semibold, `tracking.serial`, tabular.
+**Identity:** month and year sit as one struck block; the remaining characters follow after a rule-width gap. It reads as an applied mark, not an account identifier.
 **States:** default, copied.
 **Rules:** never truncated. Copy on tap, with confirmation "Serial copied".
 
 ### Digest
 **Answers:** what is the fingerprint, and can I check it?
 **Anatomy:** hex in `font.family.digest`; middle truncation at small widths with the full value on focus and in the accessible label; copy.
+**Identity:** a square registration mark precedes the digest and shares its baseline. The mark is decorative and never substitutes for the full accessible value.
 **Rules:** the only place monospace appears.
 
 ### Punch
 **Answers:** which authority vouches for this part of the record?
 **Anatomy:** outline 1px `text.tertiary`, fill one tone below its surface, `line.highlight` on the lower inner edge, single glyph.
+**Identity:** each authority has a fixed struck silhouette: sponsor as a house, grade as an oval, Office as a cut corner, date as a narrow cartouche. The glyph and silhouette always travel together.
 **Variants:** sponsor's mark (house shape), grade (oval), office (cut corner), date (rounded rectangle with MMYY).
 **Rules:** debossed by tone, never by shadow.
 
 ### Stamp
 **Answers:** does this meet the published standard, or what was decided?
 **Variants:** Good Delivery (outline, `text.primary`); NGD (outline, `accent.provenance`, reasons adjacent); ALLOW (plain `text.primary`); WARN (`accent.provenance`); BLOCK (inverted: `surface.inverse`, `text.inverse`).
+**Identity:** a double rule and square corners make it read as struck evidence. The reason begins on the same baseline so verdict and evidence cannot separate.
 **Rules:** a stamp is always followed by its reasons. Never a bare verdict.
 
 ### Grade
 **Answers:** what legal claim do I actually hold?
 **Anatomy:** one word (Entitlement, Certificate, Interest, Ungraded) with a definition on focus.
+**Identity:** plain text held between two short rules. It has no badge fill because grade is a classification, not a status.
 **Rules:** no colour, no ranking, no metal metaphors.
 
 ### Timestamp
 **Answers:** when, and which "when"?
 **Anatomy:** relative ("2s ago") with absolute UTC on focus; labelled by kind: observed, received, effective, settled.
+**Identity:** the kind leads in the quiet register and the relative time follows in tabular figures. A timestamp never floats without its kind.
 **Rules:** never an unlabelled time on a screen about evidence.
 
 ### Key
 **Answers:** what happens if I press this?
 **Anatomy:** full-round fill in `accent.touch`, `text.onTouch`, seated in an 8px `surface.tray` housing, height `size.key`.
+**Identity:** the green action sits inside a darker full-round tray with a visible inset at every edge. The tray remains when the action is disabled, like an empty keyway.
 **States:** default, pressed (drops 1px, `accent.touchPressed`), disabled (tray only, label in `text.tertiary`, reason available), busy (label becomes the action in progress: "Signing").
 **Rules:** verb plus object ("Approve and sign"). One key per view. Quieter than the figures above it.
 
 ### Quiet action
+**Answers:** which secondary or reversible action is available?
 **Anatomy:** full-round, `surface.sheet`, 0.5px `line.rule` edge, `text.secondary`.
+**Identity:** the control keeps the Key's round silhouette but has no tray and no green. Family resemblance comes from proportion rather than emphasis.
 **Rules:** for secondary and reversible actions. Never green.
 
+### Mode control
+**Answers:** which complete colour mode is the surface using?
+**Anatomy:** one full-round tray containing Dark and Light actions; the selected action uses `surface.raised` and a registration dot.
+**Identity:** two round controls share one tight tray, while the selected mode carries a small square registration mark. It reads as an instrument setting, not a marketing toggle.
+**States:** dark selected, light selected, keyboard focus.
+**Data:** the selected mode, persisted in local browser storage.
+**Rules:** both labels remain visible. Never use an icon alone. The control changes the full surface, not an isolated specimen.
+
 ### Field
+**Answers:** what value can I supply here, and what must change if it is refused?
 **Anatomy:** full-round pill, `surface.sheet`, label outside, value in `ui` medium; amounts use a custom keypad on mobile.
+**Identity:** a short rule joins the outside label to the field edge. Focus turns that rule to provenance blue before it outlines the field.
 **States:** default, focus, filled, invalid (message states what to change), disabled.
 
 ### Term
@@ -81,6 +102,7 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 
 ### Rule
 A hairline, `line.rule`, 0.5px on high-density screens. The primary structural device. Prefer a rule over a box.
+**Identity:** an optional registration notch interrupts the line. It is the seam used to align ledger entries, never a decorative divider placed between unrelated content.
 
 ---
 
@@ -89,7 +111,16 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 ### Evidence row
 **Answers:** what did this source say, and when?
 **Anatomy:** source name (`text.secondary`); Figure; Timestamp.
+**Identity:** source, figure and time share one baseline over a ruled ledger row. Missing observations occupy the same measure as present ones.
 **Rules:** a source that said nothing still gets a row: "no observation". Never omitted.
+
+### Formula ledger
+**Answers:** what exactly backs each alloy share, and what is the Hall holding for each constituent now?
+**Anatomy:** source, Timestamp and evidence state in the caption; one zero-radius row per constituent; symbol and Grade; units per share; ledger, pending and unclaimed amounts; delivery statement.
+**Identity:** a single registration rule runs through every row, while a clipped caption plate names the source above it. The rows remain open and square like a bullion ledger, never separated into cards.
+**States:** default; loading uses ruled skeleton rows; empty states that no formula has been recorded; stale keeps every amount and attaches its age; unavailable names the absent source; error names the source that could not be read.
+**Data:** `Alloy.legs`, joined with `FormulaConstituent.units_per_share`, instrument symbol and Grade; every amount remains integer atoms plus scale.
+**Rules:** never derive weights, NAV or units per share in the interface. One caption provenance applies only when every row shares the same source, age and evidence state; otherwise each row carries its own.
 
 ### Provenance line
 **Answers:** through whose hands does my claim pass?
@@ -105,6 +136,7 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 ### Hallmark row
 **Answers:** is this record vouched for, by whom, and when?
 **Anatomy:** four Punches (sponsor's mark, weakest grade, office, date), Serial beneath, seal status.
+**Identity:** the four punches form one uninterrupted strike line with equal optical weight, followed by the serial on the same left edge. It must remain recognisable in one colour.
 **States:** unsealed, sealed, verification pending, verified, does not match.
 
 ### Quote block
@@ -171,6 +203,30 @@ Copyable prompts and endpoints, the machine-readable site version, the API refer
 
 ### Register footer
 Product, developers, the house (world pages), trust (the Key, audit, status, anchor keys). Every item is a real destination.
+
+### House rail
+**Answers:** where am I, and which public destination is available from here?
+**Anatomy:** Seametry wordmark; public navigation; Mode control.
+**Identity:** an open institutional rail held by one bottom rule. The wordmark is serif, the destinations are plain text, and the mode instrument closes the line. No floating header, container card or oversized action.
+**States:** default; current destination; narrow layouts wrap into two ruled rows without hiding destinations.
+**Data:** route labels and destinations owned by the web application.
+**Rules:** every destination resolves. No menu icon, promotional badge or Key inside the rail.
+
+### Incident ledger
+**Answers:** what happened in the recorded demonstration, in what order, and which step proves the product claim?
+**Anatomy:** source plate; ordered event rows; actor; action; result; reason or transaction Digest; evidence boundary.
+**Identity:** events occupy one ruled ledger crossed by a single registration line. Refusals remain in sequence instead of becoming coloured alerts.
+**States:** default; loading names the transcript; empty names the absent scenario; stale keeps the sequence and attaches capture age; unavailable links to the specification; error names the unreadable evidence source.
+**Data:** one scenario from the Hall demonstration transcript, including producer, actor, action, result, reason and signature.
+**Rules:** event order is source order. Never infer a result, shorten a reason, or imply that controlled mock issuers establish how another issuer behaves.
+
+### Pattern Register
+**Answers:** does each shared component retain Seametry's identity across states, themes, widths and difficult content?
+**Anatomy:** house plate; atom specimens; molecule specimens; universal state assay; dark and light stress bench.
+**Identity:** presented as the Office's working register, with cropped display type, one registration-cut house plate, numbered specimens, ruled entries and labelled fixture evidence. It is never a tiled retail component catalogue.
+**States:** every universal state is visible together. Interactive states include focus, disabled and busy. Motion specimens state their reduced-motion behavior.
+**Data:** labelled fixtures only, with source, age and evidence state wherever a figure appears.
+**Rules:** internal development surface. No product navigation, invented market values, isolated beauty shots or unlabeled sample data.
 
 ---
 

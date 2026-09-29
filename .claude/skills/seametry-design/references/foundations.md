@@ -223,7 +223,9 @@ Scale, in px: 12, 13, 15, 17, 20, 24, 30, 38, 48, 60, 76. Explorer display sizes
 
 **Layout.** Explorer: 12 columns, 1200px content, 24px gutters, left-aligned reading column. Mobile: single column, 18px side margins, primary action in the bottom third inside the tray.
 
-**Radius carries meaning.** `data` 0 for rules, rows and figures; `surface` 4 for panels; `control` fully round for anything acted on; `sheet` 28 for mobile sheets; punches use their own shapes. Two cues say "touchable": green and roundness. Never round a data row. Never square a button.
+**Edges carry meaning.** `data` 0 for rules, rows and figures; `surface` 4 for panels; `control` fully round for anything acted on; `sheet` 28 for mobile sheets; punches use their own shapes. Two cues say "touchable": green and roundness. Never round a data row. Never square a button.
+
+The seam between printed evidence and a full-round control is the **registration cut**: a square surface with one corner clipped by `space.5`. It marks an authored plate, specimen or institutional header without making it look touchable. It is the only intermediate silhouette. Do not introduce medium-radius cards as a compromise between square and round.
 
 **Elevation is tone.** `surface.ground` to `surface.sheet` to `surface.raised` to `surface.tray` step up in luminance on the neutral operational track, with full contrast headroom, since section 5a moved the olive hue to its own reserved `feature.*` track rather than forcing it to serve as the app's single default ground. See 5a for the two-ground structure and why it changed, and 5b to 5d for the tonal scales, the restricted Lens material, and a licensing note on using Directus as a reference.
 

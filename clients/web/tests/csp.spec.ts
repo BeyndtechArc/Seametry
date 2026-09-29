@@ -5,7 +5,15 @@ import { test, expect } from "@playwright/test";
 // is a route whose CSP compliance was assumed, not checked. Every route must
 // also call connection() (see src/app/page.tsx) so its nonce is fresh per
 // request rather than baked in at build time.
-const routes = ["/", "/hall-demo"];
+const routes = [
+  "/",
+  "/hall-demo",
+  "/how-it-works",
+  "/patterns",
+  "/sign-in",
+  "/terminal/alloys/storm",
+  "/the-key",
+];
 
 for (const route of routes) {
   test(`${route} sends the required security headers, with a fresh nonce`, async ({ page }) => {

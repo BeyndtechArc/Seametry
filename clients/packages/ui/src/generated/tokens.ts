@@ -40,23 +40,23 @@ export const theme = {
   },
   "light": {
     "surface": {
-      "ground": "#EDEBE3",
-      "sheet": "#F7F5EF",
-      "raised": "#FCFBF7",
-      "tray": "#E0DDD1",
+      "ground": "#D8D4C8",
+      "sheet": "#E2DED2",
+      "raised": "#ECE8DE",
+      "tray": "#C8C3B6",
       "inverse": "#1F1E1D"
     },
     "text": {
       "primary": "#1F1E1D",
       "secondary": "#45423C",
-      "tertiary": "#65615A",
+      "tertiary": "#545049",
       "faint": "#A8A49A",
       "onTouch": "#16200B",
       "inverse": "#F5F5F3"
     },
     "line": {
-      "rule": "#DBD8CD",
-      "strong": "#C4C0B4",
+      "rule": "#C4BFB2",
+      "strong": "#AAA497",
       "highlight": "rgba(255,255,255,0.70)"
     },
     "accent": {
