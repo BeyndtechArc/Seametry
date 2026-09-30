@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -169,5 +170,44 @@ func TestLoadJupiterFixtureInputsRefusesAnAlteredCapture(t *testing.T) {
 
 	if _, err := loadJupiterFixtureInputs(reportPath, fixtureDir); err == nil {
 		t.Fatal("loadJupiterFixtureInputs accepted a capture whose body no longer matches sha256")
+	}
+}
+
+func TestLoadDemoBatchReadsThePublishedBatch(t *testing.T) {
+	path := filepath.Join(repoRoot(t), "shared", "evidence", "demo-batch", "batch.json")
+	root, proofs, sealedAt, err := loadDemoBatch(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(proofs) == 0 || sealedAt.IsZero() {
+		t.Fatalf("loaded %d proofs sealed at %v, want the published batch with its own sealed_at", len(proofs), sealedAt)
+	}
+	for _, p := range proofs {
+		if p.Root != root.String() {
+			t.Errorf("proof %s names root %s, the batch names %s", p.Serial, p.Root, root)
+		}
+	}
+}
+
+func TestLoadDemoBatchRefusesACountThatDisagrees(t *testing.T) {
+	original, err := os.ReadFile(filepath.Join(repoRoot(t), "shared", "evidence", "demo-batch", "batch.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(original, &doc); err != nil {
+		t.Fatal(err)
+	}
+	doc["proofs"] = doc["proofs"].([]any)[1:]
+	altered, err := json.Marshal(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "batch.json")
+	if err := os.WriteFile(path, altered, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, _, err := loadDemoBatch(path); err == nil {
+		t.Fatal("loadDemoBatch accepted a batch missing a proof its count names")
 	}
 }

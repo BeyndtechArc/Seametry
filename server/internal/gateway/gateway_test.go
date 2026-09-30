@@ -54,20 +54,18 @@ func TestStatusAnswersInTheEnvelope(t *testing.T) {
 // step A1's own text: "Every generated operation with no handler yet answers
 // 501, naming the step that builds it, never an empty 200." Six operations
 // this originally listed are real as of A3 (instruments_test.go and
-// policy_handlers_test.go now check them) and are gone from this list, not
-// silently left to a stale expectation.
+// policy_handlers_test.go now check them), and three more as of A4
+// (receipts_test.go), and are gone from this list, not silently left to a
+// stale expectation.
 func TestEveryOtherOperationAnswers501NamingAStep(t *testing.T) {
 	srv := newTestServer(t)
 	cases := []struct {
 		method, path string
 	}{
 		{"GET", "/v1/alloys/addr/nav"},
-		{"GET", "/v1/anchor-keys"},
-		{"GET", "/v1/batches/root"},
 		{"GET", "/v1/findings"},
 		{"GET", "/v1/findings/slug"},
 		{"POST", "/v1/formulas/evaluate"},
-		{"GET", "/v1/receipts/serial"},
 		{"GET", "/v1/stream"},
 	}
 	for _, c := range cases {

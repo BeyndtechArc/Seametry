@@ -20,6 +20,7 @@ type Server struct {
 	HallProgramID   string
 	HallCluster     string
 	HallEvidenceDir string
+	Receipts        ReceiptLedger
 	Now             func() time.Time
 }
 
@@ -66,14 +67,6 @@ func (Server) GetAlloyNav(ctx context.Context, request api.GetAlloyNavRequestObj
 	return api.GetAlloyNavdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetAlloyNav", "A5"), StatusCode: 501}, nil
 }
 
-func (Server) ListAnchorKeys(ctx context.Context, request api.ListAnchorKeysRequestObject) (api.ListAnchorKeysResponseObject, error) {
-	return api.ListAnchorKeysdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("ListAnchorKeys", "A4"), StatusCode: 501}, nil
-}
-
-func (Server) GetBatch(ctx context.Context, request api.GetBatchRequestObject) (api.GetBatchResponseObject, error) {
-	return api.GetBatchdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetBatch", "A4"), StatusCode: 501}, nil
-}
-
 func (Server) EvaluateFormula(ctx context.Context, request api.EvaluateFormulaRequestObject) (api.EvaluateFormulaResponseObject, error) {
 	return api.EvaluateFormuladefaultApplicationProblemPlusJSONResponse{Body: notBuilt("EvaluateFormula", "F1"), StatusCode: 501}, nil
 }
@@ -81,7 +74,8 @@ func (Server) EvaluateFormula(ctx context.Context, request api.EvaluateFormulaRe
 // ListInstruments, GetInstrument, GetInstrumentAdmissibility,
 // GetInstrumentDepth, GetPolicy and ListReasonCodes are implemented in
 // instruments.go, admissibility.go, depth.go and policy_handlers.go: real
-// handlers, not stubs, now that A3 reads what A2 persisted.
+// handlers, not stubs, now that A3 reads what A2 persisted. GetReceipt,
+// GetBatch and ListAnchorKeys read the A4 ledger, in receipts.go.
 
 func (Server) ListFindings(ctx context.Context, request api.ListFindingsRequestObject) (api.ListFindingsResponseObject, error) {
 	return api.ListFindingsdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("ListFindings", "A3f"), StatusCode: 501}, nil
@@ -89,10 +83,6 @@ func (Server) ListFindings(ctx context.Context, request api.ListFindingsRequestO
 
 func (Server) GetFinding(ctx context.Context, request api.GetFindingRequestObject) (api.GetFindingResponseObject, error) {
 	return api.GetFindingdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetFinding", "A3f"), StatusCode: 501}, nil
-}
-
-func (Server) GetReceipt(ctx context.Context, request api.GetReceiptRequestObject) (api.GetReceiptResponseObject, error) {
-	return api.GetReceiptdefaultApplicationProblemPlusJSONResponse{Body: notBuilt("GetReceipt", "A4"), StatusCode: 501}, nil
 }
 
 func (Server) StreamEvents(ctx context.Context, request api.StreamEventsRequestObject) (api.StreamEventsResponseObject, error) {

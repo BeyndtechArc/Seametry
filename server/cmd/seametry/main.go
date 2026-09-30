@@ -1,17 +1,20 @@
 // Command seametry is the Gateway process: the one HTTP server behind every
-// surface (docs/prd/API.md section 1). It has three subcommands.
+// surface (docs/prd/API.md section 1). It has four subcommands.
 //
-//	seametry serve     runs the HTTP server (the default with no argument)
-//	seametry migrate   applies every schema's goose migrations and exits
-//	seametry replay    ingests the evidence already committed under
-//	                   shared/fixtures and shared/evidence as the first raw
-//	                   payloads and observations, then exits
+//	seametry serve               runs the HTTP server (the default with no argument)
+//	seametry migrate             applies every schema's goose migrations and exits
+//	seametry replay              ingests the evidence already committed under
+//	                             shared/fixtures and shared/evidence as the first raw
+//	                             payloads and observations, then exits
+//	seametry record-demo-batch   writes shared/evidence/demo-batch into the receipt
+//	                             ledger of a demonstration database, then exits
 //
 // Usage:
 //
 //	go run ./server/cmd/seametry
 //	go run ./server/cmd/seametry migrate
 //	go run ./server/cmd/seametry replay
+//	go run ./server/cmd/seametry record-demo-batch
 package main
 
 import (
@@ -29,6 +32,7 @@ import (
 
 	"github.com/BeyndtechArc/Seametry/server/internal/basket"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
+	"github.com/BeyndtechArc/Seametry/server/internal/receipt"
 	"github.com/BeyndtechArc/Seametry/server/internal/solana"
 	"github.com/BeyndtechArc/Seametry/server/internal/store"
 	"github.com/BeyndtechArc/Seametry/server/internal/store/observationdb"
@@ -51,8 +55,10 @@ func main() {
 		err = migrate()
 	case "replay":
 		err = replay(".")
+	case "record-demo-batch":
+		err = recordDemoBatch(".")
 	default:
-		err = fmt.Errorf("unknown command %q: usage is %q, %q or %q", cmd, "serve", "migrate", "replay")
+		err = fmt.Errorf("unknown command %q: usage is %q, %q, %q or %q", cmd, "serve", "migrate", "replay", "record-demo-batch")
 	}
 	if err != nil {
 		slog.Error("seametry: exiting", "command", cmd, "error", err.Error())
@@ -118,7 +124,8 @@ func serve() error {
 		return fmt.Errorf("configuring the devnet Hall reader: %w", err)
 	}
 	gwServer := gateway.NewServer(observationdb.New(pool), store.NewDirObjectStore(objectDir)).
-		WithHall(hall, basket.HallDevnetProgramID, "devnet")
+		WithHall(hall, basket.HallDevnetProgramID, "devnet").
+		WithReceipts(receipt.NewLedger(pool))
 	handler := gateway.NewHandler(gwServer)
 	srv := &http.Server{
 		Addr:              ":" + p,

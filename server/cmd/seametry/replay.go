@@ -15,6 +15,8 @@ import (
 	"time"
 
 	"github.com/BeyndtechArc/Seametry/server/internal/liquidity"
+	"github.com/BeyndtechArc/Seametry/server/internal/merkle"
+	"github.com/BeyndtechArc/Seametry/server/internal/receipt"
 	"github.com/BeyndtechArc/Seametry/server/internal/store"
 	"github.com/BeyndtechArc/Seametry/server/internal/store/observationdb"
 )
@@ -88,6 +90,66 @@ func replay(root string) error {
 	}
 	slog.Info("seametry: replayed the committed evidence", "solana_accounts", len(solanaInputs), "jupiter_quotes", len(jupiterInputs))
 	return nil
+}
+
+// recordDemoBatch writes shared/evidence/demo-batch into the receipt ledger,
+// so the receipt, batch and anchor-key endpoints have a batch to serve and
+// the devnet anchor has a root to write.
+//
+// It is deliberately not part of replay. The batch's bodies are invented
+// and read "finalized", and it takes serials 1 to 5 of September 2026, so
+// in a ledger that also holds real allocations the Gateway would serve
+// invented receipts beside real ones with nothing on either to tell them
+// apart. Run it only against a demonstration database.
+func recordDemoBatch(root string) error {
+	dsn := os.Getenv("SEAMETRY_DATABASE_URL")
+	if dsn == "" {
+		return errors.New("SEAMETRY_DATABASE_URL is not set; record-demo-batch needs a connection that can write to the receipt schema of a demonstration database")
+	}
+	path := filepath.Join(root, "shared", "evidence", "demo-batch", "batch.json")
+	batchRoot, proofs, sealedAt, err := loadDemoBatch(path)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	pool, err := store.OpenPool(ctx, dsn)
+	if err != nil {
+		return fmt.Errorf("opening SEAMETRY_DATABASE_URL: %w", err)
+	}
+	defer pool.Close()
+	if err := receipt.NewLedger(pool).RecordBatch(ctx, batchRoot, proofs, sealedAt); err != nil {
+		return fmt.Errorf("recording %s: %w", path, err)
+	}
+	slog.Info("seametry: recorded the demonstration batch", "root", batchRoot.String(), "receipts", len(proofs))
+	return nil
+}
+
+// loadDemoBatch reads the published batch. It checks nothing itself:
+// RecordBatch refuses proofs that do not reproduce the root.
+func loadDemoBatch(path string) (merkle.Hash, []receipt.Proof, time.Time, error) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return merkle.Hash{}, nil, time.Time{}, fmt.Errorf("reading %s: %w", path, err)
+	}
+	var batch struct {
+		Root     string          `json:"root"`
+		SealedAt time.Time       `json:"sealed_at"`
+		Count    int             `json:"count"`
+		Proofs   []receipt.Proof `json:"proofs"`
+	}
+	if err := json.Unmarshal(raw, &batch); err != nil {
+		return merkle.Hash{}, nil, time.Time{}, fmt.Errorf("decoding %s: %w", path, err)
+	}
+	if batch.Count != len(batch.Proofs) {
+		return merkle.Hash{}, nil, time.Time{}, fmt.Errorf("%s: count is %d but it carries %d proofs", path, batch.Count, len(batch.Proofs))
+	}
+	root, err := merkle.ParseHash(batch.Root)
+	if err != nil {
+		return merkle.Hash{}, nil, time.Time{}, fmt.Errorf("%s: root: %w", path, err)
+	}
+	return root, batch.Proofs, batch.SealedAt, nil
 }
 
 // mainnetFixture mirrors server/cmd/capture's own Fixture struct. It is
