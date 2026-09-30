@@ -749,13 +749,16 @@ type ReceiptPublic struct {
 		Mint      string   `json:"mint"`
 		Ticker    string   `json:"ticker"`
 	} `json:"constituents"`
-	Kind            string    `json:"kind"`
-	Month           string    `json:"month"`
-	Office          string    `json:"office"`
-	PolicyVersion   string    `json:"policy_version"`
-	Serial          string    `json:"serial"`
-	Settlement      string    `json:"settlement"`
-	SizeBand        string    `json:"size_band"`
+	Kind          string `json:"kind"`
+	Month         string `json:"month"`
+	Office        string `json:"office"`
+	PolicyVersion string `json:"policy_version"`
+	Serial        string `json:"serial"`
+	Settlement    string `json:"settlement"`
+	SizeBand      string `json:"size_band"`
+
+	// SponsorMark The sponsor's registered mark, hex, mirroring the on-chain Alloy's sponsor_mark. Empty until a mark is registered. Part of what the seal commits to, so it is always present.
+	SponsorMark     string    `json:"sponsor_mark"`
 	Venues          *[]string `json:"venues,omitempty"`
 	WeakestEvidence string    `json:"weakest_evidence"`
 }

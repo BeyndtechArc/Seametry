@@ -1294,8 +1294,14 @@ components:
     ReceiptPublic:
       type: object
       description: receipt.PublicBody. Never a signature, a wallet, or an exact amount.
-      required: [serial, kind, month, basket, constituents, weakest_evidence, size_band, policy_version, settlement, office]
+      required: [serial, kind, month, basket, constituents, weakest_evidence, size_band, policy_version, settlement, office, sponsor_mark]
       properties:
+        sponsor_mark:
+          type: string
+          description: >
+            The sponsor's registered mark, hex, mirroring the on-chain Alloy's
+            sponsor_mark. Empty until a mark is registered. Part of what the
+            seal commits to, so it is always present.
         serial:
           type: string
         kind:

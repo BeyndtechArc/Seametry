@@ -666,6 +666,8 @@ export interface components {
         };
         /** @description receipt.PublicBody. Never a signature, a wallet, or an exact amount. */
         ReceiptPublic: {
+            /** @description The sponsor's registered mark, hex, mirroring the on-chain Alloy's sponsor_mark. Empty until a mark is registered. Part of what the seal commits to, so it is always present. */
+            sponsor_mark: string;
             serial: string;
             kind: string;
             month: string;
