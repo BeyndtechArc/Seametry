@@ -1,0 +1,40 @@
+{
+  "note": "Built and signed by @solana/web3.js. The keys are derived from labels and were never used on any cluster.",
+  "memo_program": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
+  "memo_prefix": "seametry-root-v1:",
+  "cases": [
+    {
+      "name": "demo batch root",
+      "seed_hex": "09fd63b74c0c1c9135f8215ab1fe0fe4bd6163a302325945d8a57fa050785f49",
+      "signer": "5X8BrcyDEiuq68Y7d6KwRoaTe4X9jGcTHcrNFWi1hKhG",
+      "recent_blockhash": "Fu1ySSMS8Hw1HGwqMQGZ1iYuBrZD9kvNSYKpkYRTW47T",
+      "root": "668599c1eb1d299c1383e9efa712774aa1adeaedc4914a7ea8846efee34fbf89",
+      "memo": "seametry-root-v1:668599c1eb1d299c1383e9efa712774aa1adeaedc4914a7ea8846efee34fbf89",
+      "message_base64": "AQABAkMmTGx3Rrm3COM/UEmFiTiSd/MPko/pHCjiUSOAywXHBUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI3dVutXiwSlj5egWm70NNOEfAo+t+9QbFjwZuvqAct2SgEBAQBRc2VhbWV0cnktcm9vdC12MTo2Njg1OTljMWViMWQyOTljMTM4M2U5ZWZhNzEyNzc0YWExYWRlYWVkYzQ5MTRhN2VhODg0NmVmZWUzNGZiZjg5",
+      "signature_hex": "adbb09758aa56cf470413910e1138dfe615e75c802498885a7df002d9edf9d39bd12233e755083e022faf0271c7c31404dff8413f7bd9da9e35075b4db9f9704",
+      "transaction_base64": "Aa27CXWKpWz0cEE5EOETjf5hXnXIAkmIhaffAC2e3505vRIjPnVQg+Ai+vAnHHwxQE3/hBP3vZ2p41B1tNuflwQBAAECQyZMbHdGubcI4z9QSYWJOJJ38w+Sj+kcKOJRI4DLBccFSlNamSkhBk0k6HFg2jh8fDW13bySu4HkH6hAQQVEjd1W61eLBKWPl6BabvQ004R8Cj6371BsWPBm6+oBy3ZKAQEBAFFzZWFtZXRyeS1yb290LXYxOjY2ODU5OWMxZWIxZDI5OWMxMzgzZTllZmE3MTI3NzRhYTFhZGVhZWRjNDkxNGE3ZWE4ODQ2ZWZlZTM0ZmJmODk="
+    },
+    {
+      "name": "all zero root",
+      "seed_hex": "8777ed8e020e8a94968f95a4debeb6a1a5cd7ef9a9eaa5295f392c7160388f9d",
+      "signer": "GXoxbUJLREmRKWLFt5iL4ZuVWAUhXKidLTmrMfGqWvNH",
+      "recent_blockhash": "AXQ42opiGSRGM1NcmpNSNogqvmrr8dfCp3mwLPTYCuai",
+      "root": "0000000000000000000000000000000000000000000000000000000000000000",
+      "memo": "seametry-root-v1:0000000000000000000000000000000000000000000000000000000000000000",
+      "message_base64": "AQABAubD0wfZlTEU9fsD4WWk5cMlc3bQZ7dEcrLmghA9P3OuBUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI2NgqwAnsbBQTUE1TlJTYvn3l6X4+/8X6HKoLUiTudI2wEBAQBRc2VhbWV0cnktcm9vdC12MTowMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw",
+      "signature_hex": "e43d0c43f882a3978db64578bf3b9230d7660f8b3d9aa4ad2d3455b25f78474c30360854d1438ca87025f64fab6090bd81ea3ac4129e50e5701464331eab0a0d",
+      "transaction_base64": "AeQ9DEP4gqOXjbZFeL87kjDXZg+LPZqkrS00VbJfeEdMMDYIVNFDjKhwJfZPq2CQvYHqOsQSnlDlcBRkMx6rCg0BAAEC5sPTB9mVMRT1+wPhZaTlwyVzdtBnt0RysuaCED0/c64FSlNamSkhBk0k6HFg2jh8fDW13bySu4HkH6hAQQVEjY2CrACexsFBNQTVOUlNi+feXpfj7/xfocqgtSJO50jbAQEBAFFzZWFtZXRyeS1yb290LXYxOjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA="
+    },
+    {
+      "name": "all ones root",
+      "seed_hex": "9dafe9929c0201240a1f42cfbd0cfeeb8dac7a162eb4ec59b4a362da3d107161",
+      "signer": "9eCeCQqXcueNcgVLb7u7yKZdaF2ZHmXjj8zgSKSrq42L",
+      "recent_blockhash": "3W8y8fgHTrCyL4iwzzhSWdowUnvxFKsn4tLn8VQSGUso",
+      "root": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "memo": "seametry-root-v1:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "message_base64": "AQABAoBlJfKSjBU+ag3o9ia4TeMcFipHteGqJ+pVF4cR1d/pBUpTWpkpIQZNJOhxYNo4fHw1td28kruB5B+oQEEFRI0lLjn9/tCZnStXAPmZl1rRHGSfYg35V0Gs09W26Ou2FgEBAQBRc2VhbWV0cnktcm9vdC12MTpmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZm",
+      "signature_hex": "c058f08fc339054c6b43eaca6709af0e710212e547ceac67bd33aaba5ab271bfa02698163e4ab9b3aad23cdb2f7a5ed0ce100e658b5d46c6941bcc4add7b8809",
+      "transaction_base64": "AcBY8I/DOQVMa0PqymcJrw5xAhLlR86sZ70zqrpasnG/oCaYFj5KubOq0jzbL3pe0M4QDmWLXUbGlBvMSt17iAkBAAECgGUl8pKMFT5qDej2JrhN4xwWKke14aon6lUXhxHV3+kFSlNamSkhBk0k6HFg2jh8fDW13bySu4HkH6hAQQVEjSUuOf3+0JmdK1cA+ZmXWtEcZJ9iDflXQazT1bbo67YWAQEBAFFzZWFtZXRyeS1yb290LXYxOmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmY="
+    }
+  ]
+}

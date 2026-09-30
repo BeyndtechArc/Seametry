@@ -249,6 +249,14 @@ func (l *Ledger) seal(ctx context.Context, serials []Serial, at time.Time) (root
 	return root, nil
 }
 
+// AnchorMemoPrefix names the scheme and its version inside the memo, so a
+// reader can tell an anchor from any other memo the same key might carry,
+// and a later format cannot be mistaken for this one.
+const AnchorMemoPrefix = "seametry-root-v1:"
+
+// AnchorMemo is the exact memo text that anchors root.
+func AnchorMemo(root string) []byte { return []byte(AnchorMemoPrefix + root) }
+
 // Anchor is a batch root written on chain.
 type Anchor struct {
 	Cluster     string

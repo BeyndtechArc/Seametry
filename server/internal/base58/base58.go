@@ -1,4 +1,6 @@
-package registry
+// Package base58 is Solana's text form for keys, hashes and signatures,
+// shared by the registry's addresses and the anchor transaction.
+package base58
 
 import (
 	"fmt"
@@ -17,12 +19,12 @@ var base58Index = func() map[byte]int {
 	return m
 }()
 
-// encodeBase58 renders bytes the way Solana addresses are written.
+// Encode renders bytes the way Solana addresses are written.
 //
 // Implemented here rather than taken as a dependency: it is thirty lines, it
 // has no security surface beyond correctness, and the round trip test against
 // real mainnet addresses is stronger evidence than a version pin.
-func encodeBase58(input []byte) string {
+func Encode(input []byte) string {
 	zeros := 0
 	for zeros < len(input) && input[zeros] == 0 {
 		zeros++
@@ -47,13 +49,13 @@ func encodeBase58(input []byte) string {
 	return string(out)
 }
 
-func decodeBase58(s string) ([]byte, error) {
+func Decode(s string) ([]byte, error) {
 	n := new(big.Int)
 	radix := big.NewInt(58)
 	for i := 0; i < len(s); i++ {
 		digit, ok := base58Index[s[i]]
 		if !ok {
-			return nil, fmt.Errorf("registry: %q is not base58 (at position %d)", s, i)
+			return nil, fmt.Errorf("base58: %q is not base58 (at position %d)", s, i)
 		}
 		n.Mul(n, radix)
 		n.Add(n, big.NewInt(int64(digit)))

@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/BeyndtechArc/Seametry/server/internal/base58"
 	"github.com/BeyndtechArc/Seametry/server/internal/transport"
 )
 
@@ -279,4 +280,92 @@ func (c *Client) GetSlot(ctx context.Context, commitment string) (uint64, error)
 		return 0, fmt.Errorf("solana: getSlot: %w", err)
 	}
 	return slot, nil
+}
+
+// GetGenesisHash names the cluster behind the endpoint by its first block,
+// which a URL cannot fake.
+func (c *Client) GetGenesisHash(ctx context.Context) (string, error) {
+	raw, err := c.Call(ctx, "getGenesisHash", nil)
+	if err != nil {
+		return "", err
+	}
+	var hash string
+	if err := json.Unmarshal(raw, &hash); err != nil {
+		return "", fmt.Errorf("solana: getGenesisHash: %w", err)
+	}
+	return hash, nil
+}
+
+// GetLatestBlockhash returns a blockhash to sign against, confirmed so the
+// cluster still recognises it when the transaction lands.
+func (c *Client) GetLatestBlockhash(ctx context.Context) ([32]byte, error) {
+	raw, err := c.Call(ctx, "getLatestBlockhash", []any{map[string]string{"commitment": "confirmed"}})
+	if err != nil {
+		return [32]byte{}, err
+	}
+	var result contextResult
+	var value struct {
+		Blockhash string `json:"blockhash"`
+	}
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return [32]byte{}, fmt.Errorf("solana: getLatestBlockhash: %w", err)
+	}
+	if err := json.Unmarshal(result.Value, &value); err != nil {
+		return [32]byte{}, fmt.Errorf("solana: getLatestBlockhash: %w", err)
+	}
+	hash, err := base58.Decode(value.Blockhash)
+	if err != nil || len(hash) != 32 {
+		return [32]byte{}, fmt.Errorf("solana: getLatestBlockhash returned %q, not a 32 byte hash (%v)", value.Blockhash, err)
+	}
+	return [32]byte(hash), nil
+}
+
+// SendTransaction submits a signed transaction and returns the signature the
+// node reports. Preflight simulation stays on: a memo that would fail is
+// refused before it costs a fee.
+func (c *Client) SendTransaction(ctx context.Context, tx SignedTransaction) (string, error) {
+	raw, err := c.Call(ctx, "sendTransaction", []any{
+		base64.StdEncoding.EncodeToString(tx.Wire),
+		map[string]string{"encoding": "base64", "preflightCommitment": "confirmed"},
+	})
+	if err != nil {
+		return "", err
+	}
+	var signature string
+	if err := json.Unmarshal(raw, &signature); err != nil {
+		return "", fmt.Errorf("solana: sendTransaction: %w", err)
+	}
+	if signature != tx.ID() {
+		return "", fmt.Errorf("solana: sendTransaction reported %s for a transaction signed as %s", signature, tx.ID())
+	}
+	return signature, nil
+}
+
+// SignatureStatus is where a submitted transaction stands. Err is the
+// cluster's own error value, kept raw rather than interpreted.
+type SignatureStatus struct {
+	Slot               uint64          `json:"slot"`
+	ConfirmationStatus string          `json:"confirmationStatus"`
+	Err                json.RawMessage `json:"err"`
+}
+
+// GetSignatureStatus returns nil, not an error, for a signature the cluster
+// has not seen: not yet landed is an answer, not a failure.
+func (c *Client) GetSignatureStatus(ctx context.Context, signature string) (*SignatureStatus, error) {
+	raw, err := c.Call(ctx, "getSignatureStatuses", []any{[]string{signature}, map[string]bool{"searchTransactionHistory": true}})
+	if err != nil {
+		return nil, err
+	}
+	var result contextResult
+	var statuses []*SignatureStatus
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return nil, fmt.Errorf("solana: getSignatureStatuses: %w", err)
+	}
+	if err := json.Unmarshal(result.Value, &statuses); err != nil {
+		return nil, fmt.Errorf("solana: getSignatureStatuses: %w", err)
+	}
+	if len(statuses) != 1 {
+		return nil, fmt.Errorf("solana: getSignatureStatuses returned %d statuses for one signature", len(statuses))
+	}
+	return statuses[0], nil
 }

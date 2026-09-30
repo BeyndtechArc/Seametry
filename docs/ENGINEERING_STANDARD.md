@@ -279,7 +279,9 @@ the interface and `Receipt` in code.
 
 - **Sealing** anchors the Merkle root on chain on a policy cadence, from a
   dedicated key that can only write memos and holds a minimal balance.
-  Inclusion proofs are stored. Status moves from unsealed to sealed and both
+  The memo is exactly `seametry-root-v1:` followed by the root in lowercase
+  hex, and the Memo instruction lists the anchor key as its signer, so the
+  program itself binds the root to that key. Inclusion proofs are stored. Status moves from unsealed to sealed and both
   states are shown honestly.
 - **Verification requires no Seametry credentials.** Anyone recomputes the
   public body's digest, checks its inclusion proof against the root, and checks

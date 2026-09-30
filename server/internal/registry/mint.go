@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/BeyndtechArc/Seametry/server/internal/amount"
+	"github.com/BeyndtechArc/Seametry/server/internal/base58"
 )
 
 // Program IDs for the two token programs. Only Token-2022 carries extensions.
@@ -37,7 +38,7 @@ const (
 // Pubkey is a 32 byte Solana address.
 type Pubkey [32]byte
 
-func (p Pubkey) String() string { return encodeBase58(p[:]) }
+func (p Pubkey) String() string { return base58.Encode(p[:]) }
 
 // IsZero reports the all zero address, which Token-2022 uses to mean "none"
 // inside an OptionalNonZeroPubkey. A zero address is not an address.
@@ -53,7 +54,7 @@ func (p Pubkey) IsZero() bool {
 // ParsePubkey reads a base58 address.
 func ParsePubkey(s string) (Pubkey, error) {
 	var key Pubkey
-	raw, err := decodeBase58(s)
+	raw, err := base58.Decode(s)
 	if err != nil {
 		return key, err
 	}

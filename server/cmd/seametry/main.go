@@ -1,5 +1,5 @@
 // Command seametry is the Gateway process: the one HTTP server behind every
-// surface (docs/prd/API.md section 1). It has four subcommands.
+// surface (docs/prd/API.md section 1). It has five subcommands.
 //
 //	seametry serve               runs the HTTP server (the default with no argument)
 //	seametry migrate             applies every schema's goose migrations and exits
@@ -8,6 +8,8 @@
 //	                             payloads and observations, then exits
 //	seametry record-demo-batch   writes shared/evidence/demo-batch into the receipt
 //	                             ledger of a demonstration database, then exits
+//	seametry anchor              writes every sealed, unanchored batch root to devnet
+//	                             as a memo from the anchor key, then exits
 //
 // Usage:
 //
@@ -15,6 +17,7 @@
 //	go run ./server/cmd/seametry migrate
 //	go run ./server/cmd/seametry replay
 //	go run ./server/cmd/seametry record-demo-batch
+//	go run ./server/cmd/seametry anchor
 package main
 
 import (
@@ -57,8 +60,10 @@ func main() {
 		err = replay(".")
 	case "record-demo-batch":
 		err = recordDemoBatch(".")
+	case "anchor":
+		err = anchor(".")
 	default:
-		err = fmt.Errorf("unknown command %q: usage is %q, %q, %q or %q", cmd, "serve", "migrate", "replay", "record-demo-batch")
+		err = fmt.Errorf("unknown command %q: usage is %q, %q, %q, %q or %q", cmd, "serve", "migrate", "replay", "record-demo-batch", "anchor")
 	}
 	if err != nil {
 		slog.Error("seametry: exiting", "command", cmd, "error", err.Error())

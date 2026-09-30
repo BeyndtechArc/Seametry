@@ -340,3 +340,30 @@ func TestLedgerAnchorsOnlyUnderThePublishedKey(t *testing.T) {
 		t.Errorf("published keys %+v (%v), want the retired key with its end date, then the active %s", keys, err, key)
 	}
 }
+
+// TestAnchorMemoIsTheVectorsMemo pins the memo text to
+// shared/spec/anchor/vectors.json, which the Explorer's anchor check reads
+// against: the anchoring side and the checking side cannot drift apart.
+func TestAnchorMemoIsTheVectorsMemo(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("..", "..", "..", "shared", "spec", "anchor", "vectors.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var vectors struct {
+		Cases []struct {
+			Root string `json:"root"`
+			Memo string `json:"memo"`
+		} `json:"cases"`
+	}
+	if err := json.Unmarshal(raw, &vectors); err != nil {
+		t.Fatal(err)
+	}
+	if len(vectors.Cases) == 0 {
+		t.Fatal("the vector file has no cases")
+	}
+	for _, c := range vectors.Cases {
+		if got := string(AnchorMemo(c.Root)); got != c.Memo {
+			t.Errorf("AnchorMemo(%s) = %q, the vector's memo is %q", c.Root, got, c.Memo)
+		}
+	}
+}

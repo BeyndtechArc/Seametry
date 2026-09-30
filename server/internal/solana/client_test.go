@@ -2,6 +2,7 @@ package solana
 
 import (
 	"context"
+	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -237,5 +238,72 @@ func TestGetProgramAccountsSendsSizeFilterAndDecodesAddresses(t *testing.T) {
 func TestNewRejectsAnEmptyEndpoint(t *testing.T) {
 	if _, err := New("", Options{}); err == nil {
 		t.Fatal("an empty endpoint was accepted")
+	}
+}
+
+func TestSendTransactionRefusesASignatureItDidNotSign(t *testing.T) {
+	tx, err := SignMemo(ed25519.NewKeyFromSeed(make([]byte, 32)), [32]byte{}, []byte("memo"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var sent struct {
+		Params []json.RawMessage `json:"params"`
+	}
+	client := newTestClient(t, func(r *http.Request) (*http.Response, error) {
+		body, _ := io.ReadAll(r.Body)
+		json.Unmarshal(body, &sent)
+		return reply(200, `{"jsonrpc":"2.0","id":1,"result":"SomeoneElsesSignature"}`), nil
+	})
+	if _, err := client.SendTransaction(context.Background(), tx); err == nil {
+		t.Fatal("a node reporting a different signature was believed")
+	}
+	var wire string
+	json.Unmarshal(sent.Params[0], &wire)
+	if wire != base64.StdEncoding.EncodeToString(tx.Wire) {
+		t.Error("the transaction was not sent as its base64 wire bytes")
+	}
+
+	client = newTestClient(t, func(*http.Request) (*http.Response, error) {
+		return reply(200, fmt.Sprintf(`{"jsonrpc":"2.0","id":1,"result":%q}`, tx.ID())), nil
+	})
+	if got, err := client.SendTransaction(context.Background(), tx); err != nil || got != tx.ID() {
+		t.Fatalf("SendTransaction = %q, %v; want %s", got, err, tx.ID())
+	}
+}
+
+func TestSignatureStatusKeepsNotYetSeenDistinctFromFailed(t *testing.T) {
+	for _, c := range []struct {
+		name, value string
+		wantNil     bool
+		wantErr     string
+	}{
+		{"unseen", `[null]`, true, ""},
+		{"confirmed", `[{"slot":7,"confirmations":0,"err":null,"confirmationStatus":"confirmed"}]`, false, "null"},
+		{"failed", `[{"slot":7,"confirmations":0,"err":{"InstructionError":[0,"Custom"]},"confirmationStatus":"confirmed"}]`, false, `{"InstructionError":[0,"Custom"]}`},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			client := newTestClient(t, func(*http.Request) (*http.Response, error) {
+				return reply(200, `{"jsonrpc":"2.0","id":1,"result":{"context":{"slot":9},"value":`+c.value+`}}`), nil
+			})
+			status, err := client.GetSignatureStatus(context.Background(), "sig")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if (status == nil) != c.wantNil {
+				t.Fatalf("status = %+v, want nil: %v", status, c.wantNil)
+			}
+			if status != nil && string(status.Err) != c.wantErr {
+				t.Errorf("err = %s, want %s", status.Err, c.wantErr)
+			}
+		})
+	}
+}
+
+func TestLatestBlockhashRefusesAHashOfTheWrongLength(t *testing.T) {
+	client := newTestClient(t, func(*http.Request) (*http.Response, error) {
+		return reply(200, `{"jsonrpc":"2.0","id":1,"result":{"context":{"slot":9},"value":{"blockhash":"abc","lastValidBlockHeight":100}}}`), nil
+	})
+	if _, err := client.GetLatestBlockhash(context.Background()); err == nil {
+		t.Fatal("a three character blockhash was accepted")
 	}
 }

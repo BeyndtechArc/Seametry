@@ -30,6 +30,7 @@ See `docs/ENGINEERING_STANDARD.md` sections 8 and 17.
 |---|---|
 | `canonical/vectors.json` | RFC 8785 canonical JSON, plus Seametry's refusal of non-integer numbers |
 | `merkle/vectors.json` | Receipt tree geometry, leaf composition, inclusion proofs |
+| `anchor/vectors.json` | The anchor memo text and the exact signed transaction that carries it. Built by `@solana/web3.js` in `shared/tools/spec/anchor-vector.mjs`, not by `generate.mjs`, so that a library sharing no code with `server/internal/solana` fixes every byte; it needs `npm ci` first |
 
 Not yet written, and required before their implementations begin:
 `recipe/vectors/` (the Hall's arithmetic, shared with Rust), `policy/golden/`
