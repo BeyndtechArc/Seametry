@@ -338,8 +338,14 @@ jobs:
       # any commit. The fonts are fetched, never committed, so this build falls
       # back to system faces; a production build runs npm run fonts
       # --workspace=clients/web first.
+      # The same run regenerates the admissions snapshot clients/web imports,
+      # so a decision the web app shows is always the one the policy engine
+      # makes on the committed evidence, never a stale or hand-edited copy.
       - name: Build
-        run: go run ./server/cmd/explorer
+        run: go run ./server/cmd/explorer -admissions shared/evidence/admissions.json
+
+      - name: The admissions snapshot matches the evidence it was made from
+        run: git diff --exit-code shared/evidence/admissions.json || { echo "shared/evidence/admissions.json differs from what the policy engine produces; regenerate it with: go run ./server/cmd/explorer -admissions shared/evidence/admissions.json"; exit 1; }
 
       # The _headers file's CSP staying identical to securityHeaders in host.go
       # is checked by TestHostConfigCSPMatchesSecurityHeaders, which the `go`

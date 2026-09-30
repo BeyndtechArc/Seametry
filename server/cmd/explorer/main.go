@@ -78,6 +78,7 @@ type Instrument struct {
 	PolicyVersion string
 	InputDigest   string
 	Depth         []DepthRow
+	Admission     Admission
 }
 
 // DepthRow is one measured size on an instrument's depth curve.
@@ -88,6 +89,11 @@ type DepthRow struct {
 	Shortfall    string
 	Venues       string
 }
+
+// decisionsAsOf is the fixed instant every decision and multiplier is resolved
+// at, so the pages and the admissions snapshot mean the same thing every time
+// they are generated, rather than drifting with the wall clock.
+var decisionsAsOf = time.Date(2026, 9, 23, 12, 0, 0, 0, time.UTC)
 
 // halted lists instruments the issuer had halted when their mint was captured.
 // Halt state is not in the mint, so it is recorded beside the fixtures' notes.
@@ -199,9 +205,16 @@ type splitRow struct {
 func main() {
 	out := flag.String("out", filepath.Join("dist", "explorer"), "output directory")
 	addr := flag.String("serve", "", "generate, then serve on this address, for example :8080")
+	admissions := flag.String("admissions", "", "also write every instrument's decision as JSON to this path, for example shared/evidence/admissions.json")
 	flag.Parse()
 
 	instruments := loadInstruments()
+	if *admissions != "" {
+		if err := writeAdmissions(*admissions, instruments); err != nil {
+			fail(err)
+		}
+		fmt.Printf("  %s\n", *admissions)
+	}
 	surveyData := loadSurvey()
 	batchRaw, batchCount, batchRoot, proofs := loadBatch()
 	demo := loadTranscript("transcript.json")
@@ -337,9 +350,7 @@ func loadInstruments() []Instrument {
 		fmt.Fprintf(os.Stderr, "explorer: no fixtures (%v); run: go run ./server/cmd/capture\n", err)
 		return nil
 	}
-	// Resolve against a fixed instant so the page means the same thing every
-	// time it is generated, rather than drifting with the wall clock.
-	asOf := time.Date(2026, 9, 23, 12, 0, 0, 0, time.UTC)
+	asOf := decisionsAsOf
 
 	var out []Instrument
 	for _, entry := range entries {
@@ -401,6 +412,9 @@ func loadInstruments() []Instrument {
 		inst.PolicyVersion = result.PolicyVersion
 		inst.InputDigest = result.InputDigest
 		inst.Depth = depth
+		if inst.Admission, err = admissionFor(f, mint, prerogatives, result); err != nil {
+			fail(fmt.Errorf("%s: %w", f.Symbol, err))
+		}
 
 		out = append(out, inst)
 	}

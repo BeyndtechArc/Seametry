@@ -1,0 +1,668 @@
+{
+  "producer": "go run ./server/cmd/explorer -admissions shared/evidence/admissions.json",
+  "as_of": "2026-09-23T12:00:00Z",
+  "policy_version": "policy-2026.09.2",
+  "reference_usdc": 1000,
+  "instruments": [
+    {
+      "issuer": "Backed Finance (xStocks)",
+      "decimals": 8,
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-09-23T03:25:33Z",
+          "slot": "449580424"
+        },
+        "grade": "certificate",
+        "mint": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "2025-11-16T23:55:00Z",
+          "naive_is_stale": true,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "10",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "NFLXx",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "BLOCK",
+        "input_digest": "14c79651356e0f678901184d20f3595b4cf28c1968a6f2040b5a996fa61ef194",
+        "policy_version": "policy-2026.09.2",
+        "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "fact": "Buying 1000 USDC realises a rate 232 basis points worse than buying 100 USDC, above the 100 basis point ceiling.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date.",
+            "severity": "ALLOW"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backed Finance (xStocks)",
+      "decimals": 8,
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-09-23T03:25:33Z",
+          "slot": "449580424"
+        },
+        "grade": "certificate",
+        "mint": "XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "2026-07-19T23:55:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "10012961784886627025770167165319435298442840576171875",
+            "scale": 52
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "10012961784886627025770167165319435298442840576171875",
+            "scale": 52
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "CATx",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "BLOCK",
+        "input_digest": "66ffb54d2bfc2e41b6170f7669f03faee14da68484f84f416324392802981b5b",
+        "policy_version": "policy-2026.09.2",
+        "reasons": [
+          {
+            "code": "NO_ROUTE_FOUND",
+            "fact": "No route to buy 1000 USDC of this was found.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backed Finance (xStocks)",
+      "decimals": 8,
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-09-23T03:25:33Z",
+          "slot": "449580424"
+        },
+        "grade": "certificate",
+        "mint": "XsTTtPA5V19YwHKDv4xeVXNM6kdsQNJvg3MyWkRUckt",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "2026-05-17T02:30:00Z",
+          "naive_is_stale": true,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "5",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "PALLx",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "BLOCK",
+        "input_digest": "0d07362ca50ebe742de3b72c6c873d593d87f0d2f24e1e8ec150e1a4820629b6",
+        "policy_version": "policy-2026.09.2",
+        "reasons": [
+          {
+            "code": "NO_ROUTE_FOUND",
+            "fact": "No route to buy 1000 USDC of this was found.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date.",
+            "severity": "ALLOW"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backed Finance (xStocks)",
+      "decimals": 8,
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-09-23T03:25:33Z",
+          "slot": "449580424"
+        },
+        "grade": "certificate",
+        "mint": "XsaQGz41BEQkS9xAB44uvUtuXcdLJAXEU1dogEzWMZ8",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "2026-09-15T00:30:00Z",
+          "naive_is_stale": true,
+          "naive_value": {
+            "atoms": "10561756999911942056513680654461495578289031982421875",
+            "scale": 52
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1084091008567570124654366736649535596370697021484375",
+            "scale": 51
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "STRKx",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "BLOCK",
+        "input_digest": "7ee73a5088bf146fce0b6c8836fd57a936461e10818f9d50ab746b645dadfea0",
+        "policy_version": "policy-2026.09.2",
+        "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "fact": "Buying 1000 USDC realises a rate 8237 basis points worse than buying 100 USDC, above the 100 basis point ceiling.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date.",
+            "severity": "ALLOW"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backed Finance (xStocks)",
+      "decimals": 8,
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-09-23T03:25:33Z",
+          "slot": "449580424"
+        },
+        "grade": "certificate",
+        "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "2026-08-08T00:30:00Z",
+          "naive_is_stale": true,
+          "naive_value": {
+            "atoms": "1002664207589379685714447987265884876251220703125",
+            "scale": 48
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "10032690125398187053207266217214055359363555908203125",
+            "scale": 52
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "AAPLx",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "474c08ca877be7f9fc5b0cf2897e1526ebf710c1eb0e037a0a20f9c011a854a7",
+        "policy_version": "policy-2026.09.2",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date.",
+            "severity": "ALLOW"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backed Finance (xStocks)",
+      "decimals": 8,
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-09-23T03:25:33Z",
+          "slot": "449580424"
+        },
+        "grade": "certificate",
+        "mint": "XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "2026-08-27T00:30:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "CRDAx",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "BLOCK",
+        "input_digest": "0aae16f338f11f5dee79065224ea712c86d80684ff107b15de68997b6bef72a0",
+        "policy_version": "policy-2026.09.2",
+        "reasons": [
+          {
+            "code": "TOKEN_NOT_TRADABLE_BY_AGGREGATOR",
+            "fact": "The aggregator will not trade this token.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "HALTED_BY_ISSUER",
+            "fact": "The issuer has halted trading in this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backed Finance (xStocks)",
+      "decimals": 8,
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-09-23T03:25:33Z",
+          "slot": "449580424"
+        },
+        "grade": "certificate",
+        "mint": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "2026-09-23T04:00:00Z",
+          "naive_is_stale": true,
+          "naive_value": {
+            "atoms": "2008976295242212106728629805729724466800689697265625",
+            "scale": 51
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "201169059793726745510866749100387096405029296875",
+            "scale": 47
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "TQQQx",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "BLOCK",
+        "input_digest": "a2e2bbc5fb2f32948f273a8774e2312f8cf1add8b48e85c88a2b5977dda955d7",
+        "policy_version": "policy-2026.09.2",
+        "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "fact": "Buying 1000 USDC realises a rate 346 basis points worse than buying 100 USDC, above the 100 basis point ceiling.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "HALTED_BY_ISSUER",
+            "fact": "The issuer has halted trading in this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "OBVIOUS_MULTIPLIER_FIELD_IS_STALE",
+            "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date.",
+            "severity": "ALLOW"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -67,15 +67,6 @@ func (s Server) loadMint(ctx context.Context, mint string, asOf time.Time) (*dec
 // ungraded, which would block every one of them on CodeUngraded before
 // real classification exists. Revisit when grade is decoded for real.
 func toAPIInstrument(d *decodedMint, mint string) api.Instrument {
-	inst := api.Instrument{
-		Mint:              mint,
-		Grade:             "certificate",
-		Prerogatives:      toAPIPrerogatives(d.Prerogatives.Sentences()),
-		UnknownExtensions: []int{},
-	}
-	for _, u := range d.Prerogatives.UnknownExtensions {
-		inst.UnknownExtensions = append(inst.UnknownExtensions, int(u))
-	}
 	// The slot is real, not derived from a timestamp (EXPLORER.md section
 	// 3.2: "a fact with no slot is an assertion"): adapter_solana.go's
 	// solanaPayload carries it, captured at read time from the same RPC
@@ -87,17 +78,34 @@ func toAPIInstrument(d *decodedMint, mint string) api.Instrument {
 		Slot   uint64 `json:"slot"`
 	}
 	json.Unmarshal(d.Observation.Payload, &p)
-	inst.Capture.Slot = fmt.Sprintf("%d", p.Slot)
-	if p.Symbol != "" {
-		inst.Symbol = &p.Symbol
-	}
+	var capturedAt *time.Time
 	if d.Observation.SourceEventAt.Valid {
 		t := d.Observation.SourceEventAt.Time
-		inst.Capture.CapturedAt = &t
+		capturedAt = &t
 	}
+	return InstrumentView(d.Mint, d.Prerogatives, mint, p.Symbol, p.Slot, capturedAt, d.Observation.SourceEventAt.Time)
+}
 
-	if config, ok, err := d.Mint.ScaledUIAmount(); err == nil && ok {
-		if resolved, err := config.Resolve(d.Observation.SourceEventAt.Time); err == nil {
+// InstrumentView is the wire shape of one decoded mint, with its multiplier
+// resolved at resolveAt. Exported for the same reason as DecisionView: the
+// Explorer's static admissions snapshot and the live endpoint share it.
+func InstrumentView(m *registry.Mint, p registry.Prerogatives, mint, symbol string, slot uint64, capturedAt *time.Time, resolveAt time.Time) api.Instrument {
+	inst := api.Instrument{
+		Mint:              mint,
+		Grade:             "certificate",
+		Prerogatives:      toAPIPrerogatives(p.Sentences()),
+		UnknownExtensions: []int{},
+	}
+	for _, u := range p.UnknownExtensions {
+		inst.UnknownExtensions = append(inst.UnknownExtensions, int(u))
+	}
+	inst.Capture.Slot = fmt.Sprintf("%d", slot)
+	inst.Capture.CapturedAt = capturedAt
+	if symbol != "" {
+		inst.Symbol = &symbol
+	}
+	if config, ok, err := m.ScaledUIAmount(); err == nil && ok {
+		if resolved, err := config.Resolve(resolveAt); err == nil {
 			inst.Multiplier = &api.ResolvedMultiplier{
 				ActivationPending: resolved.ActivationPending,
 				EffectiveAt:       resolved.EffectiveAt,

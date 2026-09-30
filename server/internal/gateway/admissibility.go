@@ -52,7 +52,10 @@ func (s Server) evaluate(ctx context.Context, d *decodedMint, mint string, asOf 
 	return policy.Evaluate(doc, input)
 }
 
-func toAPIDecision(result policy.Result, now time.Time) api.Decision {
+// DecisionView is the wire shape of a policy result. Exported so the
+// Explorer's static admissions snapshot is built by the same mapping the live
+// endpoint uses, and switching a reader from one to the other changes nothing.
+func DecisionView(result policy.Result) api.Decision {
 	d := api.Decision{
 		Decision:      api.DecisionDecision(result.Decision),
 		PolicyVersion: result.PolicyVersion,
@@ -86,7 +89,7 @@ func (s Server) GetInstrumentAdmissibility(ctx context.Context, request api.GetI
 		return nil, err
 	}
 	return api.GetInstrumentAdmissibility200JSONResponse{
-		Data: toAPIDecision(result, now),
+		Data: DecisionView(result),
 		Meta: api.Meta{ServedAt: now, AsOf: asOf, Completeness: api.Complete},
 	}, nil
 }
