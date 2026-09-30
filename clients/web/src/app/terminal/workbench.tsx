@@ -9,6 +9,7 @@ import type {
   InstrumentRegisterResponse,
   TerminalProblem,
 } from "@/lib/terminal-contract";
+import { formatAmount } from "@/lib/amount";
 import styles from "./terminal.module.css";
 
 export function useTerminalResource<T>(path: string) {
@@ -126,15 +127,6 @@ function sourceAge(ageSeconds?: number) {
   const minutes = Math.floor(ageSeconds / 60);
   if (minutes < 60) return `${minutes}m old`;
   return `${Math.floor(minutes / 60)}h old`;
-}
-
-function formatAmount(atoms: string, scale: number) {
-  const negative = atoms.startsWith("-");
-  const digits = negative ? atoms.slice(1) : atoms;
-  if (scale === 0) return `${negative ? "-" : ""}${digits}`;
-  const padded = digits.padStart(scale + 1, "0");
-  const split = padded.length - scale;
-  return `${negative ? "-" : ""}${padded.slice(0, split)}.${padded.slice(split)}`;
 }
 
 export function InstrumentRegister() {

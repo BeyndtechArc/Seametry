@@ -7,6 +7,7 @@
     {
       "issuer": "Backed Finance (xStocks)",
       "decimals": 8,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
           "captured_at": "2026-09-23T03:25:33Z",
@@ -102,6 +103,7 @@
     {
       "issuer": "Backed Finance (xStocks)",
       "decimals": 8,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
           "captured_at": "2026-09-23T03:25:33Z",
@@ -192,6 +194,7 @@
     {
       "issuer": "Backed Finance (xStocks)",
       "decimals": 8,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
           "captured_at": "2026-09-23T03:25:33Z",
@@ -287,6 +290,7 @@
     {
       "issuer": "Backed Finance (xStocks)",
       "decimals": 8,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
           "captured_at": "2026-09-23T03:25:33Z",
@@ -382,6 +386,7 @@
     {
       "issuer": "Backed Finance (xStocks)",
       "decimals": 8,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
           "captured_at": "2026-09-23T03:25:33Z",
@@ -472,6 +477,7 @@
     {
       "issuer": "Backed Finance (xStocks)",
       "decimals": 8,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
           "captured_at": "2026-09-23T03:25:33Z",
@@ -567,6 +573,7 @@
     {
       "issuer": "Backed Finance (xStocks)",
       "decimals": 8,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
           "captured_at": "2026-09-23T03:25:33Z",

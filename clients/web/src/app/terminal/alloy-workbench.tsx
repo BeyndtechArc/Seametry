@@ -10,21 +10,9 @@ import type {
   Meta,
   TerminalProblem,
 } from "@/lib/terminal-contract";
+import { formatAmount } from "@/lib/amount";
 import { TerminalFrame, useTerminalResource } from "./workbench";
 import styles from "./terminal.module.css";
-
-function groupedInteger(value: string) {
-  return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-function formatAmount(atoms: string, scale: number) {
-  const negative = atoms.startsWith("-");
-  const digits = negative ? atoms.slice(1) : atoms;
-  if (scale === 0) return `${negative ? "−" : ""}${groupedInteger(digits)}`;
-  const padded = digits.padStart(scale + 1, "0");
-  const split = padded.length - scale;
-  return `${negative ? "−" : ""}${groupedInteger(padded.slice(0, split))}.${padded.slice(split)}`;
-}
 
 function observedAge(observedAt: string) {
   const elapsed = Math.max(0, Math.floor((Date.now() - Date.parse(observedAt)) / 1000));
@@ -143,7 +131,7 @@ export function AlloyRegister() {
                         <b>Alloy {alloy.id}</b>
                         <Digest value={alloy.address} />
                       </td>
-                      <td>{groupedInteger(alloy.supply)} shares</td>
+                      <td>{formatAmount(alloy.supply, 0)} shares</td>
                       <td>{alloy.legs.length} recorded</td>
                       <td>{held === 0 ? "Every leg available" : `${held} held as a Claim`}</td>
                       <td><Link href={`/terminal/alloys/${encodeURIComponent(alloy.address)}`}>Open Alloy</Link></td>
@@ -194,7 +182,7 @@ export function AlloyRecord({ address }: { address: string }) {
           <section className={styles.alloyFacts} aria-label="Live Alloy figures">
             <Figure
               label="Shares outstanding"
-              value={groupedInteger(alloy.supply)}
+              value={formatAmount(alloy.supply, 0)}
               unit="shares"
               source={hallSource(meta)}
               state={evidenceState(meta)}
@@ -203,7 +191,7 @@ export function AlloyRecord({ address }: { address: string }) {
             />
             <Figure
               label="Genesis shares locked"
-              value={alloy.locked_genesis ? groupedInteger(alloy.locked_genesis) : undefined}
+              value={alloy.locked_genesis ? formatAmount(alloy.locked_genesis, 0) : undefined}
               unit="shares"
               source={hallSource(meta)}
               state={alloy.locked_genesis ? evidenceState(meta) : "unavailable"}
@@ -262,7 +250,7 @@ export function AlloyRecord({ address }: { address: string }) {
             <div className={styles.termsPlate}>
               <div className={styles.termsQuantity}>
                 <span>Stated quantity</span>
-                <b>{groupedInteger(value.strike.data.shares)} shares</b>
+                <b>{formatAmount(value.strike.data.shares, 0)} shares</b>
                 <small>{hallSource(value.strike.meta)} · {value.strike.meta.completeness}</small>
               </div>
               <div className={styles.tableViewport}>

@@ -20,9 +20,12 @@ type Admission struct {
 	Issuer string `json:"issuer"`
 	// Decimals is not in api.Instrument, and a reader converting raw token
 	// units to whole units cannot do without it.
-	Decimals   uint8          `json:"decimals"`
-	Instrument api.Instrument `json:"instrument"`
-	Decision   api.Decision   `json:"decision"`
+	Decimals uint8 `json:"decimals"`
+	// TokenProgram owns the mint account (the fixture's owner), and decides
+	// which associated token account a holder receives the instrument in.
+	TokenProgram string         `json:"token_program"`
+	Instrument   api.Instrument `json:"instrument"`
+	Decision     api.Decision   `json:"decision"`
 }
 
 type admissionsSnapshot struct {
@@ -39,10 +42,11 @@ func admissionFor(f fixture, mint *registry.Mint, prerogatives registry.Prerogat
 		return Admission{}, err
 	}
 	return Admission{
-		Issuer:     f.Issuer,
-		Decimals:   mint.Decimals,
-		Instrument: gateway.InstrumentView(mint, prerogatives, f.Address, f.Symbol, f.Slot, &captured, decisionsAsOf),
-		Decision:   gateway.DecisionView(result),
+		Issuer:       f.Issuer,
+		Decimals:     mint.Decimals,
+		TokenProgram: f.Owner,
+		Instrument:   gateway.InstrumentView(mint, prerogatives, f.Address, f.Symbol, f.Slot, &captured, decisionsAsOf),
+		Decision:     gateway.DecisionView(result),
 	}, nil
 }
 

@@ -301,6 +301,12 @@
   gap: var(--sm-space-3) var(--sm-space-5);
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
+  min-width: 0;
+}
+
+.stampLine > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .stamp {
@@ -676,6 +682,87 @@
   white-space: nowrap;
 }
 
+.quoteBlock {
+  display: grid;
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-5) 0;
+  border-top: 0.5px solid var(--sm-line-strong);
+  color: var(--sm-text-secondary);
+  min-width: 0;
+}
+
+.quoteFloor,
+.quoteExpected {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sm-space-2) var(--sm-space-3);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.quoteFloor span,
+.quoteExpected span {
+  flex-basis: 100%;
+  font-size: var(--sm-font-size-small);
+}
+
+.quoteFloor b {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-figure);
+  font-weight: var(--sm-font-weight-light);
+  letter-spacing: var(--sm-font-tracking-display);
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.quoteExpected b {
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-body);
+  font-weight: var(--sm-font-weight-medium);
+  overflow-wrap: anywhere;
+}
+
+.quoteFloor small,
+.quoteExpected small {
+  font-size: var(--sm-font-size-small);
+}
+
+.quoteLines {
+  display: grid;
+  margin: 0;
+}
+
+.quoteLines div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sm-space-2) var(--sm-space-4);
+  padding: var(--sm-space-3) 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+  font-size: var(--sm-font-size-small);
+}
+
+.quoteLines dd {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  overflow-wrap: anywhere;
+}
+
+.quoteExpiry {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sm-space-2) var(--sm-space-4);
+  font-size: var(--sm-font-size-small);
+}
+
+.quoteBlock[data-expired] .quoteFloor b,
+.quoteBlock[data-expired] .quoteExpected b {
+  color: var(--sm-text-tertiary);
+}
+
 .conditionReport {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(min(100%, calc(var(--sm-space-13) * 1.6)), 1fr);
@@ -693,6 +780,10 @@
   padding: var(--sm-space-5) 0;
   color: var(--sm-text-secondary);
   line-height: 1.55;
+  /* An evidence line can carry an exact figure with no break in it; without
+     this it sets the track's minimum width and pushes the report off screen. */
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .conditionReport li + li {

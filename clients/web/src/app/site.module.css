@@ -778,11 +778,14 @@
     padding: var(--sm-space-4) 0;
   }
 
+  /* components.md, House rail: narrow layouts wrap into ruled rows without
+     hiding destinations. A scrolling strip hid the last links off screen
+     with nothing to say they were there. */
   .primaryNav {
     grid-column: 1 / -1;
     grid-row: 2;
+    flex-wrap: wrap;
     justify-content: flex-start;
-    overflow-x: auto;
     border-top: 0.5px solid var(--sm-line-rule);
   }
 

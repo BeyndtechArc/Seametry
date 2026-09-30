@@ -1,0 +1,412 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { VersionedTransaction } from "@solana/web3.js";
+import { ConditionReport, Field, Grade, Key, QuietAction, QuoteBlock, Rule, Stamp } from "@seametry/ui";
+import { formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
+import type { PreparedLeg } from "@/lib/allocation/execution";
+import { USDC_SCALE, lotCapAtoms } from "@/lib/allocation/rules";
+import styles from "./allocation.module.css";
+
+export type OfferedLot = {
+  mint: string;
+  symbol: string;
+  issuer: string;
+  decision: string;
+  stampReason: string;
+  prerogatives: string[];
+  multiplier: string;
+  slot: string;
+};
+
+export type RefusedLot = { symbol: string; fact: string };
+
+type Snapshot = { asOf: string; age: string; policyVersion: string; referenceUsdc: number };
+
+type Phase = "idle" | "preparing" | "prepared" | "signing" | "sending" | "settled" | "failed";
+
+type Leg = {
+  mint: string;
+  symbol: string;
+  atoms: bigint;
+  phase: Phase;
+  prepared?: PreparedLeg;
+  signature?: string;
+  note?: string;
+};
+
+function fromBase64(text: string): Uint8Array {
+  return Uint8Array.from(atob(text), (character) => character.charCodeAt(0));
+}
+
+function toBase64(bytes: Uint8Array): string {
+  let text = "";
+  for (const byte of bytes) text += String.fromCharCode(byte);
+  return btoa(text);
+}
+
+function secondsUntil(iso: string, now: number) {
+  return Math.max(0, Math.ceil((Date.parse(iso) - now) / 1000));
+}
+
+function signedChange(atoms: string, scale: number, unit: string) {
+  const sign = atoms.startsWith("-") ? "" : "+";
+  return `${sign}${formatAmount(atoms, scale)} ${unit}`;
+}
+
+function reasonFrom(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error ?? `${path} answered ${response.status}`);
+  return payload as T;
+}
+
+const phaseLabel: Record<Phase, string> = {
+  idle: "Not prepared",
+  preparing: "Preparing",
+  prepared: "Ready to sign",
+  signing: "Signing",
+  sending: "Sending",
+  settled: "Settled",
+  failed: "Not bought",
+};
+
+export function AllocationFlow({
+  offered,
+  refused,
+  snapshot,
+  unavailable,
+}: {
+  offered: OfferedLot[];
+  refused: RefusedLot[];
+  snapshot: Snapshot;
+  unavailable?: string;
+}) {
+  const { publicKey, connected, connecting, wallets, select, disconnect, signTransaction } = useWallet();
+  const [selected, setSelected] = useState<string[]>(offered.map((lot) => lot.mint));
+  const [typed, setTyped] = useState("");
+  const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
+  const [now, setNow] = useState(() => Date.now());
+
+  const cap = lotCapAtoms(snapshot.referenceUsdc);
+  const parsed = typed.trim() === "" ? undefined : parseAmount(typed, USDC_SCALE);
+  const chosen = offered.filter((lot) => selected.includes(lot.mint));
+  const split = parsed && "atoms" in parsed ? splitEvenly(parsed.atoms, chosen.length) : [];
+  const amountProblem =
+    parsed && "refused" in parsed
+      ? parsed.refused
+      : split.some((atoms) => atoms > cap)
+        ? `Each lot may take at most ${formatAmount(BigInt(snapshot.referenceUsdc), 0)} USDC. Spend less, or select more lots.`
+        : split.some((atoms) => atoms === 0n) && split.length > 0
+          ? "The amount is too small to give every selected lot a share of it."
+          : undefined;
+
+  // The plan is derived from the inputs on every render. Progress is kept as
+  // each leg's changes, and only while it belongs to the same plan; the
+  // inputs lock once a leg has started, so progress never lands on another.
+  const plan = `${typed}|${selected.join(",")}`;
+  const changes = progress.plan === plan ? progress.changes : {};
+  const legs: Leg[] =
+    amountProblem || split.length === 0
+      ? []
+      : chosen.map((lot, i) => ({ mint: lot.mint, symbol: lot.symbol, atoms: split[i], phase: "idle", ...changes[lot.mint] }));
+  const started = legs.some((leg) => leg.phase !== "idle" || leg.note);
+
+  const anyPrepared = legs.some((leg) => leg.phase === "prepared");
+  useEffect(() => {
+    if (!anyPrepared) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [anyPrepared]);
+
+  const update = useCallback(
+    (mint: string, change: Partial<Leg>) => {
+      setProgress((current) => {
+        const kept = current.plan === plan ? current.changes : {};
+        return { plan, changes: { ...kept, [mint]: { ...kept[mint], ...change } } };
+      });
+    },
+    [plan],
+  );
+
+  const startOver = () => {
+    setProgress({ plan: "", changes: {} });
+    setTyped("");
+  };
+
+  const prepare = useCallback(
+    async (leg: Leg) => {
+      if (!publicKey) return;
+      update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined });
+      try {
+        const prepared = await postJson<PreparedLeg>("/api/allocation/prepare", {
+          wallet: publicKey.toBase58(),
+          mint: leg.mint,
+          usdcAtoms: leg.atoms.toString(),
+        });
+        setNow(Date.now());
+        update(leg.mint, { phase: "prepared", prepared });
+      } catch (error) {
+        update(leg.mint, { phase: "idle", note: reasonFrom(error) });
+      }
+    },
+    [publicKey, update],
+  );
+
+  const watch = useCallback(
+    async (mint: string, signature: string) => {
+      for (let attempt = 0; attempt < 30; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        try {
+          const response = await fetch(`/api/allocation/status?signature=${signature}`);
+          const status = (await response.json()) as { state?: string; detail?: string; error?: string };
+          if (status.state === "confirmed" || status.state === "finalized") {
+            update(mint, { phase: "settled", note: `Settled, ${status.state} on mainnet.` });
+            return;
+          }
+          if (status.state === "failed") {
+            update(mint, { phase: "failed", note: `Mainnet ran the transaction and it failed: ${status.detail}. No USDC was spent on this lot.` });
+            return;
+          }
+        } catch {
+          // A missed poll is retried; the signature stays on screen either way.
+        }
+      }
+      update(mint, { note: "No confirmation within a minute. The signature below shows where it stands." });
+    },
+    [update],
+  );
+
+  const active = legs.find((leg) => leg.phase === "prepared" && leg.prepared && secondsUntil(leg.prepared.expiresAt, now) > 0);
+  const inFlight = legs.find((leg) => leg.phase === "signing" || leg.phase === "sending");
+
+  const approveAndSign = async () => {
+    const leg = active;
+    if (!leg?.prepared || !signTransaction) return;
+    update(leg.mint, { phase: "signing", note: undefined });
+    let signed: VersionedTransaction;
+    try {
+      signed = await signTransaction(VersionedTransaction.deserialize(fromBase64(leg.prepared.transaction)));
+    } catch (error) {
+      update(leg.mint, { phase: "prepared", note: `Not signed: ${reasonFrom(error)}` });
+      return;
+    }
+    update(leg.mint, { phase: "sending" });
+    try {
+      const { signature } = await postJson<{ signature: string }>("/api/allocation/submit", {
+        transaction: toBase64(signed.serialize()),
+        approval: leg.prepared.approval,
+      });
+      update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
+      void watch(leg.mint, signature);
+    } catch (error) {
+      update(leg.mint, { phase: "failed", note: `${reasonFrom(error)} No USDC was spent on this lot.` });
+    }
+  };
+
+  const keyDisabledReason = unavailable
+    ? unavailable
+    : !connected
+      ? "Connect a wallet first."
+      : !signTransaction
+        ? "This wallet does not offer transaction signing."
+        : inFlight
+          ? `${phaseLabel[inFlight.phase]} ${inFlight.symbol}.`
+          : !active
+            ? "Prepare a leg to see its terms first."
+            : undefined;
+
+  const attempted = legs.filter((leg) => leg.phase === "settled" || leg.phase === "failed");
+  const settledCount = legs.filter((leg) => leg.phase === "settled").length;
+
+  return (
+    <div className={styles.flow}>
+      {unavailable ? (
+        <p className={styles.unavailable} role="note">
+          {unavailable}
+        </p>
+      ) : null}
+
+      <section className={styles.section} aria-labelledby="wallet-heading">
+        <Rule />
+        <h2 id="wallet-heading">Which wallet receives the lots</h2>
+        {connected && publicKey ? (
+          <div className={styles.walletLine}>
+            <code>{publicKey.toBase58()}</code>
+            <QuietAction onClick={() => void disconnect()}>Disconnect wallet</QuietAction>
+          </div>
+        ) : wallets.length === 0 ? (
+          <p className={styles.quiet}>
+            No wallet was detected in this browser. On a phone, open this page inside your wallet&apos;s own browser.
+          </p>
+        ) : (
+          <div className={styles.actions}>
+            {wallets.map((wallet) => (
+              <QuietAction key={wallet.adapter.name} disabled={connecting} onClick={() => select(wallet.adapter.name)}>
+                Connect {wallet.adapter.name}
+              </QuietAction>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className={styles.section} aria-labelledby="lots-heading">
+        <Rule />
+        <h2 id="lots-heading">Which lots may enter</h2>
+        <p className={styles.provenance}>
+          Policy engine decision, {snapshot.policyVersion}, made on captured evidence as of{" "}
+          <time dateTime={snapshot.asOf} title={snapshot.asOf}>
+            {new Date(snapshot.asOf).toUTCString().slice(5, 16)}
+          </time>
+          , {snapshot.age} old. Stale by construction: a snapshot, not a live read.
+        </p>
+        {offered.length === 0 ? (
+          <p className={styles.quiet}>No instrument meets Good Delivery at the reference size in this snapshot.</p>
+        ) : (
+          <ul className={styles.lots}>
+            {offered.map((lot) => (
+              <li key={lot.mint} className={styles.lot}>
+                <label className={styles.lotChoice}>
+                  <input
+                    type="checkbox"
+                    disabled={started}
+                    checked={selected.includes(lot.mint)}
+                    onChange={(event) =>
+                      setSelected((current) =>
+                        event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
+                      )
+                    }
+                  />
+                  <b>{lot.symbol}</b>
+                  <span>{lot.issuer}</span>
+                </label>
+                <Stamp kind={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
+                <Grade name="Certificate" />
+                <ConditionReport statements={lot.prerogatives} evidence={`Read at slot ${lot.slot}. ${lot.multiplier}`} />
+              </li>
+            ))}
+          </ul>
+        )}
+        {refused.length > 0 ? (
+          <details className={styles.refused}>
+            <summary>
+              {refused.length} captured {refused.length === 1 ? "lot was" : "lots were"} refused
+            </summary>
+            <ul>
+              {refused.map((lot) => (
+                <li key={lot.symbol}>
+                  <b>{lot.symbol}</b>
+                  <Stamp kind="block" reason={lot.fact} />
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
+      </section>
+
+      <section className={styles.section} aria-labelledby="amount-heading">
+        <Rule />
+        <h2 id="amount-heading">How much USDC, split how</h2>
+        <Field
+          id="allocation-usdc"
+          label="USDC to spend"
+          inputMode="decimal"
+          autoComplete="off"
+          placeholder="250"
+          value={typed}
+          disabled={started}
+          invalid={Boolean(amountProblem)}
+          message={
+            amountProblem ??
+            (legs.length > 0
+              ? `Split evenly: ${legs.map((leg) => `${formatAmount(leg.atoms, USDC_SCALE)} USDC to ${leg.symbol}`).join("; ")}.`
+              : chosen.length === 0
+                ? "Select at least one lot."
+                : undefined)
+          }
+          onChange={(event) => setTyped(event.target.value)}
+        />
+      </section>
+
+      {legs.length > 0 ? (
+        <section className={styles.section} aria-labelledby="legs-heading">
+          <Rule />
+          <h2 id="legs-heading">What each leg will do</h2>
+          <ol className={styles.legs}>
+            {legs.map((leg) => {
+              const secondsLeft = leg.prepared ? secondsUntil(leg.prepared.expiresAt, now) : 0;
+              return (
+                <li key={leg.mint} className={styles.leg} data-phase={leg.phase}>
+                  <header>
+                    <b>
+                      {leg.symbol}, {formatAmount(leg.atoms, USDC_SCALE)} USDC
+                    </b>
+                    <span>{phaseLabel[leg.phase]}</span>
+                  </header>
+                  {leg.phase === "preparing" ? (
+                    <p className={styles.loading}>Loading quotes for {formatAmount(leg.atoms, USDC_SCALE)} USDC</p>
+                  ) : null}
+                  {leg.prepared && (leg.phase === "prepared" || leg.phase === "signing" || leg.phase === "sending") ? (
+                    <>
+                      <QuoteBlock
+                        floor={formatAmount(leg.prepared.floorAtoms, leg.prepared.outScale)}
+                        expected={formatAmount(leg.prepared.outAtoms, leg.prepared.outScale)}
+                        unit={leg.symbol}
+                        fees={[
+                          { label: "Seametry fee", value: "None" },
+                          { label: "Priority fee set by the route", value: `${formatAmount(leg.prepared.priorityFeeLamports, 9)} SOL` },
+                          { label: "Venue fees", value: "Included in the expected output" },
+                        ]}
+                        route={`Jupiter, through ${leg.prepared.route.join(", ")}, quoted at slot ${leg.prepared.contextSlot}`}
+                        received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(leg.prepared.receivedAt)) / 1000))}s`, absolute: leg.prepared.receivedAt }}
+                        secondsLeft={secondsLeft}
+                      />
+                      <p className={styles.simulated}>
+                        Simulated on mainnet for this wallet:{" "}
+                        {leg.prepared.simulated.map((change) => signedChange(change.atoms, change.scale, change.unit)).join("; ")}.
+                      </p>
+                    </>
+                  ) : null}
+                  {leg.note ? <p className={styles.note}>{leg.note}</p> : null}
+                  {leg.signature ? (
+                    <a className={styles.signature} href={`https://explorer.solana.com/tx/${leg.signature}`} rel="noreferrer" target="_blank">
+                      {leg.signature}
+                    </a>
+                  ) : null}
+                  {leg.phase === "idle" || (leg.phase === "prepared" && secondsLeft === 0) ? (
+                    <QuietAction disabled={!connected || Boolean(unavailable)} onClick={() => void prepare(leg)}>
+                      {leg.phase === "idle" ? "Prepare this leg" : "Refresh quote"}
+                    </QuietAction>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ol>
+          <div className={styles.tray}>
+            <Key
+              busy={Boolean(inFlight)}
+              busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined}
+              disabled={Boolean(keyDisabledReason) && !inFlight}
+              disabledReason={keyDisabledReason}
+              onClick={() => void approveAndSign()}
+            >
+              {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
+            </Key>
+          </div>
+          {attempted.length > 0 ? (
+            <p className={styles.summary} role="status">
+              {settledCount} of {legs.length} {legs.length === 1 ? "leg" : "legs"} settled.
+              {attempted.length === legs.length && settledCount < legs.length ? " The rest were not bought; no USDC was spent on them." : ""}
+            </p>
+          ) : null}
+          {started && !inFlight ? <QuietAction onClick={startOver}>Start a new allocation</QuietAction> : null}
+        </section>
+      ) : null}
+    </div>
+  );
+}

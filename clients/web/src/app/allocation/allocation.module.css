@@ -1,0 +1,178 @@
+/* The Allocation page. Tokens only, mobile first: every row stacks by default
+   and widens only where the viewport allows. Long values (addresses,
+   signatures, exact multipliers) wrap rather than widen the page. */
+
+.page {
+  padding: var(--sm-space-8) 0 var(--sm-space-12);
+  min-width: 0;
+}
+
+.intro h1 {
+  margin: var(--sm-space-2) 0 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: clamp(var(--sm-font-size-title-l), 7vw, var(--sm-font-size-figure-l));
+  font-weight: var(--sm-font-weight-light);
+  line-height: 1.05;
+}
+
+.intro p {
+  max-width: var(--sm-size-readable);
+  margin-top: var(--sm-space-5);
+  color: var(--sm-text-secondary);
+}
+
+.worldName {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.intro .terms {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+/* Every grid here names a minmax(0, 1fr) track: an implicit auto track grows
+   to its widest unbreakable child (an exact multiplier is 54 digits), which
+   pushed each lot past a 360px viewport. */
+.flow,
+.section,
+.lot,
+.leg {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.flow {
+  display: grid;
+  gap: var(--sm-space-8);
+  margin-top: var(--sm-space-8);
+  min-width: 0;
+}
+
+.unavailable {
+  padding: var(--sm-space-4) 0;
+  border-top: 0.5px solid var(--sm-accent-provenance);
+  color: var(--sm-accent-provenance);
+}
+
+.section {
+  display: grid;
+  gap: var(--sm-space-4);
+  min-width: 0;
+}
+
+.section h2 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.walletLine,
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-3) var(--sm-space-4);
+}
+
+.walletLine code,
+.signature {
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-small);
+  color: var(--sm-text-secondary);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.quiet,
+.provenance,
+.note,
+.simulated,
+.loading {
+  max-width: var(--sm-size-readable);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  overflow-wrap: anywhere;
+}
+
+.provenance {
+  color: var(--sm-accent-provenance);
+}
+
+.loading {
+  padding-top: var(--sm-space-3);
+  border-top: 0.5px dashed var(--sm-line-strong);
+}
+
+.lots,
+.legs,
+.refused ul {
+  display: grid;
+  gap: var(--sm-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lot,
+.leg {
+  display: grid;
+  gap: var(--sm-space-3);
+  padding-top: var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-rule);
+  min-width: 0;
+}
+
+.lotChoice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sm-space-2) var(--sm-space-3);
+  min-height: var(--sm-size-target);
+  color: var(--sm-text-secondary);
+  cursor: pointer;
+}
+
+.lotChoice input {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+  accent-color: var(--sm-accent-touch);
+}
+
+.lotChoice b {
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-body);
+}
+
+.refused summary {
+  min-height: var(--sm-size-target);
+  color: var(--sm-text-secondary);
+  cursor: pointer;
+}
+
+.refused li {
+  display: grid;
+  gap: var(--sm-space-2);
+}
+
+.leg header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sm-space-2) var(--sm-space-4);
+  color: var(--sm-text-secondary);
+}
+
+.leg header b {
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.tray {
+  padding-top: var(--sm-space-4);
+}
+
+.summary {
+  color: var(--sm-text-primary);
+}

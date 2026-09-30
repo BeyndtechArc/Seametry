@@ -411,6 +411,65 @@ export function ConditionReport({
   );
 }
 
+export type QuoteLine = { label: string; value: string };
+
+/**
+ * components.md, Quote block: the floor is the promise and outranks the
+ * estimate, so it leads and is set larger. The expiry is supplied by the
+ * caller, which owns the clock; an expired quote shows the standard phrase
+ * in place of the countdown.
+ */
+export function QuoteBlock({
+  floor,
+  expected,
+  unit,
+  fees,
+  route,
+  received,
+  secondsLeft,
+}: {
+  floor: string;
+  expected: string;
+  unit: string;
+  fees: QuoteLine[];
+  route: string;
+  received: { relative: string; absolute: string };
+  secondsLeft: number;
+}) {
+  const expired = secondsLeft <= 0;
+  return (
+    <section className={styles.quoteBlock} data-expired={expired || undefined} aria-label={`Quote for ${unit}`}>
+      <div className={styles.quoteFloor}>
+        <span>You receive no less than</span>
+        <b>{floor}</b>
+        <small>{unit}</small>
+      </div>
+      <div className={styles.quoteExpected}>
+        <span>Expected</span>
+        <b>{expected}</b>
+        <small>{unit}</small>
+      </div>
+      <dl className={styles.quoteLines}>
+        {fees.map((fee) => (
+          <div key={fee.label}>
+            <dt>{fee.label}</dt>
+            <dd>{fee.value}</dd>
+          </div>
+        ))}
+        <div>
+          <dt>Route</dt>
+          <dd>{route}</dd>
+        </div>
+      </dl>
+      <footer className={styles.quoteExpiry}>
+        <Timestamp kind="Received" relative={received.relative} absolute={received.absolute} />
+        {/* Only the expiry is announced: a live region around a per-second countdown floods a screen reader. */}
+        {expired ? <span role="status">This quote expired. Refresh to see current terms.</span> : <span>Expires in {secondsLeft}s</span>}
+      </footer>
+    </section>
+  );
+}
+
 export function ProvenanceLine({
   links,
 }: {

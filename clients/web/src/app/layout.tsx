@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@seametry/ui/tokens.css";
 import "./globals.css";
+import { SiteWalletProvider } from "@/lib/wallet-provider";
 import { sentient, switzer, fragmentMono } from "./fonts";
 
 export const metadata: Metadata = {
@@ -14,7 +15,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${sentient.variable} ${switzer.variable} ${fragmentMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <SiteWalletProvider>{children}</SiteWalletProvider>
+      </body>
     </html>
   );
 }

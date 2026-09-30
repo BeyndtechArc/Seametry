@@ -7,6 +7,7 @@ import { test, expect } from "@playwright/test";
 // request rather than baked in at build time.
 const routes = [
   "/",
+  "/allocation",
   "/hall-demo",
   "/how-it-works",
   "/patterns",

@@ -101,3 +101,48 @@ This does not drive an actual browser click sequence through a wallet
 extension; `tests/csp.spec.ts` covers the page's own loading and headers
 separately. Together they cover the two things that can go wrong; neither
 alone would.
+
+## The Allocation, `/allocation`
+
+Mainnet. Buys lots the policy engine admitted into the connected wallet,
+one Jupiter swap per lot, with the holder signing every leg. Seametry holds
+nothing and takes no fee. Which lots are offered comes from
+`shared/evidence/admissions.json`, which the policy engine writes
+(`go run ./server/cmd/explorer -admissions shared/evidence/admissions.json`)
+and CI checks for drift; this app decides nothing about admission itself.
+
+Execution runs in this app's route handlers (`src/app/api/allocation/*`,
+`src/lib/allocation/*`) under ENGINEERING_STANDARD section 11, until the Go
+Execution service exists (API.md step A7): no key held, quote expiry checked
+when a leg is prepared and again when it is sent, a program allowlist before
+the wallet sees anything, a mainnet simulation shown before signing, and an
+approval that refuses any transaction other than the one simulated.
+
+**Environment variables, server-only, never committed.** Until the first
+three are set the page says which are missing and nothing can be bought.
+
+- `JUPITER_API_KEY`: the same key the Go liquidity client uses.
+- `MAINNET_RPC_URL`: a mainnet RPC that accepts `simulateTransaction` and
+  `sendTransaction`. The public endpoint rate limits hard; a provider's is
+  better.
+- `ALLOCATION_APPROVAL_SECRET`: any random string of at least 32 bytes
+  (`openssl rand -base64 32`). Signs approvals; rotating it only invalidates
+  legs prepared but not yet sent.
+- `ALLOCATION_BLOCKED_COUNTRIES`: comma separated ISO country codes, from
+  each issuer's own terms of eligibility. Unset means nothing can be bought:
+  the gate fails closed. It reads `x-vercel-ip-country`, which Vercel sets
+  and a client cannot forge there; on any other host it could be forged.
+- `ALLOCATION_ASSUME_COUNTRY`: local runs only, where no host sets the
+  country header.
+
+What limits what it can offer today: the admissions snapshot covers seven
+instruments captured as decoder edge cases, and only AAPLx is admitted at
+the 1,000 USDC reference size. Offering more needs the liquid xStocks added
+to `shared/fixtures/mainnet/targets.json`, captured
+(`go run ./server/cmd/capture`), measured (`go run ./server/cmd/depth`, with
+a Jupiter key), and the snapshot regenerated.
+
+Not yet proven against mainnet from the environment that wrote it: Jupiter
+and mainnet RPC were unreachable there, so the first real prepare, sign and
+send is the first end to end run. The pure rules are tested in
+`tests/allocation-rules.spec.ts`.
