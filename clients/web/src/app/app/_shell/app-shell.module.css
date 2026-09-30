@@ -198,6 +198,7 @@
   .reading {
     display: grid;
     margin-top: auto;
+    margin-bottom: calc(var(--sm-space-13) * 1.15);
     padding-top: var(--sm-space-4);
     border-top: 0.5px solid var(--sm-line-rule);
   }
@@ -239,20 +240,21 @@
     padding: var(--sm-space-8) var(--sm-space-8) var(--sm-space-12);
   }
 
-  .sponsorField {
+  .hallPilaster {
     position: absolute;
-    right: calc(var(--sm-space-8) * -1);
-    bottom: var(--sm-space-12);
-    width: calc(var(--sm-space-13) * 1.25);
-    aspect-ratio: 173 / 229;
-    background: var(--sm-accent-touchText);
-    mask: url("/sponsor-mark.svg") center / contain no-repeat;
-    opacity: 0.055;
+    right: calc(var(--sm-space-5) * -1);
+    bottom: calc(var(--sm-space-12) * -1);
+    left: calc(var(--sm-space-5) * -1);
+    height: calc(var(--sm-space-13) * 2.2);
+    background: var(--sm-text-faint);
+    -webkit-mask: url("/hall-pilaster.svg") center bottom / contain no-repeat;
+    mask: url("/hall-pilaster.svg") center bottom / contain no-repeat;
+    opacity: 0.42;
     pointer-events: none;
   }
 
-  :global(html[data-theme="dark"]) .sponsorField {
-    opacity: 0.04;
+  :global(html[data-theme="dark"]) .hallPilaster {
+    opacity: 0.3;
   }
 
   .tabBar {
@@ -261,7 +263,7 @@
 }
 
 .readingIcon,
-.sponsorField {
+.hallPilaster {
   display: none;
 }
 
@@ -270,7 +272,7 @@
     display: inline-grid;
   }
 
-  .sponsorField {
+  .hallPilaster {
     display: block;
   }
 }

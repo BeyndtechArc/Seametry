@@ -39,7 +39,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
-        <span className={styles.sponsorField} aria-hidden="true" />
+        <span className={styles.hallPilaster} data-testid="hall-pilaster" aria-hidden="true" />
       </aside>
 
       <div className={styles.body}>

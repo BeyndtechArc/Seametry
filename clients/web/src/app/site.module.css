@@ -892,7 +892,10 @@
     display: none;
   }
 
-  .apField,
+  .apField {
+    padding-top: var(--sm-space-7);
+  }
+
   .keyFacts {
     padding-top: var(--sm-space-7);
     padding-left: 0;

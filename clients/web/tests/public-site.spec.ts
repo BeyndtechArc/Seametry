@@ -101,6 +101,20 @@ test("desktop rails share the page content edge", async ({ page }) => {
   expect(edges?.headerRight).toBe(edges?.mainRight);
 });
 
+test("the Open AP field keeps its inset and the app shell ends on a cropped Hall pilaster", async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 900 });
+  await page.goto("/");
+  const fieldPadding = await page.getByTestId("open-ap-field").evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { left: style.paddingLeft, right: style.paddingRight };
+  });
+  expect(fieldPadding.left).toBe(fieldPadding.right);
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/app");
+  await expect(page.getByTestId("hall-pilaster")).toBeAttached();
+});
+
 test("the Hall demonstration lives in the app, marked devnet", async ({ page }) => {
   await page.goto("/app/hall");
 

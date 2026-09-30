@@ -263,6 +263,7 @@ Haptics (mobile): selection on scrub boundaries; light impact on a refreshed quo
 - Dense surfaces may use static grids or typographic fields derived from Hallmark punches, seals and registration geometry. They stay decorative, use `text.faint`, and never imitate source code or compete with evidence.
 - The only illustrative marks are punches, the seal glyph, and the sponsor's mark.
 - No stock photography, no 3D blobs, no abstract gradients, no emoji. The Explorer's single texture is the approved ThreeUI Halftone Flow, behind content, lazy-loaded, paused off-screen.
+- Architectural fragments may be constructed as original one-ink SVG engravings from geometry. They belong in shell margins, stay below `line.strong` in contrast, carry no information, and are cropped by the surface so the interface reads as a room rather than a decorated page.
 
 ---
 
