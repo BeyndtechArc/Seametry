@@ -29,6 +29,7 @@ import {
   HOLDER_FUNDS,
   STOCK_DECIMALS,
 } from "./constants";
+import { CLAIM_ACCOUNT_SPACE, holderTopUp } from "./limits";
 
 // No "server-only" guard: this file reads no secret of its own (it receives
 // already-loaded Keypairs as parameters) and is only ever imported by route
@@ -182,6 +183,14 @@ export async function foundAlloyFor(
   const holderA = ownerTokenAccount(holder, stockA);
   const holderB = ownerTokenAccount(holder, stockB);
   const holderShares = ownerTokenAccount(holder, shareMint);
+  // A visitor arriving from a link has no devnet SOL, and redeem makes the
+  // caller pay the Claim account's rent, so without this the flow stops at the
+  // melt, which is the one step the demonstration exists to show.
+  const [holderBalance, claimRent] = await Promise.all([
+    connection.getBalance(holder, "confirmed"),
+    connection.getMinimumBalanceForRentExemption(CLAIM_ACCOUNT_SPACE),
+  ]);
+  const topUp = holderTopUp(BigInt(holderBalance), BigInt(claimRent));
   // create has no init/init_if_needed on caller_shares (chain/programs/hall/src/instructions/create.rs):
   // the account must already exist. Missed on the first pass and caught by
   // the real devnet run in scripts/hall-demo-devnet-proof.ts, which failed
@@ -193,6 +202,7 @@ export async function foundAlloyFor(
       createAssociatedTokenAccountIdempotentInstruction(funder.publicKey, holderA, holder, stockA, TOKEN_2022_PROGRAM_ID),
       createAssociatedTokenAccountIdempotentInstruction(funder.publicKey, holderB, holder, stockB, TOKEN_2022_PROGRAM_ID),
       createAssociatedTokenAccountIdempotentInstruction(funder.publicKey, holderShares, holder, shareMint, TOKEN_2022_PROGRAM_ID),
+      ...(topUp > 0n ? [SystemProgram.transfer({ fromPubkey: funder.publicKey, toPubkey: holder, lamports: topUp })] : []),
     ],
     funder.publicKey,
     [funder]

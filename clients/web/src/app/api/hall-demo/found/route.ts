@@ -4,6 +4,9 @@ import { demoFunder } from "@/lib/hall/env";
 import { deriveIssuer } from "@/lib/hall/issuer";
 import { foundAlloyFor } from "@/lib/hall/found";
 import { DEVNET_RPC_ENDPOINT } from "@/lib/hall/constants";
+import { FOUNDINGS_PER_WINDOW, FoundingThrottle, clientAddress } from "@/lib/hall/limits";
+
+const throttle = new FoundingThrottle();
 
 /**
  * Founds a fresh demo alloy and funds the requesting wallet with mock stock.
@@ -26,6 +29,19 @@ export async function POST(request: NextRequest) {
     holder = new PublicKey(body.holder);
   } catch {
     return NextResponse.json({ error: "holder is not a valid public key" }, { status: 400 });
+  }
+
+  // Counted only once a request is valid, so a malformed one, which spends
+  // nothing, does not use up a visitor's allowance.
+  const waitMs = throttle.retryAfter(clientAddress(request.headers.get("x-forwarded-for")), Date.now());
+  if (waitMs > 0) {
+    const waitMinutes = Math.ceil(waitMs / 60_000);
+    return NextResponse.json(
+      {
+        error: `this address has founded ${FOUNDINGS_PER_WINDOW} demo alloys in the last hour, the most one address may; try again in ${waitMinutes} minutes, or keep using the alloy already founded on this page`,
+      },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(waitMs / 1000)) } }
+    );
   }
 
   // A fresh id per call, not client-supplied: an id the caller chose could
