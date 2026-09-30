@@ -12,7 +12,6 @@ import {
   TextAction,
 } from "@seametry/ui";
 import { IncidentLedger, OpenAPField, PublicShell, SectionHeading } from "./public-shell";
-import { HallmarkRelay } from "./components/hallmark-relay";
 import styles from "./site.module.css";
 
 export const metadata: Metadata = {
@@ -34,7 +33,6 @@ export default async function Home() {
   return (
     <PublicShell current="home">
       <section className={styles.hero} aria-labelledby="home-title">
-        <div className={styles.heroHallmark}><HallmarkRelay /></div>
         <div className={styles.heroCopy}>
           <span>Exchange traded funds on Solana</span>
           <h1 id="home-title"><span>Open</span> <span>AP ETFs</span></h1>

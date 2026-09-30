@@ -74,6 +74,33 @@ test("the public rail carries reading pages and one way into the app", async ({ 
   await expect(page.getByRole("button", { name: "Use dark mode" })).toBeVisible();
 });
 
+test("desktop rails share the page content edge", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+
+  const publicRail = page.getByRole("banner");
+  const publicRailChrome = await publicRail.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { paddingInline: style.paddingInline, borderTopWidth: style.borderTopWidth };
+  });
+  expect(publicRailChrome).toEqual({ paddingInline: "0px", borderTopWidth: "0px" });
+  const mechanismFooter = page.getByTestId("open-ap-field").locator("figcaption");
+  await expect(mechanismFooter).toBeVisible();
+  expect(await mechanismFooter.evaluate((element) => getComputedStyle(element).maxWidth)).toBe("none");
+  await page.goto("/app");
+  const edges = await page.evaluate(() => {
+    const header = document.querySelector<HTMLElement>("[data-testid='app-header-inner']");
+    const main = document.querySelector<HTMLElement>("main");
+    if (!header || !main) return null;
+    const headerBox = header.getBoundingClientRect();
+    const mainBox = main.getBoundingClientRect();
+    return { headerLeft: headerBox.left, headerRight: headerBox.right, mainLeft: mainBox.left, mainRight: mainBox.right };
+  });
+  expect(edges).not.toBeNull();
+  expect(edges?.headerLeft).toBe(edges?.mainLeft);
+  expect(edges?.headerRight).toBe(edges?.mainRight);
+});
+
 test("the Hall demonstration lives in the app, marked devnet", async ({ page }) => {
   await page.goto("/app/hall");
 

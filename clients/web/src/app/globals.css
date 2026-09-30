@@ -11,6 +11,12 @@
 
 html {
   height: 100%;
+  color-scheme: light;
+  scrollbar-color: var(--sm-line-strong) var(--sm-surface-ground);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 html,

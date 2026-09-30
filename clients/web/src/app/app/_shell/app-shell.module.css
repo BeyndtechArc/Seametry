@@ -19,13 +19,17 @@
   position: sticky;
   top: 0;
   z-index: 3;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-ground);
+}
+
+.topBarInner {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--sm-space-2) var(--sm-space-4);
+  width: 100%;
   padding: var(--sm-space-2) var(--sm-space-5);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  background: var(--sm-surface-ground);
 }
 
 .narrowBrand {
@@ -220,8 +224,13 @@
   }
 
   .topBar {
-    padding: var(--sm-space-3) max(var(--sm-space-8), calc((100vw - var(--sm-size-content)) / 2));
     background: var(--sm-surface-sheet);
+  }
+
+  .topBarInner {
+    width: min(100%, calc(var(--sm-size-content) - var(--sm-space-13)));
+    margin: 0 auto;
+    padding: var(--sm-space-3) var(--sm-space-8);
   }
 
   .content {
@@ -238,12 +247,12 @@
     aspect-ratio: 173 / 229;
     background: var(--sm-accent-touchText);
     mask: url("/sponsor-mark.svg") center / contain no-repeat;
-    opacity: 0.16;
+    opacity: 0.055;
     pointer-events: none;
   }
 
   :global(html[data-theme="dark"]) .sponsorField {
-    opacity: 0.09;
+    opacity: 0.04;
   }
 
   .tabBar {

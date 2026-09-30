@@ -44,17 +44,19 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <div className={styles.body}>
         <header className={styles.topBar}>
-          <span className={styles.narrowBrand}>
-            <BrandMark href="/app" />
-          </span>
-          {place ? (
-            <p className={styles.place}>
-              <b>{place.group === "Desk" ? place.label : place.group}</b>
-            </p>
-          ) : null}
-          <div className={styles.tools}>
-            <WalletState />
-            <ThemeControl />
+          <div className={styles.topBarInner} data-testid="app-header-inner">
+            <span className={styles.narrowBrand}>
+              <BrandMark href="/app" />
+            </span>
+            {place ? (
+              <p className={styles.place}>
+                <b>{place.group === "Desk" ? place.label : place.group}</b>
+              </p>
+            ) : null}
+            <div className={styles.tools}>
+              <WalletState />
+              <ThemeControl />
+            </div>
           </div>
         </header>
         <main className={styles.content}>{children}</main>
