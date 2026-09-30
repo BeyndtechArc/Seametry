@@ -28,6 +28,15 @@ jobs:
       - name: Vectors match their generator
         run: node shared/tools/spec/generate.mjs --check
 
+      # The anchor vector's worth is that @solana/web3.js, not our code, built
+      # it, so its generator imports the library and needs an install that
+      # generate.mjs deliberately does not.
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: The anchor transaction matches @solana/web3.js
+        run: node shared/tools/spec/anchor-vector.mjs --check
+
   cross-implementation:
     name: Go seals, JavaScript verifies
     runs-on: ubuntu-latest
@@ -345,7 +354,10 @@ jobs:
         run: go run ./server/cmd/explorer -admissions shared/evidence/admissions.json
 
       - name: The admissions snapshot matches the evidence it was made from
-        run: git diff --exit-code shared/evidence/admissions.json || { echo "shared/evidence/admissions.json differs from what the policy engine produces; regenerate it with: go run ./server/cmd/explorer -admissions shared/evidence/admissions.json"; exit 1; }
+        # A block scalar, not a plain one: the ": " inside the message made
+        # this line a YAML mapping, and GitHub refused the whole workflow.
+        run: |
+          git diff --exit-code shared/evidence/admissions.json || { echo "shared/evidence/admissions.json differs from what the policy engine produces; regenerate it with: go run ./server/cmd/explorer -admissions shared/evidence/admissions.json"; exit 1; }
 
       # The _headers file's CSP staying identical to securityHeaders in host.go
       # is checked by TestHostConfigCSPMatchesSecurityHeaders, which the `go`
