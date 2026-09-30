@@ -92,7 +92,7 @@ Settings        wallet, notifications, sources
 
 ## 8. Hallmarks
 
-Every settlement produces one: punch row (sponsor's mark, weakest grade, office mark, date mark), serial, and a canonical body recording what was held, each grade, each prerogative, what every source said at signing, what settled per leg.
+Every settlement produces one: punch row (sponsor's mark, the grades present unranked, office mark, date mark), serial, and a canonical body recording what was held, each grade, each prerogative, what every source said at signing, what settled per leg.
 
 Status is shown honestly: **Unsealed** until the next anchoring, then **Sealed**. Export produces the certificate. Every hallmark links to the console, where anyone can verify it against the chain without trusting the Office.
 

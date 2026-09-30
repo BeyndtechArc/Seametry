@@ -6,7 +6,7 @@ not own service boundaries (`SERVICE_CATALOG.md`), engineering rules
 (`ENGINEERING_STANDARD.md`), brand and voice (`BRAND_AND_WORLD.md`), or per
 surface requirements (`prd/`).
 
-**Last substantive change:** 23 September 2026.
+**Last substantive change:** 30 September 2026.
 
 ---
 
@@ -249,9 +249,18 @@ SDK ship alongside with entitlements and metering. *Proves the whole thesis.*
 The gating is what makes this ordering necessary rather than cautious: phases 0
 through 2 deliver a working product, real users, and real receipts without ever
 touching the unsettled legal question, while phase 1 proves the phase 3 thesis
-on devnet at zero legal risk. A hackathon submission is a narrow release cut
-from whichever phase is current. Stocklana closes 25 September 2026, 16:00 ET.
-That date shapes which release is cut and nothing else.
+on devnet at zero legal risk. A release is a narrow cut from whichever phase is
+current. The Stocklana submission closed 25 September 2026; it shaped the phase 1
+cut and nothing else.
+
+**The current cut, drafted 30 September 2026 and Storm's to confirm.** Phase 1
+as a public, clickable devnet release: the Hall demonstration at `/hall-demo`
+that any visitor completes from an empty wallet, and the Explorer. Alongside it,
+the first slice of phase 2: a mainnet Allocation that buys admissible
+constituents into the holder's own wallet, one swap per leg, with no routing
+fee and a size cap at the policy's reference size, because depth is measured to
+that size and no further. Its reader is a reviewer who needs to see both the
+mechanism and a real holding, not a retail audience.
 
 ## 10. What Seametry does not do
 

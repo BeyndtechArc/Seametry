@@ -194,8 +194,9 @@ You should feel stone before you notice it.
 the sponsor's mark, the grade, the office, and the date.
 
 **The hallmark row.** Four punches, left to right: sponsor's mark, grade mark
-(the weakest grade present), office mark (Hall or Office), date mark (MMYY).
-Serial beneath.
+(every grade present, in the order first met and unranked, since grades
+describe shape and never quality, so no grade is the weakest), office mark
+(Hall or Office), date mark (MMYY). Serial beneath.
 
 **The serial.** Format `MMYY` plus seven Crockford base32 characters, eleven in
 total, which is the LBMA maximum for bar serials, with the month and year
