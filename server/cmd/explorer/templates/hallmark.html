@@ -34,7 +34,11 @@
   {{end}}
 
   <h2>Seal</h2>
+  {{if $.Anchor}}
+  <p>One of {{$.BatchCount}} hallmarks sealed together. The batch root is <code class="addr">{{$.BatchRoot}}</code>. It is written on devnet as the memo <code class="addr">{{$.Anchor.Memo}}</code>, finalized at slot {{$.Anchor.Slot}}, signed by anchor key <code class="addr">{{$.Anchor.Key}}</code>. <a href="https://explorer.solana.com/tx/{{$.Anchor.Transaction}}?cluster=devnet">Open the transaction on devnet</a>.</p>
+  {{else}}
   <p>One of {{$.BatchCount}} hallmarks sealed together. The batch root is <code class="addr">{{$.BatchRoot}}</code>. It is not written on-chain yet, so this seal has not been checked against a Solana transaction.</p>
+  {{end}}
   <p class="tight meta">Demonstration record. The bodies are invented, because no mainnet transaction has been made yet. The seal scheme is not.</p>
 
   <form class="entry" id="form" autocomplete="off">

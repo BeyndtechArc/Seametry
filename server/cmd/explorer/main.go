@@ -18,9 +18,11 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"html/template"
@@ -185,6 +187,7 @@ type page struct {
 	BatchJSON   template.JS
 	BatchCount  int
 	BatchRoot   string
+	Anchor      *batchAnchor
 	Demo        *Transcript
 	Devnet      *Transcript
 	Cost        *CostTable
@@ -216,7 +219,7 @@ func main() {
 		fmt.Printf("  %s\n", *admissions)
 	}
 	surveyData := loadSurvey()
-	batchRaw, batchCount, batchRoot, proofs := loadBatch()
+	batch := loadBatch(filepath.Join("shared", "evidence", "anchors"))
 	demo := loadTranscript("transcript.json")
 	devnet := loadTranscript("transcript-devnet.json")
 
@@ -240,9 +243,10 @@ func main() {
 		Survey:      surveyData,
 		StalePct:    stalePct,
 		BigSplits:   splits,
-		BatchJSON:   template.JS(batchRaw),
-		BatchCount:  batchCount,
-		BatchRoot:   batchRoot,
+		BatchJSON:   template.JS(batch.JSON),
+		BatchCount:  batch.Count,
+		BatchRoot:   batch.Root,
+		Anchor:      batch.Anchor,
 		Demo:        demo,
 		Devnet:      devnet,
 		Cost:        costTable(demo),
@@ -281,7 +285,7 @@ func main() {
 		fmt.Printf("  %s\n", filepath.Join(*out, p.file))
 	}
 
-	if n := writeHallmarkPages(*out, tmpl, base, proofs); n > 0 {
+	if n := writeHallmarkPages(*out, tmpl, base, batch.Proofs); n > 0 {
 		fmt.Printf("  %d hallmark pages (hallmark-<serial>.html)\n", n)
 	}
 	if n := writeLotPages(*out, tmpl, base); n > 0 {
@@ -303,13 +307,13 @@ func main() {
 	// The sealed batch travels as its own script rather than inline, so the
 	// content security policy can refuse inline script entirely.
 	if err := os.WriteFile(filepath.Join(*out, "batch.js"),
-		[]byte("window.__SEAMETRY_BATCH__ = "+batchRaw+";\n"), 0o644); err != nil {
+		[]byte("window.__SEAMETRY_BATCH__ = "+batch.JSON+";\n"), 0o644); err != nil {
 		fail(err)
 	}
 	copyFonts(*out)
 	writeHostConfig(*out)
 
-	fmt.Printf("\n%d instruments, %d sealed receipts", len(instruments), batchCount)
+	fmt.Printf("\n%d instruments, %d sealed receipts", len(instruments), batch.Count)
 	if surveyData != nil {
 		fmt.Printf(", %d mints surveyed", surveyData.MintsDecoded)
 	}
@@ -445,16 +449,73 @@ func loadSurvey() *survey {
 	return &s
 }
 
-// loadBatch returns the sealed batch three ways: the raw JSON that ships to
-// the browser as batch.js (proofs only, never the private bodies), the count
-// and root for the pages that only need those two facts, and the proofs
-// parsed into receipt.Proof so hallmark.html can be generated once per
+// sealedBatch is the sealed batch three ways: the raw JSON that ships to the
+// browser as batch.js (proofs and anchor, never the private bodies), the
+// count, root and anchor for the pages that only need those facts, and the
+// proofs parsed into receipt.Proof so hallmark.html can be generated once per
 // serial without round-tripping through JSON a second time.
-func loadBatch() (string, int, string, []receipt.Proof) {
+type sealedBatch struct {
+	JSON   string
+	Count  int
+	Root   string
+	Proofs []receipt.Proof
+	Anchor *batchAnchor
+}
+
+// batchAnchor mirrors server/cmd/seametry's anchorEvidence, which writes
+// shared/evidence/anchors. It is duplicated rather than imported, as
+// replay.go duplicates capture's fixture: neither command owns a package
+// boundary worth creating for one struct, and DisallowUnknownFields on the
+// decode below is the drift guard.
+type batchAnchor struct {
+	Root        string    `json:"root"`
+	Memo        string    `json:"memo"`
+	Cluster     string    `json:"cluster"`
+	Transaction string    `json:"transaction"`
+	Key         string    `json:"key"`
+	Slot        uint64    `json:"slot"`
+	Commitment  string    `json:"commitment"`
+	AnchoredAt  time.Time `json:"anchored_at"`
+}
+
+// loadAnchor reads the anchor evidence for root, if the root has been
+// anchored. A file that exists but does not anchor this root, finalized on
+// devnet, fails the build: publishing it would link visitors to a
+// transaction that does not say what the page claims it says.
+func loadAnchor(dir, root string) (*batchAnchor, error) {
+	path := filepath.Join(dir, root+".json")
+	raw, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var a batchAnchor
+	dec := json.NewDecoder(bytes.NewReader(raw))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&a); err != nil {
+		return nil, fmt.Errorf("%s: %w", path, err)
+	}
+	switch {
+	case a.Root != root:
+		return nil, fmt.Errorf("%s names root %s, but is filed under %s", path, a.Root, root)
+	case a.Memo != string(receipt.AnchorMemo(root)):
+		return nil, fmt.Errorf("%s: memo %q is not the anchor memo for %s, %q", path, a.Memo, root, receipt.AnchorMemo(root))
+	case a.Cluster != "devnet" || a.Commitment != "finalized":
+		return nil, fmt.Errorf("%s: anchored on %s at %s commitment; the page links devnet and claims finalized", path, a.Cluster, a.Commitment)
+	case a.Transaction == "" || a.Key == "":
+		return nil, fmt.Errorf("%s: names no transaction or no key", path)
+	}
+	return &a, nil
+}
+
+func loadBatch(anchorDir string) sealedBatch {
+	empty := sealedBatch{JSON: "null"}
 	raw, err := os.ReadFile(filepath.Join("shared", "evidence", "demo-batch", "batch.json"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "explorer: no sealed batch; run: go run ./server/cmd/seal")
-		return "null", 0, "", nil
+		return empty
 	}
 	var parsed struct {
 		Root   string            `json:"root"`
@@ -462,7 +523,7 @@ func loadBatch() (string, int, string, []receipt.Proof) {
 		Proofs []json.RawMessage `json:"proofs"`
 	}
 	if err := json.Unmarshal(raw, &parsed); err != nil {
-		return "null", 0, "", nil
+		return empty
 	}
 	proofs := make([]receipt.Proof, 0, len(parsed.Proofs))
 	for _, p := range parsed.Proofs {
@@ -472,14 +533,19 @@ func loadBatch() (string, int, string, []receipt.Proof) {
 		}
 		proofs = append(proofs, proof)
 	}
-	// Only the proofs reach the page. The private bodies in that file exist for
-	// the cross-implementation check and have no business in a public surface.
-	public := map[string]any{"root": parsed.Root, "proofs": parsed.Proofs}
+	anchor, err := loadAnchor(anchorDir, parsed.Root)
+	if err != nil {
+		fail(err)
+	}
+	// Only the proofs and the anchor reach the page. The private bodies in that
+	// file exist for the cross-implementation check and have no business in a
+	// public surface.
+	public := map[string]any{"root": parsed.Root, "proofs": parsed.Proofs, "anchor": anchor, "anchor_memo_prefix": receipt.AnchorMemoPrefix}
 	encoded, err := json.Marshal(public)
 	if err != nil {
-		return "null", 0, "", nil
+		return empty
 	}
-	return string(encoded), parsed.Count, parsed.Root, proofs
+	return sealedBatch{JSON: string(encoded), Count: parsed.Count, Root: parsed.Root, Proofs: proofs, Anchor: anchor}
 }
 
 func copyEmbedded(out, from, to string) {

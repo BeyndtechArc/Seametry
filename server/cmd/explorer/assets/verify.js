@@ -249,6 +249,27 @@
     if ($('edit-hint')) $('edit-hint').hidden = !editable;
   }
 
+  function showSeal(state, anchor) {
+    var seal = $('seal');
+    seal.textContent = '';
+    if (state === 'changed') {
+      seal.textContent = 'The public record changed, so the root changed with it, beyond recognition. That is the property the seal rests on.';
+      return;
+    }
+    if (state === 'unanchored') {
+      seal.textContent = 'This batch root is not written on-chain yet. Once it is, this step also checks it against the Solana memo transaction, signed by a published anchor key.';
+      return;
+    }
+    var link = document.createElement('a');
+    link.href = 'https://explorer.solana.com/tx/' + encodeURIComponent(anchor.transaction) + '?cluster=devnet';
+    link.textContent = 'Open the transaction on devnet';
+    seal.append(
+      state === 'anchored'
+        ? 'Written on devnet at slot ' + anchor.slot + ', finalized, signed by anchor key ' + anchor.key + '. Its memo reads ' + anchor.memo + ', which names the root your browser just computed. '
+        : 'The memo written on devnet reads ' + anchor.memo + ', which does not name this root. This seal does not hold. ',
+      link, '.');
+  }
+
   function original(proof) { return JSON.parse(JSON.stringify(proof.public_body)); }
 
   /** One character changed, by the page: the last digit of the policy version. */
@@ -352,14 +373,24 @@
     $('rp').textContent = batch.root;
     await sleep(250);
 
-    var ok = hex(cur) === batch.root;
-    $('verdict').textContent = ok
-      ? 'Matches the published root.'
-      : 'Does not match the published root.';
+    // The memo is compared with the root computed here, not the published
+    // one, so the anchor vouches for what this browser derived. The page
+    // makes no request (connect-src 'none'); the transaction is linked for
+    // the visitor to open, not fetched on their behalf.
+    var anchor = batch.anchor;
+    var state = hex(cur) !== batch.root ? 'changed'
+      : !anchor ? 'unanchored'
+      : anchor.memo === batch.anchor_memo_prefix + hex(cur) ? 'anchored'
+      : 'memo-differs';
+    var ok = state === 'anchored' || state === 'unanchored';
+    $('verdict').textContent = {
+      changed: 'Does not match the published root.',
+      unanchored: 'Matches the published root.',
+      anchored: 'Matches the published root, and the memo written on devnet.',
+      'memo-differs': 'Matches the published root, but not the memo written on devnet.',
+    }[state];
     if (!ok) $('verdict').className = 'verdict no';
-    $('seal').textContent = ok
-      ? 'This batch root is not written on-chain yet. Once it is, this step also checks it against the Solana memo transaction, signed by a published anchor key.'
-      : 'The public record changed, so the root changed with it, beyond recognition. That is the property the seal rests on.';
+    showSeal(state, anchor);
 
     // Announce the settled verdict once. The hashes above update every frame
     // and are outside any live region on purpose.

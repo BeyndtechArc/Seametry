@@ -253,8 +253,14 @@ From `CRAFT.md` section 4, measured rather than assumed:
 
 ## 10. Open
 
-- The anchoring step is unbuilt: no batch root is written on chain yet, so the
-  ritual currently ends at the published root. Until then the page says so.
+- The anchoring step is built but has not run: no batch root is written on
+  chain yet, so the ritual ends at the published root and says so. Once
+  `seametry anchor` writes `shared/evidence/anchors/<root>.json`, the build
+  embeds it; step 4 checks that its memo names the root the browser computed
+  and links the transaction on a block explorer. The page still makes no
+  request (`connect-src 'none'`): the visitor opens the transaction, the page
+  does not fetch it. A build fails on an anchor file whose memo, root,
+  cluster or commitment does not match.
 - What real, already captured evidence the landing hero in `SITE.md` opens on
   is Storm's decision, not this document's.
 - No raw UNHx payload exists to reproduce the corporate action replay the
