@@ -6,6 +6,7 @@
   "description": "Seametry design tokens and shared interface components.",
   "exports": {
     ".": "./src/components.tsx",
+    "./icons": "./src/icons.tsx",
     "./theme-control": "./src/theme-control.tsx",
     "./tokens.css": "./src/generated/tokens.css",
     "./tokens": "./src/generated/tokens.ts"

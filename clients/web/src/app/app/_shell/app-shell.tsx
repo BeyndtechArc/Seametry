@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Icon } from "@seametry/ui/icons";
 import { ThemeControl } from "@seametry/ui/theme-control";
 import { BrandMark } from "../../brand-mark";
 import { WalletState } from "../../wallet-state";
@@ -24,7 +25,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span>{group}</span>
               {routes.map((route) => (
                 <Link key={route.href} href={route.href} aria-current={route.isActive(pathname) ? "page" : undefined}>
-                  {route.label}
+                  <span className={styles.routeIcon}><Icon name={route.icon} /></span>
+                  <span>{route.label}</span>
                 </Link>
               ))}
             </div>
@@ -33,10 +35,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <nav aria-label="Reading" className={styles.reading}>
           {readingRoutes.map((route) => (
             <Link key={route.href} href={route.href}>
-              {route.label}
+              <span className={styles.routeIcon}><Icon name={route.icon} /></span>
+              <span>{route.label}</span>
             </Link>
           ))}
         </nav>
+        <span className={styles.sponsorField} aria-hidden="true" />
       </aside>
 
       <div className={styles.body}>
@@ -46,7 +50,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           </span>
           {place ? (
             <p className={styles.place}>
-              <span>{place.group}</span>
               <b>{place.label}</b>
             </p>
           ) : null}

@@ -14,12 +14,10 @@
   letter-spacing: var(--sm-font-tracking-title);
 }
 
-/* A placeholder until the house's mark exists: one colour, square, legible
-   at 16px, which is the brief the real mark answers too. */
-.placeholderMark {
-  width: var(--sm-space-5);
-  height: var(--sm-space-5);
-  border: 1.5px solid var(--sm-text-primary);
+.brand svg {
+  width: var(--sm-space-6);
+  height: var(--sm-space-7);
+  fill: var(--sm-accent-touch);
 }
 
 .brand:focus-visible {

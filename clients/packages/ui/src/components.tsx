@@ -4,6 +4,7 @@ import type {
   InputHTMLAttributes,
   ReactNode,
 } from "react";
+import { Icon, type IconName } from "./icons";
 import styles from "./components.module.css";
 
 export type EvidenceState =
@@ -228,7 +229,8 @@ export function Key({
           disabled={disabled}
           aria-busy={busy || undefined}
         >
-          {busy ? busyLabel ?? "Working" : children}
+          <span className={styles.actionLabel}>{busy ? busyLabel ?? "Working" : children}</span>
+          <span className={styles.actionIcon}><Icon name="key" /></span>
         </button>
       </span>
       {disabled && disabledReason ? <span className={styles.controlReason}>{disabledReason}</span> : null}
@@ -238,42 +240,48 @@ export function Key({
 
 export function RouteAction({
   children,
+  icon = "arrow-up-right",
   ...anchorProps
-}: AnchorHTMLAttributes<HTMLAnchorElement> & { children: ReactNode }) {
+}: AnchorHTMLAttributes<HTMLAnchorElement> & { children: ReactNode; icon?: IconName }) {
   return (
     <a {...anchorProps} className={classes(styles.routeAction, anchorProps.className)}>
-      {children}
+      <span className={styles.actionLabel}>{children}</span>
+      <span className={styles.actionIcon}><Icon name={icon} /></span>
     </a>
   );
 }
 
 export function QuietLink({
   children,
+  icon,
   ...anchorProps
-}: AnchorHTMLAttributes<HTMLAnchorElement> & { children: ReactNode }) {
+}: AnchorHTMLAttributes<HTMLAnchorElement> & { children: ReactNode; icon?: IconName }) {
   return (
     <a {...anchorProps} className={classes(styles.quietAction, styles.quietLink, anchorProps.className)}>
-      {children}
+      <span className={styles.actionLabel}>{children}</span>
+      {icon ? <span className={styles.actionIcon}><Icon name={icon} /></span> : null}
     </a>
   );
 }
 
 export function TextAction({
   children,
+  icon = "arrow-up-right",
   ...anchorProps
-}: AnchorHTMLAttributes<HTMLAnchorElement> & { children: ReactNode }) {
+}: AnchorHTMLAttributes<HTMLAnchorElement> & { children: ReactNode; icon?: IconName }) {
   return (
     <a {...anchorProps} className={classes(styles.textAction, anchorProps.className)}>
-      <span>{children}</span>
-      <span aria-hidden="true" />
+      <span className={styles.actionLabel}>{children}</span>
+      <span className={styles.actionIcon}><Icon name={icon} /></span>
     </a>
   );
 }
 
-export function QuietAction({ children, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
+export function QuietAction({ children, icon, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode; icon?: IconName }) {
   return (
     <button {...buttonProps} className={classes(styles.quietAction, buttonProps.className)}>
-      {children}
+      <span className={styles.actionLabel}>{children}</span>
+      {icon ? <span className={styles.actionIcon}><Icon name={icon} /></span> : null}
     </button>
   );
 }

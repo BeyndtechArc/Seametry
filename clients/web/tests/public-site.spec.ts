@@ -71,7 +71,7 @@ test("the public rail carries reading pages and one way into the app", async ({ 
   await expect(page.getByRole("banner").getByRole("link", { name: "Open app" })).toHaveAttribute("href", "/app");
   await expect(page.getByRole("banner").getByRole("link", { name: "Seametry", exact: true })).toHaveAttribute("href", "/");
   await expect(page.getByRole("banner").getByText("Public", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Use light mode" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Use dark mode" })).toBeVisible();
 });
 
 test("the Hall demonstration lives in the app, marked devnet", async ({ page }) => {
@@ -132,7 +132,7 @@ test("light is the default, and a stored dark choice is honoured", async ({ brow
   await page.goto("/");
   // A dark system preference does not override the default.
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await expect(page.getByRole("button", { name: "Use light mode" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Use dark mode" })).toBeVisible();
 
   await page.getByRole("button", { name: "Use dark mode" }).click();
   await page.goto("/app");

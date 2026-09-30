@@ -1,11 +1,22 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+func TestLayoutIncludesHouseIcon(t *testing.T) {
+	data, err := templates.ReadFile("templates/layout.html")
+	if err != nil {
+		t.Fatalf("read layout template: %v", err)
+	}
+	if !bytes.Contains(data, []byte(`<link rel="icon" href="seametry-mark.svg" type="image/svg+xml">`)) {
+		t.Fatal("Explorer layout does not load the supplied house mark as its favicon")
+	}
+}
 
 // Cloudflare Pages limits, checked against the docs 27 September 2026: at most
 // 100 header rules, 2,000 characters per line. Nothing enforces these at

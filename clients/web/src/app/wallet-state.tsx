@@ -2,6 +2,7 @@
 
 import { useWallet } from "@solana/wallet-adapter-react";
 import { QuietAction } from "@seametry/ui";
+import { Icon } from "@seametry/ui/icons";
 import styles from "./site.module.css";
 
 function middle(address: string) {
@@ -20,19 +21,20 @@ export function WalletState() {
   return (
     <details className={styles.walletState}>
       <summary data-connected={connected || undefined}>
+        <span className={styles.walletIcon}><Icon name="wallet" /></span>
         {connecting ? "Connecting" : connected && address ? <span aria-label={`Wallet ${address}`}>{middle(address)}</span> : "Connect wallet"}
       </summary>
       <div className={styles.walletPanel}>
         {connected && address ? (
           <>
             <code>{address}</code>
-            <QuietAction onClick={() => void disconnect()}>Disconnect wallet</QuietAction>
+            <QuietAction icon="wallet" onClick={() => void disconnect()}>Disconnect wallet</QuietAction>
           </>
         ) : wallets.length === 0 ? (
           <p>No wallet was detected in this browser. On a phone, open this site inside your wallet&apos;s own browser.</p>
         ) : (
           wallets.map((wallet) => (
-            <QuietAction key={wallet.adapter.name} disabled={connecting} onClick={() => select(wallet.adapter.name)}>
+            <QuietAction icon="wallet" key={wallet.adapter.name} disabled={connecting} onClick={() => select(wallet.adapter.name)}>
               Connect {wallet.adapter.name}
             </QuietAction>
           ))

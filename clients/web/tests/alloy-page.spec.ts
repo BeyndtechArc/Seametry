@@ -28,8 +28,9 @@ test("the Alloy surface exposes the recorded formula and missing market evidence
 test("the Alloy surface carries the page-wide colour mode control", async ({ page }) => {
   await page.goto("/app/alloys/storm");
 
-  await page.getByRole("button", { name: "Use light mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await page.getByRole("button", { name: "Use dark mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByRole("button", { name: "Use light mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });

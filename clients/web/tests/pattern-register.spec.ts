@@ -33,12 +33,9 @@ test("the Pattern Register exposes identity, states, and stress specimens", asyn
 test("the Pattern Register lets the reader compare muted light and dark modes", async ({ page }) => {
   await page.goto("/patterns");
 
-  const lightMode = page.getByRole("button", { name: "Use light mode" });
-  const darkMode = page.getByRole("button", { name: "Use dark mode" });
-
-  await lightMode.click();
+  const modeControl = page.getByRole("button", { name: "Use dark mode" });
+  await expect(page.getByRole("button", { name: /Use (?:light|dark) mode/ })).toHaveCount(1);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await expect(lightMode).toHaveAttribute("aria-pressed", "true");
 
   const lightGround = await page.locator("body").evaluate((node) => getComputedStyle(node).backgroundColor);
   const tokenGround = await page.evaluate((ground) => {
@@ -51,11 +48,16 @@ test("the Pattern Register lets the reader compare muted light and dark modes", 
   }, theme.light.surface.ground);
   expect(lightGround).toBe(tokenGround);
 
-  await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-
-  await darkMode.click();
+  await modeControl.click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.getByRole("button", { name: "Use light mode" })).toBeVisible();
+
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+
+  await page.getByRole("button", { name: "Use light mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expect(page.getByRole("button", { name: "Use dark mode" })).toBeVisible();
 });
 
 test("the Pattern Register states the edge grammar and reserves one Key", async ({ page }) => {

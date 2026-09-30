@@ -302,6 +302,7 @@ func main() {
 	// place a colour, size or duration is stated, and they are generated from
 	// the design system source rather than written here.
 	copyFile(filepath.Join("clients", "packages", "ui", "src", "generated", "tokens.css"), filepath.Join(*out, "tokens.css"))
+	copyFile("logo.svg", filepath.Join(*out, "seametry-mark.svg"))
 	copyEmbedded(*out, "assets/explorer.css", "explorer.css")
 	copyEmbedded(*out, "assets/verify.js", "verify.js")
 	// The sealed batch travels as its own script rather than inline, so the

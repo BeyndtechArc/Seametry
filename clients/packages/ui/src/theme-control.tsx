@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Icon } from "./icons";
 import styles from "./components.module.css";
 
 type ThemeName = "dark" | "light";
@@ -31,21 +32,17 @@ export function ThemeControl() {
     setTheme(nextTheme);
   }
 
+  const nextTheme: ThemeName = theme === "light" ? "dark" : "light";
+
   return (
-    <div className={styles.themeControl} role="group" aria-label="Colour mode">
-      {(["dark", "light"] as const).map((mode) => (
-        <button
-          className={styles.themeChoice}
-          type="button"
-          key={mode}
-          aria-label={`Use ${mode} mode`}
-          aria-pressed={theme === mode}
-          onClick={() => selectTheme(mode)}
-        >
-          <span aria-hidden="true" />
-          {mode === "dark" ? "Dark" : "Light"}
-        </button>
-      ))}
-    </div>
+    <button
+      className={styles.themeControl}
+      type="button"
+      aria-label={`Use ${nextTheme} mode`}
+      title={`Use ${nextTheme} mode`}
+      onClick={() => selectTheme(nextTheme)}
+    >
+      <Icon name={nextTheme === "dark" ? "moon" : "sun"} />
+    </button>
   );
 }

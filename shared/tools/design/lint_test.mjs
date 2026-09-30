@@ -11,9 +11,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 const LINTER = '.claude/skills/seametry-design/scripts/design-lint.mjs';
 
@@ -21,7 +21,9 @@ const LINTER = '.claude/skills/seametry-design/scripts/design-lint.mjs';
 function lint(filename, source) {
   const dir = mkdtempSync(join(tmpdir(), 'seametry-lint-'));
   try {
-    writeFileSync(join(dir, filename), source);
+    const target = join(dir, filename);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, source);
     let output = '';
     try {
       output = execFileSync('node', [LINTER, dir], { encoding: 'utf8' });
@@ -68,4 +70,9 @@ test('the rules that matter most still fire', () => {
 test('a suppression comment with a reason silences one line', () => {
   const source = ".x { font-family: 'Switzer'; } /* design-lint-disable-line font-literal a reason */";
   assert.deepEqual(lint('j.css', source), []);
+});
+
+test('the Lens is accepted inside a cross-platform components/lens path', () => {
+  const source = '.x { backdrop-filter: blur(var(--sm-space-5)); }';
+  assert.deepEqual(lint(join('components', 'lens', 'rail.css'), source), []);
 });

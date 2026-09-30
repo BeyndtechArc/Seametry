@@ -1,17 +1,16 @@
 import Link from "next/link";
 import styles from "./brand-mark.module.css";
 
-/**
- * components.md, Brand mark. The one place the house's mark is drawn, used
- * by the public rail and the App shell alike. No mark file exists in this
- * repository yet (BRAND_AND_WORLD.md section 5 is still its brief), so the
- * square outline below is a stated placeholder, not a logo: replace the
- * span with the mark's SVG here and every shell changes with it.
- */
 export function BrandMark({ href = "/" }: { href?: string }) {
   return (
     <Link className={styles.brand} href={href} aria-label="Seametry">
-      <span className={styles.placeholderMark} aria-hidden="true" />
+      <svg aria-hidden="true" viewBox="0 0 182 223" fill="none">
+        <path d="M91.8304 223 75.8865 202.388l.5314.432c9.1851 7.452 22.388 8.191 31.3561-.432L91.8304 223Z" />
+        <path d="m105.738 179.879-1.404 1.133c-7.299 5.885-17.7085 5.885-25.0071 0l-1.4046-1.133-25.2873-25.355 39.1954 14.579 39.1956-14.579-25.288 25.355Z" />
+        <path d="m171.896 106.948 10.104 46.474-40.193-29.376-31.589 14.575-18.3876 6.822-18.3871-6.822-32.6942-15.084L0 153.422l10.7683-46.474 32.7549-34.6955c2.0086 22.5867 19.8006 40.6285 42.2614 43.0045l6.0458 5.585 6.3734-5.889c21.4542-3.345 38.1542-21.0595 39.9652-43.0018l33.727 34.9968Z" />
+        <path d="m82.2888.003 10.7965 12.4985C79.5986 11.4232 63.7754 18.3488 55.4208 28.9868l-1.8651-16.4076C63.254 2.5767 68.2889-.1033 82.2888.003Z" />
+        <path fillRule="evenodd" d="M91.8304 30.7281c18.3446 0 33.2166 14.884 33.2166 33.2444 0 18.3605-14.872 33.2445-33.2166 33.2445-18.3449 0-33.2164-14.884-33.2164-33.2445 0-18.3604 14.8715-33.2444 33.2164-33.2444Zm0 18.6169c-8.0718 0-14.6152 6.5489-14.6152 14.6275s6.5434 14.6276 14.6152 14.6276c8.0716 0 14.6156-6.549 14.6156-14.6276S99.902 49.345 91.8304 49.345Z" clipRule="evenodd" />
+      </svg>
       <b>Seametry</b>
     </Link>
   );

@@ -1,38 +1,8 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
-import { Digest, RegisterFooter, RouteAction, Rule } from "@seametry/ui";
-import { ThemeControl } from "@seametry/ui/theme-control";
+import { Digest, RegisterFooter, Rule } from "@seametry/ui";
 import { publicIncident, publicIncidentAge } from "@/lib/public-evidence";
-import { BrandMark } from "./brand-mark";
+import { HouseRail, type PublicDestination } from "./components/lens/house-rail";
 import styles from "./site.module.css";
-
-type PublicDestination = "home" | "how" | "key" | "sign-in";
-
-// Reading pages only (components.md, House rail). The product lives in the
-// App shell at /app, reached by the one "Open app" action.
-const primaryLinks = [
-  { id: "how", label: "How it works", href: "/how-it-works" },
-  { id: "key", label: "The Key", href: "/the-key" },
-] as const;
-
-export function HouseRail({ current }: { current?: PublicDestination }) {
-  return (
-    <header className={styles.houseRail}>
-      <BrandMark />
-      <nav className={styles.primaryNav} aria-label="Primary">
-        {primaryLinks.map((link) => (
-          <Link key={link.id} href={link.href} aria-current={current === link.id ? "page" : undefined}>
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-      <div className={styles.railTools}>
-        <RouteAction href="/app">Open app</RouteAction>
-        <ThemeControl />
-      </div>
-    </header>
-  );
-}
 
 export function OpenAPField() {
   return (

@@ -70,22 +70,22 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 
 ### Key
 **Answers:** what happens if I press this?
-**Anatomy:** full-round fill in `accent.touch`, `text.onTouch`, seated in an 8px `surface.tray` housing, height `size.key`.
-**Identity:** the green action sits inside a darker full-round tray with a visible inset at every edge. The tray remains when the action is disabled, like an empty keyway.
+**Anatomy:** cornerless `accent.touch` plate, label and a separate icon cell, seated in a square `surface.tray` housing, height `size.key`.
+**Identity:** short registration rules protrude from both horizontal edges. The tray remains when the action is disabled, like an empty keyway.
 **States:** default, pressed (drops 1px, `accent.touchPressed`), disabled (tray only, label in `text.tertiary`, reason available), busy (label becomes the action in progress: "Signing").
 **Rules:** verb plus object ("Approve and sign"). One key per view. Quieter than the figures above it.
 
 ### Route action
 **Answers:** which destination begins the next part of this journey?
-**Anatomy:** full-round `accent.touch` fill, `text.onTouch`, no tray, minimum target height.
-**Identity:** one uninterrupted green lozenge. Its lack of housing distinguishes navigation from the Key's custody-changing keyway.
+**Anatomy:** cornerless `accent.touch` fill, label and a separately housed route icon, no tray, minimum target height.
+**Identity:** short registration rules protrude from both horizontal edges. Its lack of a surrounding tray distinguishes navigation from the Key's custody-changing keyway.
 **States:** default, pressed, keyboard focus, unavailable with its reason adjacent.
 **Data:** a real route that resolves.
 **Rules:** verb plus object. Navigation only. Never submits, signs, approves or changes custody.
 
 ### Quiet link
 **Answers:** which secondary destination can I inspect without leaving the current decision context?
-**Anatomy:** full-round `surface.sheet`, hairline edge, `text.secondary`.
+**Anatomy:** cornerless `surface.sheet`, top and bottom rules, `text.secondary`, with an icon cell when an icon improves scanning.
 **Identity:** the Quiet action silhouette rendered as a link, with no fill hue and no tray.
 **States:** default, hover, keyboard focus, unavailable.
 **Data:** a real route that resolves.
@@ -101,21 +101,21 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 
 ### Quiet action
 **Answers:** which secondary or reversible action is available?
-**Anatomy:** full-round, `surface.sheet`, 0.5px `line.rule` edge, `text.secondary`.
-**Identity:** the control keeps the Key's round silhouette but has no tray and no green. Family resemblance comes from proportion rather than emphasis.
+**Anatomy:** cornerless, `surface.sheet`, top and bottom rules, `text.secondary`, with a separate icon cell when an icon improves scanning.
+**Identity:** the control keeps the Key's registration rules but has no tray and no green. Family resemblance comes from the shared edge treatment.
 **Rules:** for secondary and reversible actions. Never green.
 
 ### Mode control
 **Answers:** which complete colour mode is the surface using?
-**Anatomy:** Dark and Light as two independent full-round text targets; the selected action uses a registration dot and a bottom rule.
-**Identity:** the shared baseline makes this an instrument setting without wrapping it in a third control. The selected mode carries a small square registration mark.
+**Anatomy:** one square icon target in a stable position. It shows the mode that will be entered when pressed: moon for dark, sun for light.
+**Identity:** the icon sits inside a tonal cell crossed by one short registration rule.
 **States:** dark selected, light selected, keyboard focus.
 **Data:** the selected mode, persisted in local browser storage.
-**Rules:** both labels remain visible. Never use an icon alone. The control changes the full surface, not an isolated specimen.
+**Rules:** the accessible label names the resulting mode. The control changes the full surface, not an isolated specimen, and never sits against the viewport edge.
 
 ### Field
 **Answers:** what value can I supply here, and what must change if it is refused?
-**Anatomy:** full-round pill, `surface.sheet`, label outside, value in `ui` medium; amounts use a custom keypad on mobile.
+**Anatomy:** cornerless `surface.sheet` strip, label outside, value in `ui` medium; amounts use a custom keypad on mobile.
 **Identity:** a short rule joins the outside label to the field edge. Focus turns that rule to provenance blue before it outlines the field.
 **States:** default, focus, filled, invalid (message states what to change), disabled.
 
@@ -231,10 +231,10 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 ### House rail
 **Answers:** where am I, and which public destination is available from here?
 **Anatomy:** Brand mark and wordmark; public navigation (reading pages only); one Route action, "Open app"; Mode control.
-**Identity:** an open institutional rail held by one bottom rule. The wordmark is serif, the destinations are plain text, and the mode instrument closes the line. No floating header, container card or oversized action.
-**States:** default; current destination; narrow layouts wrap into two ruled rows without hiding destinations.
+**Identity:** a contained institutional rail with square registration cuts. It rests as an opaque plate, floats below the viewport edge, and enters the Lens material only after scroll. The wordmark is serif, destinations use line icons with short labels, and the mode instrument sits inside the closing tools group.
+**States:** resting; scrolled Lens; current destination; narrow layouts wrap into two ruled rows without hiding destinations.
 **Data:** route labels and destinations owned by the web application.
-**Rules:** every destination resolves. No menu icon, promotional badge, tag beside the wordmark, or Key inside the rail. Product surfaces (Allocation, the Hall, the Terminal) are not public destinations: they live in the App shell, reached by "Open app". Wallet state belongs to the App shell, not here.
+**Rules:** every destination resolves. No menu icon, promotional badge, tag beside the wordmark, or Key inside the rail. Product surfaces (Allocation, the Hall, the Terminal) are not public destinations: they live in the App shell, reached by "Open app". Wallet state belongs to the App shell, not here. The mode control is inset from the outer edge by the tools group.
 
 ### Brand mark
 **Answers:** whose house is this?
@@ -245,10 +245,10 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 ### App shell
 **Answers:** where am I in the product, on which network, with which wallet?
 **Anatomy:** wide layouts: a Sidebar (Brand mark; route groups Desk, Buy, Hall, Assay; the reading pages last) and a sticky Top bar (the current group and page, Wallet state, Mode control) above the page. Narrow layouts: the Top bar with the Brand mark, and a Tab bar fixed to the bottom with one tab per group. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
-**Identity:** a ledger's margin: the sidebar is a ruled column, not a card; the current route carries the registration mark and a rule, as the House rail's current destination does.
+**Identity:** a compact ledger margin: the sidebar is a contained ruled column with one icon per route and a quiet sponsor-mark field, not a stack of text links. The current route carries the registration mark and a rule, as the House rail's current destination does.
 **States:** current route; narrow; wallet disconnected or connected; each page's network.
 **Data:** one route list that drives the sidebar and the tab bar, so they cannot disagree.
-**Rules:** one route list. Every route resolves. No hamburger: the tab bar shows every group at once. Pages inside the shell open with a Page header, never a marketing hero.
+**Rules:** one route list. Every route resolves. No hamburger: the tab bar shows every group at once. The shell names the current route once; a page header appears only when it adds network or decision context that the shell cannot carry.
 
 ### Page header
 **Answers:** what is this page, and what does it act on?

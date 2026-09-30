@@ -177,6 +177,7 @@ What was being reached for as "liquid glass" has a real, specific referent: Appl
 Seametry's version, **the Lens**, is scoped tighter still: illustration and ceremony surfaces only, never navigation, never content, never a data row. Think jeweller's loupe, not a phone screen dipped in glass: something you look through for a moment to inspect one object closely.
 
 **Where the Lens may appear, and nowhere else:**
+- The contained House rail after the document has scrolled. Its resting state is opaque and still.
 - A hover or long-press reveal on a lot's illustrative hero image, for closer inspection.
 - The specular pass inside the Strike ceremony's punch reveal.
 - One reserved marketing surface on the Explorer landing, if it earns its place.
@@ -223,9 +224,9 @@ Scale, in px: 12, 13, 15, 17, 20, 24, 30, 38, 48, 60, 76. Explorer display sizes
 
 **Layout.** Explorer: 12 columns, 1200px content, 24px gutters, left-aligned reading column. Mobile: single column, 18px side margins, primary action in the bottom third inside the tray.
 
-**Edges carry meaning.** `data` 0 for rules, rows and figures; `surface` 4 for panels; `control` fully round for anything acted on; `sheet` 28 for mobile sheets; punches use their own shapes. Two cues say "touchable": green and roundness. Never round a data row. Never square a button.
+**Edges carry meaning.** `data` 0 for rules, rows and figures; `surface` 4 for panels; `control` 0 for desktop actions; `sheet` 28 for mobile sheets; punches use their own shapes. Touchable controls are identified by green, an icon cell and short registration rules that protrude from the leading and trailing edges. Full-round controls are reserved for compact mobile layouts and named special cases. Never round a data row.
 
-The seam between printed evidence and a full-round control is the **registration cut**: a square surface with one corner clipped by `space.5`. It marks an authored plate, specimen or institutional header without making it look touchable. It is the only intermediate silhouette. Do not introduce medium-radius cards as a compromise between square and round.
+The seam between printed evidence and a control is the **registration cut**: a square surface with one corner clipped by `space.5`. It marks an authored plate, specimen, institutional header or desktop action without turning into a generic rounded rectangle. Do not introduce medium-radius cards as a compromise between square and round.
 
 **Elevation is tone.** `surface.ground` to `surface.sheet` to `surface.raised` to `surface.tray` step up in luminance on the neutral operational track, with full contrast headroom, since section 5a moved the olive hue to its own reserved `feature.*` track rather than forcing it to serve as the app's single default ground. See 5a for the two-ground structure and why it changed, and 5b to 5d for the tonal scales, the restricted Lens material, and a licensing note on using Directus as a reference.
 
@@ -256,8 +257,10 @@ Haptics (mobile): selection on scrub boundaries; light impact on a refreshed quo
 
 ## 9. Iconography and imagery
 
-- Prefer a word to an icon. An icon alone never carries meaning; pair it with text or an accessible label.
-- Where icons are needed: one line family at 1.5px stroke, sized 16 or 20.
+- Prefer an icon and a short word to a longer label. An icon alone carries meaning only for the Mode control, where its accessible label names the resulting mode.
+- Use one line family at 1.5px stroke, sized 16 or 20. Phosphor may supply generic interface symbols; the house mark, sponsor mark, punches and product diagrams remain custom.
+- Primary and quiet actions place the icon in a separate tonal cell so label and affordance remain distinct at a glance.
+- Dense surfaces may use static grid or monospace ASCII fields as quiet structure. They stay decorative, use `text.faint`, and never compete with evidence.
 - The only illustrative marks are punches, the seal glyph, and the sponsor's mark.
 - No stock photography, no 3D blobs, no abstract gradients, no emoji. The Explorer's single texture is the approved ThreeUI Halftone Flow, behind content, lazy-loaded, paused off-screen.
 

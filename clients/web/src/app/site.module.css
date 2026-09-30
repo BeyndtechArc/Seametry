@@ -4,32 +4,8 @@
   padding: 0 var(--sm-space-7);
 }
 
-.houseRail {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--sm-space-6);
-  min-height: var(--sm-space-11);
-  padding: var(--sm-space-3) 0;
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.primaryNav {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--sm-space-1);
-}
-
-.railTools {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--sm-space-2) var(--sm-space-4);
-}
-
-/* components.md, Wallet state: the Mode control's quiet round silhouette,
-   never green, opening below the rail. */
+/* components.md, Wallet state: a quiet ruled silhouette, never green,
+   opening below the rail. */
 .walletState {
   position: relative;
 }
@@ -39,14 +15,30 @@
   align-items: center;
   gap: var(--sm-space-2);
   min-height: var(--sm-size-target);
-  padding: 0 var(--sm-space-4);
-  border: 0.5px solid var(--sm-line-rule);
-  border-radius: var(--sm-radius-control);
+  padding: 0 var(--sm-space-4) 0 0;
+  border: 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-data);
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
   font-weight: var(--sm-font-weight-medium);
   list-style: none;
   cursor: pointer;
+}
+
+.walletIcon {
+  display: inline-grid;
+  place-items: center;
+  width: var(--sm-size-target);
+  height: var(--sm-size-target);
+  color: var(--sm-accent-touchText);
+  background: var(--sm-surface-raised);
+}
+
+.walletIcon svg {
+  width: var(--sm-space-6);
+  height: var(--sm-space-6);
 }
 
 .walletState summary::-webkit-details-marker {
@@ -93,7 +85,6 @@
   overflow-wrap: anywhere;
 }
 
-.primaryNav a,
 .textLink {
   position: relative;
   display: inline-flex;
@@ -105,24 +96,6 @@
   font-weight: var(--sm-font-weight-medium);
 }
 
-.primaryNav a[aria-current="page"] {
-  color: var(--sm-text-primary);
-}
-
-.primaryNav a[aria-current="page"]::after {
-  content: "";
-  position: absolute;
-  right: var(--sm-space-2);
-  bottom: 0;
-  left: var(--sm-space-2);
-  border-top: 1px solid var(--sm-accent-touch);
-}
-
-.primaryNav a:hover {
-  color: var(--sm-accent-touchText);
-}
-
-.primaryNav a:focus-visible,
 .textLink:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: var(--sm-space-2);
@@ -151,13 +124,13 @@
 .hero::before {
   content: "";
   position: absolute;
-  top: calc(var(--sm-space-13) * -1.6);
-  left: calc(var(--sm-space-13) * -1.1);
-  width: calc(var(--sm-space-13) * 3.2);
-  height: calc(var(--sm-space-13) * 3.2);
-  border: var(--sm-space-8) solid var(--sm-feature-raised);
-  transform: rotate(18deg);
-  opacity: 0.46;
+  top: calc(var(--sm-space-13) * -0.7);
+  left: calc(var(--sm-space-13) * -0.45);
+  width: calc(var(--sm-space-13) * 3);
+  height: calc(var(--sm-space-13) * 3.8);
+  background: url("/sponsor-mark.svg") center / contain no-repeat;
+  transform: rotate(-8deg);
+  opacity: 0.07;
   pointer-events: none;
 }
 
@@ -173,6 +146,24 @@
 .apField {
   position: relative;
   z-index: 1;
+}
+
+.heroAscii {
+  position: absolute;
+  top: var(--sm-space-5);
+  right: var(--sm-space-5);
+  left: var(--sm-space-5);
+  z-index: 0;
+  display: grid;
+  overflow: hidden;
+  color: var(--sm-feature-raised);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+  line-height: var(--sm-space-7);
+  letter-spacing: var(--sm-font-tracking-serial);
+  white-space: nowrap;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .heroCopy {
@@ -810,22 +801,6 @@
 }
 
 @media (max-width: 900px) {
-  .houseRail {
-    grid-template-columns: 1fr auto;
-    padding: var(--sm-space-4) 0;
-  }
-
-  /* components.md, House rail: narrow layouts wrap into ruled rows without
-     hiding destinations. A scrolling strip hid the last links off screen
-     with nothing to say they were there. */
-  .primaryNav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    border-top: 0.5px solid var(--sm-line-rule);
-  }
-
   .hero,
   .keyState,
   .accessPanel {
@@ -851,21 +826,6 @@
 @media (max-width: 700px) {
   .site {
     padding: 0 var(--sm-space-5);
-  }
-
-  .houseRail {
-    gap: var(--sm-space-4);
-  }
-
-  .primaryNav {
-    justify-content: flex-start;
-    gap: 0;
-  }
-
-  .primaryNav a {
-    flex: 0 0 auto;
-    padding: 0 var(--sm-space-2);
-    font-size: var(--sm-font-size-micro);
   }
 
   .hero {

@@ -109,11 +109,11 @@
   --sm-accent-provenance: #8F8AFF;
   --sm-accent-provenanceField: #3A20D6;
   --sm-accent-touchText: #98AD39;
-  --sm-feature-ground: #2D332C;
-  --sm-feature-sheet: #3B4238;
-  --sm-feature-raised: #4A5344;
-  --sm-feature-text-primary: #C3C5AD;
-  --sm-feature-text-secondary: #9A9D8C;
+  --sm-feature-ground: #11140F;
+  --sm-feature-sheet: #1B2017;
+  --sm-feature-raised: #303724;
+  --sm-feature-text-primary: #E7E8DC;
+  --sm-feature-text-secondary: #B2B7A2;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
@@ -192,11 +192,11 @@
   --sm-accent-provenance: #8F8AFF;
   --sm-accent-provenanceField: #3A20D6;
   --sm-accent-touchText: #98AD39;
-  --sm-feature-ground: #2D332C;
-  --sm-feature-sheet: #3B4238;
-  --sm-feature-raised: #4A5344;
-  --sm-feature-text-primary: #C3C5AD;
-  --sm-feature-text-secondary: #9A9D8C;
+  --sm-feature-ground: #11140F;
+  --sm-feature-sheet: #1B2017;
+  --sm-feature-raised: #303724;
+  --sm-feature-text-primary: #E7E8DC;
+  --sm-feature-text-secondary: #B2B7A2;
   color-scheme: dark;
 }
 :where([data-sm-theme="light"]) {
@@ -246,10 +246,10 @@
   --sm-accent-provenance: #8F8AFF;
   --sm-accent-provenanceField: #3A20D6;
   --sm-accent-touchText: #98AD39;
-  --sm-feature-ground: #2D332C;
-  --sm-feature-sheet: #3B4238;
-  --sm-feature-raised: #4A5344;
-  --sm-feature-text-primary: #C3C5AD;
-  --sm-feature-text-secondary: #9A9D8C;
+  --sm-feature-ground: #11140F;
+  --sm-feature-sheet: #1B2017;
+  --sm-feature-raised: #303724;
+  --sm-feature-text-primary: #E7E8DC;
+  --sm-feature-text-secondary: #B2B7A2;
   color-scheme: dark;
 }

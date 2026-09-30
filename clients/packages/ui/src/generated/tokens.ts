@@ -29,12 +29,12 @@ export const theme = {
       "touchText": "#98AD39"
     },
     "feature": {
-      "ground": "#2D332C",
-      "sheet": "#3B4238",
-      "raised": "#4A5344",
+      "ground": "#11140F",
+      "sheet": "#1B2017",
+      "raised": "#303724",
       "text": {
-        "primary": "#C3C5AD",
-        "secondary": "#9A9D8C"
+        "primary": "#E7E8DC",
+        "secondary": "#B2B7A2"
       }
     }
   },
