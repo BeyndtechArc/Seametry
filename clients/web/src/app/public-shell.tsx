@@ -4,6 +4,7 @@ import { Digest, RegisterFooter, Rule } from "@seametry/ui";
 import { ThemeControl } from "@seametry/ui/theme-control";
 import { publicIncident, publicIncidentAge } from "@/lib/public-evidence";
 import styles from "./site.module.css";
+import { WalletState } from "./wallet-state";
 
 type PublicDestination = "home" | "how" | "hall" | "allocation" | "key" | "terminal" | "sign-in";
 
@@ -30,7 +31,10 @@ export function HouseRail({ current }: { current?: PublicDestination }) {
           </Link>
         ))}
       </nav>
-      <ThemeControl />
+      <div className={styles.railTools}>
+        <WalletState />
+        <ThemeControl />
+      </div>
     </header>
   );
 }

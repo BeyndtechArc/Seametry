@@ -34,10 +34,25 @@ test("the public narrative and Key pages keep their claims bounded", async ({ pa
 test("sign in states the unavailable identity boundary without collecting a wallet", async ({ page }) => {
   await page.goto("/sign-in");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Enter with a wallet." })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Sign message" })).toBeDisabled();
-  await expect(page.getByText("Wallet sign-in is not built. Public evidence needs no account.", { exact: true })).toBeVisible();
-  await expect(page.locator("input")).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 1, name: "No account needed." })).toBeVisible();
+  await expect(page.getByText("Signing in, for saved formulas and watchlists, is API step A6 and is not built.", { exact: true })).toBeVisible();
+  // Nothing on the page can be pressed that does not work: the unbuilt sign-in has no control at all.
+  await expect(page.getByRole("button", { name: "Sign message" })).toHaveCount(0);
+  await expect(page.getByRole("main").locator("input")).toHaveCount(0);
+  await expect(page.getByRole("main").getByRole("link", { name: "Open the Allocation" })).toHaveAttribute("href", "/allocation");
+});
+
+test("the house rail shows the wallet state on every page, and connecting signs nothing", async ({ page }) => {
+  await page.goto("/");
+  const rail = page.getByRole("banner");
+  const state = rail.locator("summary", { hasText: "Connect wallet" });
+  await expect(state).toBeVisible();
+  await state.click();
+  // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
+  await expect(rail.getByText("No wallet was detected in this browser. On a phone, open this site inside your wallet's own browser.", { exact: true })).toBeVisible();
+
+  await page.goto("/allocation");
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toBeVisible();
 });
 
 test("the public rail reaches every available destination", async ({ page }) => {

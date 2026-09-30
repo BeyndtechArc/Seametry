@@ -10,6 +10,8 @@ import type {
   TerminalProblem,
 } from "@/lib/terminal-contract";
 import { formatAmount } from "@/lib/amount";
+import siteStyles from "../site.module.css";
+import { WalletState } from "../wallet-state";
 import styles from "./terminal.module.css";
 
 export function useTerminalResource<T>(path: string) {
@@ -56,7 +58,10 @@ export function TerminalFrame({ current, children }: { current: "instruments" | 
           <Link href="/terminal/alloys" aria-current={current === "alloys" ? "page" : undefined}>Alloys</Link>
           <Link href="/">Public site</Link>
         </nav>
-        <ThemeControl />
+        <div className={siteStyles.railTools}>
+          <WalletState />
+          <ThemeControl />
+        </div>
       </header>
       {children}
     </main>

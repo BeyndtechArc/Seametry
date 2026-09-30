@@ -55,6 +55,79 @@
   gap: var(--sm-space-1);
 }
 
+.railTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sm-space-2) var(--sm-space-4);
+}
+
+/* components.md, Wallet state: the Mode control's quiet round silhouette,
+   never green, opening below the rail. */
+.walletState {
+  position: relative;
+}
+
+.walletState summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-2);
+  min-height: var(--sm-size-target);
+  padding: 0 var(--sm-space-4);
+  border: 0.5px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-control);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+  list-style: none;
+  cursor: pointer;
+}
+
+.walletState summary::-webkit-details-marker {
+  display: none;
+}
+
+.walletState summary[data-connected]::before {
+  content: "";
+  width: var(--sm-space-2);
+  height: var(--sm-space-2);
+  background: var(--sm-text-primary);
+}
+
+.walletState summary[data-connected] span {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-digest);
+  font-variant-ligatures: none;
+}
+
+.walletState summary:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
+}
+
+.walletPanel {
+  position: absolute;
+  top: calc(100% + var(--sm-space-2));
+  right: 0;
+  z-index: 2;
+  display: grid;
+  gap: var(--sm-space-3);
+  width: min(calc(100vw - var(--sm-space-8)), calc(var(--sm-space-13) * 3));
+  padding: var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-strong);
+  border-radius: var(--sm-radius-surface);
+  background: var(--sm-surface-sheet);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.walletPanel code {
+  font-family: var(--sm-font-family-digest);
+  font-variant-ligatures: none;
+  overflow-wrap: anywhere;
+}
+
 .primaryNav a,
 .textLink {
   position: relative;

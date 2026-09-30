@@ -230,11 +230,19 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### House rail
 **Answers:** where am I, and which public destination is available from here?
-**Anatomy:** Seametry wordmark; public navigation; Mode control.
+**Anatomy:** Seametry wordmark; public navigation; Wallet state; Mode control.
 **Identity:** an open institutional rail held by one bottom rule. The wordmark is serif, the destinations are plain text, and the mode instrument closes the line. No floating header, container card or oversized action.
 **States:** default; current destination; narrow layouts wrap into two ruled rows without hiding destinations.
 **Data:** route labels and destinations owned by the web application.
-**Rules:** every destination resolves. No menu icon, promotional badge or Key inside the rail.
+**Rules:** every destination resolves. No menu icon, promotional badge or Key inside the rail. Wallet state is the only control in it that is not a destination, and it never signs.
+
+### Wallet state
+**Answers:** is a wallet connected to this site, which one, and how do I change that?
+**Anatomy:** disconnected: a Quiet action "Connect wallet" opening a list of the wallets this browser offers, each "Connect <name>". Connected: a registration dot and the address truncated in the middle, opening the full address and "Disconnect wallet".
+**Identity:** the same quiet round silhouette as the Mode control's targets, set on the rail's baseline. It reads as the state of the room, not as an invitation to trade.
+**States:** disconnected; no wallet detected ("No wallet was detected in this browser. On a phone, open this site inside your wallet's own browser."); connecting ("Connecting"); connected; the disclosure open or closed, by keyboard as well as pointer.
+**Data:** the site-wide wallet session; the list of detected Wallet Standard wallets.
+**Rules:** never green, never a Key: connecting a wallet moves no custody and signs nothing. The full address is always one step away, never only the truncation.
 
 ### Incident ledger
 **Answers:** what happened in the recorded demonstration, in what order, and which step proves the product claim?

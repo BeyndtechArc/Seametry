@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Key, Stamp } from "@seametry/ui";
+import { RouteAction, Stamp, TextAction } from "@seametry/ui";
 import { PublicShell, SectionHeading } from "../public-shell";
 import styles from "../site.module.css";
 
 export const metadata: Metadata = {
   title: "Sign in | Seametry",
-  description: "The wallet sign-in boundary for the Seametry Terminal.",
+  description: "No account is needed. Connect a wallet to use the Hall demonstration and the Allocation.",
 };
 
 export default async function SignInPage() {
@@ -15,18 +15,23 @@ export default async function SignInPage() {
     <PublicShell current="sign-in">
       <header className={styles.accessPanel}>
         <div>
-          <span>Identity boundary</span>
-          <h1>Enter with a wallet.</h1>
-          <p>Seametry will use Sign In With Solana. A wallet signs a domain-bound, single-use message. No email or password enters the flow.</p>
+          <span>Access</span>
+          <h1>No account needed.</h1>
+          <p>
+            Connect a wallet from the top of any page. That is enough to run the Hall demonstration on devnet and to buy an
+            Allocation on mainnet. Connecting signs nothing: every transaction is shown to you before your wallet asks you to
+            sign it.
+          </p>
         </div>
         <div className={styles.signInBoundary}>
-          <Stamp kind="warn" reason="API step A6 is not built." />
-          <Key disabled disabledReason="Wallet sign-in is not built. Public evidence needs no account.">Sign message</Key>
+          <Stamp kind="warn" reason="Signing in, for saved formulas and watchlists, is API step A6 and is not built." />
+          <RouteAction href="/allocation">Open the Allocation</RouteAction>
+          <TextAction href="/hall-demo">Run the Hall demonstration</TextAction>
         </div>
       </header>
 
       <section className={styles.section}>
-        <SectionHeading index="01" title="What the ceremony will do" question="What will the wallet sign, and what will the Office retain?" />
+        <SectionHeading index="01" title="What signing in will add" question="What will the wallet sign, and what will the Office retain?" />
         <div className={styles.accessGrid}>
           <article className={styles.accessStep}>
             <b>Request a challenge.</b>
@@ -50,7 +55,11 @@ export default async function SignInPage() {
       <section className={styles.section}>
         <SectionHeading index="02" title="Data boundary" question="What personal data exists on this page now?" />
         <div className={styles.boundary}>
-          <p>This page has no wallet field, connector or session request. It stores only the selected colour mode in this browser. The privacy notice and deletion path join the first functional sign-in release.</p>
+          <p>
+            This page asks for nothing and opens no session. The site keeps two things, only in this browser: the colour mode you
+            chose, and the name of the wallet you last connected, so a returning visit reconnects it. The privacy notice and
+            deletion path join the first functional sign-in release.
+          </p>
         </div>
       </section>
     </PublicShell>
