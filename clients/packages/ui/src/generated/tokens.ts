@@ -67,9 +67,9 @@ export const theme = {
       "touchText": "#43540B"
     },
     "feature": {
-      "ground": "#B8C56A",
-      "sheet": "#C5D17C",
-      "raised": "#D3DC94",
+      "ground": "#B6B999",
+      "sheet": "#C1C3A8",
+      "raised": "#CCCEB7",
       "text": {
         "primary": "#20231B",
         "secondary": "#3E432D"

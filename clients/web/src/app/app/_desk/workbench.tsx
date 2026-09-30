@@ -113,7 +113,7 @@ export function InstrumentRegister() {
   const { value, problem, loading } = useTerminalResource<InstrumentRegisterResponse>("/api/terminal/instruments");
 
   return (
-    <>
+    <div className={styles.instrumentRegister}>
       <PageHeader
         group="Assay"
         title="Instruments"
@@ -163,7 +163,7 @@ export function InstrumentRegister() {
           </div>
         </section>
       ) : null}
-    </>
+    </div>
   );
 }
 

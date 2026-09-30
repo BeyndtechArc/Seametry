@@ -102,6 +102,31 @@ test("every app page names its network, and the sidebar and tab bar share one ro
   await expect(tabs.getByRole("link", { name: "Hall" })).toHaveAttribute("aria-current", "page");
 });
 
+test("the app shell reserves icons for reading links and one global wallet control", async ({ page }) => {
+  await page.goto("/app");
+
+  const product = page.getByRole("navigation", { name: "Product" });
+  await expect(product.locator("svg")).toHaveCount(0);
+
+  const reading = page.getByRole("navigation", { name: "Reading" });
+  await expect(reading.locator("svg")).toHaveCount(2);
+
+  for (const path of ["/app/allocation", "/app/hall"]) {
+    await page.goto(path);
+    await expect(page.getByRole("main").getByRole("button", { name: /Connect / })).toHaveCount(0);
+    await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toHaveCount(1);
+  }
+});
+
+test("the desk cards let their content lead without decorative icons", async ({ page }) => {
+  await page.goto("/app");
+
+  for (const name of ["Alloy No. 1, STORM", "Allocation", "Demonstration", "Instruments"]) {
+    const card = page.getByRole("heading", { level: 2, name }).locator("..");
+    await expect(card.locator("svg")).toHaveCount(0);
+  }
+});
+
 test("no page scrolls sideways on a 320px phone", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 780 });
   for (const path of ["/", "/app", "/app/allocation", "/app/alloys", "/app/alloys/storm", "/app/hall", "/app/instruments", "/how-it-works", "/sign-in", "/the-key"]) {

@@ -41,7 +41,16 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--sm-space-2) var(--sm-space-4);
+  gap: var(--sm-space-1);
+  padding: var(--sm-space-1);
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-ground);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-3)) 0, 100% var(--sm-space-3), 100% 100%, 0 100%);
+}
+
+.tools > button {
+  background: var(--sm-surface-raised);
 }
 
 .content {
@@ -113,7 +122,7 @@
   }
 
   .sidebar::before {
-    content: "+  ·  +  ·  +  ·  +  ·  +  ·  +  ·  +  ·  +  ·  +  ·  +  ·  +";
+    content: "◇  ─  ◇  ─  ◇  ─  ◇";
     position: absolute;
     top: var(--sm-space-12);
     right: var(--sm-space-4);
@@ -144,7 +153,7 @@
     align-items: center;
     min-height: var(--sm-size-target);
     gap: var(--sm-space-3);
-    padding-right: var(--sm-space-3);
+    padding: 0 var(--sm-space-3);
     color: var(--sm-text-secondary);
     font-size: var(--sm-font-size-small);
     font-weight: var(--sm-font-weight-medium);
@@ -168,7 +177,7 @@
     border-left: 1px solid var(--sm-accent-touch);
   }
 
-  .routeIcon {
+  .readingIcon {
     display: inline-grid;
     place-items: center;
     width: var(--sm-space-9);
@@ -177,14 +186,9 @@
     background: var(--sm-surface-raised);
   }
 
-  .routeIcon svg {
+  .readingIcon svg {
     width: var(--sm-space-6);
     height: var(--sm-space-6);
-  }
-
-  .sidebar nav a[aria-current="page"] .routeIcon {
-    color: var(--sm-text-onTouch);
-    background: var(--sm-accent-touch);
   }
 
   .reading {
@@ -232,10 +236,14 @@
     bottom: var(--sm-space-12);
     width: calc(var(--sm-space-13) * 1.25);
     aspect-ratio: 173 / 229;
-    background: url("/sponsor-mark.svg") center / contain no-repeat;
-    opacity: 0.055;
-    filter: grayscale(1);
+    background: var(--sm-accent-touchText);
+    mask: url("/sponsor-mark.svg") center / contain no-repeat;
+    opacity: 0.16;
     pointer-events: none;
+  }
+
+  :global(html[data-theme="dark"]) .sponsorField {
+    opacity: 0.09;
   }
 
   .tabBar {
@@ -243,13 +251,13 @@
   }
 }
 
-.routeIcon,
+.readingIcon,
 .sponsorField {
   display: none;
 }
 
 @media (min-width: 900px) {
-  .routeIcon {
+  .readingIcon {
     display: inline-grid;
   }
 

@@ -15,6 +15,7 @@ export default async function TheKeyPage() {
   return (
     <PublicShell current="key">
       <header className={styles.keyState}>
+        <span className={styles.keyMonument} aria-hidden="true" />
         <div>
           <span>Program authority</span>
           <h1>The Key is still in hand.</h1>

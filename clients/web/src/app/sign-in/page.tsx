@@ -14,6 +14,7 @@ export default async function SignInPage() {
   return (
     <PublicShell current="sign-in">
       <header className={styles.accessPanel}>
+        <div className={styles.accessThreshold} aria-hidden="true"><span /><span /></div>
         <div>
           <span>Access</span>
           <h1>No account needed.</h1>

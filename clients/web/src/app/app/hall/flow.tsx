@@ -48,7 +48,7 @@ function reasonFrom(error: unknown): string {
 
 export function HallDemoFlow() {
   const { connection } = useConnection();
-  const { publicKey, connected, wallets, select, connecting } = useWallet();
+  const { publicKey, connected } = useWallet();
   const anchorWallet = useAnchorWallet();
 
   const [founding, setFounding] = useState(false);
@@ -258,15 +258,7 @@ export function HallDemoFlow() {
 
       {!connected && (
         <div className="card">
-          <p className="tight">Connect a devnet wallet to hold shares and sign the strike, melt and withdraw steps yourself. It needs its own devnet SOL for the claim account&apos;s rent.</p>
-          <div className="tray">
-            {wallets.length === 0 && <p className="tight">No Wallet Standard wallet was detected in this browser.</p>}
-            {wallets.map((w) => (
-              <button key={w.adapter.name} className="key" disabled={connecting} onClick={() => select(w.adapter.name)}>
-                Connect {w.adapter.name}
-              </button>
-            ))}
-          </div>
+          <p className="tight">Use the wallet control in the header to enter the demonstration. The wallet needs devnet SOL for the claim account&apos;s rent.</p>
         </div>
       )}
 

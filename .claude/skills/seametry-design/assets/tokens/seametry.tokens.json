@@ -190,13 +190,13 @@
         "$type": "color",
         "$description": "Light-mode olive track, same restriction as dark.",
         "ground": {
-          "$value": "#B8C56A"
+          "$value": "#B6B999"
         },
         "sheet": {
-          "$value": "#C5D17C"
+          "$value": "#C1C3A8"
         },
         "raised": {
-          "$value": "#D3DC94"
+          "$value": "#CCCEB7"
         },
         "text": {
           "$type": "color",

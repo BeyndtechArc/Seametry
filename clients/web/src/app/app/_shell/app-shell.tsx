@@ -25,7 +25,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span>{group}</span>
               {routes.map((route) => (
                 <Link key={route.href} href={route.href} aria-current={route.isActive(pathname) ? "page" : undefined}>
-                  <span className={styles.routeIcon}><Icon name={route.icon} /></span>
                   <span>{route.label}</span>
                 </Link>
               ))}
@@ -35,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <nav aria-label="Reading" className={styles.reading}>
           {readingRoutes.map((route) => (
             <Link key={route.href} href={route.href}>
-              <span className={styles.routeIcon}><Icon name={route.icon} /></span>
+              <span className={styles.readingIcon}><Icon name={route.icon} /></span>
               <span>{route.label}</span>
             </Link>
           ))}
@@ -50,7 +49,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </span>
           {place ? (
             <p className={styles.place}>
-              <b>{place.label}</b>
+              <b>{place.group === "Desk" ? place.label : place.group}</b>
             </p>
           ) : null}
           <div className={styles.tools}>

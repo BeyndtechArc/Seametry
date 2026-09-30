@@ -1,7 +1,7 @@
 // The one route list the App shell draws from (components.md, App shell):
 // the sidebar and the narrow tab bar both read it, so they cannot disagree.
 
-export type AppRoute = { label: string; href: string; icon: IconName; isActive: (pathname: string) => boolean };
+export type AppRoute = { label: string; href: string; isActive: (pathname: string) => boolean };
 export type AppGroup = { group: string; routes: AppRoute[] };
 
 const exactly = (href: string) => (pathname: string) => pathname === href;
@@ -9,17 +9,17 @@ const within = (href: string, except: string[] = []) => (pathname: string) =>
   (pathname === href || pathname.startsWith(`${href}/`)) && !except.some((path) => pathname === path);
 
 export const appGroups: AppGroup[] = [
-  { group: "Desk", routes: [{ label: "Overview", href: "/app", icon: "desk", isActive: exactly("/app") }] },
-  { group: "Buy", routes: [{ label: "Allocation", href: "/app/allocation", icon: "buy", isActive: within("/app/allocation") }] },
+  { group: "Desk", routes: [{ label: "Overview", href: "/app", isActive: exactly("/app") }] },
+  { group: "Buy", routes: [{ label: "Allocation", href: "/app/allocation", isActive: within("/app/allocation") }] },
   {
     group: "Hall",
     routes: [
-      { label: "Alloy No. 1", href: "/app/alloys/storm", icon: "hall", isActive: exactly("/app/alloys/storm") },
-      { label: "Alloys", href: "/app/alloys", icon: "hall", isActive: within("/app/alloys", ["/app/alloys/storm"]) },
-      { label: "Demonstration", href: "/app/hall", icon: "hall", isActive: within("/app/hall") },
+      { label: "Alloy No. 1", href: "/app/alloys/storm", isActive: exactly("/app/alloys/storm") },
+      { label: "Alloys", href: "/app/alloys", isActive: within("/app/alloys", ["/app/alloys/storm"]) },
+      { label: "Demonstration", href: "/app/hall", isActive: within("/app/hall") },
     ],
   },
-  { group: "Assay", routes: [{ label: "Instruments", href: "/app/instruments", icon: "assay", isActive: within("/app/instruments") }] },
+  { group: "Assay", routes: [{ label: "Instruments", href: "/app/instruments", isActive: within("/app/instruments") }] },
 ];
 
 /** The reading pages, last in the sidebar: explanation lives there, not in the product. */
@@ -35,4 +35,3 @@ export function currentPlace(pathname: string): { group: string; label: string }
   }
   return undefined;
 }
-import type { IconName } from "@seametry/ui/icons";

@@ -148,21 +148,13 @@
   z-index: 1;
 }
 
-.heroAscii {
+.heroHallmark {
   position: absolute;
-  top: var(--sm-space-5);
-  right: var(--sm-space-5);
-  left: var(--sm-space-5);
+  top: var(--sm-space-4);
+  right: var(--sm-space-6);
+  width: min(52%, calc(var(--sm-space-13) * 3));
   z-index: 0;
-  display: grid;
-  overflow: hidden;
-  color: var(--sm-feature-raised);
-  font-family: var(--sm-font-family-digest);
-  font-size: var(--sm-font-size-micro);
-  line-height: var(--sm-space-7);
-  letter-spacing: var(--sm-font-tracking-serial);
-  white-space: nowrap;
-  opacity: 0.5;
+  opacity: 0.42;
   pointer-events: none;
 }
 
@@ -673,11 +665,75 @@
 .storyHero,
 .keyState,
 .accessPanel {
+  position: relative;
   display: grid;
   gap: var(--sm-space-7);
   margin-top: var(--sm-space-10);
   padding: var(--sm-space-10) 0 var(--sm-space-12);
   border-bottom: 0.5px solid var(--sm-line-strong);
+}
+
+.storyHero {
+  min-height: calc(var(--sm-space-13) * 3);
+  padding: var(--sm-space-10);
+  overflow: hidden;
+  color: var(--sm-feature-text-secondary);
+  background: var(--sm-feature-ground);
+  border-bottom: 0;
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-6)) 0, 100% var(--sm-space-6), 100% 100%, 0 100%);
+  --sm-text-primary: var(--sm-feature-text-primary);
+  --sm-text-secondary: var(--sm-feature-text-secondary);
+  --sm-text-tertiary: var(--sm-feature-text-secondary);
+}
+
+.storyHero > *:not(.mechanismMark) {
+  position: relative;
+  z-index: 1;
+  max-width: calc(var(--sm-space-13) * 5);
+}
+
+.mechanismMark {
+  position: absolute;
+  right: var(--sm-space-9);
+  bottom: var(--sm-space-8);
+  display: grid;
+  grid-template-columns: repeat(3, var(--sm-space-10));
+  align-items: center;
+  gap: var(--sm-space-7);
+  opacity: 0.54;
+}
+
+.mechanismMark::before {
+  content: "";
+  position: absolute;
+  right: var(--sm-space-5);
+  left: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-feature-text-secondary);
+}
+
+.mechanismMark span {
+  z-index: 1;
+  width: var(--sm-space-10);
+  height: var(--sm-space-10);
+  border: 0.5px solid var(--sm-feature-text-secondary);
+  background: var(--sm-feature-sheet);
+}
+
+.mechanismMark span:first-child {
+  border-radius: 50%;
+}
+
+.mechanismMark span:nth-child(2) {
+  clip-path: polygon(0 0, 72% 0, 100% 28%, 100% 100%, 0 100%);
+}
+
+.mechanismMark i {
+  position: absolute;
+  right: calc(var(--sm-space-10) + var(--sm-space-7) - var(--sm-space-1));
+  z-index: 2;
+  width: var(--sm-space-2);
+  height: var(--sm-space-2);
+  background: var(--sm-accent-touch);
 }
 
 .storyHero h1,
@@ -716,6 +772,26 @@
 .keyState {
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   align-items: end;
+}
+
+.keyState::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/sponsor-mark.svg") left center / auto 140% no-repeat;
+  opacity: 0.055;
+  pointer-events: none;
+}
+
+.keyMonument {
+  position: absolute;
+  top: var(--sm-space-7);
+  right: var(--sm-space-7);
+  width: var(--sm-space-12);
+  height: var(--sm-space-12);
+  border: var(--sm-space-2) double var(--sm-line-strong);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-4)) 0, 100% var(--sm-space-4), 100% 100%, 0 100%);
+  opacity: 0.42;
 }
 
 .keyState > div {
@@ -768,6 +844,34 @@
   align-items: end;
 }
 
+.accessThreshold {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 52%;
+  display: grid;
+  place-items: center;
+  width: var(--sm-space-12);
+  border-right: 0.5px solid var(--sm-line-rule);
+  border-left: 0.5px solid var(--sm-line-rule);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.accessThreshold span {
+  position: absolute;
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
+  border: 0.5px solid var(--sm-line-strong);
+  transform: rotate(45deg);
+}
+
+.accessThreshold span:last-child {
+  width: var(--sm-space-3);
+  height: var(--sm-space-3);
+  background: var(--sm-accent-touch);
+}
+
 .accessPanel > div,
 .signInBoundary {
   display: grid;
@@ -805,6 +909,10 @@
   .keyState,
   .accessPanel {
     grid-template-columns: 1fr;
+  }
+
+  .accessThreshold {
+    display: none;
   }
 
   .apField,

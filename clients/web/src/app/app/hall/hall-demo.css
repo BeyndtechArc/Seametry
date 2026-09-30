@@ -3,7 +3,33 @@
    second one for the same ideas. */
 
 .hall-demo-page {
+  position: relative;
   max-width: var(--sm-size-content);
+  isolation: isolate;
+}
+
+.hall-demo-page::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--sm-space-8) * -1);
+  right: calc(var(--sm-space-8) * -1);
+  z-index: -1;
+  width: calc(var(--sm-space-13) * 2.6);
+  height: calc(var(--sm-space-13) * 1.4);
+  background: var(--sm-line-rule);
+  mask: url("/hall-relay.svg") right top / contain no-repeat;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.hall-demo-page::after {
+  content: "";
+  position: absolute;
+  top: var(--sm-space-10);
+  right: calc(var(--sm-space-13) * 1.7);
+  width: var(--sm-space-2);
+  height: var(--sm-space-2);
+  background: var(--sm-accent-touch);
 }
 
 .devnet-line {
@@ -13,10 +39,13 @@
 }
 
 .hall-demo .card {
+  position: relative;
   background: var(--sm-surface-sheet);
-  border: 0.5px solid var(--sm-line-rule);
-  border-top-color: var(--sm-line-highlight);
-  border-radius: var(--sm-radius-surface);
+  border: 0;
+  border-top: 0.5px solid var(--sm-line-highlight);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-data);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-4)) 0, 100% var(--sm-space-4), 100% 100%, 0 100%);
   padding: var(--sm-space-6) var(--sm-space-7);
   margin-top: var(--sm-space-5);
 }
@@ -79,15 +108,37 @@
 }
 
 .hall-demo .key {
+  position: relative;
   font-family: var(--sm-font-family-ui);
   font-weight: var(--sm-font-weight-medium);
   font-size: var(--sm-font-size-body);
   background: var(--sm-accent-touch);
   color: var(--sm-text-onTouch);
   border: none;
-  border-radius: var(--sm-radius-control);
+  border-radius: var(--sm-radius-data);
   padding: var(--sm-space-3) var(--sm-space-6);
   cursor: pointer;
+}
+
+.hall-demo .key::before,
+.hall-demo .key::after,
+.hall-demo .quiet::before,
+.hall-demo .quiet::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: var(--sm-space-3);
+  border-top: 0.5px solid currentColor;
+}
+
+.hall-demo .key::before,
+.hall-demo .quiet::before {
+  right: 100%;
+}
+
+.hall-demo .key::after,
+.hall-demo .quiet::after {
+  left: 100%;
 }
 .hall-demo .key:disabled {
   background: var(--sm-surface-tray);
@@ -96,13 +147,16 @@
 }
 
 .hall-demo .quiet {
+  position: relative;
   font-family: var(--sm-font-family-ui);
   font-weight: var(--sm-font-weight-medium);
   font-size: var(--sm-font-size-body);
   background: var(--sm-surface-sheet);
   color: var(--sm-text-secondary);
-  border: 0.5px solid var(--sm-line-rule);
-  border-radius: var(--sm-radius-control);
+  border: 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-data);
   padding: var(--sm-space-3) var(--sm-space-6);
   cursor: pointer;
 }

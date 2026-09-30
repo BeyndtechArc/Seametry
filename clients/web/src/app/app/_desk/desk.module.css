@@ -7,6 +7,35 @@
   font-size: var(--sm-font-size-micro);
 }
 
+.instrumentRegister,
+.alloyRegister {
+  position: relative;
+  isolation: isolate;
+}
+
+.instrumentRegister::before,
+.alloyRegister::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--sm-space-8) * -1);
+  right: calc(var(--sm-space-8) * -1);
+  z-index: -1;
+  width: calc(var(--sm-space-13) * 2.5);
+  height: calc(var(--sm-space-13) * 2);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.instrumentRegister::before {
+  background: var(--sm-line-rule);
+  mask: url("/hallmark-grid.svg") right top / contain no-repeat;
+}
+
+.alloyRegister::before {
+  background: url("/sponsor-mark.svg") right top / contain no-repeat;
+  opacity: 0.08;
+}
+
 .instrumentTable a:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: var(--sm-space-2);

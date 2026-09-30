@@ -45,21 +45,6 @@
   gap: var(--sm-space-1) var(--sm-space-3);
 }
 
-.tileIcon {
-  display: inline-grid;
-  grid-column: 1 / -1;
-  place-items: center;
-  width: var(--sm-space-9);
-  height: var(--sm-space-9);
-  color: var(--sm-accent-touchText);
-  background: var(--sm-surface-raised);
-}
-
-.tileIcon svg {
-  width: var(--sm-space-6);
-  height: var(--sm-space-6);
-}
-
 .tile h2 {
   margin: 0;
   color: var(--sm-text-primary);
@@ -83,11 +68,6 @@
   --sm-line-strong: var(--sm-feature-text-secondary);
 }
 
-.lead .tileIcon {
-  color: var(--sm-text-onTouch);
-  background: var(--sm-accent-touch);
-}
-
 .inverse {
   color: var(--sm-text-inverse);
   background: var(--sm-surface-inverse);
@@ -97,11 +77,6 @@
   --sm-text-tertiary: var(--sm-surface-raised);
   --sm-line-rule: var(--sm-surface-raised);
   --sm-line-strong: var(--sm-surface-ground);
-}
-
-.inverse .tileIcon {
-  color: var(--sm-text-inverse);
-  background: var(--sm-accent-touch);
 }
 
 @media (min-width: 700px) {

@@ -257,10 +257,10 @@ Haptics (mobile): selection on scrub boundaries; light impact on a refreshed quo
 
 ## 9. Iconography and imagery
 
-- Prefer an icon and a short word to a longer label. An icon alone carries meaning only for the Mode control, where its accessible label names the resulting mode.
+- Use icons as punctuation, not inventory. Prefer text for persistent navigation and repeated data cards; add an icon only when it shortens an action or distinguishes a secondary route. An icon alone carries meaning only for the Mode control, where its accessible label names the resulting mode.
 - Use one line family at 1.5px stroke, sized 16 or 20. Phosphor may supply generic interface symbols; the house mark, sponsor mark, punches and product diagrams remain custom.
 - Primary and quiet actions place the icon in a separate tonal cell so label and affordance remain distinct at a glance.
-- Dense surfaces may use static grid or monospace ASCII fields as quiet structure. They stay decorative, use `text.faint`, and never compete with evidence.
+- Dense surfaces may use static grids or typographic fields derived from Hallmark punches, seals and registration geometry. They stay decorative, use `text.faint`, and never imitate source code or compete with evidence.
 - The only illustrative marks are punches, the seal glyph, and the sponsor's mark.
 - No stock photography, no 3D blobs, no abstract gradients, no emoji. The Explorer's single texture is the approved ThreeUI Halftone Flow, behind content, lazy-loaded, paused off-screen.
 

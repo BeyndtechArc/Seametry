@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Figure, RouteAction, TextAction } from "@seametry/ui";
-import { Icon } from "@seametry/ui/icons";
 import { admissions, partitionAdmissions } from "@/lib/allocation/admissions";
 import { formatAmount } from "@/lib/amount";
 import { relativeEvidenceAge, stormFixture } from "@/lib/storm-fixture";
@@ -24,7 +23,6 @@ export default async function DeskPage() {
       <div className={styles.tiles}>
         <section className={`${styles.tile} ${styles.lead}`} aria-labelledby="storm-tile">
           <header>
-            <span className={styles.tileIcon}><Icon name="hall" /></span>
             <h2 id="storm-tile">Alloy No. 1, STORM</h2>
             <NetworkBadge network="Devnet" />
           </header>
@@ -43,7 +41,6 @@ export default async function DeskPage() {
 
         <section className={`${styles.tile} ${styles.inverse}`} aria-labelledby="allocation-tile">
           <header>
-            <span className={styles.tileIcon}><Icon name="buy" /></span>
             <h2 id="allocation-tile">Allocation</h2>
             <NetworkBadge network="Mainnet" />
           </header>
@@ -61,7 +58,6 @@ export default async function DeskPage() {
 
         <section className={styles.tile} aria-labelledby="hall-tile">
           <header>
-            <span className={styles.tileIcon}><Icon name="hall" /></span>
             <h2 id="hall-tile">Demonstration</h2>
             <NetworkBadge network="Devnet" />
           </header>
@@ -71,7 +67,6 @@ export default async function DeskPage() {
 
         <section className={styles.tile} aria-labelledby="assay-tile">
           <header>
-            <span className={styles.tileIcon}><Icon name="assay" /></span>
             <h2 id="assay-tile">Instruments</h2>
             <NetworkBadge network="Mainnet evidence" />
           </header>

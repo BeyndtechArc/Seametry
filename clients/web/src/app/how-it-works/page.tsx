@@ -14,6 +14,12 @@ export default async function HowItWorksPage() {
   return (
     <PublicShell current="how">
       <header className={styles.storyHero}>
+        <div className={styles.mechanismMark} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+          <i />
+        </div>
         <span>Mechanism before marketing</span>
         <h1>The basket is a mechanism.</h1>
         <p>A bundle assembles tokens. An ETF adds a share whose creation and redemption loop remains open to participants on both sides of the market.</p>

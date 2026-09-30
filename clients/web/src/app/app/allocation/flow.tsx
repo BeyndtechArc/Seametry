@@ -87,7 +87,7 @@ export function AllocationFlow({
   snapshot: Snapshot;
   unavailable?: string;
 }) {
-  const { publicKey, connected, connecting, wallets, select, disconnect, signTransaction } = useWallet();
+  const { publicKey, connected, signTransaction } = useWallet();
   const [selected, setSelected] = useState<string[]>(offered.map((lot) => lot.mint));
   const [typed, setTyped] = useState("");
   const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
@@ -234,24 +234,13 @@ export function AllocationFlow({
 
       <section className={styles.section} aria-labelledby="wallet-heading">
         <Rule />
-        <h2 id="wallet-heading">Which wallet receives the lots</h2>
+        <h2 id="wallet-heading">Receiving wallet</h2>
         {connected && publicKey ? (
           <div className={styles.walletLine}>
             <code>{publicKey.toBase58()}</code>
-            <QuietAction onClick={() => void disconnect()}>Disconnect wallet</QuietAction>
           </div>
-        ) : wallets.length === 0 ? (
-          <p className={styles.quiet}>
-            No wallet was detected in this browser. On a phone, open this page inside your wallet&apos;s own browser.
-          </p>
         ) : (
-          <div className={styles.actions}>
-            {wallets.map((wallet) => (
-              <QuietAction key={wallet.adapter.name} disabled={connecting} onClick={() => select(wallet.adapter.name)}>
-                Connect {wallet.adapter.name}
-              </QuietAction>
-            ))}
-          </div>
+          <p className={styles.quiet}>Use the wallet control in the header before preparing an Allocation.</p>
         )}
       </section>
 

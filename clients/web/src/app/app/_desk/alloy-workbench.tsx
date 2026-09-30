@@ -89,7 +89,7 @@ export function AlloyRegister() {
   const { value, problem, loading } = useTerminalResource<AlloyRegisterResponse>("/api/terminal/alloys");
 
   return (
-    <>
+    <div className={styles.alloyRegister}>
       <PageHeader group="Hall" title="Alloys" network="Devnet" sentence="Every Alloy account the Hall holds, read live, with its supply and any leg held back.">
         <TextAction href="/app/alloys/storm">Inspect Alloy No. 1</TextAction>
       </PageHeader>
@@ -136,7 +136,7 @@ export function AlloyRegister() {
           </div>
         </section>
       ) : null}
-    </>
+    </div>
   );
 }
 

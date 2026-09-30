@@ -3,7 +3,24 @@
    signatures, exact multipliers) wrap rather than widen the page. */
 
 .page {
+  position: relative;
   min-width: 0;
+  isolation: isolate;
+}
+
+.page::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--sm-space-8) * -1);
+  right: calc(var(--sm-space-8) * -1);
+  z-index: -1;
+  width: calc(var(--sm-space-13) * 2.4);
+  height: calc(var(--sm-space-13) * 1.6);
+  border-right: var(--sm-space-2) double var(--sm-line-rule);
+  border-bottom: var(--sm-space-2) double var(--sm-line-rule);
+  clip-path: polygon(var(--sm-space-8) 0, 100% 0, 100% 100%, 0 100%, 0 var(--sm-space-8));
+  opacity: 0.44;
+  pointer-events: none;
 }
 
 .terms {
@@ -11,6 +28,10 @@
   margin: 0;
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-small);
+  padding: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-sheet);
 }
 
 /* Every grid here names a minmax(0, 1fr) track: an implicit auto track grows
@@ -31,9 +52,24 @@
 }
 
 .unavailable {
-  padding: var(--sm-space-4) 0;
+  display: grid;
+  gap: var(--sm-space-3);
+  padding: var(--sm-space-5);
   border-top: 0.5px solid var(--sm-accent-provenance);
+  border-bottom: 0.5px solid var(--sm-line-rule);
   color: var(--sm-accent-provenance);
+  background: var(--sm-surface-sheet);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-4)) 0, 100% var(--sm-space-4), 100% 100%, 0 100%);
+}
+
+.unavailable::before {
+  content: "Unavailable";
+  width: fit-content;
+  padding: var(--sm-space-1) var(--sm-space-3);
+  border: 3px double var(--sm-accent-provenance);
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-semibold);
+  letter-spacing: var(--sm-font-tracking-serial);
 }
 
 .section {
@@ -79,6 +115,8 @@
 
 .provenance {
   color: var(--sm-accent-provenance);
+  padding-left: var(--sm-space-4);
+  border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
 }
 
 .loading {

@@ -245,7 +245,7 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 ### App shell
 **Answers:** where am I in the product, on which network, with which wallet?
 **Anatomy:** wide layouts: a Sidebar (Brand mark; route groups Desk, Buy, Hall, Assay; the reading pages last) and a sticky Top bar (the current group and page, Wallet state, Mode control) above the page. Narrow layouts: the Top bar with the Brand mark, and a Tab bar fixed to the bottom with one tab per group. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
-**Identity:** a compact ledger margin: the sidebar is a contained ruled column with one icon per route and a quiet sponsor-mark field, not a stack of text links. The current route carries the registration mark and a rule, as the House rail's current destination does.
+**Identity:** a compact ledger margin: the sidebar is a contained ruled column with text-led product routes and a quiet sponsor-mark field. Icons are reserved for the two reading links at the bottom, where they distinguish an exit from the operational register. The current route carries the registration mark and a rule, as the House rail's current destination does.
 **States:** current route; narrow; wallet disconnected or connected; each page's network.
 **Data:** one route list that drives the sidebar and the tab bar, so they cannot disagree.
 **Rules:** one route list. Every route resolves. No hamburger: the tab bar shows every group at once. The shell names the current route once; a page header appears only when it adds network or decision context that the shell cannot carry.
