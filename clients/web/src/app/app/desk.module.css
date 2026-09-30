@@ -1,0 +1,56 @@
+/* The Desk overview. Tiles are panels: tone plus the single top hairline,
+   radius 4, never a shadow (SKILL.md, non-negotiables). One column when
+   narrow; the lead tile spans two columns when there is room. */
+
+.tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sm-space-5);
+}
+
+.tile {
+  display: grid;
+  align-content: start;
+  gap: var(--sm-space-4);
+  min-width: 0;
+  padding: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  border-radius: var(--sm-radius-surface);
+  background: var(--sm-surface-sheet);
+}
+
+.tile header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--sm-space-1) var(--sm-space-3);
+}
+
+.tile header span {
+  grid-column: 1 / -1;
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.tile h2 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.tile p {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+@media (min-width: 700px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lead {
+    grid-column: 1 / -1;
+  }
+}

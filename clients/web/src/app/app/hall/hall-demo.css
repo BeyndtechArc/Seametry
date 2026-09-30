@@ -4,31 +4,6 @@
 
 .hall-demo-page {
   max-width: var(--sm-size-content);
-  margin: 0 auto;
-  padding: var(--sm-space-8) var(--sm-space-5);
-}
-
-.hall-demo-page h1 {
-  font-family: var(--sm-font-family-display);
-  font-weight: var(--sm-font-weight-light);
-  font-size: clamp(var(--sm-font-size-figure), 6vw, var(--sm-font-size-display));
-  line-height: 1.04;
-  color: var(--sm-text-primary);
-}
-
-.lede {
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-lead);
-  margin-top: var(--sm-space-5);
-  max-width: var(--sm-size-readable);
-}
-
-.hall-demo-route {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sm-space-4);
-  margin-top: var(--sm-space-6);
 }
 
 .devnet-line {

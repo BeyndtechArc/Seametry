@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("the Alloy surface exposes the recorded formula and missing market evidence", async ({ page }) => {
-  await page.goto("/terminal/alloys/storm");
+  await page.goto("/app/alloys/storm");
 
   await expect(page.getByRole("heading", { level: 1, name: "STORM" })).toBeVisible();
   await expect(page.getByText("Labelled devnet fixture", { exact: true })).toBeVisible();
@@ -26,7 +26,7 @@ test("the Alloy surface exposes the recorded formula and missing market evidence
 });
 
 test("the Alloy surface carries the page-wide colour mode control", async ({ page }) => {
-  await page.goto("/terminal/alloys/storm");
+  await page.goto("/app/alloys/storm");
 
   await page.getByRole("button", { name: "Use light mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");

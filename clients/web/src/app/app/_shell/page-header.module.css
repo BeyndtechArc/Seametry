@@ -1,0 +1,59 @@
+.pageHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--sm-space-3) var(--sm-space-5);
+  padding-bottom: var(--sm-space-5);
+  margin-bottom: var(--sm-space-6);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.titleLine {
+  display: grid;
+  gap: var(--sm-space-1);
+  min-width: 0;
+}
+
+.titleLine span {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.titleLine h1 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: clamp(var(--sm-font-size-title), 5vw, var(--sm-font-size-title-l));
+  font-weight: var(--sm-font-weight-regular);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.pageHeader p {
+  grid-column: 1 / -1;
+  max-width: var(--sm-size-readable);
+  margin: 0;
+  color: var(--sm-text-secondary);
+}
+
+.links {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-3) var(--sm-space-5);
+}
+
+/* A Stamp's struck-evidence form: double rule, square corners. */
+.network {
+  padding: var(--sm-space-1) var(--sm-space-3);
+  border: 3px double currentColor;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-semibold);
+  white-space: nowrap;
+}
+
+.network[data-network="devnet"] {
+  color: var(--sm-accent-provenance);
+}

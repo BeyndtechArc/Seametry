@@ -70,15 +70,15 @@ test("the Terminal moves from the instrument register into one assay", async ({ 
   });
 
   const registerRequest = page.waitForRequest((request) => request.url().endsWith("/api/terminal/instruments"));
-  await page.goto("/terminal");
+  await page.goto("/app/instruments");
   await registerRequest;
   expect(browserErrors).toEqual([]);
-  await expect(page.getByRole("heading", { level: 1, name: "Instrument desk" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Instruments" })).toBeVisible();
   const row = page.getByRole("row", { name: /XSTK/ });
   await expect(row).toContainText("Certificate");
   await row.getByRole("link", { name: "Open assay" }).click();
 
-  await expect(page).toHaveURL(`/terminal/instruments/${mint}`);
+  await expect(page).toHaveURL(`/app/instruments/${mint}`);
   await expect(page.getByRole("heading", { level: 1, name: "XSTK" })).toBeVisible();
   await expect(page.getByText("BLOCK", { exact: true })).toBeVisible();
   await expect(page.getByText("policy-2026.09.2", { exact: true })).toBeVisible();
@@ -99,33 +99,33 @@ test("the Terminal names the API boundary when no deployment is connected", asyn
       },
     });
   });
-  await page.goto("/terminal");
+  await page.goto("/app/instruments");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Instrument desk" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Instruments" })).toBeVisible();
   await expect(page.getByText("Terminal API unavailable", { exact: true })).toBeVisible();
   await expect(page.getByText("Set SEAMETRY_API_URL to a deployed or local Gateway.", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/terminal/alloys");
-  await expect(page.getByRole("link", { name: "Return to public site" })).toHaveAttribute("href", "/");
+  await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/app/alloys");
+  await expect(page.getByRole("link", { name: "Return to the desk" })).toHaveAttribute("href", "/app");
 });
 
 test("the Terminal distinguishes an empty persisted register from an unavailable Gateway", async ({ page }) => {
-  await page.goto("/terminal");
+  await page.goto("/app/instruments");
   await expect(page.getByText("No persisted instruments", { exact: true })).toBeVisible();
   await expect(page.getByText("The Gateway answered with an empty instrument register as of Sep 29, 2026, 12:00 PM UTC.", { exact: true })).toBeVisible();
   await expect(page.getByText("Terminal API unavailable", { exact: true })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/terminal/alloys");
+  await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/app/alloys");
 });
 
 test("the Terminal moves from the live Hall register into one Alloy record", async ({ page }) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
-  await page.goto("/terminal/alloys");
-  await expect(page.getByRole("heading", { level: 1, name: "Hall register" })).toBeVisible();
+  await page.goto("/app/alloys");
+  await expect(page.getByRole("heading", { level: 1, name: "Alloys" })).toBeVisible();
   const row = page.getByRole("row", { name: /Alloy 1790627156984/ });
   await expect(row).toContainText("1 held as a Claim");
   await row.getByRole("link", { name: "Open Alloy" }).click();
 
-  await expect(page).toHaveURL(`/terminal/alloys/${alloyAddress}`);
+  await expect(page).toHaveURL(`/app/alloys/${alloyAddress}`);
   await expect(page.getByRole("heading", { level: 1, name: "Alloy 1790627156984" })).toBeVisible();
   await expect(page.getByText("The issuer currently prevents this Hall account from delivering.")).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Strike and Melt terms" })).toBeVisible();

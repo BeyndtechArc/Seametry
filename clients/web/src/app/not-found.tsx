@@ -13,7 +13,7 @@ export default async function NotFound() {
         <p>The address does not match a public Seametry surface. Choose the public overview or enter the Terminal.</p>
         <div className={styles.heroActions}>
           <RouteAction href="/">Open the overview</RouteAction>
-          <TextAction href="/terminal">Open the Terminal</TextAction>
+          <TextAction href="/app">Open the app</TextAction>
         </div>
       </header>
     </PublicShell>

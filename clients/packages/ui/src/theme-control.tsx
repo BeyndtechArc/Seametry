@@ -12,15 +12,15 @@ function storedTheme(): ThemeName | null {
   return value === "dark" || value === "light" ? value : null;
 }
 
-function preferredTheme(): ThemeName {
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-}
+// Light is the default, by Storm's decision on 30 September 2026, whatever
+// the system preference; dark stays complete and a stored choice wins.
+const defaultTheme: ThemeName = "light";
 
 export function ThemeControl() {
-  const [theme, setTheme] = useState<ThemeName>("dark");
+  const [theme, setTheme] = useState<ThemeName>(defaultTheme);
 
   useEffect(() => {
-    const initialTheme = storedTheme() ?? preferredTheme();
+    const initialTheme = storedTheme() ?? defaultTheme;
     document.documentElement.dataset.theme = initialTheme;
     setTheme(initialTheme);
   }, []);

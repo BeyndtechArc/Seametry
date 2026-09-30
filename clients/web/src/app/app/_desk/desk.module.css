@@ -1,36 +1,3 @@
-.terminal {
-  width: min(100%, var(--sm-size-content));
-  margin: 0 auto;
-  padding: var(--sm-space-5) var(--sm-space-7) var(--sm-space-13);
-}
-
-.workbenchRail {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--sm-space-7);
-  padding-bottom: var(--sm-space-5);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.wordmark {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--sm-space-3);
-  min-height: var(--sm-size-target);
-  color: var(--sm-accent-touchText);
-  text-decoration: none;
-}
-
-.wordmark b {
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-s);
-  font-weight: var(--sm-font-weight-regular);
-}
-
-.wordmark span,
-.deskHero span,
 .sectionHeading > span,
 .assayIdentity > span,
 .boundaryTitle > span,
@@ -40,113 +7,11 @@
   font-size: var(--sm-font-size-micro);
 }
 
-.workbenchRail nav {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--sm-space-6);
-}
-
-.workbenchRail nav a {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--sm-size-target);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  text-decoration: none;
-}
-
-.workbenchRail nav a[aria-current="page"] {
-  color: var(--sm-text-primary);
-}
-
-.workbenchRail nav a[aria-current="page"]::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  border-top: 1px solid var(--sm-accent-touch);
-}
-
-.workbenchRail a:focus-visible,
 .instrumentTable a:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: var(--sm-space-2);
 }
 
-.deskHero {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
-  align-items: end;
-  gap: var(--sm-space-9);
-  min-height: calc(var(--sm-space-13) * 2.4);
-  margin-top: var(--sm-space-8);
-  padding: var(--sm-space-8);
-  overflow: hidden;
-  background: var(--sm-surface-sheet);
-  border-top: 0.5px solid var(--sm-line-highlight);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
-}
-
-.deskHero::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 42%;
-  border-left: var(--sm-space-2) solid var(--sm-accent-touch);
-}
-
-.deskHero > div,
-.deskHero > p {
-  position: relative;
-  z-index: 1;
-}
-
-.alloyDeskHero {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) auto;
-  align-items: end;
-  gap: var(--sm-space-9);
-  min-height: calc(var(--sm-space-13) * 2.4);
-  margin-top: var(--sm-space-8);
-  padding: var(--sm-space-8);
-  overflow: hidden;
-  border-top: 0.5px solid var(--sm-line-highlight);
-  background: var(--sm-surface-raised);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
-}
-
-.alloyDeskHero::before,
-.alloyDeskHero::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.alloyDeskHero::before {
-  left: 38%;
-  border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
-}
-
-.alloyDeskHero::after {
-  right: 18%;
-  border-left: 0.5px solid var(--sm-line-rule);
-}
-
-.alloyDeskHero > div,
-.alloyDeskHero > p {
-  position: relative;
-  z-index: 1;
-}
-
-.alloyDeskHero > div > span,
-.alloyDeskIndex > span,
 .liveAlloyIdentity > span,
 .executionBoundary > div > span,
 .termsQuantity > span {
@@ -154,7 +19,6 @@
   font-size: var(--sm-font-size-micro);
 }
 
-.alloyDeskHero h1,
 .liveAlloyIdentity h1,
 .executionBoundary h2 {
   color: var(--sm-text-primary);
@@ -163,35 +27,6 @@
   letter-spacing: var(--sm-font-tracking-display);
 }
 
-.alloyDeskHero h1 {
-  margin-top: var(--sm-space-4);
-  font-size: clamp(var(--sm-font-size-figure-l), 8vw, var(--sm-font-size-display-l));
-  line-height: 0.9;
-}
-
-.alloyDeskHero > p {
-  max-width: 48ch;
-  color: var(--sm-text-secondary);
-  line-height: 1.65;
-}
-
-.alloyDeskIndex {
-  display: grid;
-  align-content: space-between;
-  min-width: var(--sm-space-11);
-  min-height: var(--sm-space-11);
-  padding-left: var(--sm-space-5);
-  border-left: 0.5px solid var(--sm-line-strong);
-}
-
-.alloyDeskIndex b {
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-digest);
-  font-size: var(--sm-font-size-title-l);
-  font-weight: var(--sm-font-weight-regular);
-}
-
-.deskHero h1,
 .assayIdentity h1,
 .sectionHeading h2,
 .boundary h2 {
@@ -199,34 +34,6 @@
   font-family: var(--sm-font-family-display);
   font-weight: var(--sm-font-weight-light);
   letter-spacing: var(--sm-font-tracking-display);
-}
-
-.deskHero h1 {
-  margin-top: var(--sm-space-4);
-  font-size: clamp(var(--sm-font-size-figure-l), 8vw, var(--sm-font-size-display-l));
-  line-height: 0.9;
-}
-
-.deskHero > p {
-  max-width: 48ch;
-  color: var(--sm-text-secondary);
-  line-height: 1.65;
-}
-
-.deskIndex {
-  display: grid;
-  align-content: space-between;
-  min-width: var(--sm-space-11);
-  min-height: var(--sm-space-11);
-  padding-left: var(--sm-space-5);
-  border-left: 0.5px solid var(--sm-line-strong);
-}
-
-.deskIndex b {
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-digest);
-  font-size: var(--sm-font-size-title-l);
-  font-weight: var(--sm-font-weight-regular);
 }
 
 .loading,
@@ -296,6 +103,10 @@
 }
 
 .tableViewport {
+  /* The containing block for .srOnly labels inside a cell. Without it they
+     position against the page, escape this scroller, and widen a phone
+     viewport to the table's full width. */
+  position: relative;
   overflow-x: auto;
   border-top: 0.5px solid var(--sm-line-strong);
   border-bottom: 0.5px solid var(--sm-line-rule);
@@ -704,24 +515,6 @@
 }
 
 @media (max-width: 800px) {
-  .terminal {
-    padding-right: var(--sm-space-5);
-    padding-left: var(--sm-space-5);
-  }
-
-  .workbenchRail {
-    grid-template-columns: 1fr auto;
-  }
-
-  .workbenchRail nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    justify-content: flex-start;
-    overflow-x: auto;
-  }
-
-  .deskHero,
-  .alloyDeskHero,
   .assayHero,
   .liveAlloyPlate,
   .decisionPanel,
@@ -729,38 +522,6 @@
   .termsPlate,
   .executionBoundary {
     grid-template-columns: 1fr;
-  }
-
-  .deskHero::before {
-    left: var(--sm-space-5);
-  }
-
-  .alloyDeskHero::before {
-    left: var(--sm-space-5);
-  }
-
-  .alloyDeskHero::after {
-    display: none;
-  }
-
-  .deskHero > div,
-  .deskHero > p,
-  .deskIndex {
-    margin-left: var(--sm-space-5);
-  }
-
-  .alloyDeskHero > div,
-  .alloyDeskHero > p,
-  .alloyDeskIndex {
-    margin-left: var(--sm-space-5);
-  }
-
-  .alloyDeskIndex {
-    min-height: 0;
-    padding-top: var(--sm-space-4);
-    padding-left: 0;
-    border-top: 0.5px solid var(--sm-line-strong);
-    border-left: 0;
   }
 
   .alloyFacts {
@@ -775,14 +536,6 @@
   .termsQuantity {
     border-right: 0;
     border-bottom: 0.5px solid var(--sm-line-rule);
-  }
-
-  .deskIndex {
-    min-height: 0;
-    padding-top: var(--sm-space-4);
-    padding-left: 0;
-    border-top: 0.5px solid var(--sm-line-strong);
-    border-left: 0;
   }
 
   .sectionHeading {

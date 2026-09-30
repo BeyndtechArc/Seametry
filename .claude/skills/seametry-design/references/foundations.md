@@ -146,7 +146,7 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 
 **Contrast is measured, not assumed, and "calm" is never an excuse for a value that fails its check.** Calm has a real place in this system, but it's built from hierarchy, weight and space: a smaller size, a lighter weight, more room around it. Those all keep contrast intact while lowering visual pressure. A colour that fails 4.5:1 isn't calmer, it's just harder to read, and on a screen where a number decides whether someone signs a transaction, that's a defect, not a mood. Every text token passes 4.5:1 on its permitted surfaces (recorded in the token descriptions); the one exception is `text.faint`, which is reserved for genuinely decorative marks nobody needs to read, and that reservation is the actual place "quiet" lives in this system.
 
-**Modes.** Dark is the default and the brand. Light is the certificate. Both are complete; no component may exist in only one.
+**Modes.** Light is the default (Storm, 30 September 2026); dark is the touchstone, one choice away. Light is the certificate. Both are complete; no component may exist in only one.
 
 ---
 

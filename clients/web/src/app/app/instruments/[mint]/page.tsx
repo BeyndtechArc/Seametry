@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { InstrumentAssay } from "../../workbench";
+import { InstrumentAssay } from "../../_desk/workbench";
 
 export const metadata: Metadata = {
-  title: "Instrument assay | Seametry Terminal",
+  title: "Instrument assay | Seametry",
   description: "One recorded instrument with its policy decision, buy depth and issuer powers.",
 };
 

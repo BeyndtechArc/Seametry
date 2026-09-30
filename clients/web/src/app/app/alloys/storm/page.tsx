@@ -10,13 +10,13 @@ import {
   Rule,
   Stamp,
 } from "@seametry/ui";
-import { ThemeControl } from "@seametry/ui/theme-control";
 import { relativeEvidenceAge, stormFixture } from "@/lib/storm-fixture";
+import { NetworkBadge } from "../../_shell/page-header";
 import styles from "./storm.module.css";
 
 export const metadata: Metadata = {
-  title: "STORM, Alloy No. 1 | Seametry Terminal",
-  description: "A labelled devnet fixture of Alloy No. 1 in the Seametry Terminal.",
+  title: "STORM, Alloy No. 1 | Seametry",
+  description: "A labelled devnet fixture of Alloy No. 1, STORM.",
 };
 
 const supply = stormFixture.supply.atoms.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -45,24 +45,12 @@ export default async function StormAlloyPage() {
   const fixtureAge = relativeEvidenceAge(stormFixture.observedAt);
 
   return (
-    <main className={styles.terminal}>
-      <header className={styles.workbenchRail}>
-        <div className={styles.wordmark}>
-          <b>Seametry</b>
-          <span>Terminal</span>
-        </div>
-        <nav aria-label="Workbench location">
-          <span>Workbench</span>
-          <span>Alloys</span>
-          <span aria-current="page">Alloy 01</span>
-        </nav>
-        <ThemeControl />
-      </header>
-
+    <div className={styles.terminal}>
       <section className={styles.alloyPlate} aria-labelledby="alloy-title">
         <div className={styles.plateMeta}>
           <span>Labelled devnet fixture</span>
           <span>Recorded Hall state</span>
+          <NetworkBadge network="Devnet" />
         </div>
         <div className={styles.plateBody}>
           <div className={styles.alloyNumber} aria-hidden="true">
@@ -184,6 +172,6 @@ export default async function StormAlloyPage() {
         </div>
         <Key disabled disabledReason="Execution is not connected to this fixture.">Prepare strike</Key>
       </section>
-    </main>
+    </div>
   );
 }

@@ -1,18 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Digest, RouteAction, Rule, Stamp, TextAction } from "@seametry/ui";
-import { ThemeControl } from "@seametry/ui/theme-control";
 import type {
   InstrumentAssayResponse,
   InstrumentRegisterResponse,
   TerminalProblem,
 } from "@/lib/terminal-contract";
 import { formatAmount } from "@/lib/amount";
-import siteStyles from "../site.module.css";
-import { WalletState } from "../wallet-state";
-import styles from "./terminal.module.css";
+import { PageHeader } from "../_shell/page-header";
+import styles from "./desk.module.css";
 
 export function useTerminalResource<T>(path: string) {
   const [value, setValue] = useState<T>();
@@ -45,29 +43,6 @@ export function useTerminalResource<T>(path: string) {
   return { value, problem, loading: !value && !problem };
 }
 
-export function TerminalFrame({ current, children }: { current: "instruments" | "alloys"; children: ReactNode }) {
-  return (
-    <main className={styles.terminal}>
-      <header className={styles.workbenchRail}>
-        <Link className={styles.wordmark} href="/terminal">
-          <b>Seametry</b>
-          <span>Terminal</span>
-        </Link>
-        <nav aria-label="Terminal">
-          <Link href="/terminal" aria-current={current === "instruments" ? "page" : undefined}>Instruments</Link>
-          <Link href="/terminal/alloys" aria-current={current === "alloys" ? "page" : undefined}>Alloys</Link>
-          <Link href="/">Public site</Link>
-        </nav>
-        <div className={siteStyles.railTools}>
-          <WalletState />
-          <ThemeControl />
-        </div>
-      </header>
-      {children}
-    </main>
-  );
-}
-
 function Boundary({ problem }: { problem: TerminalProblem }) {
   return (
     <section className={styles.boundary} role="status">
@@ -80,8 +55,8 @@ function Boundary({ problem }: { problem: TerminalProblem }) {
         <code>HTTP {problem.status}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/terminal/alloys">Inspect live Alloys</RouteAction>
-        <TextAction href="/">Return to public site</TextAction>
+        <RouteAction href="/app/alloys">Inspect live Alloys</RouteAction>
+        <TextAction href="/app">Return to the desk</TextAction>
       </div>
     </section>
   );
@@ -108,8 +83,8 @@ function EmptyRegister({ asOf }: { asOf: string }) {
         <code>0 records</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/terminal/alloys">Inspect live Alloys</RouteAction>
-        <TextAction href="/">Return to public site</TextAction>
+        <RouteAction href="/app/alloys">Inspect live Alloys</RouteAction>
+        <TextAction href="/app">Return to the desk</TextAction>
       </div>
     </section>
   );
@@ -138,18 +113,13 @@ export function InstrumentRegister() {
   const { value, problem, loading } = useTerminalResource<InstrumentRegisterResponse>("/api/terminal/instruments");
 
   return (
-    <TerminalFrame current="instruments">
-      <section className={styles.deskHero}>
-        <div>
-          <span>Registry + Policy + Liquidity</span>
-          <h1>Instrument desk</h1>
-        </div>
-        <p>Open the stored assay before an instrument enters a Formula. Every row keeps its capture slot, grade and issuer powers attached.</p>
-        <div className={styles.deskIndex} aria-hidden="true">
-          <span>I</span>
-          <b>{value?.data.length.toString().padStart(2, "0") ?? "--"}</b>
-        </div>
-      </section>
+    <>
+      <PageHeader
+        group="Assay"
+        title="Instruments"
+        network="Mainnet evidence"
+        sentence="Every captured instrument with its grade, issuer powers and the slot it was read at."
+      />
 
       {loading ? <LoadingRegister /> : null}
       {problem ? <Boundary problem={problem} /> : null}
@@ -185,7 +155,7 @@ export function InstrumentRegister() {
                       <span>Slot {instrument.capture.slot}</span>
                       <small>{captureLabel(instrument.capture.captured_at)} UTC</small>
                     </td>
-                    <td><Link href={`/terminal/instruments/${encodeURIComponent(instrument.mint)}`}>Open assay</Link></td>
+                    <td><Link href={`/app/instruments/${encodeURIComponent(instrument.mint)}`}>Open assay</Link></td>
                   </tr>
                 ))}
               </tbody>
@@ -193,7 +163,7 @@ export function InstrumentRegister() {
           </div>
         </section>
       ) : null}
-    </TerminalFrame>
+    </>
   );
 }
 
@@ -205,8 +175,8 @@ export function InstrumentAssay({ mint }: { mint: string }) {
   const decision = value?.admissibility.data;
 
   return (
-    <TerminalFrame current="instruments">
-      <div className={styles.backLink}><TextAction href="/terminal">Return to instrument desk</TextAction></div>
+    <>
+      <div className={styles.backLink}><TextAction href="/app/instruments">Return to instruments</TextAction></div>
       {loading ? <LoadingRegister /> : null}
       {problem ? <Boundary problem={problem} /> : null}
       {value && instrument && decision ? (
@@ -299,6 +269,6 @@ export function InstrumentAssay({ mint }: { mint: string }) {
           </section>
         </>
       ) : null}
-    </TerminalFrame>
+    </>
   );
 }

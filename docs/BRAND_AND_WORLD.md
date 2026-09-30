@@ -181,7 +181,8 @@ This section holds only what makes the visual language belong to this world.
 
 The black ground is not dark mode. It is the touchstone, and every constituent
 is drawn across it. Light is the certificate, the one place the world turns to
-paper. Both are complete.
+paper. Both are complete. Light is the ground a visitor meets first (Storm,
+30 September 2026); the touchstone is one choice away.
 
 Two cues say a thing can be touched: green, and roundness. Nothing else is
 green, and nothing touchable is square. Blue means provenance and never

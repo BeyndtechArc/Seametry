@@ -64,8 +64,9 @@ body::before {
    * light 1.28 vs 1.52). */
   --relief-ink: var(--sm-scale-olive-100);
 }
+:root[data-theme="light"] { --relief-ink: var(--sm-scale-olive-800) }
 @media (prefers-color-scheme: light) {
-  :root { --relief-ink: var(--sm-scale-olive-800) }
+  :root:not([data-theme="dark"]) { --relief-ink: var(--sm-scale-olive-800) }
 }
 
 .wrap {
@@ -94,8 +95,17 @@ body::before {
 }
 .pillar.l { right: calc(100% + (100vw - var(--page)) / 2 * 0.15) }
 .pillar.r { left: calc(100% + (100vw - var(--page)) / 2 * 0.15); transform: scaleX(-1) }
+/* The same conditions tokens.css uses for the light palette: an explicit
+   data-theme="light" (the default layout.html now sets), or a light system
+   preference with no explicit dark. Keyed on the media query alone, the
+   pillars drew in dark ink on a light page for any visitor whose system is
+   dark. */
+:root[data-theme="light"] .pillar {
+  -webkit-mask-image: url("pillar-dark.svg");
+  mask-image: url("pillar-dark.svg");
+}
 @media (prefers-color-scheme: light) {
-  .pillar {
+  :root:not([data-theme="dark"]) .pillar {
     -webkit-mask-image: url("pillar-dark.svg");
     mask-image: url("pillar-dark.svg");
   }

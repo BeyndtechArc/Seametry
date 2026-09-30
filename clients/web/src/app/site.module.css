@@ -14,41 +14,6 @@
   border-bottom: 0.5px solid var(--sm-line-rule);
 }
 
-.wordmark {
-  position: relative;
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--sm-space-3);
-  min-height: var(--sm-size-target);
-  padding-left: var(--sm-space-6);
-  color: var(--sm-accent-touchText);
-  text-decoration: none;
-}
-
-.wordmark::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: var(--sm-space-3);
-  height: var(--sm-space-3);
-  border: 0.5px solid var(--sm-accent-touch);
-  transform: translateY(-50%) rotate(45deg);
-}
-
-.wordmark b {
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-s);
-  font-weight: var(--sm-font-weight-regular);
-  letter-spacing: var(--sm-font-tracking-title);
-}
-
-.wordmark span {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
 .primaryNav {
   display: flex;
   justify-content: flex-end;
@@ -157,7 +122,6 @@
   color: var(--sm-accent-touchText);
 }
 
-.wordmark:focus-visible,
 .primaryNav a:focus-visible,
 .textLink:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);

@@ -1,0 +1,28 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+  min-height: var(--sm-size-target);
+  color: var(--sm-text-primary);
+  text-decoration: none;
+}
+
+.brand b {
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+/* A placeholder until the house's mark exists: one colour, square, legible
+   at 16px, which is the brief the real mark answers too. */
+.placeholderMark {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+  border: 1.5px solid var(--sm-text-primary);
+}
+
+.brand:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
+}

@@ -3,31 +3,12 @@
    signatures, exact multipliers) wrap rather than widen the page. */
 
 .page {
-  padding: var(--sm-space-8) 0 var(--sm-space-12);
   min-width: 0;
 }
 
-.intro h1 {
-  margin: var(--sm-space-2) 0 0;
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: clamp(var(--sm-font-size-title-l), 7vw, var(--sm-font-size-figure-l));
-  font-weight: var(--sm-font-weight-light);
-  line-height: 1.05;
-}
-
-.intro p {
+.terms {
   max-width: var(--sm-size-readable);
-  margin-top: var(--sm-space-5);
-  color: var(--sm-text-secondary);
-}
-
-.worldName {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-small);
-}
-
-.intro .terms {
+  margin: 0;
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-small);
 }

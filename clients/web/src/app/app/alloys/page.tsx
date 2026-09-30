@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { AlloyRegister } from "../alloy-workbench";
+import { AlloyRegister } from "../_desk/alloy-workbench";
 
 export const metadata: Metadata = {
-  title: "Hall register | Seametry Terminal",
+  title: "Alloys | Seametry",
   description: "Live Alloy accounts read from the deployed Hall.",
 };
 

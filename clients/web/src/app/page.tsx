@@ -38,7 +38,7 @@ export default async function Home() {
           <h1 id="home-title"><span>Open</span> <span>AP ETFs</span></h1>
           <p>Any wallet can create or redeem shares from a fixed Formula. Seametry opens every constituent and its issuer powers before the basket moves.</p>
           <div className={styles.heroActions}>
-            <RouteAction href="/hall-demo">Inspect demonstration</RouteAction>
+            <RouteAction href="/app/hall">Inspect demonstration</RouteAction>
             <TextAction href="/how-it-works">Read mechanism</TextAction>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default async function Home() {
         <SectionHeading index="05" title="What you can inspect now" question="Which claims have a public artifact behind them today?" />
         <ProofStrip items={[
           { label: "Hall program", value: "Devnet program", href: "https://explorer.solana.com/address/4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx?cluster=devnet" },
-          { label: "Issuer-power demonstration", value: "Open the run", href: "/hall-demo" },
+          { label: "Issuer-power demonstration", value: "Open the run", href: "/app/hall" },
           { label: "Program authority", value: "Key still in hand", href: "/the-key" },
           { label: "Implementation", value: "Read the source", href: "https://github.com/BeyndtechArc/Seametry" },
         ]} />

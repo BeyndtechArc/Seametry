@@ -6,7 +6,7 @@ import { allocationConfig, requestCountry } from "@/lib/allocation/config";
 import { SLIPPAGE_BPS, countryGate } from "@/lib/allocation/rules";
 import { formatAmount } from "@/lib/amount";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
-import { PublicShell } from "../public-shell";
+import { PageHeader } from "../_shell/page-header";
 import { AllocationFlow, type OfferedLot, type RefusedLot } from "./flow";
 import styles from "./allocation.module.css";
 
@@ -59,20 +59,17 @@ export default async function AllocationPage() {
   }));
 
   return (
-    <PublicShell current="allocation">
-      <div className={styles.page}>
-        <header className={styles.intro}>
-          <span className={styles.worldName}>Allocation</span>
-          <h1>Buy into your own wallet</h1>
-          <p>
-            Each admitted lot is bought with USDC in its own swap, straight into the wallet you connect. Nothing is pooled
-            and Seametry holds nothing. You sign every leg yourself after seeing what it will do.
-          </p>
-          <p className={styles.terms}>
-            Mainnet. No Seametry fee. Slippage {SLIPPAGE_BPS} basis points. At most {formatAmount(BigInt(admissions.reference_usdc), 0)} USDC
-            per lot, the size its depth was measured to. You remain bound by each issuer&apos;s own terms of eligibility.
-          </p>
-        </header>
+    <div className={styles.page}>
+        <PageHeader
+          group="Buy"
+          title="Allocation"
+          network="Mainnet"
+          sentence="Buy admitted lots with USDC, one swap each, into your own wallet. You sign every leg after seeing what it will do."
+        />
+        <p className={styles.terms}>
+          No Seametry fee. Slippage {SLIPPAGE_BPS} basis points. At most {formatAmount(BigInt(admissions.reference_usdc), 0)} USDC per
+          lot, the size its depth was measured to. You remain bound by each issuer&apos;s terms of eligibility.
+        </p>
         <AllocationFlow
           offered={offered}
           refused={refusedLots}
@@ -84,7 +81,6 @@ export default async function AllocationPage() {
           }}
           unavailable={unavailable}
         />
-      </div>
-    </PublicShell>
+    </div>
   );
 }

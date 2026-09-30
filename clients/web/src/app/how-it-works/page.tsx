@@ -67,7 +67,7 @@ export default async function HowItWorksPage() {
       </section>
 
       <section className={styles.section}>
-        <RouteAction href="/hall-demo">Inspect the mechanism</RouteAction>
+        <RouteAction href="/app/hall">Inspect the mechanism</RouteAction>
       </section>
     </PublicShell>
   );

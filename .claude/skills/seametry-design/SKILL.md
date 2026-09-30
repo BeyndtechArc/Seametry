@@ -55,7 +55,7 @@ This is not internal reasoning to skip under a short prompt. `scripts/check-buil
 - A source that said nothing is shown as "no observation", never omitted.
 - Radius means touch: data rows 0, panels 4, anything actionable fully round.
 - One Key per view. The Key sits in its tray and stays quieter than the figures above it.
-- Dark and light modes both complete; dark is the default.
+- Dark and light modes both complete; light is the default (Storm, 30 September 2026), and a stored choice is honoured.
 - Contrast at least 4.5:1 for text, measured against the real surface. `text.faint` is never used for readable text.
 
 ## Review gate

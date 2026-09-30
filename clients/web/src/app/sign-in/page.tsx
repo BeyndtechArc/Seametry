@@ -18,15 +18,15 @@ export default async function SignInPage() {
           <span>Access</span>
           <h1>No account needed.</h1>
           <p>
-            Connect a wallet from the top of any page. That is enough to run the Hall demonstration on devnet and to buy an
-            Allocation on mainnet. Connecting signs nothing: every transaction is shown to you before your wallet asks you to
-            sign it.
+            Open the app and connect a wallet from its top bar. That is enough to run the Hall demonstration on devnet and to
+            buy an Allocation on mainnet. Connecting signs nothing: every transaction is shown to you before your wallet asks
+            you to sign it.
           </p>
         </div>
         <div className={styles.signInBoundary}>
           <Stamp kind="warn" reason="Signing in, for saved formulas and watchlists, is API step A6 and is not built." />
-          <RouteAction href="/allocation">Open the Allocation</RouteAction>
-          <TextAction href="/hall-demo">Run the Hall demonstration</TextAction>
+          <RouteAction href="/app/allocation">Open the Allocation</RouteAction>
+          <TextAction href="/app/hall">Run the Hall demonstration</TextAction>
         </div>
       </header>
 

@@ -195,12 +195,12 @@ export default async function PatternRegisterPage() {
               <article>
                 <h3>Route action</h3>
                 <p>Moves a visitor into a product route without implying custody.</p>
-                <RouteAction href="/hall-demo">Inspect demonstration</RouteAction>
+                <RouteAction href="/app/hall">Inspect demonstration</RouteAction>
               </article>
               <article>
                 <h3>Quiet link</h3>
                 <p>Offers a secondary route when comparison matters more than arrival.</p>
-                <QuietLink href="/terminal/alloys/storm">Compare evidence</QuietLink>
+                <QuietLink href="/app/alloys/storm">Compare evidence</QuietLink>
               </article>
               <article>
                 <h3>Text action</h3>

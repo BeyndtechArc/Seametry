@@ -1,29 +1,24 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Digest, RegisterFooter, Rule } from "@seametry/ui";
+import { Digest, RegisterFooter, RouteAction, Rule } from "@seametry/ui";
 import { ThemeControl } from "@seametry/ui/theme-control";
 import { publicIncident, publicIncidentAge } from "@/lib/public-evidence";
+import { BrandMark } from "./brand-mark";
 import styles from "./site.module.css";
-import { WalletState } from "./wallet-state";
 
-type PublicDestination = "home" | "how" | "hall" | "allocation" | "key" | "terminal" | "sign-in";
+type PublicDestination = "home" | "how" | "key" | "sign-in";
 
+// Reading pages only (components.md, House rail). The product lives in the
+// App shell at /app, reached by the one "Open app" action.
 const primaryLinks = [
-  { id: "home", label: "Overview", href: "/" },
   { id: "how", label: "How it works", href: "/how-it-works" },
-  { id: "hall", label: "Hall demo", href: "/hall-demo" },
-  { id: "allocation", label: "Allocation", href: "/allocation" },
-  { id: "terminal", label: "Terminal", href: "/terminal" },
   { id: "key", label: "The Key", href: "/the-key" },
 ] as const;
 
 export function HouseRail({ current }: { current?: PublicDestination }) {
   return (
     <header className={styles.houseRail}>
-      <Link className={styles.wordmark} href="/">
-        <b>Seametry</b>
-        <span>Public</span>
-      </Link>
+      <BrandMark />
       <nav className={styles.primaryNav} aria-label="Primary">
         {primaryLinks.map((link) => (
           <Link key={link.id} href={link.href} aria-current={current === link.id ? "page" : undefined}>
@@ -32,7 +27,7 @@ export function HouseRail({ current }: { current?: PublicDestination }) {
         ))}
       </nav>
       <div className={styles.railTools}>
-        <WalletState />
+        <RouteAction href="/app">Open app</RouteAction>
         <ThemeControl />
       </div>
     </header>
@@ -91,9 +86,9 @@ export function PublicShell({
             title: "Product",
             links: [
               { label: "How it works", href: "/how-it-works" },
-              { label: "Terminal", href: "/terminal" },
-              { label: "Hall demonstration", href: "/hall-demo" },
-              { label: "Allocation", href: "/allocation" },
+              { label: "Open the app", href: "/app" },
+              { label: "Allocation", href: "/app/allocation" },
+              { label: "Hall demonstration", href: "/app/hall" },
             ],
           },
           {

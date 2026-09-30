@@ -1,34 +1,9 @@
+/* The App shell supplies the page's padding; this only keeps the plate at
+   the content width on very wide screens. */
 .terminal {
   width: min(100%, var(--sm-size-content));
-  margin: 0 auto;
-  padding: var(--sm-space-5) var(--sm-space-7) var(--sm-space-13);
 }
 
-.workbenchRail {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: var(--sm-space-8);
-  padding: var(--sm-space-4) 0 var(--sm-space-7);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.wordmark {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sm-space-3);
-}
-
-.wordmark b {
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-s);
-  font-weight: var(--sm-font-weight-regular);
-  letter-spacing: var(--sm-font-tracking-title);
-}
-
-.wordmark span,
-.workbenchRail nav,
 .plateMeta,
 .alloyNumber span,
 .alloyIdentity > span,
@@ -39,35 +14,11 @@
   font-size: var(--sm-font-size-micro);
 }
 
-.workbenchRail nav {
-  display: flex;
-  justify-content: center;
-  gap: var(--sm-space-6);
-}
-
-.workbenchRail nav span {
-  position: relative;
-}
-
-.workbenchRail nav span + span::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: calc(var(--sm-space-4) * -1);
-  width: var(--sm-space-2);
-  border-top: 0.5px solid var(--sm-line-strong);
-}
-
-.workbenchRail nav [aria-current="page"] {
-  color: var(--sm-text-primary);
-}
-
 .alloyPlate {
   position: relative;
   display: grid;
   gap: var(--sm-space-9);
   min-height: calc(var(--sm-space-13) * 3.2);
-  margin-top: var(--sm-space-8);
   padding: var(--sm-space-8);
   overflow: hidden;
   color: var(--sm-feature-text-secondary);
@@ -273,19 +224,6 @@
 }
 
 @media (max-width: 768px) {
-  .terminal {
-    padding-right: var(--sm-space-5);
-    padding-left: var(--sm-space-5);
-  }
-
-  .workbenchRail {
-    grid-template-columns: 1fr auto;
-  }
-
-  .workbenchRail nav {
-    display: none;
-  }
-
   .alloyPlate {
     min-height: calc(var(--sm-space-13) * 4.2);
     padding: var(--sm-space-7);

@@ -11,8 +11,9 @@ import type {
   TerminalProblem,
 } from "@/lib/terminal-contract";
 import { formatAmount } from "@/lib/amount";
-import { TerminalFrame, useTerminalResource } from "./workbench";
-import styles from "./terminal.module.css";
+import { PageHeader } from "../_shell/page-header";
+import { useTerminalResource } from "./workbench";
+import styles from "./desk.module.css";
 
 function observedAge(observedAt: string) {
   const elapsed = Math.max(0, Math.floor((Date.now() - Date.parse(observedAt)) / 1000));
@@ -58,8 +59,8 @@ function AlloyBoundary({ problem }: { problem: TerminalProblem }) {
         <code>HTTP {problem.status}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/hall-demo">Open the Hall demo</RouteAction>
-        <TextAction href="/terminal/alloys/storm">Inspect the labelled fixture</TextAction>
+        <RouteAction href="/app/hall">Open the Hall demonstration</RouteAction>
+        <TextAction href="/app/alloys/storm">Inspect Alloy No. 1</TextAction>
       </div>
     </section>
   );
@@ -77,8 +78,8 @@ function EmptyHall({ meta }: { meta: Meta }) {
         <code>{meta.completeness}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/hall-demo">Found a devnet Alloy</RouteAction>
-        <TextAction href="/terminal/alloys/storm">Inspect the labelled fixture</TextAction>
+        <RouteAction href="/app/hall">Found a devnet Alloy</RouteAction>
+        <TextAction href="/app/alloys/storm">Inspect Alloy No. 1</TextAction>
       </div>
     </section>
   );
@@ -88,18 +89,10 @@ export function AlloyRegister() {
   const { value, problem, loading } = useTerminalResource<AlloyRegisterResponse>("/api/terminal/alloys");
 
   return (
-    <TerminalFrame current="alloys">
-      <section className={styles.alloyDeskHero}>
-        <div>
-          <span>Live Hall accounts</span>
-          <h1>Hall register</h1>
-        </div>
-        <p>Open an Alloy exactly as the Hall holds it. Supply, constituent ledgers and held-back delivery remain attached to the account.</p>
-        <div className={styles.alloyDeskIndex} aria-hidden="true">
-          <span>A</span>
-          <b>{value?.data.length.toString().padStart(2, "0") ?? "--"}</b>
-        </div>
-      </section>
+    <>
+      <PageHeader group="Hall" title="Alloys" network="Devnet" sentence="Every Alloy account the Hall holds, read live, with its supply and any leg held back.">
+        <TextAction href="/app/alloys/storm">Inspect Alloy No. 1</TextAction>
+      </PageHeader>
 
       {loading ? <AlloyLoading /> : null}
       {problem ? <AlloyBoundary problem={problem} /> : null}
@@ -134,7 +127,7 @@ export function AlloyRegister() {
                       <td>{formatAmount(alloy.supply, 0)} shares</td>
                       <td>{alloy.legs.length} recorded</td>
                       <td>{held === 0 ? "Every leg available" : `${held} held as a Claim`}</td>
-                      <td><Link href={`/terminal/alloys/${encodeURIComponent(alloy.address)}`}>Open Alloy</Link></td>
+                      <td><Link href={`/app/alloys/${encodeURIComponent(alloy.address)}`}>Open Alloy</Link></td>
                     </tr>
                   );
                 })}
@@ -143,7 +136,7 @@ export function AlloyRegister() {
           </div>
         </section>
       ) : null}
-    </TerminalFrame>
+    </>
   );
 }
 
@@ -159,8 +152,8 @@ export function AlloyRecord({ address }: { address: string }) {
   const meta = value?.alloy.meta;
 
   return (
-    <TerminalFrame current="alloys">
-      <div className={styles.backLink}><TextAction href="/terminal/alloys">Return to Hall register</TextAction></div>
+    <>
+      <div className={styles.backLink}><TextAction href="/app/alloys">Return to Alloys</TextAction></div>
       {loading ? <AlloyLoading record /> : null}
       {problem ? <AlloyBoundary problem={problem} /> : null}
       {value && alloy && meta ? (
@@ -280,12 +273,12 @@ export function AlloyRecord({ address }: { address: string }) {
               <span>Execution boundary</span>
               <h2 id="execution-heading">Strike</h2>
               <p>The Terminal can inspect the Hall and calculate stated terms. It has no connected transaction plan yet.</p>
-              <TextAction href="/hall-demo">Run the devnet demonstration</TextAction>
+              <TextAction href="/app/hall">Run the devnet demonstration</TextAction>
             </div>
             <Key disabled disabledReason="Execution is not connected to this record.">Prepare Strike</Key>
           </section>
         </>
       ) : null}
-    </TerminalFrame>
+    </>
   );
 }

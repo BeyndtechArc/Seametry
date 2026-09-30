@@ -178,8 +178,9 @@ Explorer implements both:
 - **Typefaces.** Sentient for figures and titles, Switzer for interface,
   Fragment Mono for digests and nothing else. All three self hosted, never
   subset or format converted, per the licence's own terms.
-- **Default theme.** Dark is the default and the brand. Light is the
-  certificate. Both are complete, and no component may exist in only one.
+- **Default theme.** Light is the default, by Storm's decision on 30
+  September 2026, replacing dark. Dark stays the touchstone, one choice
+  away. Both are complete, and no component may exist in only one.
 
 Every colour, size, radius and duration on the page comes from
 `clients/packages/ui/src/generated/tokens.css`, generated from the design system's

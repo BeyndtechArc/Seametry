@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { AlloyRecord } from "../../alloy-workbench";
+import { AlloyRecord } from "../../_desk/alloy-workbench";
 
 export const metadata: Metadata = {
-  title: "Alloy record | Seametry Terminal",
+  title: "Alloy record | Seametry",
   description: "Live Hall ledger and stated Strike and Melt terms for one Alloy.",
 };
 
