@@ -3,16 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { RouteAction } from "@seametry/ui";
-import { Icon, type IconName } from "@seametry/ui/icons";
 import { ThemeControl } from "@seametry/ui/theme-control";
 import { BrandMark } from "../../brand-mark";
 import styles from "./house-rail.module.css";
 
 export type PublicDestination = "home" | "how" | "key" | "sign-in";
 
-const primaryLinks: Array<{ id: PublicDestination; label: string; href: string; icon: IconName }> = [
-  { id: "how", label: "How it works", href: "/how-it-works", icon: "read" },
-  { id: "key", label: "The Key", href: "/the-key", icon: "key" },
+const primaryLinks: Array<{ id: PublicDestination; label: string; href: string }> = [
+  { id: "home", label: "Home", href: "/" },
+  { id: "how", label: "How it works", href: "/how-it-works" },
+  { id: "key", label: "The Key", href: "/the-key" },
 ];
 
 export function HouseRail({ current }: { current?: PublicDestination }) {
@@ -32,7 +32,6 @@ export function HouseRail({ current }: { current?: PublicDestination }) {
         <nav className={styles.primaryNav} aria-label="Primary">
           {primaryLinks.map((link) => (
             <Link key={link.id} href={link.href} aria-current={current === link.id ? "page" : undefined}>
-              <span className={styles.navIcon}><Icon name={link.icon} /></span>
               <span>{link.label}</span>
             </Link>
           ))}

@@ -16,9 +16,7 @@
   gap: var(--sm-space-2);
   min-height: var(--sm-size-target);
   padding: 0 var(--sm-space-4) 0 0;
-  border: 0;
-  border-top: 0.5px solid var(--sm-line-rule);
-  border-bottom: 0.5px solid var(--sm-line-rule);
+  border: 1px solid var(--sm-line-strong);
   border-radius: var(--sm-radius-data);
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);

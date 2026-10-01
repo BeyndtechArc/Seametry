@@ -125,21 +125,6 @@
     background: var(--sm-surface-sheet);
   }
 
-  .sidebar::before {
-    content: "◇  ─  ◇  ─  ◇  ─  ◇";
-    position: absolute;
-    top: var(--sm-space-12);
-    right: var(--sm-space-4);
-    left: var(--sm-space-4);
-    overflow: hidden;
-    color: var(--sm-text-faint);
-    font-family: var(--sm-font-family-digest);
-    font-size: var(--sm-font-size-micro);
-    line-height: var(--sm-space-7);
-    opacity: 0.34;
-    pointer-events: none;
-  }
-
   .group {
     display: grid;
     gap: var(--sm-space-1);
@@ -198,7 +183,6 @@
   .reading {
     display: grid;
     margin-top: auto;
-    margin-bottom: calc(var(--sm-space-13) * 1.15);
     padding-top: var(--sm-space-4);
     border-top: 0.5px solid var(--sm-line-rule);
   }
@@ -241,20 +225,19 @@
   }
 
   .hallPilaster {
-    position: absolute;
-    right: calc(var(--sm-space-5) * -1);
-    bottom: calc(var(--sm-space-12) * -1);
-    left: calc(var(--sm-space-5) * -1);
-    height: calc(var(--sm-space-13) * 2.2);
+    position: relative;
+    flex: 0 0 calc(var(--sm-space-13) * 0.82);
+    height: calc(var(--sm-space-13) * 0.82);
+    margin: 0 calc(var(--sm-space-5) * -1) calc(var(--sm-space-5) * -1);
     background: var(--sm-text-faint);
-    -webkit-mask: url("/hall-pilaster.svg") center bottom / contain no-repeat;
-    mask: url("/hall-pilaster.svg") center bottom / contain no-repeat;
-    opacity: 0.42;
+    -webkit-mask: url("/hall-pilaster.svg") center top / auto calc(var(--sm-space-13) * 1.4) no-repeat;
+    mask: url("/hall-pilaster.svg") center top / auto calc(var(--sm-space-13) * 1.4) no-repeat;
+    opacity: 0.16;
     pointer-events: none;
   }
 
   :global(html[data-theme="dark"]) .hallPilaster {
-    opacity: 0.3;
+    opacity: 0.12;
   }
 
   .tabBar {

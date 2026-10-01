@@ -53,9 +53,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <b>{place.group === "Desk" ? place.label : place.group}</b>
               </p>
             ) : null}
-            <div className={styles.tools}>
-              <WalletState />
+            <div className={styles.tools} data-testid="app-header-tools">
               <ThemeControl />
+              <WalletState />
             </div>
           </div>
         </header>

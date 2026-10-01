@@ -63,6 +63,7 @@ test("the public rail carries reading pages and one way into the app", async ({ 
   await page.goto("/");
 
   const navigation = page.getByRole("navigation", { name: "Primary" });
+  await expect(navigation.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
   await expect(navigation.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "/how-it-works");
   await expect(navigation.getByRole("link", { name: "The Key" })).toHaveAttribute("href", "/the-key");
   for (const product of ["Hall demo", "Allocation", "Terminal"]) {
@@ -112,7 +113,41 @@ test("the Open AP field keeps its inset and the app shell ends on a cropped Hall
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app");
-  await expect(page.getByTestId("hall-pilaster")).toBeAttached();
+  const pilaster = page.getByTestId("hall-pilaster");
+  const reading = page.getByRole("navigation", { name: "Reading" });
+  await expect(pilaster).toBeAttached();
+  const shellGeometry = await page.evaluate(() => {
+    const decoration = document.querySelector<HTMLElement>("[data-testid='hall-pilaster']");
+    const readingNav = document.querySelector<HTMLElement>("nav[aria-label='Reading']");
+    if (!decoration || !readingNav) return null;
+    const decorationBox = decoration.getBoundingClientRect();
+    const readingBox = readingNav.getBoundingClientRect();
+    return {
+      decorationTop: decorationBox.top,
+      readingBottom: readingBox.bottom,
+      opacity: Number(getComputedStyle(decoration).opacity),
+    };
+  });
+  expect(shellGeometry).not.toBeNull();
+  expect(shellGeometry!.readingBottom).toBeLessThanOrEqual(shellGeometry!.decorationTop);
+  expect(shellGeometry!.opacity).toBeLessThanOrEqual(0.18);
+  await expect(reading).toBeVisible();
+});
+
+test("the wallet is the outlined final control in the app header", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/app");
+
+  const tools = page.getByTestId("app-header-tools");
+  const wallet = tools.locator("summary", { hasText: "Connect wallet" });
+  await expect(wallet).toBeVisible();
+  expect(await tools.locator(":scope > *").count()).toBe(2);
+  expect(await tools.locator(":scope > *").last().locator("summary").count()).toBe(1);
+  const outline = await wallet.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return [style.borderTopWidth, style.borderRightWidth, style.borderBottomWidth, style.borderLeftWidth];
+  });
+  expect(outline).toEqual(["1px", "1px", "1px", "1px"]);
 });
 
 test("the Hall demonstration lives in the app, marked devnet", async ({ page }) => {
