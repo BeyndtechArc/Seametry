@@ -4,7 +4,7 @@
  * is generated from the design system's source and never hand edited. A raw
  * colour, font family or dash fails design-lint.
  *
- * Dark is the default and the brand; light is the certificate. Both come from
+ * Light is the default certificate; dark is the touchstone. Both come from
  * the generated file, so this stylesheet never states a colour at all.
  */
 
@@ -115,31 +115,51 @@ body::before {
 
 /* Header */
 header.top {
-  display: flex;
+  position: sticky;
+  top: var(--sm-space-3);
+  z-index: 4;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--sm-space-5);
-  padding-bottom: var(--sm-space-5);
+  gap: var(--sm-space-6);
+  min-height: var(--sm-space-11);
+  padding: var(--sm-space-3) var(--sm-space-4);
   border-bottom: .5px solid var(--sm-line-rule);
-  flex-wrap: wrap;
+  background: var(--sm-surface-ground);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-3)) 0, 100% var(--sm-space-3), 100% 100%, var(--sm-space-3) 100%, 0 calc(100% - var(--sm-space-3)));
 }
 .word {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+  min-height: var(--sm-size-target);
   font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title);
-  font-weight: var(--sm-font-weight-regular);
-  letter-spacing: var(--sm-font-tracking-title);
   color: var(--sm-text-primary);
   text-decoration: none;
-  margin-right: auto;
 }
-.word span {
+.house-mark {
+  width: var(--sm-space-8);
+  height: var(--sm-space-6);
+  object-fit: contain;
+}
+.word-lockup {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sm-space-3);
+}
+.word-lockup strong {
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+.word-lockup small {
   color: var(--sm-text-tertiary);
   font-family: var(--sm-font-family-ui);
   font-size: var(--sm-font-size-small);
   font-weight: var(--sm-font-weight-medium);
-  margin-left: var(--sm-space-4);
 }
-nav { display: flex; gap: var(--sm-space-1); flex-wrap: wrap; align-items: center }
-nav .devnet { margin-left: var(--sm-space-4) }
+nav { display: flex; justify-content: flex-end; gap: var(--sm-space-1); flex-wrap: wrap; align-items: center }
+nav .devnet { margin-left: var(--sm-space-3) }
 nav a {
   color: var(--sm-text-secondary);
   text-decoration: none;
@@ -150,6 +170,29 @@ nav a {
 }
 nav a:hover { color: var(--sm-text-primary); background: var(--sm-surface-sheet) }
 nav a[aria-current="page"] { color: var(--sm-text-primary); background: var(--sm-surface-sheet) }
+
+.mode {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: var(--sm-size-target);
+  height: var(--sm-size-target);
+  color: var(--sm-accent-touchText);
+  background: var(--sm-surface-sheet);
+  cursor: pointer;
+}
+.mode svg {
+  width: var(--sm-space-6);
+  height: var(--sm-space-6);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+:root[data-theme="light"] .mode .moon { display: none }
+:root[data-theme="dark"] .mode .sun { display: none }
 
 /* Where this runs. Shrunk from a paragraph to one word, never removed:
  * EXPLORER.md section 4 lets an operational fact shrink, never disappear.
@@ -635,6 +678,50 @@ footer {
   font-size: var(--sm-font-size-small);
 }
 footer p { color: var(--sm-text-tertiary); max-width: var(--sm-size-readable) }
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sm-space-2);
+  margin-top: var(--sm-space-7);
+  padding-top: var(--sm-space-4);
+  border-top: .5px solid var(--sm-line-rule);
+}
+.pagination a,
+.pagination span {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--sm-size-target);
+  min-height: var(--sm-size-target);
+  padding: 0 var(--sm-space-3);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  text-decoration: none;
+}
+.pagination a {
+  color: var(--sm-accent-touchText);
+  background: var(--sm-surface-sheet);
+}
+.pagination a[aria-current="page"] {
+  color: var(--sm-text-onTouch);
+  background: var(--sm-accent-touch);
+}
+
+@media (max-width: 760px) {
+  header.top {
+    grid-template-columns: 1fr auto;
+    gap: var(--sm-space-2) var(--sm-space-3);
+  }
+  header.top nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+    border-top: .5px solid var(--sm-line-rule);
+  }
+  .word-lockup small { display: none }
+  .pagination { justify-content: flex-start; overflow-x: auto }
+}
 
 .limits {
   margin-top: var(--sm-space-5);

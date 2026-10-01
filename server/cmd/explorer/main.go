@@ -154,26 +154,28 @@ func venueList(hops []liquidity.Hop) string {
 }
 
 type survey struct {
-	CapturedAt            time.Time `json:"captured_at"`
-	Slot                  uint64    `json:"slot"`
-	MintsDecoded          int       `json:"mints_decoded"`
-	WithScaledUIAmount    int       `json:"with_scaled_ui_amount"`
-	StaleMultiplier       int       `json:"stale_multiplier_field"`
-	PendingActivation     int       `json:"activation_scheduled_not_yet_effective"`
-	HaltedByIssuer        int       `json:"halted_by_issuer"`
-	WithPermanentDelegate int       `json:"with_permanent_delegate"`
-	WithFreezeAuthority   int       `json:"with_freeze_authority"`
-	WithDisabledHook      int       `json:"with_transfer_hook_initialized_disabled"`
-	WithActiveHook        int       `json:"with_transfer_hook_active"`
-	DecodeFailures        []string  `json:"decode_failures"`
-	Stale                 []struct {
-		Symbol      string `json:"symbol"`
-		Underlying  string `json:"underlying"`
-		Mint        string `json:"mint"`
-		NaiveValue  string `json:"naive_value"`
-		LiveValue   string `json:"live_value"`
-		EffectiveAt string `json:"effective_at"`
-	} `json:"stale"`
+	CapturedAt            time.Time        `json:"captured_at"`
+	Slot                  uint64           `json:"slot"`
+	MintsDecoded          int              `json:"mints_decoded"`
+	WithScaledUIAmount    int              `json:"with_scaled_ui_amount"`
+	StaleMultiplier       int              `json:"stale_multiplier_field"`
+	PendingActivation     int              `json:"activation_scheduled_not_yet_effective"`
+	HaltedByIssuer        int              `json:"halted_by_issuer"`
+	WithPermanentDelegate int              `json:"with_permanent_delegate"`
+	WithFreezeAuthority   int              `json:"with_freeze_authority"`
+	WithDisabledHook      int              `json:"with_transfer_hook_initialized_disabled"`
+	WithActiveHook        int              `json:"with_transfer_hook_active"`
+	DecodeFailures        []string         `json:"decode_failures"`
+	Stale                 []staleSurveyRow `json:"stale"`
+}
+
+type staleSurveyRow struct {
+	Symbol      string `json:"symbol"`
+	Underlying  string `json:"underlying"`
+	Mint        string `json:"mint"`
+	NaiveValue  string `json:"naive_value"`
+	LiveValue   string `json:"live_value"`
+	EffectiveAt string `json:"effective_at"`
 }
 
 type page struct {
@@ -199,7 +201,19 @@ type page struct {
 	ReferenceUSDC int64
 	Lot           *Lot
 	LotReasons    []policy.Reason
+	StaleRows     []staleSurveyRow
+	EvidenceLinks []evidenceLink
+	EvidencePage  int
+	EvidencePages int
 }
+
+type evidenceLink struct {
+	Label   int
+	Href    string
+	Current bool
+}
+
+const evidenceRowsPerPage = 40
 
 type splitRow struct {
 	Symbol, Naive, Live, Since string
@@ -267,7 +281,6 @@ func main() {
 	pages := []struct{ file, tmpl, title, nav string }{
 		{"index.html", "verify.html", "Verify a hallmark", "verify"},
 		{"catalogue.html", "catalogue.html", "Catalogue", "catalogue"},
-		{"evidence.html", "evidence.html", "Evidence", "evidence"},
 		{"hall.html", "hall.html", "The Hall", "hall"},
 	}
 	for _, p := range pages {
@@ -283,6 +296,9 @@ func main() {
 		}
 		file.Close()
 		fmt.Printf("  %s\n", filepath.Join(*out, p.file))
+	}
+	if n := writeEvidencePages(*out, tmpl, base); n > 0 {
+		fmt.Printf("  %d evidence pages\n", n)
 	}
 
 	if n := writeHallmarkPages(*out, tmpl, base, batch.Proofs); n > 0 {
@@ -304,6 +320,7 @@ func main() {
 	copyFile(filepath.Join("clients", "packages", "ui", "src", "generated", "tokens.css"), filepath.Join(*out, "tokens.css"))
 	copyFile(filepath.Join("clients", "web", "public", "logo.svg"), filepath.Join(*out, "seametry-mark.svg"))
 	copyEmbedded(*out, "assets/explorer.css", "explorer.css")
+	copyEmbedded(*out, "assets/theme.js", "theme.js")
 	copyEmbedded(*out, "assets/verify.js", "verify.js")
 	// The sealed batch travels as its own script rather than inline, so the
 	// content security policy can refuse inline script entirely.
@@ -323,6 +340,56 @@ func main() {
 	if *addr != "" {
 		serve(*out, *addr)
 	}
+}
+
+func evidenceFile(n int) string {
+	if n == 1 {
+		return "evidence.html"
+	}
+	return fmt.Sprintf("evidence-%d.html", n)
+}
+
+func writeEvidencePages(out string, tmpl *template.Template, base page) int {
+	count := 0
+	if base.Survey != nil {
+		count = len(base.Survey.Stale)
+	}
+	pageCount := (count + evidenceRowsPerPage - 1) / evidenceRowsPerPage
+	if pageCount == 0 {
+		pageCount = 1
+	}
+
+	for pageNumber := 1; pageNumber <= pageCount; pageNumber++ {
+		data := base
+		data.Title = "Evidence"
+		data.Nav = "evidence"
+		data.EvidencePage = pageNumber
+		data.EvidencePages = pageCount
+		if base.Survey != nil {
+			start := (pageNumber - 1) * evidenceRowsPerPage
+			end := start + evidenceRowsPerPage
+			if end > count {
+				end = count
+			}
+			data.StaleRows = base.Survey.Stale[start:end]
+		}
+		for i := 1; i <= pageCount; i++ {
+			data.EvidenceLinks = append(data.EvidenceLinks, evidenceLink{
+				Label: i, Href: evidenceFile(i), Current: i == pageNumber,
+			})
+		}
+
+		file, err := os.Create(filepath.Join(out, evidenceFile(pageNumber)))
+		if err != nil {
+			fail(err)
+		}
+		if err := tmpl.ExecuteTemplate(file, "evidence.html", data); err != nil {
+			file.Close()
+			fail(err)
+		}
+		file.Close()
+	}
+	return pageCount
 }
 
 func loadTemplates() *template.Template {

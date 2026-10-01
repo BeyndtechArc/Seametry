@@ -1,7 +1,7 @@
 {{define "evidence.html"}}{{template "head" .}}
 
-  <h1>What 1026 tokenized equities carry.</h1>
   {{if .Survey}}
+  <h1>{{.Survey.MintsDecoded}} tokenized equities, decoded.</h1>
   <p class="lede">Every instrument its issuer publishes, decoded from mainnet at slot <span class="num">{{.Survey.Slot}}</span>. Reproduce it yourself with <code>go run ./server/cmd/survey</code>, no credentials required.</p>
 
   <h2>Issuer powers</h2>
@@ -43,7 +43,7 @@
   <table>
     <thead><tr><th>Instrument</th><th>Underlying</th><th>Field says</th><th>Live value</th><th>Since</th></tr></thead>
     <tbody>
-    {{range .Survey.Stale}}<tr>
+    {{range .StaleRows}}<tr>
       <td><strong>{{.Symbol}}</strong></td>
       <td>{{.Underlying}}</td>
       <td class="mono">{{trunc 20 .NaiveValue}}</td>
@@ -53,6 +53,14 @@
     </tbody>
   </table>
   </div>
+
+  {{if gt .EvidencePages 1}}
+  <nav class="pagination" aria-label="Evidence pages">
+    {{range .EvidenceLinks}}
+      {{if .Current}}<a href="{{.Href}}" aria-current="page">{{.Label}}</a>{{else}}<a href="{{.Href}}">{{.Label}}</a>{{end}}
+    {{end}}
+  </nav>
+  {{end}}
 
   <div class="limits">
     <h3>What this does not establish</h3>
@@ -64,6 +72,7 @@
     </ul>
   </div>
   {{else}}
+  <h1>Evidence.</h1>
   <div class="card"><p>No survey yet. Run <code>go run ./server/cmd/survey</code>.</p></div>
   {{end}}
 

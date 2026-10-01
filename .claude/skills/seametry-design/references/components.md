@@ -195,6 +195,13 @@ Top of every constituent and alloy page. Lot number; name in display serif; tick
 Columns: Lot, Name, Grade, Condition summary, Evidence, Stamp. Sortable. Rows are data: radius 0, rules between, no zebra fills heavier than one tone.
 Directly inspired by Infisical's certificate table, carrying our data.
 
+### Pagination
+**Answers:** which part of a long published register am I reading, and where can I continue?
+**Anatomy:** previous page when one exists; numbered page links; next page when one exists; current page stated with `aria-current`.
+**States:** first page; middle page; last page; one page, in which case the component is absent.
+**Data:** total rows, rows per generated page, current page and stable page URLs.
+**Rules:** use only when the register outgrows one useful reading surface. Every page remains a complete static document and every row remains reachable without JavaScript. Pagination never replaces a filter when the user's question is categorical.
+
 ### Assay matrix
 **Answers:** how did each source's view of this instrument change over time?
 Sources as rows, time as columns, cells as evidence states; divergence marked in `accent.provenance`. Scrub reveals exact values.

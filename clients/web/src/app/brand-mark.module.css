@@ -15,8 +15,8 @@
 }
 
 .brand svg {
-  width: var(--sm-space-6);
-  height: var(--sm-space-7);
+  width: var(--sm-space-8);
+  height: var(--sm-space-6);
   fill: var(--sm-accent-touch);
 }
 

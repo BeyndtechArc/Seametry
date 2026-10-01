@@ -75,6 +75,15 @@ test("the public rail carries reading pages and one way into the app", async ({ 
   await expect(page.getByRole("button", { name: "Use dark mode" })).toBeVisible();
 });
 
+test("every shell uses the registered three-part house mark", async ({ page }) => {
+  for (const path of ["/", "/app"] as const) {
+    await page.goto(path);
+    const mark = page.getByRole("link", { name: "Seametry", exact: true }).locator("svg");
+    await expect(mark).toHaveAttribute("viewBox", "0 0 314 235");
+    await expect(mark.locator("path")).toHaveCount(3);
+  }
+});
+
 test("desktop rails share the page content edge", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");

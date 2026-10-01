@@ -48,7 +48,7 @@
 
 {{define "hall.html"}}{{template "head" .}}
 
-  <h1>The Hall, run against an issuer that uses every power it has.</h1>
+  <h1>The Hall under issuer pressure.</h1>
   {{if .Demo}}
   <div class="chips">
     <p>Two runs of the same eight scenarios</p>
@@ -59,7 +59,7 @@
 
   {{with .Devnet}}
   <h2 id="devnet">Run on devnet</h2>
-  <p>Real transactions on a public test cluster. The tokens are mock stocks made for this run, so nothing here says anything about a real issuer's behaviour, only about what the program does when the powers are used.</p>
+  <p>Public devnet transactions against mock issuers. This records the program, not a real issuer's behaviour.</p>
   {{template "run" .}}
   {{end}}
 

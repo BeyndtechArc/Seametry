@@ -8,13 +8,22 @@ import (
 	"testing"
 )
 
-func TestLayoutIncludesHouseIcon(t *testing.T) {
+func TestLayoutIncludesHouseMarkAndModeControl(t *testing.T) {
 	data, err := templates.ReadFile("templates/layout.html")
 	if err != nil {
 		t.Fatalf("read layout template: %v", err)
 	}
 	if !bytes.Contains(data, []byte(`<link rel="icon" href="seametry-mark.svg" type="image/svg+xml">`)) {
 		t.Fatal("Explorer layout does not load the supplied house mark as its favicon")
+	}
+	for _, want := range [][]byte{
+		[]byte(`<img class="house-mark" src="seametry-mark.svg" alt="">`),
+		[]byte(`aria-label="Use dark mode"`),
+		[]byte(`<script src="theme.js"></script>`),
+	} {
+		if !bytes.Contains(data, want) {
+			t.Errorf("Explorer layout is missing %q", want)
+		}
 	}
 }
 
