@@ -1,21 +1,21 @@
-# Local development, and the shape Fly and later Oracle run
-# (docs/prd/API.md section 11). SEAMETRY_DATABASE_URL is the admin
-# connection `seametry migrate` needs; it is never committed with a real
-# password, only this local, throwaway one.
+# One process and one Postgres database, as owned by docs/SERVICE_CATALOG.md
+# section 4. Postgres and the Go process stay on Docker's private network.
+# Caddy is the only public edge and obtains TLS for SEAMETRY_API_ORIGIN.
+
+name: seametry
 
 services:
   postgres:
     image: postgres:18
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${SEAMETRY_POSTGRES_PASSWORD:?set SEAMETRY_POSTGRES_PASSWORD in server/deploy/.env}
       POSTGRES_DB: seametry
-    ports:
-      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d seametry"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -28,10 +28,11 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      SEAMETRY_DATABASE_URL: postgres://postgres:postgres@postgres:5432/seametry?sslmode=disable
+      SEAMETRY_DATABASE_URL: postgres://postgres:${SEAMETRY_POSTGRES_PASSWORD}@postgres:5432/seametry?sslmode=disable
     command: ["migrate"]
 
-  seametry:
+  replay:
+    profiles: [demo]
     build:
       context: ../..
       dockerfile: server/deploy/Dockerfile
@@ -41,9 +42,64 @@ services:
       migrate:
         condition: service_completed_successfully
     environment:
+      SEAMETRY_DATABASE_URL: postgres://postgres:${SEAMETRY_POSTGRES_PASSWORD}@postgres:5432/seametry?sslmode=disable
+      SEAMETRY_OBJECT_STORE_DIR: /var/lib/seametry/objects
+    command: ["replay"]
+    volumes:
+      - object-data:/var/lib/seametry/objects
+
+  record-demo-batch:
+    profiles: [demo]
+    build:
+      context: ../..
+      dockerfile: server/deploy/Dockerfile
+    depends_on:
+      replay:
+        condition: service_completed_successfully
+    environment:
+      SEAMETRY_DATABASE_URL: postgres://postgres:${SEAMETRY_POSTGRES_PASSWORD}@postgres:5432/seametry?sslmode=disable
+    command: ["record-demo-batch"]
+
+  seametry:
+    build:
+      context: ../..
+      dockerfile: server/deploy/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
       PORT: "8080"
+      SEAMETRY_DATABASE_URL: postgres://postgres:${SEAMETRY_POSTGRES_PASSWORD}@postgres:5432/seametry?sslmode=disable
+      SEAMETRY_OBJECT_STORE_DIR: /var/lib/seametry/objects
+      SEAMETRY_HALL_DEVNET_RPC_URL: ${SEAMETRY_HALL_DEVNET_RPC_URL:-https://api.devnet.solana.com}
+      HELIUS_RPC_URL: ${HELIUS_RPC_URL:-}
+      JUP_KEY: ${JUP_KEY:-}
+    expose:
+      - "8080"
+    volumes:
+      - object-data:/var/lib/seametry/objects
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - seametry
+    environment:
+      SEAMETRY_API_ORIGIN: ${SEAMETRY_API_ORIGIN:-http://localhost}
     ports:
-      - "8080:8080"
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
 
 volumes:
   postgres-data:
+  object-data:
+  caddy-data:
+  caddy-config:

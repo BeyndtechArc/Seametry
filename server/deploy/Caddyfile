@@ -1,0 +1,17 @@
+{$SEAMETRY_API_ORIGIN:http://localhost} {
+	encode zstd gzip
+
+	header {
+		-Server
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+	}
+
+	reverse_proxy seametry:8080
+
+	log {
+		output stdout
+		format json
+	}
+}

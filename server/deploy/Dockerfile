@@ -13,5 +13,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/seametr
 FROM gcr.io/distroless/static-debian12
 COPY --from=build /out/seametry /seametry
 COPY shared/evidence/hall-demo /shared/evidence/hall-demo
+COPY shared/evidence/depth-2026-09-24.json /shared/evidence/depth-2026-09-24.json
+COPY shared/evidence/demo-batch /shared/evidence/demo-batch
+COPY shared/fixtures/mainnet /shared/fixtures/mainnet
+COPY shared/fixtures/jupiter /shared/fixtures/jupiter
 EXPOSE 8080
 ENTRYPOINT ["/seametry"]

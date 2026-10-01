@@ -35,12 +35,10 @@ import (
 // reads shared/ relative to it), or an absolute path in a test, whose
 // working directory go test sets to the package directory instead.
 //
-// This only runs from a full repository checkout, never inside the
-// deployed container: server/deploy/Dockerfile's build context is server/
-// alone, so the built image carries no shared/ directory to replay from.
-// Point SEAMETRY_DATABASE_URL at the target database and run this from a
-// checkout (a developer's machine or CI), the same way cmd/capture and
-// cmd/depth are already run, rather than from inside what serve deploys.
+// The deployment image carries the committed fixture and evidence paths, so
+// the compose demo profile can run this command against a fresh database.
+// New captures still require a full repository checkout, the same way
+// cmd/capture and cmd/depth are run before their output is committed.
 func replay(root string) error {
 	dsn := os.Getenv("SEAMETRY_DATABASE_URL")
 	if dsn == "" {
