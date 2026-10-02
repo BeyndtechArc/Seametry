@@ -72,6 +72,19 @@
   font-feature-settings: "liga" 0, "calt" 0;
 }
 
+.hall-demo .record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-3) var(--sm-space-6);
+  margin-top: var(--sm-space-4);
+}
+
+.hall-demo .record-actions > a {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
 .hall-demo code {
   font-family: var(--sm-font-family-digest);
   font-variant-ligatures: none;

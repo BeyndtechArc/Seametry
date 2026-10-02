@@ -23,6 +23,7 @@ import {
 } from "@seametry/ui";
 import { ThemeControl } from "@seametry/ui/theme-control";
 import { relativeEvidenceAge, stormFixture } from "@/lib/storm-fixture";
+import { ModalSheetSpecimen } from "./modal-sheet-specimen";
 import styles from "./patterns.module.css";
 
 export const metadata: Metadata = {
@@ -226,6 +227,10 @@ export default async function PatternRegisterPage() {
                 message="Use Crockford characters without punctuation."
               />
             </div>
+          </Specimen>
+
+          <Specimen name="Modal sheet" question="Which focused review can I inspect without losing the page that produced it?">
+            <ModalSheetSpecimen />
           </Specimen>
         </div>
       </section>

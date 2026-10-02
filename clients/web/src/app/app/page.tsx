@@ -9,7 +9,7 @@ import styles from "./desk.module.css";
 
 export const metadata: Metadata = {
   title: "Desk | Seametry",
-  description: "Alloy No. 1, the Allocation, the Hall demonstration and the instrument assay, each with the evidence behind it.",
+  description: "Alloy No. 1, direct basket building, the Hall demonstration and instrument evidence.",
 };
 
 export default async function DeskPage() {
@@ -41,7 +41,7 @@ export default async function DeskPage() {
 
         <section className={`${styles.tile} ${styles.inverse}`} aria-labelledby="allocation-tile">
           <header>
-            <h2 id="allocation-tile">Allocation</h2>
+            <h2 id="allocation-tile">Build a basket</h2>
             <NetworkBadge network="Mainnet" />
           </header>
           <Figure
@@ -53,6 +53,7 @@ export default async function DeskPage() {
             age={snapshotAge}
             observedAt={admissions.as_of}
           />
+          <p>Allocation means direct ownership: each constituent settles into your wallet, with no pooled share between you and the assets.</p>
           <TextAction href="/app/allocation">Buy into your wallet</TextAction>
         </section>
 

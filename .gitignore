@@ -8,6 +8,11 @@ dist
 *.log
 *.tsbuildinfo
 
+# Private SSH keys downloaded for OCI instance access.
+*.key
+*.pem
+*.pub
+
 # Go
 /seametry
 /seametry.exe

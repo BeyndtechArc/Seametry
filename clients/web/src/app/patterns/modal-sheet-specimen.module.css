@@ -1,0 +1,36 @@
+.fixture {
+  display: grid;
+  gap: var(--sm-space-7);
+}
+
+.fixture > p {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-l);
+}
+
+.fixture dl {
+  display: grid;
+  margin: 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.fixture dl > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-4) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.fixture dt,
+.fixture small {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.fixture dd {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}

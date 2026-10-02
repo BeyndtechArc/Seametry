@@ -59,6 +59,48 @@ test("the wallet state lives in the app's top bar, and connecting signs nothing"
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toBeVisible();
 });
 
+test("the Allocation explains direct ownership before introducing its execution terms", async ({ page }) => {
+  await page.goto("/app/allocation");
+
+  await expect(page.getByRole("heading", { level: 1, name: "Build a basket" })).toBeVisible();
+  await expect(page.getByText("Each token settles directly into your wallet; nothing is pooled and no basket token is issued.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Choose the constituents" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Set the basket amount" })).toBeVisible();
+});
+
+test("the Allocation keeps the plan beside the work and hides deployment plumbing", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/app/allocation");
+
+  const amount = page.getByRole("heading", { level: 2, name: "Set the basket amount" });
+  const constituents = page.getByRole("heading", { level: 2, name: "Choose the constituents" });
+  expect(
+    await amount.evaluate((amountHeading, constituentHeading) =>
+      Boolean(amountHeading.compareDocumentPosition(constituentHeading as Node) & Node.DOCUMENT_POSITION_FOLLOWING),
+      await constituents.elementHandle(),
+    ),
+  ).toBe(true);
+
+  const sheet = page.getByRole("complementary", { name: "Order sheet" });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByText("Direct ownership", { exact: true })).toBeVisible();
+  await expect(sheet.getByText("One swap per constituent", { exact: true })).toBeVisible();
+  await expect(page.getByText(/JUPITER_API_KEY|MAINNET_RPC_URL|ALLOCATION_APPROVAL_SECRET|ALLOCATION_BLOCKED_COUNTRIES/)).toHaveCount(0);
+});
+
+test("the Allocation order sheet becomes an accessible mobile dialog", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 780 });
+  await page.goto("/app/allocation");
+
+  await expect(page.getByRole("complementary", { name: "Order sheet" })).toBeHidden();
+  await page.getByRole("button", { name: "Review order sheet" }).click();
+  const dialog = page.getByRole("dialog", { name: "Order sheet" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText("Direct ownership", { exact: true })).toBeVisible();
+  await dialog.getByRole("button", { name: "Close order sheet" }).click();
+  await expect(dialog).toBeHidden();
+});
+
 test("the public rail carries reading pages and one way into the app", async ({ page }) => {
   await page.goto("/");
 
@@ -206,7 +248,7 @@ test("the app shell reserves icons for reading links and one global wallet contr
 test("the desk cards let their content lead without decorative icons", async ({ page }) => {
   await page.goto("/app");
 
-  for (const name of ["Alloy No. 1, STORM", "Allocation", "Demonstration", "Instruments"]) {
+  for (const name of ["Alloy No. 1, STORM", "Build a basket", "Demonstration", "Instruments"]) {
     const card = page.getByRole("heading", { level: 2, name }).locator("..");
     await expect(card.locator("svg")).toHaveCount(0);
   }

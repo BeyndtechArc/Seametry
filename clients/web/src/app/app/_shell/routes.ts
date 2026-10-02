@@ -10,7 +10,7 @@ const within = (href: string, except: string[] = []) => (pathname: string) =>
 
 export const appGroups: AppGroup[] = [
   { group: "Desk", routes: [{ label: "Overview", href: "/app", isActive: exactly("/app") }] },
-  { group: "Buy", routes: [{ label: "Allocation", href: "/app/allocation", isActive: within("/app/allocation") }] },
+  { group: "Buy", routes: [{ label: "Build a basket", href: "/app/allocation", isActive: within("/app/allocation") }] },
   {
     group: "Hall",
     routes: [

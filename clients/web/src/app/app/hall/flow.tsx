@@ -5,6 +5,7 @@ import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapte
 import { AnchorProvider, BN } from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { TextAction } from "@seametry/ui";
 import { fetchClaim, hallProgram } from "@/lib/hall/program";
 import { claimPda, hallTokenAccount, ownerTokenAccount } from "@/lib/hall/pda";
 import { decodeAlloy, requiredIn, type DecodedAlloy } from "@/lib/hall/decode";
@@ -279,6 +280,16 @@ export function HallDemoFlow() {
         <div className="card">
           <h3 className="lead">The alloy</h3>
           <p className="tight addr">{founded.alloy}</p>
+          <div className="record-actions">
+            <TextAction href={`/app/alloys/${encodeURIComponent(founded.alloy)}`}>Inspect this Alloy live</TextAction>
+            <a
+              href={`https://explorer.solana.com/address/${founded.alloy}?cluster=devnet`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open the account on Solana
+            </a>
+          </div>
           <dl className="row">
             <dt>Supply</dt>
             <dd className="n">{alloyState.supply.toString()}</dd>

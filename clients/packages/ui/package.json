@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/components.tsx",
     "./icons": "./src/icons.tsx",
+    "./modal-sheet": "./src/modal-sheet.tsx",
     "./theme-control": "./src/theme-control.tsx",
     "./tokens.css": "./src/generated/tokens.css",
     "./tokens": "./src/generated/tokens.ts"

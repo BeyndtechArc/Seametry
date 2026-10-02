@@ -1,7 +1,3 @@
-/* The Allocation page. Tokens only, mobile first: every row stacks by default
-   and widens only where the viewport allows. Long values (addresses,
-   signatures, exact multipliers) wrap rather than widen the page. */
-
 .page {
   position: relative;
   min-width: 0;
@@ -26,29 +22,39 @@
 .terms {
   max-width: var(--sm-size-readable);
   margin: 0;
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-small);
   padding: var(--sm-space-5);
   border-top: 0.5px solid var(--sm-line-rule);
   border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-tertiary);
   background: var(--sm-surface-sheet);
+  font-size: var(--sm-font-size-small);
 }
 
-/* Every grid here names a minmax(0, 1fr) track: an implicit auto track grows
-   to its widest unbreakable child (an exact multiplier is 54 digits), which
-   pushed each lot past a 360px viewport. */
 .flow,
+.builder,
 .section,
 .lot,
 .leg {
+  display: grid;
   grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
 }
 
 .flow {
-  display: grid;
   gap: var(--sm-space-8);
   margin-top: var(--sm-space-8);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(calc(var(--sm-space-13) * 2.35), calc(var(--sm-space-13) * 2.8));
+  align-items: start;
+  gap: var(--sm-space-10);
   min-width: 0;
+}
+
+.builder {
+  gap: var(--sm-space-10);
 }
 
 .unavailable {
@@ -73,9 +79,7 @@
 }
 
 .section {
-  display: grid;
   gap: var(--sm-space-4);
-  min-width: 0;
 }
 
 .section h2 {
@@ -85,21 +89,12 @@
   font-weight: var(--sm-font-weight-medium);
 }
 
-.walletLine,
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sm-space-3) var(--sm-space-4);
-}
-
-.walletLine code,
 .signature {
+  min-width: 0;
+  color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-small);
-  color: var(--sm-text-secondary);
   overflow-wrap: anywhere;
-  min-width: 0;
 }
 
 .quiet,
@@ -114,9 +109,9 @@
 }
 
 .provenance {
-  color: var(--sm-accent-provenance);
   padding-left: var(--sm-space-4);
   border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
+  color: var(--sm-accent-provenance);
 }
 
 .loading {
@@ -136,18 +131,22 @@
 
 .lot,
 .leg {
-  display: grid;
   gap: var(--sm-space-3);
   padding-top: var(--sm-space-4);
   border-top: 0.5px solid var(--sm-line-rule);
-  min-width: 0;
+}
+
+.lotRegister {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--sm-space-4);
 }
 
 .lotChoice {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--sm-space-2) var(--sm-space-3);
+  align-items: center;
+  gap: var(--sm-space-4);
   min-height: var(--sm-size-target);
   color: var(--sm-text-secondary);
   cursor: pointer;
@@ -156,7 +155,13 @@
 .lotChoice input {
   width: var(--sm-space-5);
   height: var(--sm-space-5);
+  margin: 0;
   accent-color: var(--sm-accent-touch);
+}
+
+.lotChoice span {
+  display: grid;
+  gap: var(--sm-space-1);
 }
 
 .lotChoice b {
@@ -164,10 +169,38 @@
   font-size: var(--sm-font-size-body);
 }
 
+.lotChoice small {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.lotMarks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  align-items: start;
+  gap: var(--sm-space-3);
+}
+
+.conditionDisclosure,
+.refused {
+  min-width: 0;
+}
+
+.conditionDisclosure summary,
 .refused summary {
+  width: fit-content;
   min-height: var(--sm-size-target);
+  display: flex;
+  align-items: center;
   color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
   cursor: pointer;
+}
+
+.conditionDisclosure[open] summary,
+.refused[open] summary {
+  color: var(--sm-text-primary);
 }
 
 .refused li {
@@ -188,10 +221,170 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-.tray {
-  padding-top: var(--sm-space-4);
-}
-
 .summary {
   color: var(--sm-text-primary);
+}
+
+.orderRail {
+  min-width: 0;
+}
+
+.orderRailInner {
+  position: sticky;
+  top: var(--sm-space-8);
+  padding: var(--sm-space-7);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  color: var(--sm-text-secondary);
+  background: var(--sm-surface-raised);
+  clip-path: polygon(var(--sm-space-5) 0, 100% 0, 100% 100%, 0 100%, 0 var(--sm-space-5));
+}
+
+.orderSummary {
+  display: grid;
+  gap: var(--sm-space-7);
+  min-width: 0;
+}
+
+.orderIdentity {
+  display: grid;
+  gap: var(--sm-space-3);
+  padding-bottom: var(--sm-space-6);
+  border-bottom: 0.5px solid var(--sm-line-strong);
+}
+
+.orderIdentity > span {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.orderIdentity strong {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-l);
+  font-weight: var(--sm-font-weight-light);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.orderIdentity p,
+.orderSelection p,
+.orderDestination p,
+.orderReadiness {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.55;
+}
+
+.orderFacts {
+  display: grid;
+  margin: 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.orderFacts > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-3) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.orderFacts dt,
+.orderSelection h3,
+.orderDestination h3 {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.orderFacts dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  overflow-wrap: anywhere;
+}
+
+.orderSelection,
+.orderDestination {
+  display: grid;
+  gap: var(--sm-space-3);
+}
+
+.orderSelection ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sm-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orderSelection li {
+  padding: var(--sm-space-2) var(--sm-space-3);
+  border-top: 0.5px solid var(--sm-line-strong);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-sheet);
+  font-size: var(--sm-font-size-small);
+}
+
+.orderDestination code {
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-small);
+  overflow-wrap: anywhere;
+}
+
+.orderReadiness {
+  padding-left: var(--sm-space-4);
+  border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
+}
+
+.orderKey {
+  padding-top: var(--sm-space-2);
+}
+
+.mobileOrderTrigger {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .orderRail {
+    display: none;
+  }
+
+  .mobileOrderTrigger {
+    position: sticky;
+    bottom: calc(var(--sm-space-13) - var(--sm-space-5));
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sm-space-4);
+    padding: var(--sm-space-3);
+    border-top: 0.5px solid var(--sm-line-highlight);
+    color: var(--sm-text-primary);
+    background: var(--sm-surface-raised);
+    clip-path: polygon(0 0, calc(100% - var(--sm-space-4)) 0, 100% var(--sm-space-4), 100% 100%, 0 100%);
+    font-size: var(--sm-font-size-small);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+}
+
+@media (max-width: 560px) {
+  .page::before {
+    opacity: 0.22;
+  }
+
+  .lotRegister {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lotMarks {
+    justify-content: start;
+  }
 }

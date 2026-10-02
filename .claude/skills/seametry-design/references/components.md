@@ -221,6 +221,14 @@ Serial field; public record; digest; commitment and leaf; Merkle path; root comp
 ### Order sheet (mobile)
 Amount, plan, Quote block, path, approval Key, expiry. Occludes the page behind; no shadow.
 
+### Modal sheet
+**Answers:** which focused task or summary can I inspect without losing the page that produced it?
+**Anatomy:** native dialog; quiet register label; title; caller-owned body; explicit close action; optional footer. The body uses registered atoms and molecules only.
+**Identity:** a full-height registration-cut plate at the inline end on wide screens and a `radius.sheet` plate rising from the bottom on narrow screens. One top highlight rule and tonal elevation establish occlusion; there is no shadow, blur or glow.
+**States:** closed; open. Loading, empty, stale, unavailable and error belong to the caller's content and retain the sheet's measure.
+**Data:** accessible title, close label and caller-owned content. The component owns no product data.
+**Rules:** use the native dialog focus and Escape contract; restore focus to the opening control; label the dialog from its visible title. An end sheet is for review or a bounded task, never generic navigation. It does not create a second Key. Opening motion uses `duration.sheet`; reduced motion lands immediately.
+
 ### Melt panel
 Constituent rows, each deliverable or held as a Claim with its reason. Held rows stay still.
 

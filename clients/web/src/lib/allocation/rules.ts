@@ -71,7 +71,7 @@ export function countryGate(country: string | null, blockedList: string | undefi
   if (blockedList === undefined || blockedList.trim() === "") {
     return {
       open: false,
-      reason: "This deployment has no list of excluded countries, so it offers nothing. The operator sets ALLOCATION_BLOCKED_COUNTRIES from each issuer's own terms.",
+      reason: "Purchases are unavailable because this deployment has no verified issuer eligibility policy.",
     };
   }
   const code = country?.trim().toUpperCase();

@@ -8,8 +8,8 @@ export type AllocationConfig = {
 };
 
 /**
- * Every variable the Allocation needs, named when absent so the page can say
- * exactly what a deployment is missing instead of failing on a later call.
+ * Every variable the Allocation needs, named when absent so deployment checks
+ * can identify the missing setup without exposing it in the visitor interface.
  * ALLOCATION_BLOCKED_COUNTRIES is read but not required here: its absence is
  * the country gate's to refuse, with its own reason.
  */

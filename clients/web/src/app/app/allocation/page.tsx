@@ -11,8 +11,8 @@ import { AllocationFlow, type OfferedLot, type RefusedLot } from "./flow";
 import styles from "./allocation.module.css";
 
 export const metadata: Metadata = {
-  title: "Allocation | Seametry",
-  description: "Buy admitted tokenized stocks into your own wallet, one swap per lot, with every term shown before you sign.",
+  title: "Build a basket | Seametry",
+  description: "Plan and buy several admitted tokenized stocks directly into your own wallet, with every purchase shown before you sign.",
 };
 
 function multiplierLine(lot: (typeof admissions.instruments)[number]) {
@@ -28,7 +28,7 @@ export default async function AllocationPage() {
   const configured = allocationConfig();
   const unavailable =
     "missing" in configured
-      ? `This deployment is not configured for Allocations: ${configured.missing.join(", ")} not set.`
+      ? "Purchases are unavailable in this deployment. You can still build and inspect a plan."
       : (() => {
           const gate = countryGate(requestCountry(requestHeaders), configured.config.blockedCountries);
           return gate.open ? undefined : gate.reason;
@@ -61,14 +61,15 @@ export default async function AllocationPage() {
   return (
     <div className={styles.page}>
         <PageHeader
-          group="Buy"
-          title="Allocation"
+          group="Allocation"
+          title="Build a basket"
           network="Mainnet"
-          sentence="Buy admitted lots with USDC, one swap each, into your own wallet. You sign every leg after seeing what it will do."
+          sentence="Choose the constituents and spend USDC. Each token settles directly into your wallet; nothing is pooled and no basket token is issued."
         />
         <p className={styles.terms}>
-          No Seametry fee. Slippage {SLIPPAGE_BPS} basis points. At most {formatAmount(BigInt(admissions.reference_usdc), 0)} USDC per
-          lot, the size its depth was measured to. You remain bound by each issuer&apos;s terms of eligibility.
+          <strong>One coordinated plan, one swap per constituent.</strong> No Seametry fee. Slippage {SLIPPAGE_BPS} basis points. At most{" "}
+          {formatAmount(BigInt(admissions.reference_usdc), 0)} USDC per constituent, the size its depth was measured to. You remain bound
+          by each issuer&apos;s terms of eligibility.
         </p>
         <AllocationFlow
           offered={offered}

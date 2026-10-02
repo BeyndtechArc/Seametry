@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import { ConditionReport, Field, Grade, Key, QuietAction, QuoteBlock, Rule, Stamp } from "@seametry/ui";
+import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import { USDC_SCALE, lotCapAtoms } from "@/lib/allocation/rules";
@@ -67,7 +68,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 }
 
 const phaseLabel: Record<Phase, string> = {
-  idle: "Not prepared",
+  idle: "Not previewed",
   preparing: "Preparing",
   prepared: "Ready to sign",
   signing: "Signing",
@@ -75,6 +76,80 @@ const phaseLabel: Record<Phase, string> = {
   settled: "Settled",
   failed: "Not bought",
 };
+
+function OrderSummary({
+  selectedSymbols,
+  total,
+  wallet,
+  readiness,
+  inFlight,
+  active,
+  approveAndSign,
+}: {
+  selectedSymbols: string[];
+  total: string;
+  wallet?: string;
+  readiness?: string;
+  inFlight?: Leg;
+  active?: Leg;
+  approveAndSign: () => void;
+}) {
+  return (
+    <div className={styles.orderSummary}>
+      <header className={styles.orderIdentity}>
+        <span>Allocation</span>
+        <strong>Direct ownership</strong>
+        <p>Each constituent settles to your wallet. No basket token is issued.</p>
+      </header>
+      <dl className={styles.orderFacts}>
+        <div>
+          <dt>Spend</dt>
+          <dd>{total}</dd>
+        </div>
+        <div>
+          <dt>Constituents</dt>
+          <dd>{selectedSymbols.length || "None selected"}</dd>
+        </div>
+        <div>
+          <dt>Execution</dt>
+          <dd>One swap per constituent</dd>
+        </div>
+        <div>
+          <dt>Seametry fee</dt>
+          <dd>None</dd>
+        </div>
+      </dl>
+      <section className={styles.orderSelection} aria-label="Selected plan">
+        <h3>Selected plan</h3>
+        {selectedSymbols.length > 0 ? (
+          <ul>
+            {selectedSymbols.map((symbol) => (
+              <li key={symbol}>{symbol}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>Select at least one constituent.</p>
+        )}
+      </section>
+      <section className={styles.orderDestination} aria-label="Receiving wallet">
+        <h3>Receiving wallet</h3>
+        {wallet ? <code>{wallet}</code> : <p>Connect the receiving wallet from the header. Connecting buys nothing.</p>}
+      </section>
+      <p className={styles.orderReadiness}>{readiness ?? "The next prepared purchase is ready for your approval."}</p>
+      <div className={styles.orderKey}>
+        <Key
+          busy={Boolean(inFlight)}
+          busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined}
+          disabled={Boolean(readiness) && !inFlight}
+          disabledReason={readiness}
+          onClick={approveAndSign}
+        >
+          {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
+        </Key>
+      </div>
+    </div>
+  );
+}
 
 export function AllocationFlow({
   offered,
@@ -92,6 +167,7 @@ export function AllocationFlow({
   const [typed, setTyped] = useState("");
   const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
   const [now, setNow] = useState(() => Date.now());
+  const [orderOpen, setOrderOpen] = useState(false);
 
   const cap = lotCapAtoms(snapshot.referenceUsdc);
   const parsed = typed.trim() === "" ? undefined : parseAmount(typed, USDC_SCALE);
@@ -101,9 +177,9 @@ export function AllocationFlow({
     parsed && "refused" in parsed
       ? parsed.refused
       : split.some((atoms) => atoms > cap)
-        ? `Each lot may take at most ${formatAmount(BigInt(snapshot.referenceUsdc), 0)} USDC. Spend less, or select more lots.`
+        ? `Each constituent may take at most ${formatAmount(BigInt(snapshot.referenceUsdc), 0)} USDC. Spend less, or select more constituents.`
         : split.some((atoms) => atoms === 0n) && split.length > 0
-          ? "The amount is too small to give every selected lot a share of it."
+          ? "The amount is too small to fund every selected constituent."
           : undefined;
 
   // The plan is derived from the inputs on every render. Progress is kept as
@@ -170,7 +246,7 @@ export function AllocationFlow({
             return;
           }
           if (status.state === "failed") {
-            update(mint, { phase: "failed", note: `Mainnet ran the transaction and it failed: ${status.detail}. No USDC was spent on this lot.` });
+            update(mint, { phase: "failed", note: `Mainnet ran the transaction and it failed: ${status.detail}. No USDC was spent on this purchase.` });
             return;
           }
         } catch {
@@ -205,7 +281,7 @@ export function AllocationFlow({
       update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
       void watch(leg.mint, signature);
     } catch (error) {
-      update(leg.mint, { phase: "failed", note: `${reasonFrom(error)} No USDC was spent on this lot.` });
+      update(leg.mint, { phase: "failed", note: `${reasonFrom(error)} No USDC was spent on this purchase.` });
     }
   };
 
@@ -218,11 +294,23 @@ export function AllocationFlow({
         : inFlight
           ? `${phaseLabel[inFlight.phase]} ${inFlight.symbol}.`
           : !active
-            ? "Prepare a leg to see its terms first."
+            ? "Preview a purchase to see its terms first."
             : undefined;
 
   const attempted = legs.filter((leg) => leg.phase === "settled" || leg.phase === "failed");
   const settledCount = legs.filter((leg) => leg.phase === "settled").length;
+  const total = parsed && "atoms" in parsed ? `${formatAmount(parsed.atoms, USDC_SCALE)} USDC` : "Not set";
+  const orderSummary = (
+    <OrderSummary
+      selectedSymbols={chosen.map((lot) => lot.symbol)}
+      total={total}
+      wallet={publicKey?.toBase58()}
+      readiness={keyDisabledReason}
+      inFlight={inFlight}
+      active={active}
+      approveAndSign={() => void approveAndSign()}
+    />
+  );
 
   return (
     <div className={styles.flow}>
@@ -232,170 +320,174 @@ export function AllocationFlow({
         </p>
       ) : null}
 
-      <section className={styles.section} aria-labelledby="wallet-heading">
-        <Rule />
-        <h2 id="wallet-heading">Receiving wallet</h2>
-        {connected && publicKey ? (
-          <div className={styles.walletLine}>
-            <code>{publicKey.toBase58()}</code>
-          </div>
-        ) : (
-          <p className={styles.quiet}>Use the wallet control in the header before preparing an Allocation.</p>
-        )}
-      </section>
+      <div className={styles.workspace}>
+        <div className={styles.builder}>
+          <section className={styles.section} aria-labelledby="amount-heading">
+            <Rule />
+            <h2 id="amount-heading">Set the basket amount</h2>
+            <p className={styles.quiet}>Set one total. Seametry divides it evenly across the constituents you keep in the plan.</p>
+            <Field
+              id="allocation-usdc"
+              label="USDC to spend"
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder="250"
+              value={typed}
+              disabled={started}
+              invalid={Boolean(amountProblem)}
+              message={
+                amountProblem ??
+                (legs.length > 0
+                  ? `Split evenly: ${legs.map((leg) => `${formatAmount(leg.atoms, USDC_SCALE)} USDC to ${leg.symbol}`).join("; ")}.`
+                  : chosen.length === 0
+                    ? "Select at least one constituent."
+                    : undefined)
+              }
+              onChange={(event) => setTyped(event.target.value)}
+            />
+          </section>
 
-      <section className={styles.section} aria-labelledby="lots-heading">
-        <Rule />
-        <h2 id="lots-heading">Which lots may enter</h2>
-        <p className={styles.provenance}>
-          Policy engine decision, {snapshot.policyVersion}, made on captured evidence as of{" "}
-          <time dateTime={snapshot.asOf} title={snapshot.asOf}>
-            {new Date(snapshot.asOf).toUTCString().slice(5, 16)}
-          </time>
-          , {snapshot.age} old. Stale by construction: a snapshot, not a live read.
-        </p>
-        {offered.length === 0 ? (
-          <p className={styles.quiet}>No instrument meets Good Delivery at the reference size in this snapshot.</p>
-        ) : (
-          <ul className={styles.lots}>
-            {offered.map((lot) => (
-              <li key={lot.mint} className={styles.lot}>
-                <label className={styles.lotChoice}>
-                  <input
-                    type="checkbox"
-                    disabled={started}
-                    checked={selected.includes(lot.mint)}
-                    onChange={(event) =>
-                      setSelected((current) =>
-                        event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
-                      )
-                    }
-                  />
-                  <b>{lot.symbol}</b>
-                  <span>{lot.issuer}</span>
-                </label>
-                <Stamp kind={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
-                <Grade name="Certificate" />
-                <ConditionReport statements={lot.prerogatives} evidence={`Read at slot ${lot.slot}. ${lot.multiplier}`} />
-              </li>
-            ))}
-          </ul>
-        )}
-        {refused.length > 0 ? (
-          <details className={styles.refused}>
-            <summary>
-              {refused.length} captured {refused.length === 1 ? "lot was" : "lots were"} refused
-            </summary>
-            <ul>
-              {refused.map((lot) => (
-                <li key={lot.symbol}>
-                  <b>{lot.symbol}</b>
-                  <Stamp kind="block" reason={lot.fact} />
-                </li>
-              ))}
-            </ul>
-          </details>
-        ) : null}
-      </section>
-
-      <section className={styles.section} aria-labelledby="amount-heading">
-        <Rule />
-        <h2 id="amount-heading">How much USDC, split how</h2>
-        <Field
-          id="allocation-usdc"
-          label="USDC to spend"
-          inputMode="decimal"
-          autoComplete="off"
-          placeholder="250"
-          value={typed}
-          disabled={started}
-          invalid={Boolean(amountProblem)}
-          message={
-            amountProblem ??
-            (legs.length > 0
-              ? `Split evenly: ${legs.map((leg) => `${formatAmount(leg.atoms, USDC_SCALE)} USDC to ${leg.symbol}`).join("; ")}.`
-              : chosen.length === 0
-                ? "Select at least one lot."
-                : undefined)
-          }
-          onChange={(event) => setTyped(event.target.value)}
-        />
-      </section>
-
-      {legs.length > 0 ? (
-        <section className={styles.section} aria-labelledby="legs-heading">
-          <Rule />
-          <h2 id="legs-heading">What each leg will do</h2>
-          <ol className={styles.legs}>
-            {legs.map((leg) => {
-              const secondsLeft = leg.prepared ? secondsUntil(leg.prepared.expiresAt, now) : 0;
-              return (
-                <li key={leg.mint} className={styles.leg} data-phase={leg.phase}>
-                  <header>
-                    <b>
-                      {leg.symbol}, {formatAmount(leg.atoms, USDC_SCALE)} USDC
-                    </b>
-                    <span>{phaseLabel[leg.phase]}</span>
-                  </header>
-                  {leg.phase === "preparing" ? (
-                    <p className={styles.loading}>Loading quotes for {formatAmount(leg.atoms, USDC_SCALE)} USDC</p>
-                  ) : null}
-                  {leg.prepared && (leg.phase === "prepared" || leg.phase === "signing" || leg.phase === "sending") ? (
-                    <>
-                      <QuoteBlock
-                        floor={formatAmount(leg.prepared.floorAtoms, leg.prepared.outScale)}
-                        expected={formatAmount(leg.prepared.outAtoms, leg.prepared.outScale)}
-                        unit={leg.symbol}
-                        fees={[
-                          { label: "Seametry fee", value: "None" },
-                          { label: "Priority fee set by the route", value: `${formatAmount(leg.prepared.priorityFeeLamports, 9)} SOL` },
-                          { label: "Venue fees", value: "Included in the expected output" },
-                        ]}
-                        route={`Jupiter, through ${leg.prepared.route.join(", ")}, quoted at slot ${leg.prepared.contextSlot}`}
-                        received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(leg.prepared.receivedAt)) / 1000))}s`, absolute: leg.prepared.receivedAt }}
-                        secondsLeft={secondsLeft}
-                      />
-                      <p className={styles.simulated}>
-                        Simulated on mainnet for this wallet:{" "}
-                        {leg.prepared.simulated.map((change) => signedChange(change.atoms, change.scale, change.unit)).join("; ")}.
-                      </p>
-                    </>
-                  ) : null}
-                  {leg.note ? <p className={styles.note}>{leg.note}</p> : null}
-                  {leg.signature ? (
-                    <a className={styles.signature} href={`https://explorer.solana.com/tx/${leg.signature}`} rel="noreferrer" target="_blank">
-                      {leg.signature}
-                    </a>
-                  ) : null}
-                  {leg.phase === "idle" || (leg.phase === "prepared" && secondsLeft === 0) ? (
-                    <QuietAction disabled={!connected || Boolean(unavailable)} onClick={() => void prepare(leg)}>
-                      {leg.phase === "idle" ? "Prepare this leg" : "Refresh quote"}
-                    </QuietAction>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ol>
-          <div className={styles.tray}>
-            <Key
-              busy={Boolean(inFlight)}
-              busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined}
-              disabled={Boolean(keyDisabledReason) && !inFlight}
-              disabledReason={keyDisabledReason}
-              onClick={() => void approveAndSign()}
-            >
-              {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
-            </Key>
-          </div>
-          {attempted.length > 0 ? (
-            <p className={styles.summary} role="status">
-              {settledCount} of {legs.length} {legs.length === 1 ? "leg" : "legs"} settled.
-              {attempted.length === legs.length && settledCount < legs.length ? " The rest were not bought; no USDC was spent on them." : ""}
+          <section className={styles.section} aria-labelledby="lots-heading">
+            <Rule />
+            <h2 id="lots-heading">Choose the constituents</h2>
+            <p className={styles.provenance}>
+              Policy {snapshot.policyVersion}, captured{" "}
+              <time dateTime={snapshot.asOf} title={snapshot.asOf}>
+                {new Date(snapshot.asOf).toUTCString().slice(5, 16)}
+              </time>
+              , {snapshot.age} old. This is a snapshot, not a live issuer read.
             </p>
+            {offered.length === 0 ? (
+              <p className={styles.quiet}>No instrument is eligible under this policy at the measured reference size.</p>
+            ) : (
+              <ul className={styles.lots}>
+                {offered.map((lot) => (
+                  <li key={lot.mint} className={styles.lot}>
+                    <div className={styles.lotRegister}>
+                      <label className={styles.lotChoice}>
+                        <input
+                          type="checkbox"
+                          disabled={started}
+                          checked={selected.includes(lot.mint)}
+                          onChange={(event) =>
+                            setSelected((current) =>
+                              event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
+                            )
+                          }
+                        />
+                        <span>
+                          <b>{lot.symbol}</b>
+                          <small>{lot.issuer}</small>
+                        </span>
+                      </label>
+                      <div className={styles.lotMarks}>
+                        <Grade name="Certificate" />
+                        <Stamp kind={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
+                      </div>
+                    </div>
+                    <details className={styles.conditionDisclosure}>
+                      <summary>Read condition report</summary>
+                      <ConditionReport statements={lot.prerogatives} evidence={`Read at slot ${lot.slot}. ${lot.multiplier}`} />
+                    </details>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {refused.length > 0 ? (
+              <details className={styles.refused}>
+                <summary>
+                  {refused.length} captured {refused.length === 1 ? "instrument is" : "instruments are"} unavailable under this policy
+                </summary>
+                <ul>
+                  {refused.map((lot) => (
+                    <li key={lot.symbol}>
+                      <b>{lot.symbol}</b>
+                      <Stamp kind="block" reason={lot.fact} />
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
+          </section>
+
+          {legs.length > 0 ? (
+            <section className={styles.section} aria-labelledby="legs-heading">
+              <Rule />
+              <h2 id="legs-heading">Review each purchase</h2>
+              <p className={styles.quiet}>Each purchase is quoted and simulated separately before it can be signed.</p>
+              <ol className={styles.legs}>
+                {legs.map((leg) => {
+                  const secondsLeft = leg.prepared ? secondsUntil(leg.prepared.expiresAt, now) : 0;
+                  return (
+                    <li key={leg.mint} className={styles.leg} data-phase={leg.phase}>
+                      <header>
+                        <b>
+                          {leg.symbol}, {formatAmount(leg.atoms, USDC_SCALE)} USDC
+                        </b>
+                        <span>{phaseLabel[leg.phase]}</span>
+                      </header>
+                      {leg.phase === "preparing" ? (
+                        <p className={styles.loading}>Loading quotes for {formatAmount(leg.atoms, USDC_SCALE)} USDC</p>
+                      ) : null}
+                      {leg.prepared && (leg.phase === "prepared" || leg.phase === "signing" || leg.phase === "sending") ? (
+                        <>
+                          <QuoteBlock
+                            floor={formatAmount(leg.prepared.floorAtoms, leg.prepared.outScale)}
+                            expected={formatAmount(leg.prepared.outAtoms, leg.prepared.outScale)}
+                            unit={leg.symbol}
+                            fees={[
+                              { label: "Seametry fee", value: "None" },
+                              { label: "Priority fee set by the route", value: `${formatAmount(leg.prepared.priorityFeeLamports, 9)} SOL` },
+                              { label: "Venue fees", value: "Included in the expected output" },
+                            ]}
+                            route={`Jupiter, through ${leg.prepared.route.join(", ")}, quoted at slot ${leg.prepared.contextSlot}`}
+                            received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(leg.prepared.receivedAt)) / 1000))}s`, absolute: leg.prepared.receivedAt }}
+                            secondsLeft={secondsLeft}
+                          />
+                          <p className={styles.simulated}>
+                            Simulated on mainnet for this wallet:{" "}
+                            {leg.prepared.simulated.map((change) => signedChange(change.atoms, change.scale, change.unit)).join("; ")}.
+                          </p>
+                        </>
+                      ) : null}
+                      {leg.note ? <p className={styles.note}>{leg.note}</p> : null}
+                      {leg.signature ? (
+                        <a className={styles.signature} href={`https://explorer.solana.com/tx/${leg.signature}`} rel="noreferrer" target="_blank">
+                          {leg.signature}
+                        </a>
+                      ) : null}
+                      {leg.phase === "idle" || (leg.phase === "prepared" && secondsLeft === 0) ? (
+                        <QuietAction disabled={!connected || Boolean(unavailable)} onClick={() => void prepare(leg)}>
+                          {leg.phase === "idle" ? "Preview purchase" : "Refresh quote"}
+                        </QuietAction>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ol>
+              {attempted.length > 0 ? (
+                <p className={styles.summary} role="status">
+                  {settledCount} of {legs.length} {legs.length === 1 ? "purchase" : "purchases"} settled.
+                  {attempted.length === legs.length && settledCount < legs.length ? " The rest were not bought; no USDC was spent on them." : ""}
+                </p>
+              ) : null}
+              {started && !inFlight ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
+            </section>
           ) : null}
-          {started && !inFlight ? <QuietAction onClick={startOver}>Start a new allocation</QuietAction> : null}
-        </section>
-      ) : null}
+        </div>
+
+        <aside className={styles.orderRail} aria-label="Order sheet">
+          <div className={styles.orderRailInner}>{orderSummary}</div>
+        </aside>
+      </div>
+
+      <div className={styles.mobileOrderTrigger}>
+        <QuietAction onClick={() => setOrderOpen(true)}>Review order sheet</QuietAction>
+        <span>{total}</span>
+      </div>
+      <ModalSheet open={orderOpen} onClose={() => setOrderOpen(false)} title="Order sheet" register="Allocation" closeLabel="Close order sheet">
+        {orderSummary}
+      </ModalSheet>
     </div>
   );
 }
