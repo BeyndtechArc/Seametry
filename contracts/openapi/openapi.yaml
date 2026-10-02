@@ -1224,7 +1224,7 @@ components:
     PolicyDocument:
       type: object
       description: server/internal/policy.Document, as published.
-      required: [version, accepted_grades, allowed_hook_programs, block_on_unknown_extension, block_on_issuer_halt, depth_reference_usdc, depth_ceiling_bps]
+      required: [version, accepted_grades, allowed_hook_programs, block_on_unknown_extension, block_on_issuer_halt, depth_reference_usdc, depth_ceiling_bps, impact_ceiling_bps]
       properties:
         version:
           type: string
@@ -1243,6 +1243,8 @@ components:
         depth_reference_usdc:
           type: integer
         depth_ceiling_bps:
+          type: integer
+        impact_ceiling_bps:
           type: integer
 
     ReasonCodeEntry:

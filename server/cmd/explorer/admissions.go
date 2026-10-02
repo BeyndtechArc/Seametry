@@ -23,9 +23,11 @@ type Admission struct {
 	Decimals uint8 `json:"decimals"`
 	// TokenProgram owns the mint account (the fixture's owner), and decides
 	// which associated token account a holder receives the instrument in.
-	TokenProgram string         `json:"token_program"`
-	Instrument   api.Instrument `json:"instrument"`
-	Decision     api.Decision   `json:"decision"`
+	TokenProgram     string         `json:"token_program"`
+	Instrument       api.Instrument `json:"instrument"`
+	Decision         api.Decision   `json:"decision"`
+	CapacityUSDC     int64          `json:"capacity_usdc"`
+	CapacityDecision api.Decision   `json:"capacity_decision"`
 }
 
 type admissionsSnapshot struct {
@@ -36,17 +38,19 @@ type admissionsSnapshot struct {
 	Instruments   []Admission `json:"instruments"`
 }
 
-func admissionFor(f fixture, mint *registry.Mint, prerogatives registry.Prerogatives, result policy.Result) (Admission, error) {
+func admissionFor(f fixture, mint *registry.Mint, prerogatives registry.Prerogatives, result policy.Result, capacityUSDC int64, capacityDecision policy.Result) (Admission, error) {
 	captured, err := time.Parse(time.RFC3339, f.CapturedAt)
 	if err != nil {
 		return Admission{}, err
 	}
 	return Admission{
-		Issuer:       f.Issuer,
-		Decimals:     mint.Decimals,
-		TokenProgram: f.Owner,
-		Instrument:   gateway.InstrumentView(mint, prerogatives, f.Address, f.Symbol, f.Slot, &captured, decisionsAsOf),
-		Decision:     gateway.DecisionView(result),
+		Issuer:           f.Issuer,
+		Decimals:         mint.Decimals,
+		TokenProgram:     f.Owner,
+		Instrument:       gateway.InstrumentView(mint, prerogatives, f.Address, f.Symbol, f.Slot, &captured, decisionsAsOf),
+		Decision:         gateway.DecisionView(result),
+		CapacityUSDC:     capacityUSDC,
+		CapacityDecision: gateway.DecisionView(capacityDecision),
 	}, nil
 }
 

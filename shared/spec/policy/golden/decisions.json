@@ -1,7 +1,7 @@
 {
   "note": "Decisions pinned against real mainnet mints plus synthetic cases for the blocking paths no live xStocks mint currently exhibits. Regenerate with go test ./server/internal/policy -update. A case is never edited by hand to make code pass.",
   "policy": {
-    "version": "policy-2026.09.2",
+    "version": "policy-2026.10.1",
     "accepted_grades": [
       "entitlement",
       "certificate",
@@ -11,7 +11,8 @@
     "block_on_unknown_extension": false,
     "block_on_issuer_halt": false,
     "depth_reference_usdc": 1000,
-    "depth_ceiling_bps": 100
+    "depth_ceiling_bps": 100,
+    "impact_ceiling_bps": 100
   },
   "cases": [
     {
@@ -30,6 +31,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": 14,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -93,8 +95,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "474c08ca877be7f9fc5b0cf2897e1526ebf710c1eb0e037a0a20f9c011a854a7"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "cd244d9695ca76cbad5cb09655884ac248dacc2fbc0e9c0fb0ce89cb99229915"
       }
     },
     {
@@ -113,6 +115,7 @@
           "availability": "no_route",
           "provider_code": "NO_ROUTES_FOUND",
           "shortfall_bps": null,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 0
         },
         "prerogatives": {
@@ -176,8 +179,8 @@
             "fact": "The issuer can switch on a check of who may receive this."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "66ffb54d2bfc2e41b6170f7669f03faee14da68484f84f416324392802981b5b"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "0543ea3cda95ad6e31d4708561c2c00f4e71a866d028210ce04224f2139c3089"
       }
     },
     {
@@ -196,6 +199,7 @@
           "availability": "not_tradable",
           "provider_code": "TOKEN_NOT_TRADABLE",
           "shortfall_bps": null,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 0
         },
         "prerogatives": {
@@ -264,8 +268,8 @@
             "fact": "The issuer can switch on a check of who may receive this."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "0aae16f338f11f5dee79065224ea712c86d80684ff107b15de68997b6bef72a0"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "8b759560d6c092b000293b1164426cde464e08dceb028c5b8faf64d9bfa388b9"
       }
     },
     {
@@ -284,6 +288,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 232,
+          "stated_impact_bps": 266,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -352,8 +357,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "14c79651356e0f678901184d20f3595b4cf28c1968a6f2040b5a996fa61ef194"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "c9748f286b404eb452f926cb026f7977f80f0ecfa41dff2fbe09ab64c002e392"
       }
     },
     {
@@ -372,6 +377,7 @@
           "availability": "no_route",
           "provider_code": "NO_ROUTES_FOUND",
           "shortfall_bps": null,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 0
         },
         "prerogatives": {
@@ -440,8 +446,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "0d07362ca50ebe742de3b72c6c873d593d87f0d2f24e1e8ec150e1a4820629b6"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "fb237ee300e813a47ed173c99650ed599190a6de3985eaea6918f45b47dcebd4"
       }
     },
     {
@@ -460,6 +466,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 8237,
+          "stated_impact_bps": 8343,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -528,8 +535,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "7ee73a5088bf146fce0b6c8836fd57a936461e10818f9d50ab746b645dadfea0"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "dbc911415a16e93b3b509b907c3303c42c4b312fadee67afcae0ed1f88fc33b8"
       }
     },
     {
@@ -548,6 +555,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 346,
+          "stated_impact_bps": 406,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -621,8 +629,8 @@
             "fact": "The field named multiplier is behind the live value here, so anything reading that field alone is one corporate action out of date."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "a2e2bbc5fb2f32948f273a8774e2312f8cf1add8b48e85c88a2b5977dda955d7"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "961552408633eb8d0febb259aef7cab5aaa3ae62496778533aa2538d4ef027cc"
       }
     },
     {
@@ -641,6 +649,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -674,8 +683,8 @@
             "fact": "This instrument's claim has not been classified, so what it legally represents is unknown."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "a59f3084cc0accb1f1fbf67e7bd3ee3adb5acc9dab8aa80f3771cf43ccfff3e6"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "f73b24069264fba7bff683f4074372c9f376d9aee025019ce7c2056d7989622e"
       }
     },
     {
@@ -694,6 +703,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -727,8 +737,8 @@
             "fact": "The issuer has paused all movement of this."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "cf10db650e2a2b3d2d23cff41a1a2e167a5fc9939069e442d28e4c84d38b02df"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "5dbc87fd9fe7058427aa4367f3345a3367353eedd6a8271b411abf5cd72b7940"
       }
     },
     {
@@ -747,6 +757,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -780,8 +791,8 @@
             "fact": "A new account for this starts frozen until the issuer approves it, so a recipient may be unable to receive."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "a08df31272f85507c665936163bd57891cd58f7350b152e645b5a91a055969ee"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "ca0ba79f7d5e9f3a8fd4ed0103f36b7744a32082528eb7187e8950c823d2c215"
       }
     },
     {
@@ -800,6 +811,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -833,8 +845,8 @@
             "fact": "This checks who may receive it, using a program Seametry has not read."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "b2ba2644903aa8fbb0c1f3fd3e95d76b96ec936221abfbe821e1e73aeb6b46ca"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "9bccc12eb0373caf0dd041935466f9d66f29ab356ffb9382da83b35eab1855c0"
       }
     },
     {
@@ -853,6 +865,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -886,8 +899,8 @@
             "fact": "This cannot be transferred at all."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "dda69cd43eb19a3a2f159f1a5bb1981a4bed04fcd5ff5cc5e77d3c7cfeefc372"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "d10382e15a012aded5efcd56e9b255f0a27830ab66396a42b6dc9893d1ade3d2"
       }
     },
     {
@@ -906,6 +919,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -939,8 +953,8 @@
             "fact": "An expected corporate action and the observed state disagree, so this instrument is held back until they are reconciled."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "a72e2b5e56620550432b1b713b311be4052a416ee1ac4dbda849f9e1adf17d76"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "f111e00062865d8c841272b5f463102ebc5b408f2fb2c177ce625d54e54872dc"
       }
     },
     {
@@ -959,6 +973,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -992,8 +1007,8 @@
             "fact": "The quantity you appear to hold could not be resolved from this instrument's configuration."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "b4bb72a51e15d78eafc4f11bbeef838ecab28d896e6758514b653b218a40dfcf"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "267f08b8b3312671ae79da001ef0dc6b8c3cd88ca98a77ddbd04b0e9cb0085fe"
       }
     },
     {
@@ -1012,6 +1027,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -1047,8 +1063,8 @@
             "fact": "This carries an issuer control Seametry does not yet decode (Token-2022 extension Unknown(60000))."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "6acd2b9bd9560b1f3c085f61d52de6762babaf19923f34d9fac0ee147b4e2511"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "e0b4095539e464886db66ad7bf745308263068ccb0eb1754bd99f09965b94eeb"
       }
     },
     {
@@ -1067,6 +1083,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -1094,8 +1111,8 @@
       "result": {
         "decision": "ALLOW",
         "reasons": [],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "a1a12c6ba85feca13b2323c295af20de5de43e07ca6bb3e651ebf85ffa8a0799"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "adc5c5e93addabf30dc9bfdbd5ac17b56e9c735f3f8436b45c722dba9278341b"
       }
     },
     {
@@ -1114,6 +1131,7 @@
           "availability": "no_route",
           "provider_code": "NO_ROUTES_FOUND",
           "shortfall_bps": null,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 0
         },
         "prerogatives": {
@@ -1147,8 +1165,8 @@
             "fact": "No route to buy 1000 USDC of this was found."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "a20447f7548b5971a6bf9f259f2c24f85b30277afa89b3a882dbb6ab561b72a0"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "b0b289aae496e1219a26d77edba402f02472cf72a907737ad2a0dba313dc497f"
       }
     },
     {
@@ -1167,6 +1185,7 @@
           "availability": "not_tradable",
           "provider_code": "TOKEN_NOT_TRADABLE",
           "shortfall_bps": null,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 0
         },
         "prerogatives": {
@@ -1200,8 +1219,8 @@
             "fact": "The aggregator will not trade this token."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "0b0f953630eb1e35dd4f14be0e9acde411351d9d4bb9fc5e7c2d337d36c81cc9"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "8558533b3cdfb437a0fbc35c7cad6e5e560322f7d96537daba189ee845c1fd7e"
       }
     },
     {
@@ -1220,6 +1239,7 @@
           "availability": "unrecognised",
           "provider_code": "SOMETHING_NEW",
           "shortfall_bps": null,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 0
         },
         "prerogatives": {
@@ -1253,8 +1273,8 @@
             "fact": "The aggregator refused with a reason Seametry does not recognise (\"SOMETHING_NEW\")."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "108829daa53f15fa03a936565420ad8fd80ea76b7265517727b0933573ed4288"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "0927052c808d685d4f6004ac6a985bdf28e1e63317e2d193c9af184440f6b910"
       }
     },
     {
@@ -1273,6 +1293,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 232,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -1306,8 +1327,8 @@
             "fact": "Buying 1000 USDC realises a rate 232 basis points worse than buying 100 USDC, above the 100 basis point ceiling."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "db95321da92428e56831f81f065ed95c1e6e5a97f1b66233c7287ba0bf148adc"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "eef26a7e8e96e2bb2443c1b192fc0307acad581a1c4a67300ed92d52e3d47250"
       }
     },
     {
@@ -1326,6 +1347,7 @@
           "availability": "",
           "provider_code": "",
           "shortfall_bps": null,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 0
         },
         "prerogatives": {
@@ -1359,8 +1381,8 @@
             "fact": "Executable depth has not been observed at 1000 USDC."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "910e4b587ade564720570167cf677099ba1ca6580894948bd8f011008b3d722f"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "43c091a11bea1883d97263ae82b36222e8ef2b0690796eaa484a8e6aece29f4e"
       }
     },
     {
@@ -1379,6 +1401,7 @@
           "availability": "available",
           "provider_code": "",
           "shortfall_bps": 12,
+          "stated_impact_bps": null,
           "baseline_size_usdc": 100
         },
         "prerogatives": {
@@ -1412,8 +1435,8 @@
             "fact": "Executable depth has not been observed at 1000 USDC."
           }
         ],
-        "policy_version": "policy-2026.09.2",
-        "input_digest": "56ca31a6ddfa84770cf55790532532395284fa675a97ef986eb1d415ec01e4dd"
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "b2c06c9dcfe8addd472896ae56e0b9e55ca0553adcc85756781395e37b0b8a3a"
       }
     }
   ]

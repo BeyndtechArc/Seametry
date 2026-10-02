@@ -29,6 +29,7 @@ func (Server) GetPolicy(ctx context.Context, request api.GetPolicyRequestObject)
 			BlockOnIssuerHalt:       doc.BlockOnIssuerHalt,
 			DepthReferenceUsdc:      int(doc.DepthReferenceUSDC),
 			DepthCeilingBps:         int(doc.DepthCeilingBps),
+			ImpactCeilingBps:        int(doc.ImpactCeilingBps),
 		},
 		Meta: api.Meta{ServedAt: now, AsOf: now, Completeness: api.Complete},
 	}, nil
@@ -55,6 +56,7 @@ var reasonCodeMeanings = map[policy.Code]string{
 	policy.CodeNotTradable:          "The aggregator will not trade this token.",
 	policy.CodeRefusalUnknown:       "The aggregator refused with a reason Seametry does not recognise.",
 	policy.CodeDepthAboveCeiling:    "Buying at the policy's reference size realises a rate worse than the smallest size that priced, by more than the policy's ceiling.",
+	policy.CodeImpactAboveCeiling:   "The aggregator's stated price impact at the queried size is above the policy's ceiling.",
 	policy.CodeDepthNotObserved:     "Executable depth has not been observed at the policy's reference size.",
 	policy.CodeUnknownExtension:     "This carries an issuer control Seametry does not yet decode.",
 	policy.CodeHaltedByIssuer:       "The issuer has halted trading in this.",

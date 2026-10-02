@@ -1,25 +1,33 @@
 "use client";
 
 import { useMemo } from "react";
-import { WalletProvider } from "@solana/wallet-adapter-react";
+import { usePathname } from "next/navigation";
+import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
+import { clusterApiUrl } from "@solana/web3.js";
 
 /**
  * One wallet session for the whole site, so the house rail and every page
- * agree on whether a wallet is connected. Each page that talks to a cluster
- * supplies its own ConnectionProvider inside this one (the Hall demo on
- * devnet); the Allocation sends through this app's own route handlers and
- * needs none in the browser.
+ * agree on whether a wallet is connected. The route selects devnet for the
+ * Hall demo and mainnet for the rest of the application, which also gives the
+ * mobile wallet adapter the cluster it must announce.
  *
  * No adapters are listed: @solana/wallet-adapter-react detects any Wallet
  * Standard wallet (Phantom, Solflare, Backpack and the rest), which injects
  * no script of its own and so needs no change to proxy.ts's script-src.
- * autoConnect reconnects only a wallet the holder already approved here.
+ * WalletState performs the connection after a deliberate selection and also
+ * reconnects the stored selection on reload, with connection failures shown.
  */
 export function SiteWalletProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const wallets = useMemo(() => [], []);
+  const endpoint = pathname.startsWith("/app/hall")
+    ? process.env.NEXT_PUBLIC_HALL_DEMO_RPC ?? clusterApiUrl("devnet")
+    : clusterApiUrl("mainnet-beta");
   return (
-    <WalletProvider wallets={wallets} autoConnect>
-      {children}
-    </WalletProvider>
+    <ConnectionProvider endpoint={endpoint}>
+      <WalletProvider wallets={wallets} autoConnect={false}>
+        {children}
+      </WalletProvider>
+    </ConnectionProvider>
   );
 }

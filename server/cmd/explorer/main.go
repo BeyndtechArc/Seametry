@@ -75,12 +75,14 @@ type Instrument struct {
 	Stale       bool
 	Pending     bool
 
-	Decision      string
-	Reasons       []policy.Reason
-	PolicyVersion string
-	InputDigest   string
-	Depth         []DepthRow
-	Admission     Admission
+	Decision         string
+	Reasons          []policy.Reason
+	PolicyVersion    string
+	InputDigest      string
+	Depth            []DepthRow
+	Admission        Admission
+	CapacityUSDC     int64
+	CapacityDecision policy.Result
 }
 
 // DepthRow is one measured size on an instrument's depth curve.
@@ -106,25 +108,37 @@ var depthSizes = []int64{100, 1000, 10000}
 
 // decide runs the engine's own decision on the captured bytes, and returns the
 // depth curve it was made against so the page can show its working.
-func decide(f fixture, mint *registry.Mint, asOf time.Time) (policy.Result, []DepthRow, error) {
+func decide(f fixture, mint *registry.Mint, asOf time.Time) (policy.Result, []DepthRow, int64, policy.Result, error) {
 	input, err := policy.FromRegistry(f.Symbol, f.Address, "certificate", mint, asOf, f.Slot, halted[f.Symbol], false)
 	if err != nil {
-		return policy.Result{}, nil, err
+		return policy.Result{}, nil, 0, policy.Result{}, err
 	}
 
 	curve, err := liquidity.LoadCurve(filepath.Join("shared", "fixtures", "jupiter"), f.Symbol, f.Address,
 		int32(mint.Decimals), depthSizes, asOf)
 	if err != nil {
-		return policy.Result{}, nil, err
+		return policy.Result{}, nil, 0, policy.Result{}, err
 	}
 	policyDoc := policy.Default()
 	if input.Depth, err = policy.DepthFromCurve(curve, policyDoc.DepthReferenceUSDC); err != nil {
-		return policy.Result{}, nil, err
+		return policy.Result{}, nil, 0, policy.Result{}, err
 	}
 
 	result, err := policy.Evaluate(policyDoc, input)
 	if err != nil {
-		return policy.Result{}, nil, err
+		return policy.Result{}, nil, 0, policy.Result{}, err
+	}
+	measured := make([]policy.DepthFacts, 0, len(depthSizes))
+	for _, size := range depthSizes {
+		facts, factsErr := policy.DepthFromCurve(curve, size)
+		if factsErr != nil {
+			return policy.Result{}, nil, 0, policy.Result{}, factsErr
+		}
+		measured = append(measured, facts)
+	}
+	capacityUSDC, capacityDecision, err := policy.Capacity(policyDoc, input, measured)
+	if err != nil {
+		return policy.Result{}, nil, 0, policy.Result{}, err
 	}
 
 	rows := make([]DepthRow, len(curve.Points))
@@ -138,7 +152,7 @@ func decide(f fixture, mint *registry.Mint, asOf time.Time) (policy.Result, []De
 		}
 		rows[i] = row
 	}
-	return result, rows, nil
+	return result, rows, capacityUSDC, capacityDecision, nil
 }
 
 func venueList(hops []liquidity.Hop) string {
@@ -475,7 +489,7 @@ func loadInstruments() []Instrument {
 				inst.Pending = resolved.ActivationPending
 			}
 		}
-		result, depth, err := decide(f, mint, asOf)
+		result, depth, capacityUSDC, capacityDecision, err := decide(f, mint, asOf)
 		if err != nil {
 			fail(fmt.Errorf("%s: %w", f.Symbol, err))
 		}
@@ -484,7 +498,9 @@ func loadInstruments() []Instrument {
 		inst.PolicyVersion = result.PolicyVersion
 		inst.InputDigest = result.InputDigest
 		inst.Depth = depth
-		if inst.Admission, err = admissionFor(f, mint, prerogatives, result); err != nil {
+		inst.CapacityUSDC = capacityUSDC
+		inst.CapacityDecision = capacityDecision
+		if inst.Admission, err = admissionFor(f, mint, prerogatives, result, capacityUSDC, capacityDecision); err != nil {
 			fail(fmt.Errorf("%s: %w", f.Symbol, err))
 		}
 

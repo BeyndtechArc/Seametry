@@ -15,6 +15,7 @@ export type OfferedLot = {
   symbol: string;
   issuer: string;
   decision: string;
+  capacityUsdc: number;
   stampReason: string;
   prerogatives: string[];
   multiplier: string;
@@ -135,6 +136,10 @@ function OrderSummary({
         <h3>Receiving wallet</h3>
         {wallet ? <code>{wallet}</code> : <p>Connect the receiving wallet from the header. Connecting buys nothing.</p>}
       </section>
+      <section className={styles.orderHandoff} aria-label="Alloy handoff">
+        <h3>Alloy handoff</h3>
+        <p>When this wallet holds a Formula&apos;s exact quantities, Strike can deposit them for Alloy shares. Mainnet Hall is not active in this build.</p>
+      </section>
       <p className={styles.orderReadiness}>{readiness ?? "The next prepared purchase is ready for your approval."}</p>
       <div className={styles.orderKey}>
         <Key
@@ -169,15 +174,15 @@ export function AllocationFlow({
   const [now, setNow] = useState(() => Date.now());
   const [orderOpen, setOrderOpen] = useState(false);
 
-  const cap = lotCapAtoms(snapshot.referenceUsdc);
   const parsed = typed.trim() === "" ? undefined : parseAmount(typed, USDC_SCALE);
   const chosen = offered.filter((lot) => selected.includes(lot.mint));
   const split = parsed && "atoms" in parsed ? splitEvenly(parsed.atoms, chosen.length) : [];
+  const overCapacity = split.findIndex((atoms, index) => atoms > lotCapAtoms(chosen[index]?.capacityUsdc ?? 0));
   const amountProblem =
     parsed && "refused" in parsed
       ? parsed.refused
-      : split.some((atoms) => atoms > cap)
-        ? `Each constituent may take at most ${formatAmount(BigInt(snapshot.referenceUsdc), 0)} USDC. Spend less, or select more constituents.`
+      : overCapacity >= 0
+        ? `${chosen[overCapacity].symbol} may take at most ${formatAmount(BigInt(chosen[overCapacity].capacityUsdc), 0)} USDC under this captured capacity decision.`
         : split.some((atoms) => atoms === 0n) && split.length > 0
           ? "The amount is too small to fund every selected constituent."
           : undefined;
@@ -378,6 +383,7 @@ export function AllocationFlow({
                         <span>
                           <b>{lot.symbol}</b>
                           <small>{lot.issuer}</small>
+                          <small>Measured capacity {formatAmount(BigInt(lot.capacityUsdc), 0)} USDC</small>
                         </span>
                       </label>
                       <div className={styles.lotMarks}>

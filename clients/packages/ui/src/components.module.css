@@ -615,7 +615,7 @@
 }
 
 .fieldShell input::placeholder {
-  color: var(--sm-text-tertiary);
+  color: var(--sm-text-faint);
 }
 
 .fieldGroup[data-invalid] .fieldMessage {

@@ -71,11 +71,12 @@ const (
 	CodeQuarantined          Code = "CORPORATE_ACTION_MISMATCH"
 	CodeMultiplierUnresolved Code = "MULTIPLIER_UNRESOLVED"
 
-	CodeNoRoute           Code = "NO_ROUTE_FOUND"
-	CodeNotTradable       Code = "TOKEN_NOT_TRADABLE_BY_AGGREGATOR"
-	CodeRefusalUnknown    Code = "ROUTE_REFUSAL_UNRECOGNISED"
-	CodeDepthAboveCeiling Code = "DEPTH_ABOVE_CEILING"
-	CodeDepthNotObserved  Code = "DEPTH_NOT_OBSERVED"
+	CodeNoRoute            Code = "NO_ROUTE_FOUND"
+	CodeNotTradable        Code = "TOKEN_NOT_TRADABLE_BY_AGGREGATOR"
+	CodeRefusalUnknown     Code = "ROUTE_REFUSAL_UNRECOGNISED"
+	CodeDepthAboveCeiling  Code = "DEPTH_ABOVE_CEILING"
+	CodeImpactAboveCeiling Code = "EXECUTION_IMPACT_ABOVE_CEILING"
+	CodeDepthNotObserved   Code = "DEPTH_NOT_OBSERVED"
 
 	CodeUnknownExtension  Code = "UNKNOWN_EXTENSION_PRESENT"
 	CodeHaltedByIssuer    Code = "HALTED_BY_ISSUER"
@@ -138,18 +139,24 @@ type Document struct {
 	// validates it as the right level for a basket, and it should be revisited
 	// with evidence about what constituent depth an alloy actually needs.
 	DepthCeilingBps int64 `json:"depth_ceiling_bps"`
+
+	// ImpactCeilingBps is the largest absolute price impact stated by the
+	// aggregator that a measured size may carry. Relative depth alone cannot
+	// identify a smallest route that is already severely displaced.
+	ImpactCeilingBps int64 `json:"impact_ceiling_bps"`
 }
 
 // Default is the policy shipped with this build.
 func Default() Document {
 	return Document{
-		Version:                 "policy-2026.09.2",
+		Version:                 "policy-2026.10.1",
 		AcceptedGrades:          []string{"entitlement", "certificate", "interest"},
 		AllowedHookPrograms:     []string{},
 		BlockOnUnknownExtension: false,
 		BlockOnIssuerHalt:       false,
 		DepthReferenceUSDC:      1000,
 		DepthCeilingBps:         100,
+		ImpactCeilingBps:        100,
 	}
 }
 
@@ -210,6 +217,7 @@ type DepthFacts struct {
 	// ShortfallBps is measured against BaselineSizeUSDC, the smallest size that
 	// priced. A shortfall against an unstated baseline would be a bare number.
 	ShortfallBps     *int64 `json:"shortfall_bps"`
+	StatedImpactBps  *int64 `json:"stated_impact_bps"`
 	BaselineSizeUSDC int64  `json:"baseline_size_usdc"`
 }
 
@@ -372,6 +380,14 @@ func depthReasons(doc Document, depth DepthFacts) []Reason {
 					depth.SizeUSDC, *depth.ShortfallBps, depth.BaselineSizeUSDC, doc.DepthCeilingBps),
 			}}
 		}
+		if depth.StatedImpactBps != nil && *depth.StatedImpactBps > doc.ImpactCeilingBps {
+			return []Reason{{
+				Code: CodeImpactAboveCeiling, Severity: Block,
+				Fact: fmt.Sprintf(
+					"The aggregator states %d basis points of price impact for buying %d USDC, above the %d basis point ceiling.",
+					*depth.StatedImpactBps, depth.SizeUSDC, doc.ImpactCeilingBps),
+			}}
+		}
 		return nil
 	case "no_route":
 		return []Reason{{Code: CodeNoRoute, Severity: Block,
@@ -414,9 +430,44 @@ func DepthFromCurve(curve liquidity.Curve, sizeUSDC int64) (DepthFacts, error) {
 			}
 			facts.BaselineSizeUSDC = baseline
 		}
+		if point.Observation.Quote != nil {
+			facts.StatedImpactBps = point.Observation.Quote.StatedImpactBps
+		}
 		return facts, nil
 	}
 	return DepthFacts{}, nil
+}
+
+// Capacity returns the largest measured size whose complete instrument input
+// is not refused by doc. It never interpolates between points. The returned
+// decision is the decision at that exact measured size and therefore carries
+// the input digest Allocation binds into an approval.
+func Capacity(doc Document, base Input, measured []DepthFacts) (int64, Result, error) {
+	ordered := append([]DepthFacts(nil), measured...)
+	sort.SliceStable(ordered, func(i, j int) bool { return ordered[i].SizeUSDC < ordered[j].SizeUSDC })
+
+	var capacity int64
+	var admitted Result
+	var last Result
+	for _, depth := range ordered {
+		candidate := base
+		candidate.Depth = depth
+		candidateDoc := doc
+		candidateDoc.DepthReferenceUSDC = depth.SizeUSDC
+		result, err := Evaluate(candidateDoc, candidate)
+		if err != nil {
+			return 0, Result{}, err
+		}
+		last = result
+		if result.Decision != Block {
+			capacity = depth.SizeUSDC
+			admitted = result
+		}
+	}
+	if capacity > 0 {
+		return capacity, admitted, nil
+	}
+	return 0, last, nil
 }
 
 func wholeUSDC(size amount.Amount) (int64, error) {

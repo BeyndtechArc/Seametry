@@ -32,6 +32,9 @@ func TestGetPolicyServesTheDefaultDocument(t *testing.T) {
 	if body.Data.DepthCeilingBps != int(doc.DepthCeilingBps) {
 		t.Errorf("depth_ceiling_bps = %d, want %d", body.Data.DepthCeilingBps, doc.DepthCeilingBps)
 	}
+	if body.Data.ImpactCeilingBps != int(doc.ImpactCeilingBps) {
+		t.Errorf("impact_ceiling_bps = %d, want %d", body.Data.ImpactCeilingBps, doc.ImpactCeilingBps)
+	}
 }
 
 func TestGetPolicyRefusesAnUnknownVersion(t *testing.T) {
@@ -55,7 +58,7 @@ var everyReasonCode = []policy.Code{
 	policy.CodeUngraded, policy.CodePaused, policy.CodeNonTransferable,
 	policy.CodeFrozenByDefault, policy.CodeActiveHookUnknown, policy.CodeQuarantined,
 	policy.CodeMultiplierUnresolved, policy.CodeNoRoute, policy.CodeNotTradable,
-	policy.CodeRefusalUnknown, policy.CodeDepthAboveCeiling, policy.CodeDepthNotObserved,
+	policy.CodeRefusalUnknown, policy.CodeDepthAboveCeiling, policy.CodeImpactAboveCeiling, policy.CodeDepthNotObserved,
 	policy.CodeUnknownExtension, policy.CodeHaltedByIssuer, policy.CodePermanentDelegate,
 	policy.CodeFreezeAuthority, policy.CodePausable, policy.CodeHookCanBeEnabled,
 	policy.CodeMultiplierAuthority, policy.CodeSupplyMutable, policy.CodeActivationPending,

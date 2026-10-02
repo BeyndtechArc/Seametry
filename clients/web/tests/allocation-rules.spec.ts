@@ -32,7 +32,7 @@ test("an even split sums to the total exactly, remainder to the first shares", (
   expect(splitEvenly(5n, 0)).toEqual([]);
 });
 
-test("one lot may spend at most the reference size", () => {
+test("one lot cap converts its policy-issued capacity to exact atoms", () => {
   expect(lotCapAtoms(1000)).toBe(1_000_000_000n);
 });
 
@@ -107,14 +107,29 @@ test("the country gate fails closed and honours the operator's list", () => {
   expect(countryGate("NG", "US, GB")).toEqual({ open: true, country: "NG" });
 });
 
-test("a lot is admitted unless the policy refused it", () => {
+test("a lot is offered only when its capacity decision admits a measured size", () => {
   const sample = admissions.instruments[0];
-  const as = (decision: string) => ({ ...sample, decision: { ...sample.decision, decision } }) as typeof sample;
+  const as = (decision: string, capacity = sample.capacity_usdc) => ({
+    ...sample,
+    capacity_usdc: capacity,
+    capacity_decision: { ...sample.capacity_decision, decision },
+  }) as typeof sample;
   expect(isAdmitted(as("ALLOW"))).toBe(true);
   expect(isAdmitted(as("WARN"))).toBe(true);
   expect(isAdmitted(as("BLOCK"))).toBe(false);
+  expect(isAdmitted(as("WARN", 0))).toBe(false);
   const { admitted, refused } = partitionAdmissions([as("WARN"), as("BLOCK")]);
   expect([admitted.length, refused.length]).toEqual([1, 1]);
+});
+
+test("the allocation catalogue exposes policy-issued capacity per offered lot", () => {
+  const offered = admissions.instruments.filter(isAdmitted);
+  expect(offered.map((lot) => [lot.instrument.symbol, lot.capacity_usdc])).toEqual([
+    ["NFLXx", 100],
+    ["AAPLx", 10000],
+    ["TQQQx", 100],
+  ]);
+  expect(offered.every((lot) => lot.capacity_decision.input_digest.match(/^[0-9a-f]{64}$/))).toBe(true);
 });
 
 test("the committed snapshot is the policy engine's, for every captured lot", () => {
@@ -124,4 +139,78 @@ test("the committed snapshot is the policy engine's, for every captured lot", ()
     expect(admission.decision.policy_version).toBe(admissions.policy_version);
     expect(admission.decision.input_digest).toMatch(/^[0-9a-f]{64}$/);
   }
+});
+
+test("the dashboard wallet disclosure opens below its header containment", async ({ page }) => {
+  await page.goto("/app/allocation");
+  const trigger = page.getByText("Connect wallet", { exact: true });
+  await trigger.click();
+  const panel = page.getByText("No wallet was detected in this browser.", { exact: false });
+  await expect(panel).toBeVisible();
+  const triggerBox = await trigger.boundingBox();
+  const panelBox = await panel.boundingBox();
+  expect(panelBox?.y).toBeGreaterThan(triggerBox?.y ?? 0);
+});
+
+test("a detected Wallet Standard wallet connects from the dashboard header", async ({ page }) => {
+  await page.addInitScript(() => {
+    const listeners = new Set<(properties: { accounts: unknown[] }) => void>();
+    const publicKey = new Uint8Array(32).fill(1);
+    const account = {
+      address: "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d",
+      publicKey,
+      chains: ["solana:mainnet", "solana:devnet"],
+      features: ["solana:signTransaction"],
+      label: "Test account",
+      icon: undefined,
+    };
+    let accounts: typeof account[] = [];
+    const wallet = {
+      version: "1.0.0",
+      name: "Test wallet",
+      icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>",
+      chains: ["solana:mainnet", "solana:devnet"],
+      get accounts() { return accounts; },
+      features: {
+        "standard:events": {
+          version: "1.0.0",
+          on: (_event: string, listener: (properties: { accounts: unknown[] }) => void) => {
+            listeners.add(listener);
+            return () => listeners.delete(listener);
+          },
+        },
+        "standard:connect": {
+          version: "1.0.0",
+          connect: async () => {
+            accounts = [account];
+            listeners.forEach((listener) => listener({ accounts }));
+            return { accounts };
+          },
+        },
+        "solana:signTransaction": {
+          version: "1.0.0",
+          supportedTransactionVersions: ["legacy", 0],
+          signTransaction: async (...inputs: unknown[]) => inputs,
+        },
+      },
+    };
+    window.addEventListener("wallet-standard:app-ready", (event) => {
+      (event as CustomEvent<{ register: (entry: unknown) => void }>).detail.register(wallet);
+    });
+  });
+
+  await page.goto("/app/allocation");
+  await page.getByText("Connect wallet", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
+});
+
+test("field placeholders are quieter than entered values in both modes", async ({ page }) => {
+  await page.goto("/app/allocation");
+  const input = page.getByLabel("USDC to spend");
+  const colours = await input.evaluate((node) => ({
+    value: getComputedStyle(node).color,
+    placeholder: getComputedStyle(node, "::placeholder").color,
+  }));
+  expect(colours.placeholder).not.toBe(colours.value);
 });

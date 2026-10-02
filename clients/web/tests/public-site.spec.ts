@@ -53,7 +53,7 @@ test("the wallet state lives in the app's top bar, and connecting signs nothing"
   await expect(state).toBeVisible();
   await state.click();
   // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
-  await expect(bar.getByText("No wallet was detected in this browser. On a phone, open this site inside your wallet's own browser.", { exact: true })).toBeVisible();
+  await expect(bar.getByText("No wallet was detected in this browser. Open the site in a browser with a Solana wallet extension, or use your wallet's browser on a phone.", { exact: true })).toBeVisible();
 
   await page.goto("/app/allocation");
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toBeVisible();

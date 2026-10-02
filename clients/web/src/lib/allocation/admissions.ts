@@ -11,6 +11,8 @@ export type Admission = {
   token_program: string;
   instrument: Instrument;
   decision: Decision;
+  capacity_usdc: number;
+  capacity_decision: Decision;
 };
 
 export type AdmissionsSnapshot = {
@@ -24,12 +26,12 @@ export type AdmissionsSnapshot = {
 export const admissions = snapshot as AdmissionsSnapshot;
 
 /**
- * A lot may enter an Allocation unless the policy refused it. WARN admits
- * with its reasons shown, which is how the Explorer's catalogue already
- * reads the same decision ("Admitted").
+ * A lot may enter an Allocation only when the engine issued a non-zero
+ * measured capacity and the decision at that exact size did not refuse it.
+ * The reference-size decision remains part of the Explorer record.
  */
 export function isAdmitted(admission: Admission): boolean {
-  return admission.decision.decision !== "BLOCK";
+  return admission.capacity_usdc > 0 && admission.capacity_decision.decision !== "BLOCK";
 }
 
 export function partitionAdmissions(all: Admission[]) {
@@ -45,6 +47,6 @@ export function findAdmission(mint: string): Admission | undefined {
 
 /** The first reason that blocked a refused lot, stated as the engine wrote it. */
 export function blockingFact(admission: Admission): string {
-  const blocking = admission.decision.reasons.find((reason) => reason.severity === "BLOCK");
+  const blocking = admission.capacity_decision.reasons.find((reason) => reason.severity === "BLOCK");
   return blocking?.fact ?? "Refused by the policy engine.";
 }

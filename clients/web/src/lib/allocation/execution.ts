@@ -2,7 +2,7 @@ import "server-only";
 
 import { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { admissions, findAdmission, isAdmitted, type Admission } from "./admissions";
+import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
 import { QUOTE_TTL_MS, SLIPPAGE_BPS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, unlistedProgram } from "./rules";
@@ -88,10 +88,10 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
   } catch {
     throw new Refusal(400, `"${walletText}" is not a Solana address.`);
   }
-  const cap = lotCapAtoms(admissions.reference_usdc);
+  const cap = lotCapAtoms(lot.capacity_usdc);
   if (inAtoms <= 0n) throw new Refusal(400, "A leg must spend more than zero USDC.");
   if (inAtoms > cap) {
-    throw new Refusal(400, `One lot may spend at most ${admissions.reference_usdc} USDC, the size its depth was measured to.`);
+    throw new Refusal(400, `${lot.instrument.symbol ?? mint} may spend at most ${lot.capacity_usdc} USDC under the captured capacity decision.`);
   }
 
   const query = new URLSearchParams({
@@ -155,8 +155,8 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     {
       wallet: wallet.toBase58(),
       mint,
-      inputDigest: lot.decision.input_digest,
-      policyVersion: lot.decision.policy_version,
+      inputDigest: lot.capacity_decision.input_digest,
+      policyVersion: lot.capacity_decision.policy_version,
       inAtoms: quote.inAmount,
       outAtoms: quote.outAmount,
       floorAtoms: quote.otherAmountThreshold,
@@ -204,7 +204,7 @@ export async function submitLeg(config: AllocationConfig, signedBase64: string, 
     throw new Refusal(409, "The transaction was changed after it was approved, so it was not sent. Prepare the leg again.");
   }
   const lot = admittedLot(terms.mint);
-  if (lot.decision.input_digest !== terms.inputDigest || lot.decision.policy_version !== terms.policyVersion) {
+  if (lot.capacity_decision.input_digest !== terms.inputDigest || lot.capacity_decision.policy_version !== terms.policyVersion) {
     throw new Refusal(409, "The admission this leg was approved under has changed since. Prepare the leg again.");
   }
   const signature = transaction.signatures[0];

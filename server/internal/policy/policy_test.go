@@ -513,6 +513,62 @@ func TestShortfallAtTheCeilingIsAdmitted(t *testing.T) {
 	}
 }
 
+func TestStatedImpactAboveTheCeilingIsRefusedAtTheSmallestMeasuredSize(t *testing.T) {
+	at := synthetic()[8] // CLEAN
+	doc := Default()
+	doc.DepthReferenceUSDC = 100
+	at.Depth.SizeUSDC = 100
+	at.Depth.BaselineSizeUSDC = 100
+	at.Depth.ShortfallBps = ptr(0)
+	at.Depth.StatedImpactBps = ptr(Default().ImpactCeilingBps + 1)
+
+	result, err := Evaluate(doc, at)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Decision != Block || !hasCode(result, CodeImpactAboveCeiling) {
+		t.Errorf("decision %s with %v, want BLOCK with %s", result.Decision, codes(result), CodeImpactAboveCeiling)
+	}
+}
+
+func TestCapacityIsTheLargestMeasuredSizeThatPassesThePolicy(t *testing.T) {
+	doc := Default()
+	base := synthetic()[8] // CLEAN
+	sizes := []DepthFacts{
+		{Observed: true, SizeUSDC: 100, Availability: "available", ShortfallBps: ptr(0), StatedImpactBps: ptr(35), BaselineSizeUSDC: 100},
+		{Observed: true, SizeUSDC: 1000, Availability: "available", ShortfallBps: ptr(232), StatedImpactBps: ptr(266), BaselineSizeUSDC: 100},
+		{Observed: true, SizeUSDC: 10000, Availability: "available", ShortfallBps: ptr(1664), StatedImpactBps: ptr(1693), BaselineSizeUSDC: 100},
+	}
+
+	capacity, result, err := Capacity(doc, base, sizes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if capacity != 100 {
+		t.Fatalf("capacity = %d USDC, want 100", capacity)
+	}
+	if result.Decision == Block {
+		t.Fatalf("capacity decision is %s with %v", result.Decision, codes(result))
+	}
+}
+
+func TestCapacityIsZeroWhenEveryMeasuredSizeIsRefused(t *testing.T) {
+	doc := Default()
+	base := synthetic()[8] // CLEAN
+	sizes := []DepthFacts{
+		{Observed: true, SizeUSDC: 100, Availability: "available", ShortfallBps: ptr(0), StatedImpactBps: ptr(603), BaselineSizeUSDC: 100},
+		{Observed: true, SizeUSDC: 1000, Availability: "available", ShortfallBps: ptr(8237), StatedImpactBps: ptr(8343), BaselineSizeUSDC: 100},
+	}
+
+	capacity, _, err := Capacity(doc, base, sizes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if capacity != 0 {
+		t.Fatalf("capacity = %d USDC, want 0", capacity)
+	}
+}
+
 // DepthFromCurve must state which size the shortfall was measured against.
 func TestDepthFactsRecordTheirBaseline(t *testing.T) {
 	facts := depthFromFixtures(t, "AAPLx", "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp", 8)

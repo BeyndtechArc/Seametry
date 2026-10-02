@@ -39,15 +39,16 @@ export default async function AllocationPage() {
     const prerogatives = lot.instrument.prerogatives.map((p) => p.sentence);
     // The issuer-power reasons repeat the condition report word for word, so
     // the stamp cites only what the report does not already state.
-    const beyondPowers = lot.decision.reasons
+    const beyondPowers = lot.capacity_decision.reasons
       .filter((reason) => reason.severity !== "ALLOW" && !prerogatives.includes(reason.fact))
       .map((reason) => reason.fact);
     return {
       mint: lot.instrument.mint,
       symbol: lot.instrument.symbol ?? lot.instrument.mint,
       issuer: lot.issuer,
-      decision: lot.decision.decision,
-      stampReason: beyondPowers[0] ?? "Admitted. The issuer's powers over it are stated below.",
+      decision: lot.capacity_decision.decision,
+      capacityUsdc: lot.capacity_usdc,
+      stampReason: beyondPowers[0] ?? `Admitted through ${formatAmount(BigInt(lot.capacity_usdc), 0)} USDC on the captured depth curve.`,
       prerogatives,
       multiplier: multiplierLine(lot),
       slot: lot.instrument.capture.slot,
@@ -67,9 +68,9 @@ export default async function AllocationPage() {
           sentence="Choose the constituents and spend USDC. Each token settles directly into your wallet; nothing is pooled and no basket token is issued."
         />
         <p className={styles.terms}>
-          <strong>One coordinated plan, one swap per constituent.</strong> No Seametry fee. Slippage {SLIPPAGE_BPS} basis points. At most{" "}
-          {formatAmount(BigInt(admissions.reference_usdc), 0)} USDC per constituent, the size its depth was measured to. You remain bound
-          by each issuer&apos;s terms of eligibility.
+          <strong>One coordinated plan, one swap per constituent.</strong> No Seametry fee. Slippage {SLIPPAGE_BPS} basis points. Each constituent
+          states its own measured capacity. A fresh quote and exact transaction simulation still run before every signature. You remain bound by
+          each issuer&apos;s terms of eligibility.
         </p>
         <AllocationFlow
           offered={offered}

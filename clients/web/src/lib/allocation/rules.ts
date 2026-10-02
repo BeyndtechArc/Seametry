@@ -55,9 +55,9 @@ export function unlistedProgram(transaction: VersionedTransaction): string | und
   return undefined;
 }
 
-/** Atoms of USDC one lot may spend: the policy's reference size, because depth is measured to that size and no further. */
-export function lotCapAtoms(referenceUsdc: number): bigint {
-  return BigInt(referenceUsdc) * 10n ** BigInt(USDC_SCALE);
+/** Atoms of USDC one lot may spend, from its policy-issued measured capacity. */
+export function lotCapAtoms(capacityUsdc: number): bigint {
+  return BigInt(capacityUsdc) * 10n ** BigInt(USDC_SCALE);
 }
 
 export type CountryGate = { open: true; country: string } | { open: false; reason: string };

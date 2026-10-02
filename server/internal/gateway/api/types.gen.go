@@ -676,6 +676,7 @@ type PolicyDocument struct {
 	BlockOnUnknownExtension bool     `json:"block_on_unknown_extension"`
 	DepthCeilingBps         int      `json:"depth_ceiling_bps"`
 	DepthReferenceUsdc      int      `json:"depth_reference_usdc"`
+	ImpactCeilingBps        int      `json:"impact_ceiling_bps"`
 	Version                 string   `json:"version"`
 }
 
