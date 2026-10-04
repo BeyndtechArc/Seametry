@@ -1,5 +1,5 @@
 // The one route list the App shell draws from (components.md, App shell):
-// the sidebar and the narrow tab bar both read it, so they cannot disagree.
+// the top bar's tabs and the narrow register both read it, so they cannot disagree.
 
 export type AppRoute = { label: string; href: string; isActive: (pathname: string) => boolean };
 export type AppGroup = { group: string; routes: AppRoute[] };
@@ -22,16 +22,8 @@ export const appGroups: AppGroup[] = [
   { group: "Assay", routes: [{ label: "Instruments", href: "/app/instruments", isActive: within("/app/instruments") }] },
 ];
 
-/** The reading pages, last in the sidebar: explanation lives there, not in the product. */
+/** The reading pages, kept out of the product tabs: explanation lives there, not in the product. */
 export const readingRoutes = [
   { label: "How it works", href: "/how-it-works", icon: "read" as const },
   { label: "The Key", href: "/the-key", icon: "key" as const },
 ];
-
-export function currentPlace(pathname: string): { group: string; label: string } | undefined {
-  for (const { group, routes } of appGroups) {
-    const route = routes.find((candidate) => candidate.isActive(pathname));
-    if (route) return { group, label: route.label };
-  }
-  return undefined;
-}

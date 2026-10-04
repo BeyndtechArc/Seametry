@@ -1,18 +1,13 @@
-/* components.md, App shell. A ledger's margin: the sidebar is a ruled
-   column, not a card. Narrow first: top bar and route register; the sidebar
-   takes over from 900px. */
+/* components.md, App shell. One top bar, as in a trading terminal: the mark,
+   the product routes as text tabs, then the account and mode. The sidebar it
+   replaced spent a column on six links. Narrow layouts fold the routes into
+   a ruled register behind an ink menu control. */
 
 .shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
   min-height: 100vh;
   background: var(--sm-surface-ground);
-}
-
-.sidebar {
-  display: none;
-}
-
-.body {
-  min-width: 0;
 }
 
 .topBar {
@@ -20,52 +15,31 @@
   top: 0;
   z-index: 3;
   border-bottom: 0.5px solid var(--sm-line-rule);
-  background: var(--sm-surface-ground);
+  background: var(--sm-surface-sheet);
 }
 
 .topBarInner {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--sm-space-1);
+  gap: var(--sm-space-3);
   width: 100%;
   padding: var(--sm-space-2) var(--sm-space-5);
 }
 
-.narrowBrand {
-  min-width: 0;
-}
-
-.place {
+.productNav {
   display: none;
 }
 
-.tools {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0;
-  background: transparent;
-}
-
 .headerActions {
-  grid-column: 3 / -1;
+  grid-column: 3;
   display: flex;
   align-items: stretch;
-  justify-self: end;
-  gap: var(--sm-space-2);
+  gap: var(--sm-space-5);
 }
 
-.controlRail {
-  display: flex;
-  align-items: stretch;
-  border: 1px solid var(--sm-line-strong);
-  background: var(--sm-surface-ground);
-}
-
-.controlRail .tools > button {
+.theme > button {
   border: 0;
-  border-right: 0.5px solid var(--sm-line-rule);
   color: var(--sm-text-onTouch);
   background: var(--sm-accent-touch);
 }
@@ -74,8 +48,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--sm-size-target);
   width: var(--sm-size-target);
+  min-height: var(--sm-size-target);
   padding: 0;
   border: 0;
   color: var(--sm-text-inverse);
@@ -96,7 +70,6 @@
   position: relative;
   grid-column: 1 / -1;
   border-top: 0.5px solid var(--sm-line-strong);
-  background: var(--sm-surface-ground);
   overflow: hidden;
 }
 
@@ -163,106 +136,64 @@
   border-bottom: 0.5px solid var(--sm-line-rule);
 }
 
-.tools > button {
-  background: var(--sm-surface-raised);
-}
-
 .content {
   min-width: 0;
   padding: var(--sm-space-6) var(--sm-space-5) var(--sm-space-10);
 }
 
+.statusBar {
+  display: none;
+}
+
 .menuControl:focus-visible,
 .mobileRegister a:focus-visible,
-.sidebar a:focus-visible {
+.productNav a:focus-visible,
+.statusBar a:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: calc(var(--sm-space-1) * -1);
 }
 
 @media (min-width: 900px) {
-  .shell {
-    display: grid;
-    grid-template-columns: calc(var(--sm-space-13) + var(--sm-space-10)) minmax(0, 1fr);
+  .topBarInner,
+  .content,
+  .statusInner {
+    width: min(100%, var(--sm-size-content));
+    margin: 0 auto;
   }
 
-  .sidebar {
-    position: sticky;
-    top: 0;
+  .topBarInner {
     display: flex;
-    flex-direction: column;
-    gap: var(--sm-space-7);
-    height: 100vh;
-    padding: var(--sm-space-5);
-    border-right: 0.5px solid var(--sm-line-rule);
-    overflow-x: clip;
-    overflow-y: auto;
-    background: var(--sm-surface-sheet);
+    gap: var(--sm-space-8);
+    padding: var(--sm-space-3) var(--sm-space-8);
   }
 
-  .group {
-    display: grid;
+  .productNav {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: stretch;
     gap: var(--sm-space-1);
-    margin-top: var(--sm-space-5);
+    min-width: 0;
   }
 
-  .group span {
-    color: var(--sm-text-tertiary);
-    font-size: var(--sm-font-size-micro);
-  }
-
-  .sidebar nav a {
-    position: relative;
-    display: flex;
+  .productNav a {
+    display: inline-flex;
     align-items: center;
     min-height: var(--sm-size-target);
-    gap: var(--sm-space-3);
-    padding: 0 var(--sm-space-3);
+    padding: 0 var(--sm-space-4);
     color: var(--sm-text-secondary);
     font-size: var(--sm-font-size-small);
     font-weight: var(--sm-font-weight-medium);
     text-decoration: none;
+    white-space: nowrap;
   }
 
-  .sidebar nav a:hover {
-    color: var(--sm-accent-touchText);
-  }
-
-  .sidebar nav a[aria-current="page"] {
+  .productNav a:hover {
     color: var(--sm-text-primary);
   }
 
-  .sidebar nav a[aria-current="page"]::before {
-    content: "";
-    position: absolute;
-    top: var(--sm-space-3);
-    bottom: var(--sm-space-3);
-    left: 0;
-    border-left: 1px solid var(--sm-accent-touch);
-  }
-
-  .readingIcon {
-    display: inline-grid;
-    place-items: center;
-    width: var(--sm-space-9);
-    height: var(--sm-space-9);
-    color: var(--sm-text-tertiary);
+  .productNav a[aria-current="page"] {
+    color: var(--sm-text-primary);
     background: var(--sm-surface-raised);
-  }
-
-  .readingIcon svg {
-    width: var(--sm-space-6);
-    height: var(--sm-space-6);
-  }
-
-  .reading {
-    display: grid;
-    margin-top: auto;
-    padding-top: var(--sm-space-4);
-    border-top: 0.5px solid var(--sm-line-rule);
-  }
-
-  .narrowBrand {
-    display: none;
   }
 
   .menuControl,
@@ -270,72 +201,39 @@
     display: none;
   }
 
-  .controlRail {
-    margin-left: auto;
-  }
-
-  .place {
-    display: flex;
-    flex: 1 1 auto;
-    align-items: baseline;
-    gap: var(--sm-space-3);
-    margin: 0;
-    color: var(--sm-text-tertiary);
-    font-size: var(--sm-font-size-small);
-  }
-
-  .place b {
-    color: var(--sm-text-primary);
-    font-family: var(--sm-font-family-display);
-    font-size: var(--sm-font-size-title-s);
-    font-weight: var(--sm-font-weight-medium);
-  }
-
-  .topBar {
-    background: var(--sm-surface-sheet);
-  }
-
-  .topBarInner {
-    display: flex;
-    width: min(100%, var(--sm-size-content));
-    margin: 0 auto;
-    padding: var(--sm-space-3) var(--sm-space-8);
-  }
-
   .content {
-    width: min(100%, var(--sm-size-content));
-    margin: 0 auto;
     padding: var(--sm-space-8) var(--sm-space-8) var(--sm-space-12);
   }
 
-  .hallPilaster {
-    position: relative;
-    flex: 0 0 calc(var(--sm-space-13) * 0.82);
-    height: calc(var(--sm-space-13) * 0.82);
-    margin: 0 calc(var(--sm-space-5) * -1) calc(var(--sm-space-5) * -1);
-    background: var(--sm-text-faint);
-    -webkit-mask: url("/hall-pilaster.svg") center top / auto calc(var(--sm-space-13) * 1.4) no-repeat;
-    mask: url("/hall-pilaster.svg") center top / auto calc(var(--sm-space-13) * 1.4) no-repeat;
-    opacity: 0.1;
-    pointer-events: none;
-  }
-
-  :global(html[data-theme="dark"]) .hallPilaster {
-    opacity: 0.08;
-  }
-}
-
-.readingIcon,
-.hallPilaster {
-  display: none;
-}
-
-@media (min-width: 900px) {
-  .readingIcon {
-    display: inline-grid;
-  }
-
-  .hallPilaster {
+  .statusBar {
     display: block;
+    border-top: 0.5px solid var(--sm-line-rule);
+    background: var(--sm-surface-sheet);
+  }
+
+  .statusInner {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sm-space-6);
+    padding: 0 var(--sm-space-8);
+  }
+
+  .statusInner a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sm-space-3);
+    min-height: var(--sm-size-target);
+    color: var(--sm-text-tertiary);
+    font-size: var(--sm-font-size-small);
+    text-decoration: none;
+  }
+
+  .statusInner a:hover {
+    color: var(--sm-text-primary);
+  }
+
+  .statusInner svg {
+    width: var(--sm-space-5);
+    height: var(--sm-space-5);
   }
 }

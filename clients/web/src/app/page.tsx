@@ -29,10 +29,10 @@ const loop = [
 ] as const;
 
 const changes = [
-  ["keyless", "Keyless by design.", "No instruction can alter a Formula, move a holder's assets, or stop a Melt."],
-  ["graded", "Every claim graded.", "The legal shape leads before price, ticker or issuer language."],
-  ["powers", "Issuer powers named.", "Freeze, pause, seizure, recipient gates and multiplier controls appear as plain sentences."],
-  ["claims", "Held legs remain claims.", "A Melt records the holder's entitlement before any constituent is delivered."],
+  ["keyless", "Formula", "Keyless by design.", "No instruction can alter a Formula, move a holder's assets, or stop a Melt."],
+  ["graded", "Grade", "Every claim graded.", "The legal shape leads before price, ticker or issuer language."],
+  ["powers", "Issuer powers", "Issuer powers named.", "Freeze, pause, seizure, recipient gates and multiplier controls appear as plain sentences."],
+  ["claims", "Melt", "Held legs remain claims.", "A Melt records the holder's entitlement before any constituent is delivered."],
 ] as const;
 
 export default async function Home() {
@@ -59,8 +59,8 @@ export default async function Home() {
       <section className={styles.section}>
         <SectionHeading index="01" title="What changes" question="What does the Hall make observable or structurally different?" />
         <div className={styles.claimGrid} data-testid="change-register">
-          {changes.map(([kind, title, description], index) => (
-            <MechanismPlate key={kind} kind={kind} index={index + 1} title={title}>{description}</MechanismPlate>
+          {changes.map(([kind, subject, title, description], index) => (
+            <MechanismPlate key={kind} kind={kind} index={index + 1} subject={subject} title={title}>{description}</MechanismPlate>
           ))}
         </div>
       </section>

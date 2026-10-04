@@ -4,32 +4,71 @@
   padding: 0 var(--sm-space-7);
 }
 
-/* components.md, Wallet state: a quiet ruled silhouette, never green,
-   opening below the rail. */
+/* components.md, Wallet state. Disconnected it is built like the Route
+   action, by Storm's decision of 4 October 2026, because logging in is the
+   way into every product room. Connected it turns quiet and shows the
+   wallet's own avatar, since the account is then a state, not an action. */
 .walletState {
   position: relative;
 }
 
 .walletState summary {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: var(--sm-space-2);
+  align-items: stretch;
   min-height: var(--sm-size-target);
-  padding: 0 0 0 var(--sm-space-4);
-  border: 1px solid var(--sm-line-strong);
+  padding: 0;
   border-radius: var(--sm-radius-data);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
+  color: var(--sm-text-onTouch);
+  background: var(--sm-accent-touch);
+  font-size: var(--sm-font-size-body);
   font-weight: var(--sm-font-weight-medium);
   list-style: none;
   cursor: pointer;
+}
+
+.walletState summary::before,
+.walletState summary::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: var(--sm-space-3);
+  border-top: 0.5px solid var(--sm-text-primary);
+  pointer-events: none;
+}
+
+.walletState summary::before {
+  right: 100%;
+}
+
+.walletState summary::after {
+  left: 100%;
+}
+
+.walletLabel {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--sm-space-6);
+  white-space: nowrap;
 }
 
 .walletIcon {
   display: inline-grid;
   place-items: center;
   width: var(--sm-size-target);
-  height: var(--sm-size-target);
+  min-height: var(--sm-size-target);
+  color: var(--sm-text-onTouch);
+  background: var(--sm-accent-touchPressed);
+}
+
+.walletState summary[data-connected] {
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-sheet);
+  border-top: 0.5px solid var(--sm-line-strong);
+  border-bottom: 0.5px solid var(--sm-line-strong);
+}
+
+.walletState summary[data-connected] .walletIcon {
   color: var(--sm-text-inverse);
   background: var(--sm-surface-inverse);
 }
@@ -49,16 +88,9 @@
   display: none;
 }
 
-.walletState summary[data-connected]::before {
-  content: "";
-  width: var(--sm-space-2);
-  height: var(--sm-space-2);
-  background: var(--sm-text-primary);
-}
-
-.walletState summary[data-connected] span {
-  color: var(--sm-text-primary);
+.walletState summary[data-connected] .walletLabel {
   font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-small);
   font-variant-ligatures: none;
 }
 
@@ -68,15 +100,8 @@
 }
 
 @media (max-width: 899px) {
-  .walletState summary {
-    gap: var(--sm-space-1);
-    padding-left: var(--sm-space-3);
-  }
-
   .walletLabel {
-    font-size: var(--sm-font-size-micro);
-    line-height: 1;
-    white-space: nowrap;
+    padding: 0 var(--sm-space-5);
   }
 }
 

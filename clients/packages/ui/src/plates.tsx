@@ -9,27 +9,72 @@ type Size = readonly [width: number, depth: number, height: number];
 // lets flat paper faces hide whatever stands behind them.
 const cos30 = Math.sqrt(3) / 2;
 
-function project([x, y, z]: Point): string {
-  return `${((x - y) * cos30).toFixed(1)},${((x + y) / 2 - z).toFixed(1)}`;
+function screen([x, y, z]: Point): readonly [number, number] {
+  return [(x - y) * cos30, (x + y) / 2 - z];
+}
+
+function project(point: Point): string {
+  const [sx, sy] = screen(point);
+  return `${sx.toFixed(1)},${sy.toFixed(1)}`;
 }
 
 function polygon(corners: Point[]): string {
   return corners.map(project).join(" ");
 }
 
+function segment(from: Point, to: Point): string {
+  return `M${project(from)}L${project(to)}`;
+}
+
+// Tone comes from line, as on an engraved certificate: the right-hand face of
+// a paper block is hatched, so the volume reads without a fill or shadow.
+const hatchPitch = 3;
+
 function Block({ at: [x, y, z], size: [w, d, h], solid = false }: { at: Point; size: Size; solid?: boolean }) {
   const top = z + h;
+  const hatch = solid
+    ? ""
+    : Array.from({ length: Math.max(0, Math.ceil(h / hatchPitch) - 1) }, (_, step) => {
+        const level = z + (step + 1) * hatchPitch;
+        return segment([x + w, y, level], [x + w, y + d, level]);
+      }).join("");
+  const seam = Math.min(w, d) / 5;
   return (
     <g className={solid ? styles.solid : styles.paper} data-solid={solid || undefined}>
       <polygon className={styles.side} points={polygon([[x + w, y, z], [x + w, y + d, z], [x + w, y + d, top], [x + w, y, top]])} />
+      {hatch ? <path className={styles.hatch} d={hatch} /> : null}
       <polygon className={styles.side} points={polygon([[x, y + d, z], [x + w, y + d, z], [x + w, y + d, top], [x, y + d, top]])} />
       <polygon className={styles.top} points={polygon([[x, y, top], [x + w, y, top], [x + w, y + d, top], [x, y + d, top]])} />
+      {solid ? (
+        <polygon className={styles.seam} points={polygon([[x + seam, y + seam, top], [x + w - seam, y + seam, top], [x + w - seam, y + d - seam, top], [x + seam, y + d - seam, top]])} />
+      ) : null}
     </g>
   );
 }
 
 function Trace({ through }: { through: Point[] }) {
-  return <polyline className={styles.trace} points={polygon(through)} />;
+  const ends = [through[0], through[through.length - 1]].map(screen);
+  return (
+    <g>
+      <polyline className={styles.trace} points={polygon(through)} />
+      {ends.map(([sx, sy], index) => <circle key={index} className={styles.node} cx={sx.toFixed(1)} cy={sy.toFixed(1)} r="1.8" />)}
+    </g>
+  );
+}
+
+// A sealed case drawn as dashed edges only, so the Formula inside stays in view.
+function Vitrine({ at: [x, y, z], size: [w, d, h] }: { at: Point; size: Size }) {
+  const top = z + h;
+  const corners: Point[] = [[x, y, z], [x + w, y, z], [x + w, y + d, z], [x, y + d, z]];
+  return (
+    <path
+      className={styles.vitrine}
+      d={[
+        ...corners.map(([cx, cy]) => segment([cx, cy, z], [cx, cy, top])),
+        `M${polygon([[x, y, top], [x + w, y, top], [x + w, y + d, top], [x, y + d, top]]).replaceAll(" ", "L")}Z`,
+      ].join("")}
+    />
+  );
 }
 
 function Bound({ at: [x, y, z], size: [w, d] }: { at: Point; size: readonly [number, number] }) {
@@ -49,7 +94,7 @@ function Refusal({ at: [x, y, z] }: { at: Point }) {
 // A note lies on the floor. Along x it reads down and to the right; along y
 // it reads up and to the right, so neither direction is ever upside down.
 function Note({ at, along, recorded = false, children }: { at: Point; along: "x" | "y"; recorded?: boolean; children: string }) {
-  const [sx, sy] = project(at).split(",");
+  const [sx, sy] = screen(at).map((value) => value.toFixed(1));
   const plane = along === "x" ? `${cos30} 0.5 ${-cos30} 0.5` : `${cos30} -0.5 ${cos30} 0.5`;
   return (
     <text className={recorded ? styles.recorded : styles.note} transform={`matrix(${plane} ${sx} ${sy})`}>
@@ -75,6 +120,7 @@ function Keyless() {
       <Refusal at={[36, -52, 0]} />
       <Note at={[44, -46, 0]} along="x">no path</Note>
       <Bound at={[-44, -44, 0]} size={[88, 88]} />
+      <Vitrine at={[-38, -38, 0]} size={[76, 76, 52]} />
       <Block at={[-30, -30, 0]} size={[60, 60, 8]} />
       <Block at={[-18, -18, 8]} size={[36, 36, 34]} solid />
       <Note at={[-40, 54, 0]} along="x">fixed formula</Note>
@@ -184,10 +230,13 @@ export function MechanismDrawing({ kind }: { kind: MechanismKind }) {
 }
 
 /** components.md, Mechanism plate. */
-export function MechanismPlate({ kind, index, title, children }: { kind: MechanismKind; index: number; title: string; children: ReactNode }) {
+export function MechanismPlate({ kind, index, subject, title, children }: { kind: MechanismKind; index: number; subject: string; title: string; children: ReactNode }) {
   return (
     <article className={styles.plate} data-testid="mechanism-plate">
-      <span className={styles.index}>{String(index).padStart(2, "0")}</span>
+      <span className={styles.label}>
+        <span className={styles.index}>{String(index).padStart(2, "0")}</span>
+        {subject}
+      </span>
       <MechanismDrawing kind={kind} />
       <h3>{title}</h3>
       <p>{children}</p>

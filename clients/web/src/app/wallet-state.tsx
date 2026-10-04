@@ -45,7 +45,7 @@ export function WalletState() {
   return (
     <details className={styles.walletState}>
       <summary data-connected={connected || undefined}>
-        {connecting ? <span className={styles.walletLabel}>Connecting</span> : connected && address ? <span className={styles.walletLabel} aria-label={`Wallet ${address}`}>{middle(address)}</span> : <span className={styles.walletLabel}>Connect wallet</span>}
+        {connecting ? <span className={styles.walletLabel}>Connecting</span> : connected && address ? <span className={styles.walletLabel} aria-label={`Wallet ${address}`}>{middle(address)}</span> : <span className={styles.walletLabel}>Log in</span>}
         <span className={styles.walletIcon} data-connected={connected || undefined}>
           {connected && wallet ? <Image src={wallet.adapter.icon} width={22} height={22} alt="" unoptimized /> : <Icon name="wallet" />}
         </span>

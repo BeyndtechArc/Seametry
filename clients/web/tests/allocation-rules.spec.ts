@@ -143,7 +143,7 @@ test("the committed snapshot is the policy engine's, for every captured lot", ()
 
 test("the dashboard wallet disclosure opens below its header containment", async ({ page }) => {
   await page.goto("/app/allocation");
-  const trigger = page.getByText("Connect wallet", { exact: true });
+  const trigger = page.getByText("Log in", { exact: true });
   await trigger.click();
   const panel = page.getByText("No wallet was detected in this browser.", { exact: false });
   await expect(panel).toBeVisible();
@@ -200,11 +200,22 @@ test("a detected Wallet Standard wallet connects from the dashboard header", asy
   });
 
   await page.goto("/app/allocation");
-  await page.getByText("Connect wallet", { exact: true }).click();
+  await page.getByText("Log in", { exact: true }).click();
   const wallet = page.getByRole("button", { name: "Connect Test wallet" });
   await expect(wallet.locator("img")).toHaveCount(1);
   await wallet.click();
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
+  const account = page.getByRole("banner").locator("summary[data-connected]");
+  await expect(account.locator(":scope > span").last().locator("img")).toHaveCount(1);
+  const ground = await account.evaluate((summary) => {
+    const probe = document.createElement("span");
+    probe.style.background = "var(--sm-accent-touch)";
+    document.body.append(probe);
+    const touch = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return { actual: getComputedStyle(summary).backgroundColor, touch };
+  });
+  expect(ground.actual).not.toBe(ground.touch);
 });
 
 test("field placeholders are quieter than entered values in both modes", async ({ page }) => {

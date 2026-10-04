@@ -45,18 +45,18 @@ test("sign in states the unavailable identity boundary without collecting a wall
 test("the wallet state lives in the app's top bar, and connecting signs nothing", async ({ page }) => {
   await page.goto("/");
   // The public rail carries reading pages and one way into the app, never a wallet.
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toHaveCount(0);
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toHaveCount(0);
 
   await page.goto("/app");
   const bar = page.getByRole("banner");
-  const state = bar.locator("summary", { hasText: "Connect wallet" });
+  const state = bar.locator("summary", { hasText: "Log in" });
   await expect(state).toBeVisible();
   await state.click();
   // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
   await expect(bar.getByText("No wallet was detected in this browser. Open the site in a browser with a Solana wallet extension, or use your wallet's browser on a phone.", { exact: true })).toBeVisible();
 
   await page.goto("/app/allocation");
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toBeVisible();
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toBeVisible();
 });
 
 test("the Allocation explains direct ownership before introducing its execution terms", async ({ page }) => {
@@ -149,7 +149,7 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   await page.getByRole("button", { name: "Open product navigation" }).click();
   const appMenu = page.getByRole("navigation", { name: "Mobile product" });
   await expect(appMenu).toBeVisible();
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toBeVisible();
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("button", { name: "Use dark mode" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Close product navigation" })).toHaveText("");
   const appOrder = await page.evaluate(() => ({
@@ -238,7 +238,7 @@ test("desktop rails share the page content edge", async ({ page }) => {
   expect(edges?.headerRight).toBe(edges?.mainRight);
 });
 
-test("the Open AP field keeps its inset and the app shell ends on a cropped Hall pilaster", async ({ page }) => {
+test("the Open AP field keeps its inset and the app keeps its reading pages in the status bar", async ({ page }) => {
   await page.setViewportSize({ width: 800, height: 900 });
   await page.goto("/");
   const fieldPadding = await page.getByTestId("open-ap-field").evaluate((element) => {
@@ -249,53 +249,41 @@ test("the Open AP field keeps its inset and the app shell ends on a cropped Hall
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app");
-  const pilaster = page.getByTestId("hall-pilaster");
-  const reading = page.getByRole("navigation", { name: "Reading" });
-  await expect(pilaster).toBeAttached();
-  const shellGeometry = await page.evaluate(() => {
-    const decoration = document.querySelector<HTMLElement>("[data-testid='hall-pilaster']");
-    const readingNav = document.querySelector<HTMLElement>("nav[aria-label='Reading']");
-    if (!decoration || !readingNav) return null;
-    const decorationBox = decoration.getBoundingClientRect();
-    const readingBox = readingNav.getBoundingClientRect();
-    return {
-      decorationTop: decorationBox.top,
-      readingBottom: readingBox.bottom,
-      opacity: Number(getComputedStyle(decoration).opacity),
-    };
-  });
-  expect(shellGeometry).not.toBeNull();
-  expect(shellGeometry!.readingBottom).toBeLessThanOrEqual(shellGeometry!.decorationTop);
-  expect(shellGeometry!.opacity).toBeLessThanOrEqual(0.18);
-  await expect(reading).toBeVisible();
+  await expect(page.locator("aside")).toHaveCount(0);
+  const reading = page.getByRole("contentinfo").getByRole("navigation", { name: "Reading" });
+  await expect(reading.getByRole("link")).toHaveText(["How it works", "The Key"]);
 });
 
-test("the app header gives the wallet its own identity and groups theme with navigation", async ({ page }) => {
+test("the app header logs in with a route action and keeps the mode control beside it", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app");
 
-  const actions = page.getByTestId("app-header-actions");
-  const tools = page.getByTestId("app-header-tools");
-  const controls = page.getByTestId("app-header-controls");
-  const wallet = actions.locator("summary", { hasText: "Connect wallet" });
-  await expect(wallet).toBeVisible();
-  expect(await tools.locator(":scope > *").count()).toBe(1);
-  expect(await controls.locator("summary").count()).toBe(0);
-  const outline = await controls.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return [style.borderTopWidth, style.borderRightWidth, style.borderBottomWidth, style.borderLeftWidth];
-  });
-  expect(outline).toEqual(["1px", "1px", "1px", "1px"]);
-  const themeColors = await tools.getByRole("button", { name: "Use dark mode" }).evaluate((element) => {
+  const login = page.getByTestId("app-header-actions").locator("summary", { hasText: "Log in" });
+  await expect(login).toBeVisible();
+  const treatment = await login.evaluate((summary) => {
     const probe = document.createElement("span");
     probe.style.background = "var(--sm-accent-touch)";
     document.body.append(probe);
-    const result = { actual: getComputedStyle(element).backgroundColor, expected: getComputedStyle(probe).backgroundColor };
+    const touch = getComputedStyle(probe).backgroundColor;
     probe.remove();
-    return result;
+    const label = getComputedStyle(summary.querySelector("span") as HTMLElement);
+    const theme = document.querySelector("[data-testid='app-header-theme'] button") as HTMLElement;
+    return {
+      login: getComputedStyle(summary).backgroundColor === touch,
+      evenLabel: label.paddingLeft === label.paddingRight,
+      theme: getComputedStyle(theme).backgroundColor === touch,
+    };
   });
-  expect(themeColors.actual).toBe(themeColors.expected);
-  await expect(wallet.locator(":scope > span").last().locator("svg")).toHaveCount(1);
+  expect(treatment).toEqual({ login: true, evenLabel: true, theme: true });
+  await expect(login.locator(":scope > span").last().locator("svg")).toHaveCount(1);
+  await expect(page.getByRole("banner").getByRole("navigation", { name: "Product" }).getByRole("link")).toHaveText([
+    "Overview",
+    "Build a basket",
+    "Alloy No. 1",
+    "Alloys",
+    "Demonstration",
+    "Instruments",
+  ]);
 });
 
 test("the Hall demonstration lives in the app, marked devnet", async ({ page }) => {
@@ -307,7 +295,7 @@ test("the Hall demonstration lives in the app, marked devnet", async ({ page }) 
   await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/app/alloys");
 });
 
-test("every app page names its network, and the sidebar and mobile register share one route list", async ({ page }) => {
+test("every app page names its network, and the top bar and mobile register share one route list", async ({ page }) => {
   for (const [path, network] of [
     ["/app", "Mainnet evidence"],
     ["/app/allocation", "Mainnet"],
@@ -338,7 +326,7 @@ test("the app shell reserves icons for reading links and one global wallet contr
   for (const path of ["/app/allocation", "/app/hall"]) {
     await page.goto(path);
     await expect(page.getByRole("main").getByRole("button", { name: /Connect / })).toHaveCount(0);
-    await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toHaveCount(1);
+    await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toHaveCount(1);
   }
 });
 
@@ -362,7 +350,7 @@ test("the desk reads as one numbered institutional folio", async ({ page }) => {
   await expect(page.getByTestId("desk-folio").locator("section").first().locator("svg [data-solid]")).toHaveCount(1);
 });
 
-test("secondary actions and the wallet carry the ink cell, primary actions stay green", async ({ page }) => {
+test("secondary actions carry the ink cell, primary actions stay green", async ({ page }) => {
   await page.goto("/app");
   const ink = await page.evaluate(() => {
     const probe = document.createElement("span");
@@ -376,8 +364,6 @@ test("secondary actions and the wallet carry the ink cell, primary actions stay 
     page.getByRole("link", { name }).locator(":scope > span").last().evaluate((cell) => getComputedStyle(cell).backgroundColor);
   expect(await cellOf("Run the demonstration")).toBe(ink);
   expect(await cellOf("Open Alloy No. 1")).not.toBe(ink);
-  const wallet = page.getByRole("banner").locator("summary", { hasText: "Connect wallet" }).locator(":scope > span").last();
-  expect(await wallet.evaluate((cell) => getComputedStyle(cell).backgroundColor)).toBe(ink);
 });
 
 test("no page scrolls sideways on a 320px phone", async ({ page }) => {
