@@ -648,6 +648,7 @@ export interface components {
             block_on_issuer_halt: boolean;
             depth_reference_usdc: number;
             depth_ceiling_bps: number;
+            impact_ceiling_bps: number;
         };
         /** @description One entry per server/internal/policy.Code constant. meaning is this repository's fixed sentence for the code, not the Fact text a particular decision carries. */
         ReasonCodeEntry: {

@@ -275,13 +275,15 @@ jobs:
 
       # docs/ENGINEERING_STANDARD.md section 16. These rules apply to code,
       # comments, copy and documentation, so the check covers all of them and
-      # excludes only the archive, which is retired historical text.
+      # excludes the archive, which is retired historical text, and both copies
+      # of the design skill, whose voice tables and linter list the forbidden
+      # words in order to forbid them.
       - name: No em dashes
         run: |
           if grep -rInP '\x{2014}' \
               --include='*.go' --include='*.md' --include='*.ts' --include='*.tsx' \
               --include='*.js' --include='*.mjs' --include='*.rs' --include='*.yml' \
-              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive --exclude-dir=.claude \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive --exclude-dir=.claude --exclude-dir=.agents \
               --exclude=AGENTS.md .; then
             echo
             echo "Em dashes are not used in this project. See docs/ENGINEERING_STANDARD.md section 16."
@@ -296,7 +298,7 @@ jobs:
           if grep -rInE '\b(true|correct|fair|safe|guaranteed|pure) (price|value|quote|number|rate)\b' \
               --include='*.go' --include='*.md' --include='*.ts' --include='*.tsx' \
               --include='*.js' --include='*.mjs' --include='*.rs' \
-              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive --exclude-dir=.claude \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=archive --exclude-dir=.claude --exclude-dir=.agents \
               --exclude=AGENTS.md . \
               | grep -vE 'never|not |no |refus|forbid|prohibit'; then
             echo
