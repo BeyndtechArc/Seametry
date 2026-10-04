@@ -39,6 +39,12 @@
   height: var(--sm-space-6);
 }
 
+.walletIcon img {
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
+  border-radius: 50%;
+}
+
 .walletState summary::-webkit-details-marker {
   display: none;
 }
@@ -64,7 +70,13 @@
 @media (max-width: 899px) {
   .walletState summary {
     gap: var(--sm-space-1);
-    padding-left: var(--sm-space-2);
+    padding-left: var(--sm-space-3);
+  }
+
+  .walletLabel {
+    font-size: var(--sm-font-size-micro);
+    line-height: 1;
+    white-space: nowrap;
   }
 }
 
@@ -375,7 +387,9 @@
 
 .claimsSection {
   position: relative;
-  padding-left: var(--sm-space-9);
+  padding: var(--sm-space-8);
+  background: var(--sm-surface-raised);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
 }
 
 .claimsSection::before {
@@ -385,6 +399,10 @@
   bottom: 0;
   left: 0;
   border-left: var(--sm-space-2) solid var(--sm-accent-touch);
+}
+
+.claimsSection .sectionHeading {
+  padding-left: var(--sm-space-5);
 }
 
 .instrumentSection .sectionHeading {
@@ -563,7 +581,6 @@
   border-top: 0.5px solid var(--sm-line-strong);
 }
 
-.claimGrid,
 .fragmentGrid,
 .comparison,
 .chapterGrid,
@@ -572,6 +589,73 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0 var(--sm-space-8);
+}
+
+.claimGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 0.5px solid var(--sm-line-strong);
+  border-left: 0.5px solid var(--sm-line-rule);
+}
+
+.changePlate {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+  min-height: calc(var(--sm-space-13) * 2.2);
+  border-right: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-feature-text-primary);
+  background: var(--sm-feature-ground);
+}
+
+.changePlate header {
+  display: grid;
+  grid-template-columns: var(--sm-space-8) minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--sm-space-3);
+  padding: var(--sm-space-5);
+}
+
+.changePlate small {
+  color: var(--sm-feature-text-secondary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.changePlate h3 {
+  color: var(--sm-feature-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-regular);
+}
+
+.changeArtwork {
+  display: grid;
+  place-items: center;
+  min-height: calc(var(--sm-space-13) * 1.15);
+  margin: 0 var(--sm-space-5);
+  overflow: hidden;
+  border-top: 0.5px solid var(--sm-feature-raised);
+  border-bottom: 0.5px solid var(--sm-feature-raised);
+  color: var(--sm-accent-touch);
+  background: var(--sm-feature-ground);
+}
+
+.changeArtwork svg {
+  width: min(100%, calc(var(--sm-space-13) * 2.4));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+}
+
+.changePlate p {
+  padding: var(--sm-space-5);
+  color: var(--sm-feature-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.55;
 }
 
 .fragmentPlate {
@@ -943,6 +1027,10 @@
   .agentSection {
     grid-template-columns: 1fr;
   }
+
+  .claimGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 700px) {
@@ -961,9 +1049,9 @@
   }
 
   .apMechanism {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
-    grid-template-rows: auto minmax(var(--sm-space-12), auto) auto;
-    gap: var(--sm-space-3);
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(5, auto);
+    gap: 0;
   }
 
   .apMechanism::before,
@@ -973,27 +1061,28 @@
 
   .apWallet {
     grid-column: 1;
-    grid-row: 2;
-  }
-
-  .apStrike {
-    grid-column: 2;
     grid-row: 1;
   }
 
-  .apCore {
-    grid-column: 2;
+  .apStrike {
+    grid-column: 1;
     grid-row: 2;
+  }
+
+  .apCore {
+    grid-column: 1;
+    grid-row: 3;
+    width: min(100%, calc(var(--sm-space-13) * 1.25));
   }
 
   .apMelt {
-    grid-column: 2;
-    grid-row: 3;
+    grid-column: 1;
+    grid-row: 4;
   }
 
   .apClaims {
-    grid-column: 3;
-    grid-row: 2;
+    grid-column: 1;
+    grid-row: 5;
   }
 
   .apPath {
@@ -1012,7 +1101,7 @@
   }
 
   .claimsSection {
-    padding-left: var(--sm-space-6);
+    padding: var(--sm-space-6);
   }
 
   .sectionHeading,
@@ -1024,6 +1113,14 @@
 
   .sectionHeading {
     gap: var(--sm-space-4);
+  }
+
+  .instrumentSection .sectionHeading {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeading h2 {
+    font-size: clamp(var(--sm-font-size-title), 12vw, var(--sm-font-size-figure));
   }
 
   .incidentSource {
@@ -1047,6 +1144,10 @@
   .accessGrid,
   .loop {
     grid-template-columns: 1fr;
+  }
+
+  .changePlate {
+    min-height: 0;
   }
 
   .comparison article + article {

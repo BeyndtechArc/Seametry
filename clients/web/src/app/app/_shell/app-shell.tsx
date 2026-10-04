@@ -10,7 +10,7 @@ import { WalletState } from "../../wallet-state";
 import { appGroups, currentPlace, readingRoutes } from "./routes";
 import styles from "./app-shell.module.css";
 
-/** components.md, App shell: sidebar on wide layouts, tab bar on narrow ones, one route list behind both. */
+/** components.md, App shell: sidebar on wide layouts, route register on narrow ones, one route list behind both. */
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const place = currentPlace(pathname);
@@ -54,23 +54,25 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <b>{place.group === "Desk" ? place.label : place.group}</b>
               </p>
             ) : null}
-            <div className={styles.controlRail} data-testid="app-header-controls">
-              <div className={styles.tools} data-testid="app-header-tools">
-                <ThemeControl />
-                <WalletState />
+            <div className={styles.headerActions} data-testid="app-header-actions">
+              <WalletState />
+              <div className={styles.controlRail} data-testid="app-header-controls">
+                <div className={styles.tools} data-testid="app-header-tools">
+                  <ThemeControl />
+                </div>
+                <button
+                  className={styles.menuControl}
+                  type="button"
+                  aria-expanded={menuOpen}
+                  aria-controls="app-mobile-navigation"
+                  aria-label={menuOpen ? "Close product navigation" : "Open product navigation"}
+                  onClick={() => setMenuOpen((open) => !open)}
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    {menuOpen ? <path d="m6 6 12 12M18 6 6 18" /> : <path d="M5 7h14M5 12h14M5 17h14" />}
+                  </svg>
+                </button>
               </div>
-              <button
-                className={styles.menuControl}
-                type="button"
-                aria-expanded={menuOpen}
-                aria-controls="app-mobile-navigation"
-                aria-label={menuOpen ? "Close product navigation" : "Open product navigation"}
-                onClick={() => setMenuOpen((open) => !open)}
-              >
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  {menuOpen ? <path d="m6 6 12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h11" />}
-                </svg>
-              </button>
             </div>
             {menuOpen ? (
               <div id="app-mobile-navigation" className={styles.mobileRegister}>

@@ -11,7 +11,7 @@ export function OpenAPField() {
         <span>Open participant loop</span>
         <span>No permission list</span>
       </header>
-      <div className={styles.apMechanism}>
+      <div className={styles.apMechanism} data-testid="open-ap-mechanism">
         <div className={`${styles.apNode} ${styles.apWallet}`}>
           <span>Any wallet</span>
           <small>Holds the Formula</small>

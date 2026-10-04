@@ -138,6 +138,11 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   await expect(page.getByRole("banner").getByRole("link", { name: "App", exact: true })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("button", { name: "Use dark mode" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Close navigation" })).toHaveText("");
+  const publicOrder = await page.evaluate(() => ({
+    menu: document.querySelector<HTMLElement>("button[aria-label='Close navigation']")?.getBoundingClientRect().left,
+    mark: document.querySelector<HTMLElement>("a[aria-label='Seametry']")?.getBoundingClientRect().left,
+  }));
+  expect(publicOrder.menu).toBeLessThan(publicOrder.mark ?? 0);
 
   await page.goto("/app");
   await expect(page.getByRole("banner").getByText("Seametry", { exact: true })).toBeHidden();
@@ -147,9 +152,34 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("button", { name: "Use dark mode" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Close product navigation" })).toHaveText("");
+  const appOrder = await page.evaluate(() => ({
+    wallet: document.querySelector<HTMLElement>("summary")?.getBoundingClientRect().left,
+    theme: document.querySelector<HTMLElement>("button[aria-label='Use dark mode']")?.getBoundingClientRect().left,
+    menu: document.querySelector<HTMLElement>("button[aria-label='Close product navigation']")?.getBoundingClientRect().left,
+  }));
+  expect(appOrder.wallet).toBeLessThan(appOrder.theme ?? 0);
+  expect(appOrder.theme).toBeLessThan(appOrder.menu ?? 0);
   await expect(page.getByRole("navigation", { name: "Product sections" })).toHaveCount(0);
   await expect(appMenu.getByRole("link", { name: "Overview" })).toBeVisible();
   await expect(appMenu.getByRole("link", { name: "The Key" })).toBeVisible();
+
+  await page.goto("/");
+  await expect(page.getByTestId("change-register").getByTestId("change-plate")).toHaveCount(4);
+  const mechanismGeometry = await page.getByTestId("open-ap-mechanism").evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    const children = Array.from(element.children).map((child) => child.getBoundingClientRect());
+    return {
+      contained: children.every((child) => child.left >= bounds.left && child.right <= bounds.right),
+      stacked: children.every((child, index) => index === 0 || child.top >= children[index - 1].bottom),
+    };
+  });
+  expect(mechanismGeometry).toEqual({ contained: true, stacked: true });
+  const instrumentHeading = await page.locator("section").filter({ hasText: "The instrument, opened" }).evaluate((element) => {
+    const title = element.querySelector("h2")?.getBoundingClientRect();
+    const question = element.querySelector("header p")?.getBoundingClientRect();
+    return { titleBottom: title?.bottom ?? 0, questionTop: question?.top ?? 0 };
+  });
+  expect(instrumentHeading.questionTop).toBeGreaterThanOrEqual(instrumentHeading.titleBottom);
 });
 
 test("desktop rails share the page content edge", async ({ page }) => {
@@ -162,6 +192,17 @@ test("desktop rails share the page content edge", async ({ page }) => {
     return { paddingInline: style.paddingInline, borderTopWidth: style.borderTopWidth };
   });
   expect(publicRailChrome).toEqual({ paddingInline: "0px", borderTopWidth: "0px" });
+  const active = page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Home" });
+  const activeTreatment = await active.evaluate((element) => {
+    const probe = document.createElement("span");
+    probe.style.color = "var(--sm-accent-touchText)";
+    document.body.append(probe);
+    const result = { color: getComputedStyle(element).color, expected: getComputedStyle(probe).color, rule: getComputedStyle(element, "::after").content };
+    probe.remove();
+    return result;
+  });
+  expect(activeTreatment.color).toBe(activeTreatment.expected);
+  expect(activeTreatment.rule).toBe("none");
   const mechanismFooter = page.getByTestId("open-ap-field").locator("figcaption");
   await expect(mechanismFooter).toBeVisible();
   expect(await mechanismFooter.evaluate((element) => getComputedStyle(element).maxWidth)).toBe("none");
@@ -211,21 +252,31 @@ test("the Open AP field keeps its inset and the app shell ends on a cropped Hall
   await expect(reading).toBeVisible();
 });
 
-test("the app header tools share one outline and the wallet ends in its icon", async ({ page }) => {
+test("the app header gives the wallet its own identity and groups theme with navigation", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app");
 
+  const actions = page.getByTestId("app-header-actions");
   const tools = page.getByTestId("app-header-tools");
   const controls = page.getByTestId("app-header-controls");
-  const wallet = tools.locator("summary", { hasText: "Connect wallet" });
+  const wallet = actions.locator("summary", { hasText: "Connect wallet" });
   await expect(wallet).toBeVisible();
-  expect(await tools.locator(":scope > *").count()).toBe(2);
-  expect(await tools.locator(":scope > *").last().locator("summary").count()).toBe(1);
+  expect(await tools.locator(":scope > *").count()).toBe(1);
+  expect(await controls.locator("summary").count()).toBe(0);
   const outline = await controls.evaluate((element) => {
     const style = getComputedStyle(element);
     return [style.borderTopWidth, style.borderRightWidth, style.borderBottomWidth, style.borderLeftWidth];
   });
   expect(outline).toEqual(["1px", "1px", "1px", "1px"]);
+  const themeColors = await tools.getByRole("button", { name: "Use dark mode" }).evaluate((element) => {
+    const probe = document.createElement("span");
+    probe.style.background = "var(--sm-accent-touch)";
+    document.body.append(probe);
+    const result = { actual: getComputedStyle(element).backgroundColor, expected: getComputedStyle(probe).backgroundColor };
+    probe.remove();
+    return result;
+  });
+  expect(themeColors.actual).toBe(themeColors.expected);
   await expect(wallet.locator(":scope > span").last().locator("svg")).toHaveCount(1);
 });
 

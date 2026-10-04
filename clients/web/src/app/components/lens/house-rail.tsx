@@ -29,6 +29,18 @@ export function HouseRail({ current }: { current?: PublicDestination }) {
   return (
     <div className={styles.railWrap}>
       <header className={styles.houseRail} data-scrolled={scrolled || undefined}>
+        <button
+          className={styles.menuControl}
+          type="button"
+          aria-expanded={menuOpen}
+          aria-controls="public-mobile-navigation"
+          aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            {menuOpen ? <path d="m6 6 12 12M18 6 6 18" /> : <path d="M5 9h14M5 15h14" />}
+          </svg>
+        </button>
         <BrandMark compactOnNarrow />
         <nav className={styles.primaryNav} aria-label="Primary">
           {primaryLinks.map((link) => (
@@ -42,18 +54,6 @@ export function HouseRail({ current }: { current?: PublicDestination }) {
           <span className={styles.appNarrow}><RouteAction href="/app">App</RouteAction></span>
           <ThemeControl />
         </div>
-        <button
-          className={styles.menuControl}
-          type="button"
-          aria-expanded={menuOpen}
-          aria-controls="public-mobile-navigation"
-          aria-label={menuOpen ? "Close navigation" : "Open navigation"}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          <svg aria-hidden="true" viewBox="0 0 24 24">
-            {menuOpen ? <path d="m6 6 12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h11" />}
-          </svg>
-        </button>
         {menuOpen ? (
           <nav id="public-mobile-navigation" className={styles.mobileRegister} aria-label="Mobile primary">
             {primaryLinks.map((link, index) => (

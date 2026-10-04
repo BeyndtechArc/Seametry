@@ -50,16 +50,7 @@
 }
 
 .primaryNav a[aria-current="page"] {
-  color: var(--sm-text-primary);
-}
-
-.primaryNav a[aria-current="page"]::after {
-  content: "";
-  position: absolute;
-  right: var(--sm-space-4);
-  bottom: 0;
-  left: var(--sm-space-4);
-  border-top: 1px solid var(--sm-accent-touch);
+  color: var(--sm-accent-touchText);
 }
 
 .primaryNav a:hover {
@@ -85,7 +76,7 @@
 @media (max-width: 900px) {
   .houseRail {
     grid-template-columns: auto auto minmax(0, 1fr) auto;
-    padding-inline: var(--sm-space-4);
+    padding-inline: 0;
   }
 
   .primaryNav {
@@ -97,11 +88,6 @@
     gap: var(--sm-space-2);
   }
 
-  .menuControl {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
   .appWide {
     display: none;
   }
@@ -111,10 +97,13 @@
   }
 
   .menuControl {
+    grid-column: 1;
+    grid-row: 1;
     display: inline-flex;
     align-items: center;
+    justify-content: flex-start;
     min-height: var(--sm-size-target);
-    width: var(--sm-size-target);
+    width: var(--sm-space-8);
     padding: 0 var(--sm-space-3);
     border: 0;
     color: var(--sm-text-primary);
@@ -123,7 +112,7 @@
   }
 
   .menuControl svg {
-    width: var(--sm-space-6);
+    width: var(--sm-space-7);
     height: var(--sm-space-6);
     fill: none;
     stroke: currentColor;
@@ -170,12 +159,12 @@
   }
 
   .houseRail {
-    gap: var(--sm-space-3);
-    padding: var(--sm-space-2) var(--sm-space-3);
+    gap: 0;
+    padding: var(--sm-space-2) 0;
   }
 
   .menuControl {
-    padding-right: 0;
+    padding: 0;
   }
 
   .railTools {

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import {
   AgentPanel,
-  ClaimLine,
   ConditionReport,
   Grade,
   ProofStrip,
@@ -28,6 +27,48 @@ const loop = [
   ["Verify", "Check the hallmark against its published root in your own browser."],
 ] as const;
 
+const changes = [
+  ["Keyless by design.", "No instruction can alter a Formula, move a holder's assets, or stop a Melt.", "keyless"],
+  ["Every claim graded.", "The legal shape leads before price, ticker or issuer language.", "graded"],
+  ["Issuer powers named.", "Freeze, pause, seizure, recipient gates and multiplier controls appear as plain sentences.", "powers"],
+  ["Held legs remain claims.", "A Melt records the holder's entitlement before any constituent is delivered.", "claims"],
+] as const;
+
+function ChangeIllustration({ kind }: { kind: (typeof changes)[number][2] }) {
+  if (kind === "keyless") {
+    return (
+      <svg viewBox="0 0 240 150" aria-hidden="true">
+        <path d="M28 126h184M48 126V54h144v72M62 54l58-30 58 30M78 126V72M104 126V72M136 126V72M162 126V72" />
+        <path d="M108 94h24v24h-24zM120 94V78" />
+      </svg>
+    );
+  }
+  if (kind === "graded") {
+    return (
+      <svg viewBox="0 0 240 150" aria-hidden="true">
+        <ellipse cx="120" cy="75" rx="70" ry="46" />
+        <ellipse cx="120" cy="75" rx="49" ry="31" />
+        <path d="m120 42 9 22 24 2-18 15 6 23-21-13-21 13 6-23-18-15 24-2 9-22ZM36 75h24M180 75h24" />
+      </svg>
+    );
+  }
+  if (kind === "powers") {
+    return (
+      <svg viewBox="0 0 240 150" aria-hidden="true">
+        <path d="M38 34h164v82H38zM56 52h128M56 75h128M56 98h128" />
+        <path d="M68 45v14M101 68v14M151 91v14M174 45v14" />
+        <circle cx="68" cy="52" r="4" /><circle cx="101" cy="75" r="4" /><circle cx="151" cy="98" r="4" /><circle cx="174" cy="52" r="4" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 240 150" aria-hidden="true">
+      <path d="M34 120h172M48 120V45h144v75M64 45l56-24 56 24M72 120V64M168 120V64" />
+      <path d="M91 62h58v58H91zM104 75h32v32h-32zM120 107v13" />
+    </svg>
+  );
+}
+
 export default async function Home() {
   await connection();
   return (
@@ -51,11 +92,14 @@ export default async function Home() {
 
       <section className={`${styles.section} ${styles.claimsSection}`}>
         <SectionHeading index="01" title="What changes" question="What does the Hall make observable or structurally different?" />
-        <div className={styles.claimGrid}>
-          <ClaimLine lead="Keyless by design.">No instruction can alter a Formula, move a holder&apos;s assets, or stop a Melt.</ClaimLine>
-          <ClaimLine lead="Every claim graded.">The legal shape leads before price, ticker or issuer language.</ClaimLine>
-          <ClaimLine lead="Issuer powers named.">Freeze, pause, seizure, recipient gates and multiplier controls appear as plain sentences.</ClaimLine>
-          <ClaimLine lead="Held legs remain claims.">A Melt records the holder&apos;s entitlement before any constituent is delivered.</ClaimLine>
+        <div className={styles.claimGrid} data-testid="change-register">
+          {changes.map(([title, description, kind], index) => (
+            <article className={styles.changePlate} key={title} data-testid="change-plate">
+              <header><small>0{index + 1}</small><h3>{title}</h3></header>
+              <div className={styles.changeArtwork}><ChangeIllustration kind={kind} /></div>
+              <p>{description}</p>
+            </article>
+          ))}
         </div>
       </section>
 
