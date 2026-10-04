@@ -1,92 +1,116 @@
-/* The Desk overview. Tiles are panels: tone plus the single top hairline,
-   radius 4, never a shadow (SKILL.md, non-negotiables). One column when
-   narrow; the lead tile spans two columns when there is room. */
+/* The Desk overview, one folio: Alloy No. 1 leads as a plate with its
+   mechanism drawn beside the figure, and the other rooms follow as ruled
+   ledger entries. The four mismatched cards it replaces, one of them
+   inverted, read as a template dashboard rather than a register. */
 
-.tiles {
+.folio {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-left: 0.5px solid var(--sm-line-rule);
+  border: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-sheet);
 }
 
-.tile {
-  position: relative;
-  display: grid;
-  align-content: start;
-  gap: var(--sm-space-5);
+.lead,
+.entry {
   min-width: 0;
-  padding: var(--sm-space-7);
-  border-right: 0.5px solid var(--sm-line-rule);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  background: var(--sm-surface-sheet);
-  overflow: hidden;
+}
+
+.entry {
+  border-top: 0.5px solid var(--sm-line-rule);
 }
 
 .index {
-  color: var(--sm-text-tertiary);
+  justify-self: start;
+  align-self: start;
+  padding: var(--sm-space-1) var(--sm-space-3);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-micro);
-  letter-spacing: var(--sm-font-tracking-label);
-}
-
-.tile header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-  gap: var(--sm-space-1) var(--sm-space-3);
-}
-
-.tile h2 {
-  margin: 0;
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-title-s);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.tile p {
-  margin: 0;
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
+  white-space: nowrap;
 }
 
 .lead {
-  min-height: calc(var(--sm-space-13) * 1.72);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 
-.lead::before {
-  content: "";
-  position: absolute;
-  top: var(--sm-space-7);
-  bottom: var(--sm-space-7);
-  left: 0;
-  border-left: 2px solid var(--sm-accent-touch);
+.leadCopy {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--sm-space-6);
+  padding: var(--sm-space-7);
 }
 
-.inverse {
-  color: var(--sm-text-inverse);
-  background: var(--sm-surface-inverse);
-  --sm-surface-sheet: var(--sm-surface-inverse);
-  --sm-text-primary: var(--sm-text-inverse);
-  --sm-text-secondary: var(--sm-surface-ground);
-  --sm-text-tertiary: var(--sm-surface-raised);
-  --sm-line-rule: var(--sm-surface-raised);
-  --sm-line-strong: var(--sm-surface-ground);
+.leadDrawing {
+  display: grid;
+  place-items: center;
+  padding: var(--sm-space-7);
+  border-top: 0.5px solid var(--sm-line-rule);
 }
 
-@media (min-width: 700px) {
-  .tiles {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-  }
+.lead header,
+.entry header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-3) var(--sm-space-5);
+}
 
+.lead h2 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-l);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.entry h2 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-regular);
+}
+
+.lead p,
+.entry p {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.55;
+}
+
+.entry {
+  display: grid;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-7);
+}
+
+.entryBody {
+  display: grid;
+  gap: var(--sm-space-3);
+}
+
+@media (min-width: 1100px) {
   .lead {
-    grid-column: span 7;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .inverse {
-    grid-column: span 5;
+  .leadDrawing {
+    border-top: 0;
+    border-left: 0.5px solid var(--sm-line-rule);
   }
 
-  .tile:not(.lead, .inverse) {
-    grid-column: span 6;
+  .entry {
+    grid-template-columns: calc(var(--sm-space-13) * 1.1) minmax(0, 1.6fr) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--sm-space-7);
+  }
+
+  .entry > :last-child {
+    grid-column: 4;
   }
 }

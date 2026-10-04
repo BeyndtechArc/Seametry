@@ -492,8 +492,9 @@
 
 .quietAction .actionIcon,
 .textAction .actionIcon {
-  color: var(--sm-accent-touchText);
-  background: var(--sm-surface-raised);
+  border-left: 0;
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
 }
 
 .quietAction:hover:not(:disabled) {

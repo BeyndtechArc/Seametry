@@ -78,8 +78,8 @@
   width: var(--sm-size-target);
   padding: 0;
   border: 0;
-  color: var(--sm-text-primary);
-  background: var(--sm-surface-raised);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
   font: inherit;
 }
 

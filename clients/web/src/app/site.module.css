@@ -30,8 +30,8 @@
   place-items: center;
   width: var(--sm-size-target);
   height: var(--sm-size-target);
-  color: var(--sm-accent-touchText);
-  background: var(--sm-surface-raised);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
 }
 
 .walletIcon svg {
@@ -385,26 +385,6 @@
   clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
 }
 
-.claimsSection {
-  position: relative;
-  padding: var(--sm-space-8);
-  background: var(--sm-surface-raised);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
-}
-
-.claimsSection::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  border-left: var(--sm-space-2) solid var(--sm-accent-touch);
-}
-
-.claimsSection .sectionHeading {
-  padding-left: var(--sm-space-5);
-}
-
 .instrumentSection .sectionHeading {
   grid-template-columns: minmax(0, 0.35fr) minmax(0, 2fr) minmax(0, 1fr);
 }
@@ -591,71 +571,19 @@
   gap: 0 var(--sm-space-8);
 }
 
+/* Each plate rules only its right and bottom edges and the grid rules the
+   top and left, so every edge is one hairline. A half-pixel gap was tried
+   first and disappeared wherever layout rounding collapsed it. */
 .claimGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-top: 0.5px solid var(--sm-line-strong);
+  border-top: 0.5px solid var(--sm-line-rule);
   border-left: 0.5px solid var(--sm-line-rule);
 }
 
-.changePlate {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  min-width: 0;
-  min-height: calc(var(--sm-space-13) * 2.2);
+.claimGrid > * {
   border-right: 0.5px solid var(--sm-line-rule);
   border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-feature-text-primary);
-  background: var(--sm-feature-ground);
-}
-
-.changePlate header {
-  display: grid;
-  grid-template-columns: var(--sm-space-8) minmax(0, 1fr);
-  align-items: baseline;
-  gap: var(--sm-space-3);
-  padding: var(--sm-space-5);
-}
-
-.changePlate small {
-  color: var(--sm-feature-text-secondary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.changePlate h3 {
-  color: var(--sm-feature-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-s);
-  font-weight: var(--sm-font-weight-regular);
-}
-
-.changeArtwork {
-  display: grid;
-  place-items: center;
-  min-height: calc(var(--sm-space-13) * 1.15);
-  margin: 0 var(--sm-space-5);
-  overflow: hidden;
-  border-top: 0.5px solid var(--sm-feature-raised);
-  border-bottom: 0.5px solid var(--sm-feature-raised);
-  color: var(--sm-accent-touch);
-  background: var(--sm-feature-ground);
-}
-
-.changeArtwork svg {
-  width: min(100%, calc(var(--sm-space-13) * 2.4));
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1;
-  stroke-linecap: square;
-  stroke-linejoin: miter;
-  vector-effect: non-scaling-stroke;
-}
-
-.changePlate p {
-  padding: var(--sm-space-5);
-  color: var(--sm-feature-text-secondary);
-  font-size: var(--sm-font-size-small);
-  line-height: 1.55;
 }
 
 .fragmentPlate {
@@ -1010,8 +938,13 @@
     display: none;
   }
 
+  .hero::after {
+    display: none;
+  }
+
   .apField {
     padding-top: var(--sm-space-7);
+    border-top: 0.5px solid var(--sm-feature-raised);
   }
 
   .keyFacts {
@@ -1100,10 +1033,6 @@
     padding: var(--sm-space-6);
   }
 
-  .claimsSection {
-    padding: var(--sm-space-6);
-  }
-
   .sectionHeading,
   .incidentHeader,
   .incidentBoundary,
@@ -1144,10 +1073,6 @@
   .accessGrid,
   .loop {
     grid-template-columns: 1fr;
-  }
-
-  .changePlate {
-    min-height: 0;
   }
 
   .comparison article + article {

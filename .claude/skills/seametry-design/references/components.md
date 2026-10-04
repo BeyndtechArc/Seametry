@@ -170,7 +170,7 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 
 ### Claim line
 **Answers:** what does this do for me, in one line?
-**Anatomy:** bold lead of two to four words, then one plain sentence. ("Keyless by design. No instruction exists that can change a formula or stop a melt.")
+**Anatomy:** bold lead of two to four words, then one plain sentence. ("Keyless by design. No instruction exists that can change a formula or stop a melt.") Where a claim needs to be seen as a mechanism, it becomes a Mechanism plate instead.
 **Rules:** the lead must be literally true of the shipped product.
 
 ### Decision row
@@ -298,6 +298,14 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **States:** default; narrow layout stacks the two paths while retaining direction in words; unavailable replaces the centre with the missing Hall state.
 **Data:** Hall mechanism guarantees only. No market quantity, price or participant count.
 **Rules:** no arrows without text, animation, invented market activity or implication that a wallet without the required assets can Strike.
+
+### Mechanism plate
+**Answers:** what does one Hall guarantee look like as a mechanism, before the reader parses the sentence?
+**Anatomy:** an isometric line drawing above a two-to-four-word title and one plain sentence, inside a ruled plate. The drawing is built from blocks, plinths, dashed paths and small floor annotations set along the isometric plane.
+**Identity:** one line ink on the sheet. Exactly one solid object, in the action green, marks the touchable thing (the share, the Formula, the constituent the holder can move). A recorded fact may carry its annotation in provenance blue. Faces are flat paper that hide what is behind them; the solid object alone takes the pressed green on its sides so it reads as a body. No other shading, shadow, gradient or perspective.
+**States:** default; narrow layouts stack plates one per row with the drawing kept at full width.
+**Data:** none. Annotations name register nouns and Hall rules only, never a market quantity, price, count or participant.
+**Rules:** every drawing depicts the sentence beneath it and nothing the product cannot do. Annotations are lower case nouns or short phrases, never instructions. Built only from the shared plate primitives in `@seametry/ui/plates`, so stroke, projection and type cannot drift between plates.
 
 ### Pattern Register
 **Answers:** does each shared component retain Seametry's identity across states, themes, widths and difficult content?

@@ -139,6 +139,9 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 | `accent.provenance` | Unverified values, stale markers, the verified path, NGD | Loss, error, decoration |
 | `accent.provenanceField` | Bars beside green, chart fills, chips | Any surface larger than a chip |
 | `line.highlight` | Top-edge hairline on raised surfaces | Anything else |
+| `surface.inverse`, `text.inverse` | The supporting ink: BLOCK stamps, the icon cell of secondary actions, index chips on plates, and compact utility wrappers. Black on the light certificate, bone on the dark touchstone | A primary action's fill, a panel, more than one ink block per control |
+
+**Ink.** Black supports green; it never competes with it (Storm, 4 October 2026). A primary action stays green with its pressed-green cell. A secondary action keeps its sheet label and takes an ink icon cell, so the two read as different jobs at a glance without a second hue. Ink is a neutral, not a hue, so it carries no meaning beyond weight.
 
 **Decisions.** ALLOW renders in `text.primary`. WARN renders in `accent.provenance`. BLOCK renders as an inverted stamp: `surface.inverse` fill, `text.inverse` type. No red anywhere in the system; the strongest signal is contrast, not hue.
 
@@ -261,7 +264,7 @@ Haptics (mobile): selection on scrub boundaries; light impact on a refreshed quo
 - Use one line family at 1.5px stroke, sized 16 or 20. Phosphor may supply generic interface symbols; the house mark, sponsor mark, punches and product diagrams remain custom.
 - Primary and quiet actions place the icon in a separate tonal cell so label and affordance remain distinct at a glance.
 - Dense surfaces may use static grids or typographic fields derived from Hallmark punches, seals and registration geometry. They stay decorative, use `text.faint`, and never imitate source code or compete with evidence.
-- The only illustrative marks are punches, the seal glyph, and the sponsor's mark.
+- The only illustrative marks are punches, the seal glyph, and the sponsor's mark. Mechanism plates are the one exception, because they are diagrams of the product rather than pictures of an idea: isometric line drawings of Hall guarantees, one line ink, one solid object in the action green, annotations set on the floor plane in the mono face (Storm's reference set, 4 October 2026: engineered isometric feature plates and engraved architecture, rendered in the house palette rather than the references' orange). They follow the Mechanism plate contract in components.md.
 - No stock photography, no 3D blobs, no abstract gradients, no emoji. The Explorer's single texture is the approved ThreeUI Halftone Flow, behind content, lazy-loaded, paused off-screen.
 - Architectural fragments may be constructed as original one-ink SVG engravings from geometry. They belong in shell margins, stay below `line.strong` in contrast, carry no information, and are cropped by the surface so the interface reads as a room rather than a decorated page.
 

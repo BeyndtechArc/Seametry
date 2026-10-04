@@ -164,7 +164,7 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   await expect(appMenu.getByRole("link", { name: "The Key" })).toBeVisible();
 
   await page.goto("/");
-  await expect(page.getByTestId("change-register").getByTestId("change-plate")).toHaveCount(4);
+  await expect(page.getByTestId("change-register").getByTestId("mechanism-plate")).toHaveCount(4);
   const mechanismGeometry = await page.getByTestId("open-ap-mechanism").evaluate((element) => {
     const bounds = element.getBoundingClientRect();
     const children = Array.from(element.children).map((child) => child.getBoundingClientRect());
@@ -180,6 +180,24 @@ test("narrow shells give the mark room and disclose one complete navigation regi
     return { titleBottom: title?.bottom ?? 0, questionTop: question?.top ?? 0 };
   });
   expect(instrumentHeading.questionTop).toBeGreaterThanOrEqual(instrumentHeading.titleBottom);
+});
+
+test("each mechanism plate draws one touchable object inside its frame", async ({ page }) => {
+  await page.goto("/");
+  const plates = await page.getByTestId("mechanism-plate").evaluateAll((articles) =>
+    articles.map((article) => {
+      const drawing = article.querySelector("svg") as SVGSVGElement;
+      const frame = drawing.viewBox.baseVal;
+      const ink = drawing.getBBox();
+      return {
+        title: article.querySelector("h3")?.textContent,
+        solids: drawing.querySelectorAll("[data-solid]").length,
+        inside: ink.x >= frame.x && ink.y >= frame.y && ink.x + ink.width <= frame.x + frame.width && ink.y + ink.height <= frame.y + frame.height,
+      };
+    }),
+  );
+  expect(plates).toHaveLength(4);
+  for (const plate of plates) expect(plate, plate.title ?? "").toMatchObject({ solids: 1, inside: true });
 });
 
 test("desktop rails share the page content edge", async ({ page }) => {
@@ -341,6 +359,25 @@ test("the desk reads as one numbered institutional folio", async ({ page }) => {
     "03 / Hall",
     "04 / Assay",
   ]);
+  await expect(page.getByTestId("desk-folio").locator("section").first().locator("svg [data-solid]")).toHaveCount(1);
+});
+
+test("secondary actions and the wallet carry the ink cell, primary actions stay green", async ({ page }) => {
+  await page.goto("/app");
+  const ink = await page.evaluate(() => {
+    const probe = document.createElement("span");
+    probe.style.background = "var(--sm-surface-inverse)";
+    document.body.append(probe);
+    const value = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    return value;
+  });
+  const cellOf = (name: string) =>
+    page.getByRole("link", { name }).locator(":scope > span").last().evaluate((cell) => getComputedStyle(cell).backgroundColor);
+  expect(await cellOf("Run the demonstration")).toBe(ink);
+  expect(await cellOf("Open Alloy No. 1")).not.toBe(ink);
+  const wallet = page.getByRole("banner").locator("summary", { hasText: "Connect wallet" }).locator(":scope > span").last();
+  expect(await wallet.evaluate((cell) => getComputedStyle(cell).backgroundColor)).toBe(ink);
 });
 
 test("no page scrolls sideways on a 320px phone", async ({ page }) => {

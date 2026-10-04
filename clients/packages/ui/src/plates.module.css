@@ -1,0 +1,103 @@
+/* components.md, Mechanism plate. */
+
+.plate {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: var(--sm-space-3);
+  min-width: 0;
+  padding: var(--sm-space-10) var(--sm-space-7) var(--sm-space-8);
+  color: var(--sm-text-secondary);
+  background: var(--sm-surface-sheet);
+}
+
+.index {
+  position: absolute;
+  top: var(--sm-space-5);
+  left: var(--sm-space-5);
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--sm-space-8);
+  padding: var(--sm-space-1) var(--sm-space-3);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+}
+
+/* Paper faces hide what stands behind them by matching the ground, so a
+   drawing is only ever placed on surface.sheet. */
+.drawing {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.plate .drawing {
+  margin-bottom: var(--sm-space-6);
+}
+
+.plate h3 {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.plate p {
+  max-width: 34ch;
+  font-size: var(--sm-font-size-small);
+  line-height: 1.55;
+}
+
+.drawing polygon,
+.drawing polyline,
+.drawing path {
+  stroke-width: 1;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+}
+
+.paper {
+  stroke: var(--sm-text-tertiary);
+  fill: var(--sm-surface-sheet);
+}
+
+.solid {
+  stroke: var(--sm-accent-touchPressed);
+}
+
+.solid .top {
+  fill: var(--sm-accent-touch);
+}
+
+.solid .side {
+  fill: var(--sm-accent-touchPressed);
+}
+
+.trace {
+  fill: none;
+  stroke: var(--sm-text-tertiary);
+  stroke-dasharray: 3 3;
+}
+
+.refusal {
+  fill: none;
+  stroke: var(--sm-text-primary);
+  stroke-width: 1.5;
+}
+
+.note,
+.recorded {
+  font-family: var(--sm-font-family-digest);
+  font-size: calc(var(--sm-font-size-micro) * 0.75);
+}
+
+.note {
+  fill: var(--sm-text-secondary);
+}
+
+.recorded {
+  fill: var(--sm-accent-provenance);
+}

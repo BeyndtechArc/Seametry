@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Figure, RouteAction, TextAction } from "@seametry/ui";
+import { MechanismDrawing } from "@seametry/ui/plates";
 import { admissions, partitionAdmissions } from "@/lib/allocation/admissions";
 import { formatAmount } from "@/lib/amount";
 import { relativeEvidenceAge, stormFixture } from "@/lib/storm-fixture";
@@ -19,12 +20,12 @@ export default async function DeskPage() {
   const stormAge = relativeEvidenceAge(stormFixture.observedAt);
 
   return (
-    <>
-      <div className={styles.tiles} data-testid="desk-folio">
-        <section className={`${styles.tile} ${styles.lead}`} aria-labelledby="storm-tile">
+    <div className={styles.folio} data-testid="desk-folio">
+      <section className={styles.lead} aria-labelledby="storm-entry">
+        <div className={styles.leadCopy}>
           <span className={styles.index}>01 / Alloy</span>
           <header>
-            <h2 id="storm-tile">Alloy No. 1, STORM</h2>
+            <h2 id="storm-entry">Alloy No. 1, STORM</h2>
             <NetworkBadge network="Devnet" />
           </header>
           <Figure
@@ -38,47 +39,56 @@ export default async function DeskPage() {
           />
           <p>{stormFixture.legs.length} constituents, labelled devnet fixture. Key still in hand.</p>
           <RouteAction href="/app/alloys/storm">Open Alloy No. 1</RouteAction>
-        </section>
+        </div>
+        <div className={styles.leadDrawing}>
+          <MechanismDrawing kind="strike" />
+        </div>
+      </section>
 
-        <section className={`${styles.tile} ${styles.inverse}`} aria-labelledby="allocation-tile">
-          <span className={styles.index}>02 / Allocation</span>
+      <section className={styles.entry} aria-labelledby="allocation-entry">
+        <span className={styles.index}>02 / Allocation</span>
+        <div className={styles.entryBody}>
           <header>
-            <h2 id="allocation-tile">Build a basket</h2>
+            <h2 id="allocation-entry">Build a basket</h2>
             <NetworkBadge network="Mainnet" />
           </header>
-          <Figure
-            label="Lots admitted"
-            value={`${admitted.length} of ${admissions.instruments.length}`}
-            unit="captured"
-            source={`Policy engine, ${admissions.policy_version}`}
-            state="stale"
-            age={snapshotAge}
-            observedAt={admissions.as_of}
-          />
           <p>Allocation means direct ownership: each constituent settles into your wallet, with no pooled share between you and the assets.</p>
-          <TextAction href="/app/allocation">Buy into your wallet</TextAction>
-        </section>
+        </div>
+        <Figure
+          label="Lots admitted"
+          value={`${admitted.length} of ${admissions.instruments.length}`}
+          unit="captured"
+          source={`Policy engine, ${admissions.policy_version}`}
+          state="stale"
+          age={snapshotAge}
+          observedAt={admissions.as_of}
+        />
+        <TextAction href="/app/allocation">Buy into your wallet</TextAction>
+      </section>
 
-        <section className={styles.tile} aria-labelledby="hall-tile">
-          <span className={styles.index}>03 / Hall</span>
+      <section className={styles.entry} aria-labelledby="hall-entry">
+        <span className={styles.index}>03 / Hall</span>
+        <div className={styles.entryBody}>
           <header>
-            <h2 id="hall-tile">Demonstration</h2>
+            <h2 id="hall-entry">Demonstration</h2>
             <NetworkBadge network="Devnet" />
           </header>
           <p>Strike, freeze one constituent, Melt anyway, withdraw each leg. Signed by your own wallet.</p>
-          <TextAction href="/app/hall">Run the demonstration</TextAction>
-        </section>
+        </div>
+        <TextAction href="/app/hall">Run the demonstration</TextAction>
+      </section>
 
-        <section className={styles.tile} aria-labelledby="assay-tile">
-          <span className={styles.index}>04 / Assay</span>
+      <section className={styles.entry} aria-labelledby="assay-entry">
+        <span className={styles.index}>04 / Assay</span>
+        <div className={styles.entryBody}>
           <header>
-            <h2 id="assay-tile">Instruments</h2>
+            <h2 id="assay-entry">Instruments</h2>
             <NetworkBadge network="Mainnet evidence" />
           </header>
           <p>Grade, issuer powers and depth at size for every captured instrument, read through the Gateway.</p>
-          <TextAction href="/app/instruments">Open the assay</TextAction>
-        </section>
-      </div>
-    </>
+        </div>
+        <TextAction href="/app/instruments">Open the assay</TextAction>
+      </section>
+    </div>
   );
 }
