@@ -24,15 +24,24 @@ function apiRoot() {
   return configured.endsWith("/") ? configured : `${configured}/`;
 }
 
-export async function readTerminalApi<T>(path: string): Promise<T> {
+// Every read is bounded. A page that renders on the server waits for its
+// reads, and an unbounded one held the Desk for 18 seconds behind a slow
+// register; the reader then saw nothing at all instead of an unavailable state.
+const DEFAULT_TIMEOUT_MS = 10_000;
+
+export async function readTerminalApi<T>(path: string, { timeoutMs = DEFAULT_TIMEOUT_MS }: { timeoutMs?: number } = {}): Promise<T> {
   const url = new URL(path.replace(/^\//, ""), apiRoot());
   let response: Response;
   try {
     response = await fetch(url, {
       cache: "no-store",
       headers: { Accept: "application/json, application/problem+json" },
+      signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (error) {
+    if (error instanceof Error && error.name === "TimeoutError") {
+      throw new TerminalApiError(504, "Terminal API too slow", `The Gateway did not answer ${path} within ${timeoutMs} ms.`);
+    }
     const reason = error instanceof Error ? error.message : "the Gateway did not answer";
     throw new TerminalApiError(502, "Terminal API did not answer", reason);
   }

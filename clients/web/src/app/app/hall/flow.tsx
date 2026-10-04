@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { AnchorProvider, BN } from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { TextAction } from "@seametry/ui";
+import { MechanismDrawing } from "@seametry/ui/plates";
+import { formatAmount } from "@/lib/amount";
 import { fetchClaim, hallProgram } from "@/lib/hall/program";
 import { claimPda, hallTokenAccount, ownerTokenAccount } from "@/lib/hall/pda";
 import { decodeAlloy, requiredIn, type DecodedAlloy } from "@/lib/hall/decode";
@@ -19,7 +21,10 @@ interface Founded {
   signatures: Record<string, string>;
 }
 
+type StepId = "found" | "strike" | "freeze" | "melt" | "withdraw" | "release";
+
 interface StepLog {
+  step: StepId;
   action: string;
   result: "ok" | "refused";
   detail: string;
@@ -97,11 +102,11 @@ export function HallDemoFlow() {
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "founding failed");
       setFounded(body);
-      pushLog({ action: "Found a fresh alloy and fund this wallet with mock stock", result: "ok", detail: `Alloy ${body.alloy}`, signature: body.signatures.initializeAlloy });
+      pushLog({ step: "found", action: "Found a fresh alloy and fund this wallet with mock stock", result: "ok", detail: `Alloy ${body.alloy}`, signature: body.signatures.initializeAlloy });
       const info = await connection.getAccountInfo(new PublicKey(body.alloy), "confirmed");
       if (info) setAlloyState(decodeAlloy(info.data));
     } catch (error) {
-      pushLog({ action: "Found a fresh alloy", result: "refused", detail: reasonFrom(error) });
+      pushLog({ step: "found", action: "Found a fresh alloy", result: "refused", detail: reasonFrom(error) });
     } finally {
       setFounding(false);
     }
@@ -135,10 +140,10 @@ export function HallDemoFlow() {
         })
         .remainingAccounts(remainingAccounts)
         .rpc({ commitment: "confirmed" });
-      pushLog({ action: `Strike ${Number(STRIKE_SHARES) / 10 ** SHARE_DECIMALS} shares`, result: "ok", detail: "Required inputs taken exactly, no more.", signature: sig });
+      pushLog({ step: "strike", action: `Strike ${formatAmount(STRIKE_SHARES, SHARE_DECIMALS)} shares`, result: "ok", detail: "Required inputs taken exactly, no more.", signature: sig });
       await refreshAlloy();
     } catch (error) {
-      pushLog({ action: "Strike shares", result: "refused", detail: reasonFrom(error) });
+      pushLog({ step: "strike", action: "Strike shares", result: "refused", detail: reasonFrom(error) });
     } finally {
       setBusy(null);
     }
@@ -155,9 +160,9 @@ export function HallDemoFlow() {
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "freeze failed");
-      pushLog({ action: `The Office freezes the Hall's account for ${founded.stocks[0].label}`, result: "ok", detail: "create will refuse this leg; redeem is unaffected.", signature: body.signature });
+      pushLog({ step: "freeze", action: `The Office freezes the Hall's account for ${founded.stocks[0].label}`, result: "ok", detail: "create will refuse this leg; redeem is unaffected.", signature: body.signature });
     } catch (error) {
-      pushLog({ action: "The Office freezes a constituent", result: "refused", detail: reasonFrom(error) });
+      pushLog({ step: "freeze", action: "The Office freezes a constituent", result: "refused", detail: reasonFrom(error) });
     } finally {
       setBusy(null);
     }
@@ -189,11 +194,11 @@ export function HallDemoFlow() {
         })
         .remainingAccounts(remainingAccounts)
         .rpc({ commitment: "confirmed" });
-      pushLog({ action: "Melt: burn shares, credit a claim for every leg", result: "ok", detail: "No constituent mint and no constituent token program is among these accounts. That is what makes this impossible for an issuer to block.", signature: sig });
+      pushLog({ step: "melt", action: "Melt: burn shares, credit a claim for every leg", result: "ok", detail: "No constituent mint and no constituent token program is among these accounts. That is what makes this impossible for an issuer to block.", signature: sig });
       await refreshAlloy();
       await refreshClaim();
     } catch (error) {
-      pushLog({ action: "Melt", result: "refused", detail: reasonFrom(error) });
+      pushLog({ step: "melt", action: "Melt", result: "refused", detail: reasonFrom(error) });
     } finally {
       setBusy(null);
     }
@@ -222,11 +227,11 @@ export function HallDemoFlow() {
             tokenProgram: TOKEN_2022_PROGRAM_ID,
           })
           .rpc({ commitment: "confirmed" });
-        pushLog({ action: `Withdraw leg ${label}`, result: "ok", detail: "Delivered.", signature: sig });
+        pushLog({ step: "withdraw", action: `Withdraw leg ${label}`, result: "ok", detail: "Delivered.", signature: sig });
         await refreshAlloy();
         await refreshClaim();
       } catch (error) {
-        pushLog({ action: `Withdraw leg ${label}`, result: "refused", detail: reasonFrom(error) + " The claim stays exactly as it was until the issuer releases it." });
+        pushLog({ step: "withdraw", action: `Withdraw leg ${label}`, result: "refused", detail: reasonFrom(error) + " The claim stays exactly as it was until the issuer releases it." });
       } finally {
         setBusy(null);
       }
@@ -245,117 +250,173 @@ export function HallDemoFlow() {
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "thaw failed");
-      pushLog({ action: `The Office releases the Hall's account for ${founded.stocks[0].label}`, result: "ok", detail: "The claim can now be withdrawn.", signature: body.signature });
+      pushLog({ step: "release", action: `The Office releases the Hall's account for ${founded.stocks[0].label}`, result: "ok", detail: "The claim can now be withdrawn.", signature: body.signature });
     } catch (error) {
-      pushLog({ action: "The Office releases a constituent", result: "refused", detail: reasonFrom(error) });
+      pushLog({ step: "release", action: "The Office releases a constituent", result: "refused", detail: reasonFrom(error) });
     } finally {
       setBusy(null);
     }
   }, [founded]);
 
+  const done = (step: StepId) => log.some((entry) => entry.step === step && entry.result === "ok");
+  const frozen = founded?.stocks[0]?.label ?? "constituent A";
+  const idle = busy !== null || founding;
+  const script: { id: StepId; title: string; sentence: string; action: ReactNode }[] = [
+    {
+      id: "found",
+      title: "Found an Alloy",
+      sentence: "A fresh Alloy over two mock stocks, and this wallet funded with both, so every later step is yours to sign.",
+      action: (
+        <button className="key" disabled={!connected || !!founded || founding} onClick={doFound}>
+          {founding ? "Founding an Alloy" : "Found and fund"}
+        </button>
+      ),
+    },
+    {
+      id: "strike",
+      title: "Strike shares",
+      sentence: `Deposit exactly the Formula's quantities and receive ${formatAmount(STRIKE_SHARES, SHARE_DECIMALS)} shares.`,
+      action: (
+        <button className="key" disabled={!founded || idle} onClick={doStrike}>
+          {busy === "strike" ? "Striking" : "Strike"}
+        </button>
+      ),
+    },
+    {
+      id: "freeze",
+      title: `The issuer freezes ${frozen}`,
+      sentence: "A mock issuer uses its freeze authority on the Hall's account for one constituent, as a real issuer could.",
+      action: (
+        <button className="quiet" disabled={!founded || idle} onClick={doFreeze}>
+          {busy === "freeze" ? "Freezing" : `Freeze ${frozen}`}
+        </button>
+      ),
+    },
+    {
+      id: "melt",
+      title: "Melt anyway",
+      sentence: "Burn the shares for a claim on every leg. No constituent account is touched, so the freeze cannot stop it.",
+      action: (
+        <button className="key" disabled={!founded || idle} onClick={doRedeem}>
+          {busy === "redeem" ? "Melting" : "Melt"}
+        </button>
+      ),
+    },
+    {
+      id: "withdraw",
+      title: "Withdraw each leg",
+      sentence: `The free leg delivers, while ${frozen} is refused and stays a claim, unchanged, until it is released.`,
+      action: claimUnits?.some((units) => units > 0n) && founded ? (
+        <span className="step-actions">
+          {claimUnits.map((units, i) =>
+            units > 0n ? (
+              <button key={founded.stocks[i].mint} className="key" disabled={idle} onClick={() => doWithdraw(i)}>
+                {busy === `withdraw-${i}` ? "Withdrawing" : `Withdraw ${founded.stocks[i].label}`}
+              </button>
+            ) : null,
+          )}
+        </span>
+      ) : (
+        <button className="key" disabled>Withdraw</button>
+      ),
+    },
+    {
+      id: "release",
+      title: `The issuer releases ${frozen}`,
+      sentence: "The freeze lifts and the held claim withdraws in full.",
+      action: (
+        <button className="quiet" disabled={!founded || idle} onClick={doThaw}>
+          {busy === "thaw" ? "Releasing" : `Release ${frozen}`}
+        </button>
+      ),
+    },
+  ];
+  const next = connected ? script.find((step) => !done(step.id))?.id : undefined;
+
   return (
     <div className="hall-demo">
       <p className="devnet-line">Devnet Hall. Key still in hand. Mock issuers, invented tokens: nothing here is a market fact.</p>
 
-      {!connected && (
-        <div className="card">
-          <p className="tight">Use the wallet control in the header to enter the demonstration. The wallet needs devnet SOL for the claim account&apos;s rent.</p>
-        </div>
-      )}
+      <div className="demo-layout">
+        <ol className="demo-script" aria-label="Demonstration steps">
+          {script.map((step, index) => {
+            const state = done(step.id) ? "done" : step.id === next ? "next" : "waiting";
+            return (
+              <li key={step.id} data-state={state}>
+                <span className="step-index">{String(index + 1).padStart(2, "0")}</span>
+                <div className="step-copy">
+                  <h3>{step.title}</h3>
+                  <p>{step.sentence}</p>
+                </div>
+                <div className="step-act">
+                  <span className="step-state">{state === "done" ? "Done" : state === "next" ? "Next" : "Waiting"}</span>
+                  {step.action}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
 
-      {connected && publicKey && (
-        <div className="card">
-          <p className="tight">Holder <code className="addr">{publicKey.toBase58()}</code></p>
-          {!founded && (
-            <div className="tray">
-              <button className="key" disabled={founding} onClick={doFound}>
-                {founding ? "Founding an alloy…" : "Found an alloy and fund this wallet"}
-              </button>
+        <aside className="demo-side">
+          {!connected ? (
+            <div className="card">
+              <h3 className="lead">Log in to begin</h3>
+              <p className="tight">Use Log in in the header with a devnet wallet. It needs a little devnet SOL for the claim account&apos;s rent; everything else is funded for you.</p>
+              <div className="demo-drawing"><MechanismDrawing kind="claims" /></div>
             </div>
-          )}
-        </div>
-      )}
-
-      {founded && alloyState && (
-        <div className="card">
-          <h3 className="lead">The alloy</h3>
-          <p className="tight addr">{founded.alloy}</p>
-          <div className="record-actions">
-            <TextAction href={`/app/alloys/${encodeURIComponent(founded.alloy)}`}>Inspect this Alloy live</TextAction>
-            <a
-              href={`https://explorer.solana.com/address/${founded.alloy}?cluster=devnet`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Open the account on Solana
-            </a>
-          </div>
-          <dl className="row">
-            <dt>Supply</dt>
-            <dd className="n">{alloyState.supply.toString()}</dd>
-            {alloyState.legs.map((leg, i) => (
-              <>
-                <dt key={`ledger-label-${i}`}>{founded.stocks[i]?.label ?? i} ledger</dt>
-                <dd key={`ledger-value-${i}`} className="n">{leg.ledger.toString()}</dd>
-              </>
-            ))}
-          </dl>
-          <p className="tight">The share mint has no freeze authority, no permanent delegate, no pause, no hook. Mint authority is the alloy&apos;s own address, and only Strike can use it.</p>
-
-          <div className="tray">
-            <button className="key" disabled={busy !== null} onClick={doStrike}>
-              {busy === "strike" ? "Striking…" : "Strike shares"}
-            </button>
-            <button className="quiet" disabled={busy !== null} onClick={doFreeze}>
-              {busy === "freeze" ? "Freezing…" : `The Office freezes ${founded.stocks[0]?.label}`}
-            </button>
-            <button className="key" disabled={busy !== null} onClick={doRedeem}>
-              {busy === "redeem" ? "Melting…" : "Melt shares"}
-            </button>
-            <button className="quiet" disabled={busy !== null} onClick={doThaw}>
-              {busy === "thaw" ? "Releasing…" : `The Office releases ${founded.stocks[0]?.label}`}
-            </button>
-          </div>
-
-          {claimUnits && (
-            <div className="tray">
-              {claimUnits.map((units, i) =>
-                units > 0n ? (
-                  <button key={i} className="key" disabled={busy !== null} onClick={() => doWithdraw(i)}>
-                    {busy === `withdraw-${i}` ? "Withdrawing…" : `Withdraw ${founded.stocks[i].label} (${units.toString()})`}
-                  </button>
-                ) : null
-              )}
+          ) : publicKey ? (
+            <div className="card">
+              <h3 className="lead">Holder</h3>
+              <p className="tight addr">{publicKey.toBase58()}</p>
             </div>
-          )}
-        </div>
-      )}
+          ) : null}
 
-      {log.length > 0 && (
-        <div className="card">
-          <h3 className="lead">What happened</h3>
-          {log
-            .slice()
-            .reverse()
-            .map((entry, i) => (
-              <div className="sentence" key={i}>
-                <span>
-                  <span className={`stamp ${entry.result === "ok" ? "allow" : "warn"}`}>{entry.result}</span> {entry.action}
-                  <br />
-                  {entry.detail}
-                  {entry.signature && (
-                    <>
-                      {" "}
-                      <a href={explorerLink(entry.signature)} target="_blank" rel="noopener noreferrer">
-                        <code>{short(entry.signature)}</code>
-                      </a>
-                    </>
-                  )}
-                </span>
+          {founded && alloyState ? (
+            <div className="card">
+              <h3 className="lead">The Alloy</h3>
+              <p className="tight addr">{founded.alloy}</p>
+              <dl className="row">
+                <dt>Supply</dt>
+                <dd className="n">{formatAmount(alloyState.supply, SHARE_DECIMALS)}</dd>
+                {alloyState.legs.flatMap((leg, i) => [
+                  <dt key={`label-${i}`}>{founded.stocks[i]?.label ?? i} in the Hall</dt>,
+                  <dd key={`value-${i}`} className="n">{leg.ledger.toString()} atoms</dd>,
+                ])}
+              </dl>
+              <p className="tight">The share mint has no freeze authority, no permanent delegate, no pause, no hook. Only Strike can mint.</p>
+              <div className="record-actions">
+                <TextAction href={`https://explorer.solana.com/address/${founded.alloy}?cluster=devnet`} target="_blank" rel="noopener noreferrer">Open on Solana</TextAction>
               </div>
-            ))}
-        </div>
-      )}
+            </div>
+          ) : null}
+
+          {log.length > 0 ? (
+            <div className="card">
+              <h3 className="lead">What happened</h3>
+              {log
+                .slice()
+                .reverse()
+                .map((entry, i) => (
+                  <div className="sentence" key={i}>
+                    <span>
+                      <span className={`stamp ${entry.result === "ok" ? "allow" : "warn"}`}>{entry.result}</span> {entry.action}
+                      <br />
+                      {entry.detail}
+                      {entry.signature && (
+                        <>
+                          {" "}
+                          <a href={explorerLink(entry.signature)} target="_blank" rel="noopener noreferrer">
+                            <code>{short(entry.signature)}</code>
+                          </a>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          ) : null}
+        </aside>
+      </div>
     </div>
   );
 }

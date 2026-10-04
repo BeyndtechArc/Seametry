@@ -292,6 +292,14 @@ test("the Hall demonstration lives in the app, marked devnet", async ({ page }) 
   await expect(page.getByRole("heading", { level: 1, name: "Demo" })).toBeVisible();
   await expect(page.getByRole("main").getByText("Devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/app/alloys");
+
+  // Before a wallet is connected the whole argument is readable as a script,
+  // and nothing in it can be pressed.
+  const script = page.getByRole("list", { name: "Demonstration steps" }).getByRole("listitem");
+  await expect(script.locator("h3")).toHaveText(["Found an Alloy", "Strike shares", "The issuer freezes constituent A", "Melt anyway", "Withdraw each leg", "The issuer releases constituent A"]);
+  await expect(script.getByText("Waiting", { exact: true })).toHaveCount(6);
+  for (const button of await script.getByRole("button").all()) await expect(button).toBeDisabled();
+  await expect(page.getByRole("heading", { level: 3, name: "Log in to begin" })).toBeVisible();
 });
 
 test("every app page names its network, and the top bar and mobile register share one route list", async ({ page }) => {

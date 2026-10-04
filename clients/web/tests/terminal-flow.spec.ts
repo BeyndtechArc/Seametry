@@ -128,8 +128,8 @@ test("the Terminal moves from the live Hall register into one Alloy record", asy
   await expect(page).toHaveURL(`/app/alloys/${alloyAddress}`);
   await expect(page.getByRole("heading", { level: 1, name: "Alloy 1790627156984" })).toBeVisible();
   await expect(page.getByText("The issuer currently prevents this Hall account from delivering.")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Strike and Melt terms" })).toBeVisible();
-  await expect(page.getByText("1,000 shares", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Per 1,000 shares" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", { name: "Alloys" })).toHaveAttribute("href", "/app/alloys");
   await expect(page.locator("[data-nextjs-dialog]")).toHaveCount(0);
   expect(browserErrors).toEqual([]);
 });

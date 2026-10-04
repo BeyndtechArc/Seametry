@@ -41,21 +41,6 @@
   outline-offset: var(--sm-space-2);
 }
 
-.liveAlloyIdentity > span,
-.executionBoundary > div > span,
-.termsQuantity > span {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.liveAlloyIdentity h1,
-.executionBoundary h2 {
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-weight: var(--sm-font-weight-light);
-  letter-spacing: var(--sm-font-tracking-display);
-}
-
 .assayIdentity h1,
 .sectionHeading h2,
 .boundary h2 {
@@ -143,9 +128,7 @@
 
 .instrumentTable,
 .depthTable,
-.alloyTable,
-.alloyLedger,
-.termsTable {
+.alloyTable {
   width: 100%;
   border-collapse: collapse;
   color: var(--sm-text-secondary);
@@ -154,9 +137,7 @@
 
 .instrumentTable th,
 .depthTable th,
-.alloyTable th,
-.alloyLedger th,
-.termsTable th {
+.alloyTable th {
   padding: var(--sm-space-4) var(--sm-space-5);
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
@@ -165,9 +146,7 @@
 
 .instrumentTable td,
 .depthTable td,
-.alloyTable td,
-.alloyLedger td,
-.termsTable td {
+.alloyTable td {
   min-width: var(--sm-space-12);
   padding: var(--sm-space-6) var(--sm-space-5);
   border-top: 0.5px solid var(--sm-line-rule);
@@ -244,159 +223,328 @@
   border-bottom: 0.5px solid var(--sm-line-rule);
 }
 
-.liveAlloyPlate {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: var(--sm-space-10);
-  margin-top: var(--sm-space-7);
-  padding: var(--sm-space-9);
-  border-top: 0.5px solid var(--sm-line-highlight);
-  background: var(--sm-surface-raised);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
+/* The Alloy record: identity beside its mechanism, one strip of figures,
+   then the ledger with the terms held beside it, so the stated Strike and
+   Melt quantities stay in view while the legs that produce them are read. */
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+  margin-bottom: var(--sm-space-6);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
 }
 
-.liveAlloyIdentity {
+.crumbs a {
+  color: var(--sm-text-secondary);
+  text-decoration: none;
+}
+
+.crumbs a:hover {
+  color: var(--sm-text-primary);
+}
+
+.crumbs [aria-current] {
+  color: var(--sm-text-primary);
+}
+
+.recordLabel {
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+}
+
+.recordHead {
   display: grid;
-  align-content: end;
+  grid-template-columns: minmax(0, 1fr);
+  border: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-sheet);
+}
+
+.recordIdentity {
+  display: grid;
+  align-content: start;
   justify-items: start;
   gap: var(--sm-space-5);
   min-width: 0;
-  padding-left: var(--sm-space-5);
-  border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
+  padding: var(--sm-space-8);
 }
 
-.liveAlloyIdentity h1 {
-  font-size: clamp(var(--sm-font-size-figure-l), 8vw, var(--sm-font-size-display));
-  line-height: 0.9;
+.recordIdentity header {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-5);
 }
 
-.liveAlloyRegistry {
+.recordIdentity h1 {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-figure-l);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-display);
+  line-height: 1;
+}
+
+.recordIdentity h1 span {
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-title-s);
+  letter-spacing: 0;
+  font-variant-ligatures: none;
+}
+
+.recordRegistry {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  margin: 0;
+  border-top: 0.5px solid var(--sm-line-strong);
 }
 
-.liveAlloyRegistry > div {
+.recordRegistry > div {
+  display: grid;
+  grid-template-columns: calc(var(--sm-space-13) * 0.9) minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-4) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.recordRegistry dt {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.recordRegistry dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+}
+
+.recordDrawing {
+  display: grid;
+  place-items: center;
+  padding: var(--sm-space-8);
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.recordFacts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border-right: 0.5px solid var(--sm-line-rule);
+  border-left: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-sheet);
+}
+
+.recordFacts > * {
+  padding: var(--sm-space-6) var(--sm-space-7);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.recordFacts > *:last-child {
+  border-bottom: 0;
+}
+
+.recordBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sm-space-8);
+  margin-top: var(--sm-space-10);
+}
+
+.recordLedger > header,
+.recordTerms {
   display: grid;
   align-content: start;
   gap: var(--sm-space-3);
-  min-width: 0;
-  padding: var(--sm-space-5);
-  border-top: 0.5px solid var(--sm-line-rule);
-  border-right: 0.5px solid var(--sm-line-rule);
 }
 
-.liveAlloyRegistry dt {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.liveAlloyRegistry dd {
-  min-width: 0;
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-small);
-}
-
-.alloyFacts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.alloyFacts > * {
-  border-right: 0.5px solid var(--sm-line-rule);
-}
-
-.alloyFacts > *:last-child {
-  border-right: 0;
-}
-
-.alloyLedger caption {
-  padding: var(--sm-space-4) var(--sm-space-5);
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  text-align: left;
-}
-
-.alloyLedger td:first-child {
-  display: grid;
-  gap: var(--sm-space-3);
-  min-width: calc(var(--sm-space-13) * 2);
-}
-
-.alloyLedger td:not(:first-child),
-.termsTable td:not(:first-child) {
-  color: var(--sm-text-primary);
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
-.heldLeg {
-  display: grid;
-  justify-items: start;
-  gap: var(--sm-space-3);
-  min-width: calc(var(--sm-space-13) * 2);
-}
-
-.heldLeg p {
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  line-height: 1.5;
-}
-
-.termsPlate {
-  display: grid;
-  grid-template-columns: minmax(0, 0.65fr) minmax(0, 2.35fr);
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.termsQuantity {
-  display: grid;
-  align-content: center;
-  gap: var(--sm-space-4);
-  padding: var(--sm-space-7);
-  border-right: 0.5px solid var(--sm-line-rule);
-}
-
-.termsQuantity b {
+.recordLedger h2,
+.recordTerms h2 {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title-l);
-  font-weight: var(--sm-font-weight-light);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.recordLedger > header p,
+.recordTerms > p {
+  max-width: 62ch;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.55;
+}
+
+.legList {
+  display: grid;
+  margin: var(--sm-space-6) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 0.5px solid var(--sm-line-strong);
+}
+
+.legList li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sm-space-4) var(--sm-space-5);
+  padding: var(--sm-space-6) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.legIndex {
+  align-self: start;
+  padding: var(--sm-space-1) var(--sm-space-3);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+}
+
+.legMint {
+  display: grid;
+  gap: var(--sm-space-2);
+  min-width: 0;
+}
+
+.legMint b {
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.legBalances,
+.legDelivery {
+  grid-column: 2;
+}
+
+.legBalances {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sm-space-5);
+  margin: 0;
+}
+
+.legBalances dt {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.legBalances dd {
+  margin: var(--sm-space-1) 0 0;
+  overflow-wrap: anywhere;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-lead);
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-.termsQuantity small {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
+.legDelivery {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-3);
+}
+
+.legDelivery p {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
   line-height: 1.5;
 }
 
-.executionBoundary {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: var(--sm-space-10);
-  margin-top: var(--sm-space-13);
-  padding: var(--sm-space-8);
-  border-top: 0.5px solid var(--sm-line-highlight);
+.recordTerms {
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-7);
+  border: 0.5px solid var(--sm-line-rule);
   background: var(--sm-surface-sheet);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
 }
 
-.executionBoundary > div {
+.termsLedger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sm-font-size-small);
+  text-align: right;
+}
+
+.termsLedger th {
+  padding: var(--sm-space-3) var(--sm-space-2);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.termsLedger th:first-child {
+  text-align: left;
+}
+
+.termsLedger td,
+.termsLedger tbody th {
+  padding: var(--sm-space-4) var(--sm-space-2);
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.termsLedger tbody th {
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+}
+
+.termsLedger td {
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.termsKey {
   display: grid;
   justify-items: start;
-  gap: var(--sm-space-4);
+  gap: var(--sm-space-5);
+  margin-top: var(--sm-space-4);
+  padding-top: var(--sm-space-6);
+  border-top: 0.5px solid var(--sm-line-strong);
 }
 
-.executionBoundary h2 {
-  font-size: var(--sm-font-size-figure);
-}
+@media (min-width: 1000px) {
+  .recordHead {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
 
-.executionBoundary p {
-  max-width: 58ch;
-  color: var(--sm-text-secondary);
-  line-height: 1.6;
+  .recordDrawing {
+    border-top: 0;
+    border-left: 0.5px solid var(--sm-line-rule);
+  }
+
+  .recordFacts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .recordFacts > * {
+    border-bottom: 0;
+    border-right: 0.5px solid var(--sm-line-rule);
+  }
+
+  .recordFacts > *:last-child {
+    border-right: 0;
+  }
+
+  .recordBody {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: var(--sm-space-10);
+    align-items: start;
+  }
+
+  .recordTerms {
+    position: sticky;
+    top: calc(var(--sm-size-target) + var(--sm-space-9));
+  }
+
+  .legList li {
+    grid-template-columns: auto minmax(0, 0.8fr) minmax(0, 1.7fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .legBalances,
+  .legDelivery {
+    grid-column: auto;
+  }
 }
 
 .assayIdentity {
@@ -545,26 +693,9 @@
 
 @media (max-width: 800px) {
   .assayHero,
-  .liveAlloyPlate,
   .decisionPanel,
-  .boundary,
-  .termsPlate,
-  .executionBoundary {
+  .boundary {
     grid-template-columns: 1fr;
-  }
-
-  .alloyFacts {
-    grid-template-columns: 1fr;
-  }
-
-  .alloyFacts > * {
-    border-right: 0;
-    border-bottom: 0.5px solid var(--sm-line-rule);
-  }
-
-  .termsQuantity {
-    border-right: 0;
-    border-bottom: 0.5px solid var(--sm-line-rule);
   }
 
   .sectionHeading {

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 async function readRegister() {
   try {
-    return { register: await readTerminalApi<AlloyRegisterResponse>("v1/alloys") };
+    return { register: await readTerminalApi<AlloyRegisterResponse>("v1/alloys", { timeoutMs: 3_000 }) };
   } catch (error) {
     return { problem: terminalProblem(error) };
   }

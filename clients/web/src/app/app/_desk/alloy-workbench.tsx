@@ -10,8 +10,9 @@ import type {
   Meta,
   TerminalProblem,
 } from "@/lib/terminal-contract";
+import { MechanismDrawing } from "@seametry/ui/plates";
 import { formatAmount } from "@/lib/amount";
-import { PageHeader } from "../_shell/page-header";
+import { NetworkBadge, PageHeader } from "../_shell/page-header";
 import { useTerminalResource } from "./workbench";
 import styles from "./desk.module.css";
 
@@ -149,26 +150,36 @@ export function AlloyRecord({ address }: { address: string }) {
 
   return (
     <>
-      <div className={styles.backLink}><TextAction href="/app/alloys">Return to Alloys</TextAction></div>
+      <nav className={styles.crumbs} aria-label="Breadcrumb">
+        <Link href="/app/alloys">Alloys</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{alloy ? `Alloy ${alloy.id}` : "Alloy record"}</span>
+      </nav>
       {loading ? <AlloyLoading record /> : null}
       {problem ? <AlloyBoundary problem={problem} /> : null}
       {value && alloy && meta ? (
         <>
-          <section className={styles.liveAlloyPlate} aria-labelledby="live-alloy-title">
-            <div className={styles.liveAlloyIdentity}>
-              <span>Live Hall account</span>
-              <h1 id="live-alloy-title">Alloy {alloy.id}</h1>
+          <section className={styles.recordHead} aria-labelledby="live-alloy-title">
+            <div className={styles.recordIdentity}>
+              <header>
+                <span className={styles.recordLabel}>Live Hall account</span>
+                <NetworkBadge network="Devnet" />
+              </header>
+              <h1 id="live-alloy-title">Alloy <span>{alloy.id}</span></h1>
               <Digest value={alloy.address} />
+              <dl className={styles.recordRegistry}>
+                <div><dt>Sponsor</dt><dd><Digest value={alloy.sponsor} /></dd></div>
+                <div><dt>Share mint</dt><dd><Digest value={alloy.share_mint} /></dd></div>
+                <div><dt>Formula</dt><dd>{alloy.legs.length} {alloy.legs.length === 1 ? "constituent" : "constituents"}, fixed at founding</dd></div>
+                <div><dt>Evidence</dt><dd>{meta.completeness}, observed {observedAge(meta.as_of)} ago</dd></div>
+              </dl>
             </div>
-            <dl className={styles.liveAlloyRegistry}>
-              <div><dt>Cluster</dt><dd>{alloy.cluster}</dd></div>
-              <div><dt>Sponsor</dt><dd><Digest value={alloy.sponsor} /></dd></div>
-              <div><dt>Share mint</dt><dd><Digest value={alloy.share_mint} /></dd></div>
-              <div><dt>Evidence</dt><dd>{meta.completeness}</dd></div>
-            </dl>
+            <div className={styles.recordDrawing}>
+              <MechanismDrawing kind="strike" />
+            </div>
           </section>
 
-          <section className={styles.alloyFacts} aria-label="Live Alloy figures">
+          <section className={styles.recordFacts} aria-label="Live Alloy figures">
             <Figure
               label="Shares outstanding"
               value={formatAmount(alloy.supply, 0)}
@@ -198,81 +209,68 @@ export function AlloyRecord({ address }: { address: string }) {
             />
           </section>
 
-          <section className={styles.assaySection}>
-            <header className={styles.sectionHeading}>
-              <span>01 / Hall</span>
-              <h2>Constituent ledger</h2>
-              <p>Balances from the Alloy account. Held-back state comes from each Hall-owned token account.</p>
-            </header>
-            <div className={styles.tableViewport}>
-              <table className={styles.alloyLedger}>
-                <caption>{hallSource(meta)} · observed {observedAge(meta.as_of)} ago · {meta.completeness}</caption>
-                <thead><tr><th>Constituent</th><th>Ledger</th><th>Pending</th><th>Unclaimed</th><th>Delivery</th></tr></thead>
+          <div className={styles.recordBody}>
+            <section className={styles.recordLedger} aria-labelledby="ledger-heading">
+              <header>
+                <span className={styles.recordLabel}>01 / Hall</span>
+                <h2 id="ledger-heading">Constituent ledger</h2>
+                <p>Balances from the Alloy account; delivery from each Hall-owned token account. {hallSource(meta)}, observed {observedAge(meta.as_of)} ago.</p>
+              </header>
+              <ol className={styles.legList}>
+                {alloy.legs.map((leg, index) => (
+                  <li key={leg.mint} data-held={leg.held_back || undefined}>
+                    <span className={styles.legIndex}>{String(index + 1).padStart(2, "0")}</span>
+                    <div className={styles.legMint}>
+                      <b>Leg {String(index + 1).padStart(2, "0")}</b>
+                      <Digest value={leg.mint} />
+                    </div>
+                    <dl className={styles.legBalances}>
+                      <div><dt>Ledger</dt><dd>{formatAmount(leg.ledger.atoms, leg.ledger.scale)}</dd></div>
+                      <div><dt>Pending</dt><dd>{formatAmount(leg.pending.atoms, leg.pending.scale)}</dd></div>
+                      <div><dt>Unclaimed</dt><dd>{formatAmount(leg.unclaimed.atoms, leg.unclaimed.scale)}</dd></div>
+                    </dl>
+                    <div className={styles.legDelivery}>
+                      {leg.held_back ? (
+                        <>
+                          <Stamp kind="warn" reason="Held as a Claim" />
+                          <p>{leg.held_back_reason ?? "The issuer currently prevents this Hall account from delivering."}</p>
+                        </>
+                      ) : (
+                        <p>Delivering</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            <aside className={styles.recordTerms} aria-labelledby="terms-heading">
+              <span className={styles.recordLabel}>02 / Terms</span>
+              <h2 id="terms-heading">Per {formatAmount(value.strike.data.shares, 0)} shares</h2>
+              <p>Integer arithmetic from the Gateway. Not a transaction plan. {hallSource(value.strike.meta)}, {value.strike.meta.completeness}.</p>
+              <table className={styles.termsLedger}>
+                <thead><tr><th>Leg</th><th>Strike takes</th><th>Melt returns</th><th>Hall keeps</th></tr></thead>
                 <tbody>
-                  {alloy.legs.map((leg, index) => (
-                    <tr key={leg.mint}>
-                      <td><span>Leg {String(index + 1).padStart(2, "0")}</span><Digest value={leg.mint} /></td>
-                      <td>{formatAmount(leg.ledger.atoms, leg.ledger.scale)}</td>
-                      <td>{formatAmount(leg.pending.atoms, leg.pending.scale)}</td>
-                      <td>{formatAmount(leg.unclaimed.atoms, leg.unclaimed.scale)}</td>
-                      <td>
-                        {leg.held_back ? (
-                          <div className={styles.heldLeg}>
-                            <Stamp kind="warn" reason="Held as a Claim" />
-                            <p>{leg.held_back_reason ?? "The issuer currently prevents this Hall account from delivering."}</p>
-                          </div>
-                        ) : "Available"}
-                      </td>
-                    </tr>
-                  ))}
+                  {alloy.legs.map((leg, index) => {
+                    const strike = amountFor(value.strike.data, leg.mint);
+                    const melt = amountFor(value.melt.data, leg.mint);
+                    return (
+                      <tr key={leg.mint}>
+                        <th scope="row">{String(index + 1).padStart(2, "0")}</th>
+                        <td>{strike ? formatAmount(strike.amount.atoms, strike.amount.scale) : "No observation"}</td>
+                        <td>{melt ? formatAmount(melt.amount.atoms, melt.amount.scale) : "No observation"}</td>
+                        <td>{melt?.kept ? formatAmount(melt.kept.atoms, melt.kept.scale) : "No observation"}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
-            </div>
-          </section>
-
-          <section className={styles.assaySection}>
-            <header className={styles.sectionHeading}>
-              <span>02 / Terms</span>
-              <h2>Strike and Melt terms</h2>
-              <p>Integer arithmetic from the Gateway for the stated share quantity. This is not a transaction plan.</p>
-            </header>
-            <div className={styles.termsPlate}>
-              <div className={styles.termsQuantity}>
-                <span>Stated quantity</span>
-                <b>{formatAmount(value.strike.data.shares, 0)} shares</b>
-                <small>{hallSource(value.strike.meta)} · {value.strike.meta.completeness}</small>
+              <div className={styles.termsKey}>
+                <Key disabled disabledReason="Strike from this record is not connected yet. The demo signs a Strike on its own devnet Hall.">Prepare Strike</Key>
+                <TextAction href="/app/hall">Run the demo</TextAction>
               </div>
-              <div className={styles.tableViewport}>
-                <table className={styles.termsTable}>
-                  <thead><tr><th>Constituent</th><th>Strike takes</th><th>Melt returns</th><th>Hall keeps</th></tr></thead>
-                  <tbody>
-                    {alloy.legs.map((leg, index) => {
-                      const strike = amountFor(value.strike.data, leg.mint);
-                      const melt = amountFor(value.melt.data, leg.mint);
-                      return (
-                        <tr key={leg.mint}>
-                          <td>Leg {String(index + 1).padStart(2, "0")}</td>
-                          <td>{strike ? formatAmount(strike.amount.atoms, strike.amount.scale) : "No observation"}</td>
-                          <td>{melt ? formatAmount(melt.amount.atoms, melt.amount.scale) : "No observation"}</td>
-                          <td>{melt?.kept ? formatAmount(melt.kept.atoms, melt.kept.scale) : "No observation"}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.executionBoundary} aria-labelledby="execution-heading">
-            <div>
-              <span>Execution boundary</span>
-              <h2 id="execution-heading">Strike</h2>
-              <p>The Terminal can inspect the Hall and calculate stated terms. It has no connected transaction plan yet.</p>
-              <TextAction href="/app/hall">Run the devnet demonstration</TextAction>
-            </div>
-            <Key disabled disabledReason="Execution is not connected to this record.">Prepare Strike</Key>
-          </section>
+            </aside>
+          </div>
         </>
       ) : null}
     </>
