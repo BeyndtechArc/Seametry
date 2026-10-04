@@ -54,11 +54,23 @@ func TestReplayWritesToPostgres(t *testing.T) {
 	if err := pool.QueryRow(ctx, "SELECT count(*) FROM observation.observations").Scan(&obsCount); err != nil {
 		t.Fatalf("counting observations: %v", err)
 	}
-	// 7 mainnet accounts + 21 Jupiter points = 28, the same figure
-	// TestLoadSolanaFixtureInputsReadsEveryFixture and
-	// TestLoadJupiterFixtureInputsReadsEveryPoint already check the loaders
-	// produce; this confirms every one of them actually landed in Postgres.
-	const want = 7 + 21
+	// Every mainnet account and every Jupiter point the loaders produce, the
+	// figures TestLoadSolanaFixtureInputsReadsEveryFixture and
+	// TestLoadJupiterFixtureInputsReadsEveryPoint already check; this
+	// confirms every one of them actually landed in Postgres. Counted from
+	// the loaders rather than typed, because capturing a mint adds an account.
+	accounts, err := loadSolanaFixtureInputs(filepath.Join(root, "shared", "fixtures", "mainnet"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	points, err := loadJupiterFixtureInputs(
+		filepath.Join(root, "shared", "evidence", "depth-2026-09-24.json"),
+		filepath.Join(root, "shared", "fixtures", "jupiter"),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := len(accounts) + len(points)
 	if obsCount != want {
 		t.Errorf("observations has %d rows, want %d", obsCount, want)
 		diagnoseObservations(t, ctx, pool)
