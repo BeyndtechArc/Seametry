@@ -54,3 +54,25 @@ func TestDeploymentImageCarriesThePublishedDemoInputs(t *testing.T) {
 		}
 	}
 }
+
+func TestUpdateScriptOwnsTheRepeatableOracleDeploymentSequence(t *testing.T) {
+	contents, err := os.ReadFile("deploy/update.sh")
+	if err != nil {
+		t.Fatalf("read deploy/update.sh: %v", err)
+	}
+	script := string(contents)
+	for _, command := range []string{
+		"git pull --ff-only origin main",
+		"docker compose --env-file server/deploy/.env -f server/deploy/compose.yaml",
+		"compose config --quiet",
+		"compose up -d --build --remove-orphans",
+		"/v1/status",
+	} {
+		if !strings.Contains(script, command) {
+			t.Errorf("deploy/update.sh does not contain %q", command)
+		}
+	}
+	if strings.Contains(script, "git reset --hard") {
+		t.Error("deploy/update.sh may not discard changes on the host")
+	}
+}
