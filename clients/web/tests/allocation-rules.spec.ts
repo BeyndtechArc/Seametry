@@ -216,6 +216,43 @@ test("a detected Wallet Standard wallet connects from the dashboard header", asy
     return { actual: getComputedStyle(summary).backgroundColor, touch };
   });
   expect(ground.actual).not.toBe(ground.touch);
+
+  // Whether this machine can reach a mainnet RPC depends on .env.local, so both
+  // panel states are driven by recorded responses rather than by the network.
+  const panel = page.getByTestId("wallet-account");
+  await expect(panel.getByText("Test wallet", { exact: true })).toBeVisible();
+  await expect(panel.getByText("Mainnet", { exact: true })).toBeVisible();
+
+  let reply: object = { status: 503, json: { error: "This deployment cannot read mainnet balances: MAINNET_RPC_URL is not set." } };
+  await page.route("**/api/wallet/balances?**", (route) => route.fulfill(reply));
+  await account.click();
+  await account.click();
+  await expect(panel.getByRole("status")).toHaveText("Balances unavailable. This deployment cannot read mainnet balances: MAINNET_RPC_URL is not set.");
+
+  reply = {
+    json: {
+      network: "mainnet",
+      source: "Solana mainnet RPC",
+      observedAt: new Date().toISOString(),
+      holdings: [
+        { asset: "SOL", atoms: "1500000000", scale: 9 },
+        { asset: "USDC", atoms: "250000000", scale: 6 },
+      ],
+    },
+  };
+  await account.click();
+  await account.click();
+  await expect(panel.locator("dl > div")).toHaveText(["SOL1.500000000", "USDC250.000000"]);
+  await expect(panel.getByText(/^Solana mainnet RPC, observed \d+s ago$/)).toBeVisible();
+});
+
+test("the balance route names what it expected when a request is malformed", async ({ request }) => {
+  const owner = await request.get("/api/wallet/balances?owner=not-an-address&network=mainnet");
+  expect(owner.status()).toBe(400);
+  expect(await owner.json()).toEqual({ error: "Expected ?owner= a base58 wallet address." });
+  const network = await request.get("/api/wallet/balances?owner=4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d&network=testnet");
+  expect(network.status()).toBe(400);
+  expect(await network.json()).toEqual({ error: "Expected ?network= mainnet or devnet, received testnet." });
 });
 
 test("field placeholders are quieter than entered values in both modes", async ({ page }) => {

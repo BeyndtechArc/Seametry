@@ -21,11 +21,15 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className={styles.topBarInner} data-testid="app-header-inner">
           <BrandMark href="/app" compactOnNarrow />
           <nav aria-label="Product" className={styles.productNav}>
-            {appGroups.flatMap(({ routes }) => routes).map((route) => (
-              <Link key={route.href} href={route.href} aria-current={route.isActive(pathname) ? "page" : undefined}>
-                {route.label}
-              </Link>
-            ))}
+            {appGroups.flatMap(({ icon, routes }) => routes.map((route) => ({ ...route, icon }))).map((route) => {
+              const current = route.isActive(pathname);
+              return (
+                <Link key={route.href} href={route.href} aria-current={current ? "page" : undefined}>
+                  {current ? <Icon name={route.icon} /> : null}
+                  {route.label}
+                </Link>
+              );
+            })}
           </nav>
           <div className={styles.headerActions} data-testid="app-header-actions">
             <WalletState />

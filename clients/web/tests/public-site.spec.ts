@@ -281,7 +281,7 @@ test("the app header logs in with a route action and keeps the mode control besi
     "Build a basket",
     "Alloy No. 1",
     "Alloys",
-    "Demonstration",
+    "Demo",
     "Instruments",
   ]);
 });
@@ -289,8 +289,8 @@ test("the app header logs in with a route action and keeps the mode control besi
 test("the Hall demonstration lives in the app, marked devnet", async ({ page }) => {
   await page.goto("/app/hall");
 
-  await expect(page.getByRole("navigation", { name: "Product" }).getByRole("link", { name: "Demonstration" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { level: 1, name: "Demonstration" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Product" }).getByRole("link", { name: "Demo" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { level: 1, name: "Demo" })).toBeVisible();
   await expect(page.getByRole("main").getByText("Devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/app/alloys");
 });
@@ -314,11 +314,13 @@ test("every app page names its network, and the top bar and mobile register shar
   await expect(mobile.getByRole("link", { name: "Alloy No. 1" })).toHaveAttribute("aria-current", "page");
 });
 
-test("the app shell reserves icons for reading links and one global wallet control", async ({ page }) => {
-  await page.goto("/app");
+test("the app shell marks only the current tab with an icon, and keeps one global wallet control", async ({ page }) => {
+  await page.goto("/app/hall");
 
   const product = page.getByRole("navigation", { name: "Product" });
-  await expect(product.locator("svg")).toHaveCount(0);
+  await expect(product.locator("svg")).toHaveCount(1);
+  await expect(product.locator("a[aria-current='page'] svg")).toHaveCount(1);
+  await page.goto("/app");
 
   const reading = page.getByRole("navigation", { name: "Reading" });
   await expect(reading.locator("svg")).toHaveCount(2);
@@ -333,7 +335,7 @@ test("the app shell reserves icons for reading links and one global wallet contr
 test("the desk cards let their content lead without decorative icons", async ({ page }) => {
   await page.goto("/app");
 
-  for (const name of ["Alloy No. 1, STORM", "Build a basket", "Demonstration", "Instruments"]) {
+  for (const name of ["Alloy No. 1, STORM", "Build a basket", "Demo", "Instruments"]) {
     const card = page.getByRole("heading", { level: 2, name }).locator("..");
     await expect(card.locator("svg")).toHaveCount(0);
   }
@@ -362,7 +364,7 @@ test("secondary actions carry the ink cell, primary actions stay green", async (
   });
   const cellOf = (name: string) =>
     page.getByRole("link", { name }).locator(":scope > span").last().evaluate((cell) => getComputedStyle(cell).backgroundColor);
-  expect(await cellOf("Run the demonstration")).toBe(ink);
+  expect(await cellOf("Run the demo")).toBe(ink);
   expect(await cellOf("Open Alloy No. 1")).not.toBe(ink);
 });
 

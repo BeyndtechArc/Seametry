@@ -70,12 +70,12 @@ export default async function DeskPage() {
         <span className={styles.index}>03 / Hall</span>
         <div className={styles.entryBody}>
           <header>
-            <h2 id="hall-entry">Demonstration</h2>
+            <h2 id="hall-entry">Demo</h2>
             <NetworkBadge network="Devnet" />
           </header>
           <p>Strike, freeze one constituent, Melt anyway, withdraw each leg. Signed by your own wallet.</p>
         </div>
-        <TextAction href="/app/hall">Run the demonstration</TextAction>
+        <TextAction href="/app/hall">Run the demo</TextAction>
       </section>
 
       <section className={styles.entry} aria-labelledby="assay-entry">

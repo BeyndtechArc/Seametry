@@ -17,10 +17,14 @@ import { clusterApiUrl } from "@solana/web3.js";
  * WalletState performs the connection after a deliberate selection and also
  * reconnects the stored selection on reload, with connection failures shown.
  */
+export function walletNetwork(pathname: string): "devnet" | "mainnet" {
+  return pathname.startsWith("/app/hall") ? "devnet" : "mainnet";
+}
+
 export function SiteWalletProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const wallets = useMemo(() => [], []);
-  const endpoint = pathname.startsWith("/app/hall")
+  const endpoint = walletNetwork(pathname) === "devnet"
     ? process.env.NEXT_PUBLIC_HALL_DEMO_RPC ?? clusterApiUrl("devnet")
     : clusterApiUrl("mainnet-beta");
   return (

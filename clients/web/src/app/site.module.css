@@ -113,12 +113,77 @@
   display: grid;
   gap: var(--sm-space-3);
   width: min(calc(100vw - var(--sm-space-8)), calc(var(--sm-space-13) * 3));
-  padding: var(--sm-space-4);
-  border-top: 0.5px solid var(--sm-line-strong);
+  padding: var(--sm-space-5);
+  border: 0.5px solid var(--sm-line-strong);
   border-radius: var(--sm-radius-surface);
   background: var(--sm-surface-sheet);
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
+}
+
+.account {
+  display: grid;
+  gap: var(--sm-space-4);
+}
+
+.account header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-3);
+  padding-bottom: var(--sm-space-4);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.account header b {
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-body);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.account code {
+  padding: var(--sm-space-3);
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-raised);
+  font-size: var(--sm-font-size-micro);
+}
+
+.holdings {
+  display: grid;
+  margin: 0;
+  border-top: 0.5px solid var(--sm-line-strong);
+}
+
+.holdings div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-3) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.holdings dt {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.holdings dd {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  font-variant-numeric: tabular-nums;
+}
+
+.holdingsNote {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.holdingsNote[data-state="reading"] {
+  padding-top: var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-strong);
 }
 
 .walletPanel code {

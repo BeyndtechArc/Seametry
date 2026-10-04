@@ -192,8 +192,15 @@
   }
 
   .productNav a[aria-current="page"] {
+    gap: var(--sm-space-3);
     color: var(--sm-text-primary);
     background: var(--sm-surface-raised);
+  }
+
+  .productNav svg {
+    width: var(--sm-space-5);
+    height: var(--sm-space-5);
+    color: var(--sm-accent-touchText);
   }
 
   .menuControl,

@@ -7,7 +7,7 @@ import { HallDemoFlow } from "./flow";
 import "./hall-demo.css";
 
 export const metadata: Metadata = {
-  title: "Hall demonstration | Seametry",
+  title: "Hall demo | Seametry",
   description: "Use a devnet wallet to Strike, freeze, Melt and withdraw against the deployed Hall program.",
 };
 
@@ -17,7 +17,7 @@ export default async function HallDemoPage() {
     <div className="hall-demo-page">
       <PageHeader
         group="Hall"
-        title="Demonstration"
+        title="Demo"
         network="Devnet"
         sentence="Strike, watch the issuer freeze one constituent, Melt anyway, and withdraw each leg, signed by your own wallet."
       >
