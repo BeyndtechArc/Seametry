@@ -18,9 +18,12 @@ import (
 // says it should, which is the only signal available that they still agree.
 const (
 	MaxConstituents = 12
-	// HallDevnetProgramID is the immutable address deployed in
-	// chain/Anchor.toml. Mainnet remains gated by the legal read and audit.
-	HallDevnetProgramID = "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx"
+	// HallDevnetProgramID is the devnet Hall in chain/Anchor.toml, deployed
+	// on 4 October 2026 so the register starts empty. The Hall cannot close
+	// an Alloy, so the 47 test Alloys on the first deployment
+	// (4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx) stay there. Mainnet
+	// remains gated by the legal read and audit.
+	HallDevnetProgramID = "GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE"
 )
 
 // legRecordSize and alloyFixedSize are chain/programs/hall/src/state.rs's

@@ -5,7 +5,14 @@ import { PublicKey } from "@solana/web3.js";
 export const DEVNET_RPC_ENDPOINT =
   process.env.NEXT_PUBLIC_HALL_DEMO_RPC ?? "https://api.devnet.solana.com";
 
-export const HALL_PROGRAM_ID = new PublicKey(
+// The demo founds an Alloy on every run, so it stays on the first devnet
+// deployment, where the earlier test Alloys already live, and the register
+// on the new Hall (server/internal/basket HallDevnetProgramID) holds only
+// deliberately founded Alloys. idl.json carries the same address. Both
+// programs are built from the same source and differ only in the program id
+// compiled into them: rebuilding today's source with this id reproduces the
+// deployed binary byte for byte.
+export const DEMO_HALL_PROGRAM_ID = new PublicKey(
   "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx"
 );
 

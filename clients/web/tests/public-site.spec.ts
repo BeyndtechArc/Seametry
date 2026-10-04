@@ -279,7 +279,6 @@ test("the app header logs in with a route action and keeps the mode control besi
   await expect(page.getByRole("banner").getByRole("navigation", { name: "Product" }).getByRole("link")).toHaveText([
     "Overview",
     "Build a basket",
-    "Alloy No. 1",
     "Alloys",
     "Demo",
     "Instruments",
@@ -311,7 +310,7 @@ test("every app page names its network, and the top bar and mobile register shar
   await page.goto("/app/alloys/storm");
   await page.getByRole("button", { name: "Open product navigation" }).click();
   const mobile = page.getByRole("navigation", { name: "Mobile product" });
-  await expect(mobile.getByRole("link", { name: "Alloy No. 1" })).toHaveAttribute("aria-current", "page");
+  await expect(mobile.getByRole("link", { name: "Alloys" })).toHaveAttribute("aria-current", "page");
 });
 
 test("the app shell marks only the current tab with an icon, and keeps one global wallet control", async ({ page }) => {
@@ -335,7 +334,7 @@ test("the app shell marks only the current tab with an icon, and keeps one globa
 test("the desk cards let their content lead without decorative icons", async ({ page }) => {
   await page.goto("/app");
 
-  for (const name of ["Alloy No. 1, STORM", "Build a basket", "Demo", "Instruments"]) {
+  for (const name of ["The Alloy register", "Build a basket", "Demo", "Instruments"]) {
     const card = page.getByRole("heading", { level: 2, name }).locator("..");
     await expect(card.locator("svg")).toHaveCount(0);
   }
@@ -349,7 +348,12 @@ test("the desk reads as one numbered institutional folio", async ({ page }) => {
     "03 / Hall",
     "04 / Assay",
   ]);
-  await expect(page.getByTestId("desk-folio").locator("section").first().locator("svg [data-solid]")).toHaveCount(1);
+  const lead = page.getByTestId("desk-folio").locator("section").first();
+  await expect(lead.locator("svg [data-solid]")).toHaveCount(1);
+  // The fixture Gateway serves one Alloy; the lead reads the register, not a fixture of its own.
+  await expect(lead.getByRole("heading", { level: 2 })).toHaveText("The Alloy register");
+  await expect(lead.locator("figure")).toContainText(/(^|\D)1\s*Alloy(?!s)/);
+  await expect(lead.locator("figure")).toContainText("Seametry Gateway, devnet Hall");
 });
 
 test("secondary actions carry the ink cell, primary actions stay green", async ({ page }) => {
@@ -365,7 +369,7 @@ test("secondary actions carry the ink cell, primary actions stay green", async (
   const cellOf = (name: string) =>
     page.getByRole("link", { name }).locator(":scope > span").last().evaluate((cell) => getComputedStyle(cell).backgroundColor);
   expect(await cellOf("Run the demo")).toBe(ink);
-  expect(await cellOf("Open Alloy No. 1")).not.toBe(ink);
+  expect(await cellOf("Open the register")).not.toBe(ink);
 });
 
 test("no page scrolls sideways on a 320px phone", async ({ page }) => {

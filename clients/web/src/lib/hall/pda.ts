@@ -3,7 +3,7 @@ import { TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync } from "@solana/sp
 import {
   ALLOY_SEED,
   CLAIM_SEED,
-  HALL_PROGRAM_ID,
+  DEMO_HALL_PROGRAM_ID,
   LOCKED_SEED,
   SHARE_SEED,
 } from "./constants";
@@ -14,25 +14,25 @@ export function alloyPda(sponsor: PublicKey, id: bigint) {
   idBytes.writeBigUInt64LE(id);
   return PublicKey.findProgramAddressSync(
     [ALLOY_SEED, sponsor.toBuffer(), idBytes],
-    HALL_PROGRAM_ID
+    DEMO_HALL_PROGRAM_ID
   )[0];
 }
 
 /** chain/programs/hall's share mint PDA: [SHARE_SEED, alloy]. */
 export function shareMintPda(alloy: PublicKey) {
-  return PublicKey.findProgramAddressSync([SHARE_SEED, alloy.toBuffer()], HALL_PROGRAM_ID)[0];
+  return PublicKey.findProgramAddressSync([SHARE_SEED, alloy.toBuffer()], DEMO_HALL_PROGRAM_ID)[0];
 }
 
 /** chain/programs/hall's locked-genesis token account PDA: [LOCKED_SEED, alloy]. */
 export function lockedSharesPda(alloy: PublicKey) {
-  return PublicKey.findProgramAddressSync([LOCKED_SEED, alloy.toBuffer()], HALL_PROGRAM_ID)[0];
+  return PublicKey.findProgramAddressSync([LOCKED_SEED, alloy.toBuffer()], DEMO_HALL_PROGRAM_ID)[0];
 }
 
 /** chain/programs/hall's Claim PDA: [CLAIM_SEED, alloy, owner]. */
 export function claimPda(alloy: PublicKey, owner: PublicKey) {
   return PublicKey.findProgramAddressSync(
     [CLAIM_SEED, alloy.toBuffer(), owner.toBuffer()],
-    HALL_PROGRAM_ID
+    DEMO_HALL_PROGRAM_ID
   )[0];
 }
 

@@ -7,8 +7,7 @@ export type AppRoute = { label: string; href: string; isActive: (pathname: strin
 export type AppGroup = { group: string; icon: IconName; routes: AppRoute[] };
 
 const exactly = (href: string) => (pathname: string) => pathname === href;
-const within = (href: string, except: string[] = []) => (pathname: string) =>
-  (pathname === href || pathname.startsWith(`${href}/`)) && !except.some((path) => pathname === path);
+const within = (href: string) => (pathname: string) => pathname === href || pathname.startsWith(`${href}/`);
 
 export const appGroups: AppGroup[] = [
   { group: "Desk", icon: "desk", routes: [{ label: "Overview", href: "/app", isActive: exactly("/app") }] },
@@ -17,8 +16,7 @@ export const appGroups: AppGroup[] = [
     group: "Hall",
     icon: "hall",
     routes: [
-      { label: "Alloy No. 1", href: "/app/alloys/storm", isActive: exactly("/app/alloys/storm") },
-      { label: "Alloys", href: "/app/alloys", isActive: within("/app/alloys", ["/app/alloys/storm"]) },
+      { label: "Alloys", href: "/app/alloys", isActive: within("/app/alloys") },
       { label: "Demo", href: "/app/hall", isActive: within("/app/hall") },
     ],
   },

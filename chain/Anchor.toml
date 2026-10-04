@@ -7,10 +7,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-hall = "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx"
+hall = "GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE"
 
 [programs.devnet]
-hall = "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx"
+hall = "GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE"
 
 [provider]
 cluster = "localnet"

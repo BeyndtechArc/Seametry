@@ -9,7 +9,7 @@
     "cluster": null,
     "description": "A local simulator running the compiled program and the real Token-2022 program. Nothing here was sent to a cluster.",
     "kind": "litesvm",
-    "program_id": "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx",
+    "program_id": "GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE",
     "signatures": false
   },
   "scenarios": [

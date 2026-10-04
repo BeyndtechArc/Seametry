@@ -164,11 +164,17 @@ aggregator responses, a generated Explorer, and CI.
   melts, withdrawals, donations, seizures and freezes
   (`chain/programs/hall/tests/properties.rs`). `issuer_powers.rs` runs steps 4
   to 8 of the HALL section 7 demonstration against real Token-2022 mints with
-  the extension set reported for xStocks, in litesvm. The program is deployed
-  to devnet at `4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx` and
-  `chain/tools/devnet-demo` ran the same eight scenarios there, recorded with
-  signatures in `shared/evidence/hall-demo/transcript-devnet.json` and shown on the
-  Explorer's Hall page beside the simulator run. Not done: the multiplier
+  the extension set reported for xStocks, in litesvm. The register's Hall is
+  deployed to devnet at `GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE` (4
+  October 2026), empty so that Alloys there are only ones founded on purpose.
+  The first deployment, `4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx`, holds
+  the 47 test Alloys the Hall cannot close and still serves the in-app demo;
+  both are built from the same source and differ only in the compiled-in
+  program id. `chain/tools/devnet-demo` ran the eight scenarios on the first
+  deployment, recorded with signatures in
+  `shared/evidence/hall-demo/transcript-devnet.json` and shown on the
+  Explorer's Hall page beside the simulator run; that run has not been
+  repeated on the new address. Not done: the multiplier
   step (its initializer takes a float), a devnet run that waits out a vest,
   Trident fuzzing, the twelve constituent transaction and transfer-hook
   accounts. The toolchain (Solana CLI 4.3.0, Anchor

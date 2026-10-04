@@ -59,8 +59,7 @@ function AlloyBoundary({ problem }: { problem: TerminalProblem }) {
         <code>HTTP {problem.status}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/app/hall">Open the Hall demonstration</RouteAction>
-        <TextAction href="/app/alloys/storm">Inspect Alloy No. 1</TextAction>
+        <RouteAction href="/app/hall">Open the Hall demo</RouteAction>
       </div>
     </section>
   );
@@ -71,15 +70,14 @@ function EmptyHall({ meta }: { meta: Meta }) {
     <section className={styles.boundary} role="status">
       <div className={styles.boundaryTitle}>
         <span>Hall register</span>
-        <h2>No Alloy accounts returned</h2>
+        <h2>No Alloy founded yet</h2>
       </div>
       <div className={styles.boundaryCopy}>
-        <p>The {meta.cluster ?? "configured"} Hall answered with an empty account register.</p>
+        <p>The {meta.cluster ?? "configured"} Hall answered with an empty register. It was redeployed empty, and the first Alloy is founded once its Formula, name and artwork are settled. The demo runs on the earlier deployment and adds nothing here.</p>
         <code>{meta.completeness}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/app/hall">Found a devnet Alloy</RouteAction>
-        <TextAction href="/app/alloys/storm">Inspect Alloy No. 1</TextAction>
+        <RouteAction href="/app/hall">Run the demo</RouteAction>
       </div>
     </section>
   );
@@ -90,9 +88,7 @@ export function AlloyRegister() {
 
   return (
     <div className={styles.alloyRegister}>
-      <PageHeader group="Hall" title="Alloys" network="Devnet" sentence="Every Alloy account the Hall holds, read live, with its supply and any leg held back.">
-        <TextAction href="/app/alloys/storm">Inspect Alloy No. 1</TextAction>
-      </PageHeader>
+      <PageHeader group="Hall" title="Alloys" network="Devnet" sentence="Every Alloy account the Hall holds, read live, with its supply and any leg held back." />
 
       {loading ? <AlloyLoading /> : null}
       {problem ? <AlloyBoundary problem={problem} /> : null}

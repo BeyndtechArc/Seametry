@@ -125,7 +125,7 @@ export default async function Home() {
       <section className={`${styles.section} ${styles.proofSection}`}>
         <SectionHeading index="05" title="What you can inspect now" question="Which claims have a public artifact behind them today?" />
         <ProofStrip items={[
-          { label: "Hall program", value: "Devnet program", href: "https://explorer.solana.com/address/4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx?cluster=devnet" },
+          { label: "Hall program", value: "Devnet program", href: "https://explorer.solana.com/address/GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE?cluster=devnet" },
           { label: "Issuer-power demonstration", value: "Open the run", href: "/app/hall" },
           { label: "Program authority", value: "Key still in hand", href: "/the-key" },
           { label: "Implementation", value: "Read the source", href: "https://github.com/BeyndtechArc/Seametry" },

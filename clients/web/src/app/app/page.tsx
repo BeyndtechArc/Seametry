@@ -3,42 +3,60 @@ import { connection } from "next/server";
 import { Figure, RouteAction, TextAction } from "@seametry/ui";
 import { MechanismDrawing } from "@seametry/ui/plates";
 import { admissions, partitionAdmissions } from "@/lib/allocation/admissions";
-import { formatAmount } from "@/lib/amount";
-import { relativeEvidenceAge, stormFixture } from "@/lib/storm-fixture";
+import { relativeEvidenceAge } from "@/lib/storm-fixture";
+import { readTerminalApi, terminalProblem } from "@/lib/terminal-api";
+import type { AlloyRegisterResponse } from "@/lib/terminal-contract";
 import { NetworkBadge } from "./_shell/page-header";
 import styles from "./desk.module.css";
 
 export const metadata: Metadata = {
   title: "Desk | Seametry",
-  description: "Alloy No. 1, direct basket building, the Hall demonstration and instrument evidence.",
+  description: "The Alloys on the Hall, direct basket building, the Hall demo and instrument evidence.",
 };
+
+async function readRegister() {
+  try {
+    return { register: await readTerminalApi<AlloyRegisterResponse>("v1/alloys") };
+  } catch (error) {
+    return { problem: terminalProblem(error) };
+  }
+}
 
 export default async function DeskPage() {
   await connection();
   const { admitted } = partitionAdmissions(admissions.instruments);
   const snapshotAge = relativeEvidenceAge(admissions.as_of);
-  const stormAge = relativeEvidenceAge(stormFixture.observedAt);
+  const { register, problem } = await readRegister();
+  const count = register?.data.length;
 
   return (
     <div className={styles.folio} data-testid="desk-folio">
-      <section className={styles.lead} aria-labelledby="storm-entry">
+      <section className={styles.lead} aria-labelledby="register-entry">
         <div className={styles.leadCopy}>
           <span className={styles.index}>01 / Alloy</span>
           <header>
-            <h2 id="storm-entry">Alloy No. 1, STORM</h2>
+            <h2 id="register-entry">{count === 0 ? "No Alloy founded yet" : "The Alloy register"}</h2>
             <NetworkBadge network="Devnet" />
           </header>
-          <Figure
-            label="Shares outstanding"
-            value={formatAmount(stormFixture.supply.atoms, 0)}
-            unit="shares"
-            source={stormFixture.source}
-            state="verified"
-            age={stormAge}
-            observedAt={stormFixture.observedAt}
-          />
-          <p>{stormFixture.legs.length} constituents, labelled devnet fixture. Key still in hand.</p>
-          <RouteAction href="/app/alloys/storm">Open Alloy No. 1</RouteAction>
+          {register ? (
+            <Figure
+              label="Alloys on the Hall"
+              value={String(count)}
+              unit={count === 1 ? "Alloy" : "Alloys"}
+              source="Seametry Gateway, devnet Hall"
+              state="verified"
+              age={relativeEvidenceAge(register.meta.as_of)}
+              observedAt={register.meta.as_of}
+            />
+          ) : (
+            <Figure label="Alloys on the Hall" source={`Seametry Gateway: ${problem?.detail ?? "no answer"}`} state="unavailable" />
+          )}
+          <p>
+            {count === 0
+              ? "The Hall was redeployed empty. The first Alloy is founded once its Formula, name and artwork are settled. Key still in hand."
+              : "Every Alloy here was founded on purpose on the devnet Hall. Key still in hand."}
+          </p>
+          <RouteAction href="/app/alloys">Open the register</RouteAction>
         </div>
         <div className={styles.leadDrawing}>
           <MechanismDrawing kind="strike" />

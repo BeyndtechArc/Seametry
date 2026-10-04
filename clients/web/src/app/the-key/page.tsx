@@ -65,7 +65,7 @@ export default async function TheKeyPage() {
           </div>
           <div>
             <p>There is no transaction to cite yet because the devnet program has not been made final. This page will carry that transaction when it exists.</p>
-            <RouteAction href="https://explorer.solana.com/address/4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx?cluster=devnet">Inspect the program</RouteAction>
+            <RouteAction href="https://explorer.solana.com/address/GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE?cluster=devnet">Inspect the program</RouteAction>
           </div>
         </div>
       </section>
