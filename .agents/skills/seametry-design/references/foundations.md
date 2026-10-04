@@ -139,6 +139,9 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 | `accent.provenance` | Unverified values, stale markers, the verified path, NGD | Loss, error, decoration |
 | `accent.provenanceField` | Bars beside green, chart fills, chips | Any surface larger than a chip |
 | `line.highlight` | Top-edge hairline on raised surfaces | Anything else |
+| `surface.inverse`, `text.inverse` | The supporting ink: BLOCK stamps, the icon cell of secondary actions, index chips on plates, and compact utility wrappers. Black on the light certificate, bone on the dark touchstone | A primary action's fill, a panel, more than one ink block per control |
+
+**Ink.** Black supports green; it never competes with it (Storm, 4 October 2026). A primary action stays green with its pressed-green cell. A secondary action keeps its sheet label and takes an ink icon cell, so the two read as different jobs at a glance without a second hue. Ink is a neutral, not a hue, so it carries no meaning beyond weight.
 
 **Decisions.** ALLOW renders in `text.primary`. WARN renders in `accent.provenance`. BLOCK renders as an inverted stamp: `surface.inverse` fill, `text.inverse` type. No red anywhere in the system; the strongest signal is contrast, not hue.
 
@@ -146,7 +149,7 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 
 **Contrast is measured, not assumed, and "calm" is never an excuse for a value that fails its check.** Calm has a real place in this system, but it's built from hierarchy, weight and space: a smaller size, a lighter weight, more room around it. Those all keep contrast intact while lowering visual pressure. A colour that fails 4.5:1 isn't calmer, it's just harder to read, and on a screen where a number decides whether someone signs a transaction, that's a defect, not a mood. Every text token passes 4.5:1 on its permitted surfaces (recorded in the token descriptions); the one exception is `text.faint`, which is reserved for genuinely decorative marks nobody needs to read, and that reservation is the actual place "quiet" lives in this system.
 
-**Modes.** Dark is the default and the brand. Light is the certificate. Both are complete; no component may exist in only one.
+**Modes.** Light is the default (Storm, 30 September 2026); dark is the touchstone, one choice away. Light is the certificate. Both are complete; no component may exist in only one.
 
 ---
 
@@ -177,6 +180,7 @@ What was being reached for as "liquid glass" has a real, specific referent: Appl
 Seametry's version, **the Lens**, is scoped tighter still: illustration and ceremony surfaces only, never navigation, never content, never a data row. Think jeweller's loupe, not a phone screen dipped in glass: something you look through for a moment to inspect one object closely.
 
 **Where the Lens may appear, and nowhere else:**
+- The contained House rail after the document has scrolled. Its resting state is opaque and still.
 - A hover or long-press reveal on a lot's illustrative hero image, for closer inspection.
 - The specular pass inside the Strike ceremony's punch reveal.
 - One reserved marketing surface on the Explorer landing, if it earns its place.
@@ -223,9 +227,9 @@ Scale, in px: 12, 13, 15, 17, 20, 24, 30, 38, 48, 60, 76. Explorer display sizes
 
 **Layout.** Explorer: 12 columns, 1200px content, 24px gutters, left-aligned reading column. Mobile: single column, 18px side margins, primary action in the bottom third inside the tray.
 
-**Edges carry meaning.** `data` 0 for rules, rows and figures; `surface` 4 for panels; `control` fully round for anything acted on; `sheet` 28 for mobile sheets; punches use their own shapes. Two cues say "touchable": green and roundness. Never round a data row. Never square a button.
+**Edges carry meaning.** `data` 0 for rules, rows and figures; `surface` 4 for panels; `control` 0 for desktop actions; `sheet` 28 for mobile sheets; punches use their own shapes. Touchable controls are identified by green, an icon cell and short registration rules that protrude from the leading and trailing edges. Full-round controls are reserved for compact mobile layouts and named special cases. Never round a data row.
 
-The seam between printed evidence and a full-round control is the **registration cut**: a square surface with one corner clipped by `space.5`. It marks an authored plate, specimen or institutional header without making it look touchable. It is the only intermediate silhouette. Do not introduce medium-radius cards as a compromise between square and round.
+The seam between printed evidence and a control is the **registration cut**: a square surface with one corner clipped by `space.5`. It marks an authored plate, specimen, institutional header or desktop action without turning into a generic rounded rectangle. Do not introduce medium-radius cards as a compromise between square and round.
 
 **Elevation is tone.** `surface.ground` to `surface.sheet` to `surface.raised` to `surface.tray` step up in luminance on the neutral operational track, with full contrast headroom, since section 5a moved the olive hue to its own reserved `feature.*` track rather than forcing it to serve as the app's single default ground. See 5a for the two-ground structure and why it changed, and 5b to 5d for the tonal scales, the restricted Lens material, and a licensing note on using Directus as a reference.
 
@@ -256,10 +260,13 @@ Haptics (mobile): selection on scrub boundaries; light impact on a refreshed quo
 
 ## 9. Iconography and imagery
 
-- Prefer a word to an icon. An icon alone never carries meaning; pair it with text or an accessible label.
-- Where icons are needed: one line family at 1.5px stroke, sized 16 or 20.
-- The only illustrative marks are punches, the seal glyph, and the sponsor's mark.
+- Use icons as punctuation, not inventory. Prefer text for persistent navigation and repeated data cards; add an icon only when it shortens an action or distinguishes a secondary route. An icon alone carries meaning only for the Mode control, where its accessible label names the resulting mode.
+- Use one line family at 1.5px stroke, sized 16 or 20. Phosphor may supply generic interface symbols; the house mark, sponsor mark, punches and product diagrams remain custom.
+- Primary and quiet actions place the icon in a separate tonal cell so label and affordance remain distinct at a glance.
+- Dense surfaces may use static grids or typographic fields derived from Hallmark punches, seals and registration geometry. They stay decorative, use `text.faint`, and never imitate source code or compete with evidence.
+- The only illustrative marks are punches, the seal glyph, and the sponsor's mark. Mechanism plates are the one exception, because they are diagrams of the product rather than pictures of an idea: isometric line drawings of Hall guarantees, one line ink, one solid object in the action green, annotations set on the floor plane in the mono face (Storm's reference set, 4 October 2026: engineered isometric feature plates and engraved architecture, rendered in the house palette rather than the references' orange). They follow the Mechanism plate contract in components.md.
 - No stock photography, no 3D blobs, no abstract gradients, no emoji. The Explorer's single texture is the approved ThreeUI Halftone Flow, behind content, lazy-loaded, paused off-screen.
+- Architectural fragments may be constructed as original one-ink SVG engravings from geometry. They belong in shell margins, stay below `line.strong` in contrast, carry no information, and are cropped by the surface so the interface reads as a room rather than a decorated page.
 
 ---
 

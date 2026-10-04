@@ -11,7 +11,7 @@ const TOKEN_FILE = /tokens\.(css|ts|json)$|\.tokens\.json$/;
 // The Lens (restricted glass material) may only appear inside these paths. Anything
 // matching backdrop-filter, feDisplacementMap, or a specular box-shadow stack outside
 // them is unauthorised sprawl, which is exactly how glassmorphism-as-slop happens.
-const LENS_ALLOWED = /\/(lens|components\/lens|illustrations)\//;
+const LENS_ALLOWED = /(?:^|[\\/])(lens|components[\\/]lens|illustrations)[\\/]/;
 const SURFACE_MARK = /(surface-raised|surface-tray|surface\.raised|surface\.tray|['"]raised['"]|['"]tray['"])/;
 
 const RULES = [

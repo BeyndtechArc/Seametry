@@ -46,16 +46,16 @@ This is not internal reasoning to skip under a short prompt. `scripts/check-buil
 
 ## Non-negotiables
 
-- No shadows, gradients, glows, blur, or 3D decoration. Elevation is tone plus the single top hairline.
+- No shadows, gradients, glows, or 3D decoration. Elevation is tone plus the single top hairline. Blur is reserved for the scrolled House rail's Lens state and the named Lens surfaces in foundations.md.
 - No raw colours or font families. No emoji. No em or en dashes. No arrows appended to actions. No all-caps labels.
 - No spinners. Loading is a rule-line skeleton with a sentence naming what is loading.
 - GSAP on web, Reanimated and Skia on mobile. No other animation library.
 - Gains and losses carry no colour. Decisions: ALLOW in primary text, WARN in provenance blue, BLOCK as an inverted stamp. No red anywhere.
 - Never an estimate, never a price opinion, never true, correct, fair, safe, guaranteed or pure about a value.
 - A source that said nothing is shown as "no observation", never omitted.
-- Radius means touch: data rows 0, panels 4, anything actionable fully round.
+- Desktop actions use the square registration-control silhouette with protruding edge rules. Full-round controls are reserved for compact mobile and named special cases.
 - One Key per view. The Key sits in its tray and stays quieter than the figures above it.
-- Dark and light modes both complete; dark is the default.
+- Dark and light modes both complete; light is the default (Storm, 30 September 2026), and a stored choice is honoured.
 - Contrast at least 4.5:1 for text, measured against the real surface. `text.faint` is never used for readable text.
 
 ## Review gate
@@ -76,17 +76,17 @@ Before declaring done, answer each in writing. Any "no" means it is not done.
 
 ```bash
 # Regenerate tokens after editing the source
-node .Codex/skills/seametry-design/scripts/build-tokens.mjs \
-  .Codex/skills/seametry-design/assets/tokens/seametry.tokens.json packages/ui/src/generated
+node .claude/skills/seametry-design/scripts/build-tokens.mjs \
+  .claude/skills/seametry-design/assets/tokens/seametry.tokens.json packages/ui/src/generated
 
 # Lint changed UI
-node .Codex/skills/seametry-design/scripts/design-lint.mjs apps packages
+node .claude/skills/seametry-design/scripts/design-lint.mjs apps packages
 
 # Confirm a build note exists for any UI change in this diff
-node .Codex/skills/seametry-design/scripts/check-build-note.mjs $(git diff --name-only --cached)
+node .claude/skills/seametry-design/scripts/check-build-note.mjs $(git diff --name-only --cached)
 
 # Regenerate a tonal scale (rare; only when a brand hue itself changes)
-node .Codex/skills/seametry-design/scripts/generate-scale.mjs touch '#8DA32C' 6
+node .claude/skills/seametry-design/scripts/generate-scale.mjs touch '#8DA32C' 6
 ```
 
 Suppress a single lint line only with a reason: `design-lint-disable-line <rule> <why>`.

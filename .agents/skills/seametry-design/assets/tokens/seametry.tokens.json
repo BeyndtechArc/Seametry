@@ -88,22 +88,22 @@
         "$type": "color",
         "$description": "The olive track. Reserved for named feature surfaces (see foundations.md section 5b): hero sections, alloy ceremony panels, sponsor profile headers, the Explorer landing. Never the default app background.",
         "ground": {
-          "$value": "#2D332C"
+          "$value": "#11140F"
         },
         "sheet": {
-          "$value": "#3B4238"
+          "$value": "#1B2017"
         },
         "raised": {
-          "$value": "#4A5344"
+          "$value": "#303724"
         },
         "text": {
           "$type": "color",
           "primary": {
-            "$value": "#C3C5AD",
-            "$description": "8.7:1 on feature.ground. Bone tuned for olive."
+            "$value": "#E7E8DC",
+            "$description": "Bone tuned for the green-black feature ground."
           },
           "secondary": {
-            "$value": "#9A9D8C",
+            "$value": "#B2B7A2",
             "$description": "restricted to feature.ground/sheet; see foundations.md 5b"
           }
         }

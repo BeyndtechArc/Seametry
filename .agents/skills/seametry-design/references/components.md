@@ -70,22 +70,22 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 
 ### Key
 **Answers:** what happens if I press this?
-**Anatomy:** full-round fill in `accent.touch`, `text.onTouch`, seated in an 8px `surface.tray` housing, height `size.key`.
-**Identity:** the green action sits inside a darker full-round tray with a visible inset at every edge. The tray remains when the action is disabled, like an empty keyway.
+**Anatomy:** cornerless `accent.touch` plate, label and a separate icon cell, seated in a square `surface.tray` housing, height `size.key`.
+**Identity:** short registration rules protrude from both horizontal edges. The tray remains when the action is disabled, like an empty keyway.
 **States:** default, pressed (drops 1px, `accent.touchPressed`), disabled (tray only, label in `text.tertiary`, reason available), busy (label becomes the action in progress: "Signing").
 **Rules:** verb plus object ("Approve and sign"). One key per view. Quieter than the figures above it.
 
 ### Route action
 **Answers:** which destination begins the next part of this journey?
-**Anatomy:** full-round `accent.touch` fill, `text.onTouch`, no tray, minimum target height.
-**Identity:** one uninterrupted green lozenge. Its lack of housing distinguishes navigation from the Key's custody-changing keyway.
+**Anatomy:** cornerless `accent.touch` fill, label and a separately housed route icon, no tray, minimum target height.
+**Identity:** short registration rules protrude from both horizontal edges. Its lack of a surrounding tray distinguishes navigation from the Key's custody-changing keyway.
 **States:** default, pressed, keyboard focus, unavailable with its reason adjacent.
 **Data:** a real route that resolves.
 **Rules:** verb plus object. Navigation only. Never submits, signs, approves or changes custody.
 
 ### Quiet link
 **Answers:** which secondary destination can I inspect without leaving the current decision context?
-**Anatomy:** full-round `surface.sheet`, hairline edge, `text.secondary`.
+**Anatomy:** cornerless `surface.sheet`, top and bottom rules, `text.secondary`, with an icon cell when an icon improves scanning.
 **Identity:** the Quiet action silhouette rendered as a link, with no fill hue and no tray.
 **States:** default, hover, keyboard focus, unavailable.
 **Data:** a real route that resolves.
@@ -101,21 +101,21 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 
 ### Quiet action
 **Answers:** which secondary or reversible action is available?
-**Anatomy:** full-round, `surface.sheet`, 0.5px `line.rule` edge, `text.secondary`.
-**Identity:** the control keeps the Key's round silhouette but has no tray and no green. Family resemblance comes from proportion rather than emphasis.
+**Anatomy:** cornerless, `surface.sheet`, top and bottom rules, `text.secondary`, with a separate icon cell when an icon improves scanning.
+**Identity:** the control keeps the Key's registration rules but has no tray and no green. Family resemblance comes from the shared edge treatment.
 **Rules:** for secondary and reversible actions. Never green.
 
 ### Mode control
 **Answers:** which complete colour mode is the surface using?
-**Anatomy:** Dark and Light as two independent full-round text targets; the selected action uses a registration dot and a bottom rule.
-**Identity:** the shared baseline makes this an instrument setting without wrapping it in a third control. The selected mode carries a small square registration mark.
+**Anatomy:** one square icon target in a stable position. It shows the mode that will be entered when pressed: moon for dark, sun for light.
+**Identity:** the icon sits inside a tonal cell crossed by one short registration rule.
 **States:** dark selected, light selected, keyboard focus.
 **Data:** the selected mode, persisted in local browser storage.
-**Rules:** both labels remain visible. Never use an icon alone. The control changes the full surface, not an isolated specimen.
+**Rules:** the accessible label names the resulting mode. The control changes the full surface, not an isolated specimen, and never sits against the viewport edge.
 
 ### Field
 **Answers:** what value can I supply here, and what must change if it is refused?
-**Anatomy:** full-round pill, `surface.sheet`, label outside, value in `ui` medium; amounts use a custom keypad on mobile.
+**Anatomy:** cornerless `surface.sheet` strip, label outside, value in `ui` medium; amounts use a custom keypad on mobile.
 **Identity:** a short rule joins the outside label to the field edge. Focus turns that rule to provenance blue before it outlines the field.
 **States:** default, focus, filled, invalid (message states what to change), disabled.
 
@@ -170,7 +170,7 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 
 ### Claim line
 **Answers:** what does this do for me, in one line?
-**Anatomy:** bold lead of two to four words, then one plain sentence. ("Keyless by design. No instruction exists that can change a formula or stop a melt.")
+**Anatomy:** bold lead of two to four words, then one plain sentence. ("Keyless by design. No instruction exists that can change a formula or stop a melt.") Where a claim needs to be seen as a mechanism, it becomes a Mechanism plate instead.
 **Rules:** the lead must be literally true of the shipped product.
 
 ### Decision row
@@ -195,6 +195,13 @@ Top of every constituent and alloy page. Lot number; name in display serif; tick
 Columns: Lot, Name, Grade, Condition summary, Evidence, Stamp. Sortable. Rows are data: radius 0, rules between, no zebra fills heavier than one tone.
 Directly inspired by Infisical's certificate table, carrying our data.
 
+### Pagination
+**Answers:** which part of a long published register am I reading, and where can I continue?
+**Anatomy:** previous page when one exists; numbered page links; next page when one exists; current page stated with `aria-current`.
+**States:** first page; middle page; last page; one page, in which case the component is absent.
+**Data:** total rows, rows per generated page, current page and stable page URLs.
+**Rules:** use only when the register outgrows one useful reading surface. Every page remains a complete static document and every row remains reachable without JavaScript. Pagination never replaces a filter when the user's question is categorical.
+
 ### Assay matrix
 **Answers:** how did each source's view of this instrument change over time?
 Sources as rows, time as columns, cells as evidence states; divergence marked in `accent.provenance`. Scrub reveals exact values.
@@ -214,6 +221,14 @@ Serial field; public record; digest; commitment and leaf; Merkle path; root comp
 ### Order sheet (mobile)
 Amount, plan, Quote block, path, approval Key, expiry. Occludes the page behind; no shadow.
 
+### Modal sheet
+**Answers:** which focused task or summary can I inspect without losing the page that produced it?
+**Anatomy:** native dialog; quiet register label; title; caller-owned body; explicit close action; optional footer. The body uses registered atoms and molecules only.
+**Identity:** a full-height registration-cut plate at the inline end on wide screens and a `radius.sheet` plate rising from the bottom on narrow screens. One top highlight rule and tonal elevation establish occlusion; there is no shadow, blur or glow.
+**States:** closed; open. Loading, empty, stale, unavailable and error belong to the caller's content and retain the sheet's measure.
+**Data:** accessible title, close label and caller-owned content. The component owns no product data.
+**Rules:** use the native dialog focus and Escape contract; restore focus to the opening control; label the dialog from its visible title. An end sheet is for review or a bounded task, never generic navigation. It does not create a second Key. Opening motion uses `duration.sheet`; reduced motion lands immediately.
+
 ### Melt panel
 Constituent rows, each deliverable or held as a Claim with its reason. Held rows stay still.
 
@@ -230,11 +245,43 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### House rail
 **Answers:** where am I, and which public destination is available from here?
-**Anatomy:** Seametry wordmark; public navigation; Mode control.
-**Identity:** an open institutional rail held by one bottom rule. The wordmark is serif, the destinations are plain text, and the mode instrument closes the line. No floating header, container card or oversized action.
-**States:** default; current destination; narrow layouts wrap into two ruled rows without hiding destinations.
+**Anatomy:** Brand mark and wordmark; text-led public navigation for Home and the reading pages; one Route action, "Open app"; Mode control.
+**Identity:** a contained institutional rail with square registration cuts. It rests as an opaque plate, floats below the viewport edge, and enters the Lens material only after scroll. The wordmark is serif, destinations remain visible as text, and the mode instrument sits inside the closing tools group.
+**States:** resting; scrolled Lens; current destination; narrow layouts disclose destinations in a ruled register.
 **Data:** route labels and destinations owned by the web application.
-**Rules:** every destination resolves. No menu icon, promotional badge or Key inside the rail.
+**Rules:** every destination resolves. On wide layouts there is no menu icon, promotional badge, tag beside the wordmark, or Key inside the rail. The current destination changes to the action green without adding an underline. On narrow layouts the two-line, icon-only, accessibly labelled menu sits directly before the enlarged mark and opens a bold ruled register containing every public reading destination. The compact "App" action and mode control remain at the terminal end and never repeat inside the register. Product surfaces (Allocation, the Hall, the Terminal) are not public destinations: they live in the App shell, reached by the app action. Wallet state belongs to the App shell, not here.
+
+### Brand mark
+**Answers:** whose house is this?
+**Anatomy:** the house's mark beside the serif wordmark, one component used by every shell, so replacing the mark changes it everywhere at once.
+**States:** mark registered; no mark supplied yet (a neutral square outline, stated as a placeholder in the component, never invented as a logo).
+**Rules:** never a tag, badge or product name beside it. The mark is one colour and survives at 16px.
+
+### App shell
+**Answers:** where am I in the product, on which network, with which wallet?
+**Anatomy:** no sidebar (Storm, 4 October 2026, after a trading terminal's layout). Wide layouts: one sticky Top bar holding the Brand mark, every product route as a text tab, Wallet state and the Mode control, above the page; a quiet Status bar below the page holds the two reading links. Narrow layouts: the enlarged mark, Wallet state, the green Mode control and an icon-only, accessibly labelled ink menu control, in that order. The menu opens a full-width ruled navigation register containing every product and reading route. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
+**Identity:** a terminal's top bar on the sheet surface, aligned to the content width so its edges meet the page. The current tab is a raised tone behind primary text; the House rail uses only the action-green label because its destinations share one line with no tab. Icons appear only on the reading links in the Status bar, where they distinguish an exit from the operational routes.
+**States:** current route; narrow; wallet disconnected or connected; each page's network.
+**Data:** one route list that drives the top bar tabs and the narrow navigation register, so they cannot disagree.
+**Rules:** one route list. Every route resolves. The narrow menu is labelled, keyboard-operable and closes after navigation. The current route is named once, by its tab; a page header appears only when it adds network or decision context that the shell cannot carry.
+
+### Page header
+**Answers:** what is this page, and what does it act on?
+**Anatomy:** group label; title; one sentence at most; Network badge; optional quiet links.
+**Rules:** one sentence, not a paragraph. Explanation belongs on the reading pages, linked, not repeated here.
+
+### Network badge
+**Answers:** which cluster does this page read or write?
+**Anatomy:** square double-ruled mark, as a Stamp: "Mainnet", "Devnet", or "Mainnet evidence" for captured reads that write nothing.
+**Rules:** present on every page in the App shell. Mainnet in text primary, Devnet in provenance blue. Never green: it is a statement, not an action.
+
+### Wallet state
+**Answers:** is a wallet connected to this site, which one, and how do I change that?
+**Anatomy:** disconnected: "Log in", built as a Route action, opening a list of the wallets this browser offers, each "Connect <name>". Connected: the address truncated in the middle beside the wallet's own icon in an ink cell, opening the full address and "Disconnect wallet".
+**Identity:** disconnected, it is the green way into every product room, by Storm's decision of 4 October 2026: logging in is the shell's one call to action, as on a trading terminal. Connected, it turns quiet (sheet, ruled top and bottom, the address in the mono face) because the account is then a state of the room, not an invitation. It precedes the Mode control on every layout.
+**States:** disconnected; no wallet detected ("No wallet was detected in this browser. On a phone, open this site inside your wallet's own browser."); connecting ("Connecting"); connected; the disclosure open or closed, by keyboard as well as pointer.
+**Data:** the site-wide wallet session; the list of detected Wallet Standard wallets.
+**Rules:** never a Key: logging in moves no custody and signs nothing, and the panel says so by offering only "Connect <name>". Green only while disconnected. The full address is always one step away, never only the truncation.
 
 ### Incident ledger
 **Answers:** what happened in the recorded demonstration, in what order, and which step proves the product claim?
@@ -251,6 +298,14 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **States:** default; narrow layout stacks the two paths while retaining direction in words; unavailable replaces the centre with the missing Hall state.
 **Data:** Hall mechanism guarantees only. No market quantity, price or participant count.
 **Rules:** no arrows without text, animation, invented market activity or implication that a wallet without the required assets can Strike.
+
+### Mechanism plate
+**Answers:** what does one Hall guarantee look like as a mechanism, before the reader parses the sentence?
+**Anatomy:** an isometric line drawing above a two-to-four-word title and one plain sentence, inside a ruled plate. The drawing is built from blocks, plinths, dashed paths and small floor annotations set along the isometric plane.
+**Identity:** one line ink on the sheet. Exactly one solid object, in the action green, marks the touchable thing (the share, the Formula, the constituent the holder can move). A recorded fact may carry its annotation in provenance blue. Faces are flat paper that hide what is behind them; the solid object alone takes the pressed green on its sides so it reads as a body. No other shading, shadow, gradient or perspective.
+**States:** default; narrow layouts stack plates one per row with the drawing kept at full width.
+**Data:** none. Annotations name register nouns and Hall rules only, never a market quantity, price, count or participant.
+**Rules:** every drawing depicts the sentence beneath it and nothing the product cannot do. Annotations are lower case nouns or short phrases, never instructions. Built only from the shared plate primitives in `@seametry/ui/plates`, so stroke, projection and type cannot drift between plates.
 
 ### Pattern Register
 **Answers:** does each shared component retain Seametry's identity across states, themes, widths and difficult content?

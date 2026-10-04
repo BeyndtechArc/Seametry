@@ -237,6 +237,19 @@ jobs:
             exit 1
           fi
 
+      # .claude owns the design system (docs/README.md). .agents/skills is
+      # where agents that follow the cross-tool convention look for skills, so
+      # it carries an exact copy, never an edited one. Unchecked, it fell five
+      # files and a week of decisions behind and taught those agents a dark
+      # default and round controls that had been retired.
+      - name: Agent skill copy matches its source
+        run: |
+          if ! diff -r .claude/skills/seametry-design .agents/skills/seametry-design; then
+            echo "The .agents copy of the design system differs from .claude, which owns it. Refresh it:"
+            echo "  rm -rf .agents/skills/seametry-design && cp -r .claude/skills/seametry-design .agents/skills/"
+            exit 1
+          fi
+
       # Only ligatures_test.mjs needs node_modules (playwright) or a browser;
       # lint_test.mjs is dependency-free and ran without either until this step
       # was added for the other test alongside it.
