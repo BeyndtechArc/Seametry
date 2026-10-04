@@ -15,5 +15,8 @@
   },
   "peerDependencies": {
     "react": "^19.3.0"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "2.1.10"
   }
 }

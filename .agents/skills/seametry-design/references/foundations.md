@@ -261,7 +261,7 @@ Haptics (mobile): selection on scrub boundaries; light impact on a refreshed quo
 ## 9. Iconography and imagery
 
 - Use icons as punctuation, not inventory. Prefer text for persistent navigation and repeated data cards; add an icon only when it shortens an action or distinguishes a secondary route. An icon alone carries meaning only for the Mode control, where its accessible label names the resulting mode.
-- Use one line family at 1.5px stroke, sized 16 or 20. Phosphor may supply generic interface symbols; the house mark, sponsor mark, punches and product diagrams remain custom.
+- Use one line family at 1.5px stroke, sized 16 or 20. Phosphor, at regular weight, supplies every generic interface symbol (Storm, 4 October 2026, after the hand-drawn set read as amateur); the house mark, sponsor mark, punches and product diagrams remain custom.
 - Primary and quiet actions place the icon in a separate tonal cell so label and affordance remain distinct at a glance.
 - Dense surfaces may use static grids or typographic fields derived from Hallmark punches, seals and registration geometry. They stay decorative, use `text.faint`, and never imitate source code or compete with evidence.
 - The only illustrative marks are punches, the seal glyph, and the sponsor's mark. Mechanism plates are the one exception, because they are diagrams of the product rather than pictures of an idea: isometric line drawings of Hall guarantees, one line ink, one solid object in the action green, annotations set on the floor plane in the mono face (Storm's reference set, 4 October 2026: engineered isometric feature plates and engraved architecture, rendered in the house palette rather than the references' orange). They follow the Mechanism plate contract in components.md.
