@@ -15,7 +15,7 @@
   align-items: center;
   gap: var(--sm-space-2);
   min-height: var(--sm-size-target);
-  padding: 0 var(--sm-space-4) 0 0;
+  padding: 0 0 0 var(--sm-space-4);
   border: 1px solid var(--sm-line-strong);
   border-radius: var(--sm-radius-data);
   color: var(--sm-text-secondary);
@@ -61,6 +61,13 @@
   outline-offset: var(--sm-space-2);
 }
 
+@media (max-width: 899px) {
+  .walletState summary {
+    gap: var(--sm-space-1);
+    padding-left: var(--sm-space-2);
+  }
+}
+
 .walletPanel {
   position: absolute;
   top: calc(100% + var(--sm-space-2));
@@ -81,6 +88,35 @@
   font-family: var(--sm-font-family-digest);
   font-variant-ligatures: none;
   overflow-wrap: anywhere;
+}
+
+.walletChoice {
+  display: grid;
+  grid-template-columns: var(--sm-size-target) minmax(0, 1fr);
+  align-items: center;
+  min-height: var(--sm-size-target);
+  padding: 0;
+  border: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-ground);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.walletChoice:hover {
+  border-color: var(--sm-line-strong);
+}
+
+.walletChoice:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}
+
+.walletBrand {
+  justify-self: center;
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
 }
 
 .textLink {

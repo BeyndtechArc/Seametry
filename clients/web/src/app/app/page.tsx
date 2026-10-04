@@ -20,8 +20,9 @@ export default async function DeskPage() {
 
   return (
     <>
-      <div className={styles.tiles}>
+      <div className={styles.tiles} data-testid="desk-folio">
         <section className={`${styles.tile} ${styles.lead}`} aria-labelledby="storm-tile">
+          <span className={styles.index}>01 / Alloy</span>
           <header>
             <h2 id="storm-tile">Alloy No. 1, STORM</h2>
             <NetworkBadge network="Devnet" />
@@ -40,6 +41,7 @@ export default async function DeskPage() {
         </section>
 
         <section className={`${styles.tile} ${styles.inverse}`} aria-labelledby="allocation-tile">
+          <span className={styles.index}>02 / Allocation</span>
           <header>
             <h2 id="allocation-tile">Build a basket</h2>
             <NetworkBadge network="Mainnet" />
@@ -58,6 +60,7 @@ export default async function DeskPage() {
         </section>
 
         <section className={styles.tile} aria-labelledby="hall-tile">
+          <span className={styles.index}>03 / Hall</span>
           <header>
             <h2 id="hall-tile">Demonstration</h2>
             <NetworkBadge network="Devnet" />
@@ -67,6 +70,7 @@ export default async function DeskPage() {
         </section>
 
         <section className={styles.tile} aria-labelledby="assay-tile">
+          <span className={styles.index}>04 / Assay</span>
           <header>
             <h2 id="assay-tile">Instruments</h2>
             <NetworkBadge network="Mainnet evidence" />

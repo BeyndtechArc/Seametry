@@ -38,7 +38,7 @@ export default async function Home() {
           <h1 id="home-title"><span>Open</span> <span>AP ETFs</span></h1>
           <p>Any wallet can create or redeem shares from a fixed Formula. Seametry opens every constituent and its issuer powers before the basket moves.</p>
           <div className={styles.heroActions}>
-            <RouteAction href="/app/hall">Inspect demonstration</RouteAction>
+            <RouteAction href="/app">Open app</RouteAction>
             <TextAction href="/how-it-works">Read mechanism</TextAction>
           </div>
         </div>

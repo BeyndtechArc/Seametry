@@ -5,37 +5,28 @@
 .tiles {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-strong);
+  border-left: 0.5px solid var(--sm-line-rule);
 }
 
 .tile {
   position: relative;
   display: grid;
   align-content: start;
-  gap: var(--sm-space-4);
+  gap: var(--sm-space-5);
   min-width: 0;
-  padding: var(--sm-space-6);
-  border-top: 0.5px solid var(--sm-line-highlight);
+  padding: var(--sm-space-7);
+  border-right: 0.5px solid var(--sm-line-rule);
   border-bottom: 0.5px solid var(--sm-line-rule);
-  border-radius: var(--sm-radius-data);
   background: var(--sm-surface-sheet);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-4)) 0, 100% var(--sm-space-4), 100% 100%, 0 100%);
   overflow: hidden;
 }
 
-.tile::after {
-  content: "+   ·   +   ·   +   ·   +   ·   +   ·   +   ·   +";
-  position: absolute;
-  right: var(--sm-space-5);
-  bottom: var(--sm-space-4);
-  left: var(--sm-space-5);
-  overflow: hidden;
-  color: var(--sm-text-faint);
+.index {
+  color: var(--sm-text-tertiary);
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-micro);
-  white-space: nowrap;
-  opacity: 0.24;
-  pointer-events: none;
+  letter-spacing: var(--sm-font-tracking-label);
 }
 
 .tile header {
@@ -59,13 +50,16 @@
 }
 
 .lead {
-  min-height: calc(var(--sm-space-13) * 2.1);
-  background: var(--sm-feature-ground);
-  --sm-text-primary: var(--sm-feature-text-primary);
-  --sm-text-secondary: var(--sm-feature-text-secondary);
-  --sm-text-tertiary: var(--sm-feature-text-secondary);
-  --sm-line-rule: var(--sm-feature-raised);
-  --sm-line-strong: var(--sm-feature-text-secondary);
+  min-height: calc(var(--sm-space-13) * 1.72);
+}
+
+.lead::before {
+  content: "";
+  position: absolute;
+  top: var(--sm-space-7);
+  bottom: var(--sm-space-7);
+  left: 0;
+  border-left: 2px solid var(--sm-accent-touch);
 }
 
 .inverse {
@@ -81,10 +75,18 @@
 
 @media (min-width: 700px) {
   .tiles {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 
   .lead {
-    grid-column: 1 / -1;
+    grid-column: span 7;
+  }
+
+  .inverse {
+    grid-column: span 5;
+  }
+
+  .tile:not(.lead, .inverse) {
+    grid-column: span 6;
   }
 }

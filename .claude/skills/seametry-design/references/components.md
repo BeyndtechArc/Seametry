@@ -249,7 +249,7 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **Identity:** a contained institutional rail with square registration cuts. It rests as an opaque plate, floats below the viewport edge, and enters the Lens material only after scroll. The wordmark is serif, destinations remain visible as text, and the mode instrument sits inside the closing tools group.
 **States:** resting; scrolled Lens; current destination; narrow layouts wrap into two ruled rows without hiding destinations.
 **Data:** route labels and destinations owned by the web application.
-**Rules:** every destination resolves. No menu icon, promotional badge, tag beside the wordmark, or Key inside the rail. Product surfaces (Allocation, the Hall, the Terminal) are not public destinations: they live in the App shell, reached by "Open app". Wallet state belongs to the App shell, not here. The mode control is inset from the outer edge by the tools group.
+**Rules:** every destination resolves. On wide layouts there is no menu icon, promotional badge, tag beside the wordmark, or Key inside the rail. On narrow layouts the wordmark yields to the enlarged mark and an icon-only, accessibly labelled menu control opens a bold ruled register containing every public reading destination. "Open app" and the mode control remain visible beside the menu and never repeat inside it. Product surfaces (Allocation, the Hall, the Terminal) are not public destinations: they live in the App shell, reached by "Open app". Wallet state belongs to the App shell, not here.
 
 ### Brand mark
 **Answers:** whose house is this?
@@ -259,11 +259,11 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### App shell
 **Answers:** where am I in the product, on which network, with which wallet?
-**Anatomy:** wide layouts: a Sidebar (Brand mark; route groups Desk, Buy, Hall, Assay; the reading pages last) and a sticky Top bar (the current group and page, Wallet state, Mode control) above the page. Narrow layouts: the Top bar with the Brand mark, and a Tab bar fixed to the bottom with one tab per group. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
+**Anatomy:** wide layouts: a Sidebar (Brand mark; route groups Desk, Buy, Hall, Assay; the reading pages last) and a sticky Top bar (the current group and page, Wallet state, Mode control) above the page. Narrow layouts: a compact Top bar with the enlarged mark, Mode control, Wallet state and an icon-only, accessibly labelled menu control. The control opens a full-width ruled navigation register containing every product and reading route. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
 **Identity:** a compact ledger margin: the sidebar is a contained ruled column with text-led product routes and a cropped one-ink Hall pilaster at its lower edge. Icons are reserved for the two reading links at the bottom, where they distinguish an exit from the operational register. The current route carries the registration mark and a rule, as the House rail's current destination does.
 **States:** current route; narrow; wallet disconnected or connected; each page's network.
-**Data:** one route list that drives the sidebar and the tab bar, so they cannot disagree.
-**Rules:** one route list. Every route resolves. No hamburger: the tab bar shows every group at once. The shell names the current route once; a page header appears only when it adds network or decision context that the shell cannot carry.
+**Data:** one route list that drives the sidebar and the narrow navigation register, so they cannot disagree.
+**Rules:** one route list. Every route resolves. The narrow menu is labelled, keyboard-operable and closes after navigation. It replaces the fixed tab bar and does not duplicate the product navigation. The shell names the current route once; a page header appears only when it adds network or decision context that the shell cannot carry.
 
 ### Page header
 **Answers:** what is this page, and what does it act on?

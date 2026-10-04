@@ -11,7 +11,7 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   await expect(page.getByText("Recorded on Solana devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A melt survives the freeze." })).toBeVisible();
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Inspect demonstration" })).toHaveAttribute("href", "/app/hall");
+  await expect(page.getByRole("main").getByRole("link", { name: "Open app" })).toHaveAttribute("href", "/app");
 
   for (const section of ["What changes", "The instrument, opened", "Why an ETF", "What you can inspect now"]) {
     await expect(page.getByRole("heading", { level: 2, name: section })).toBeVisible();
@@ -126,6 +126,32 @@ test("every shell uses the registered three-part house mark", async ({ page }) =
   }
 });
 
+test("narrow shells give the mark room and disclose one complete navigation register", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 780 });
+
+  await page.goto("/");
+  await expect(page.getByRole("banner").getByText("Seametry", { exact: true })).toBeHidden();
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  const publicMenu = page.getByRole("navigation", { name: "Mobile primary" });
+  await expect(publicMenu).toBeVisible();
+  await expect(publicMenu.getByRole("link")).toHaveText(["01Home", "02How it works", "03The Key"]);
+  await expect(page.getByRole("banner").getByRole("link", { name: "App", exact: true })).toBeVisible();
+  await expect(page.getByRole("banner").getByRole("button", { name: "Use dark mode" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close navigation" })).toHaveText("");
+
+  await page.goto("/app");
+  await expect(page.getByRole("banner").getByText("Seametry", { exact: true })).toBeHidden();
+  await page.getByRole("button", { name: "Open product navigation" }).click();
+  const appMenu = page.getByRole("navigation", { name: "Mobile product" });
+  await expect(appMenu).toBeVisible();
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect wallet" })).toBeVisible();
+  await expect(page.getByRole("banner").getByRole("button", { name: "Use dark mode" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close product navigation" })).toHaveText("");
+  await expect(page.getByRole("navigation", { name: "Product sections" })).toHaveCount(0);
+  await expect(appMenu.getByRole("link", { name: "Overview" })).toBeVisible();
+  await expect(appMenu.getByRole("link", { name: "The Key" })).toBeVisible();
+});
+
 test("desktop rails share the page content edge", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -185,20 +211,22 @@ test("the Open AP field keeps its inset and the app shell ends on a cropped Hall
   await expect(reading).toBeVisible();
 });
 
-test("the wallet is the outlined final control in the app header", async ({ page }) => {
+test("the app header tools share one outline and the wallet ends in its icon", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app");
 
   const tools = page.getByTestId("app-header-tools");
+  const controls = page.getByTestId("app-header-controls");
   const wallet = tools.locator("summary", { hasText: "Connect wallet" });
   await expect(wallet).toBeVisible();
   expect(await tools.locator(":scope > *").count()).toBe(2);
   expect(await tools.locator(":scope > *").last().locator("summary").count()).toBe(1);
-  const outline = await wallet.evaluate((element) => {
+  const outline = await controls.evaluate((element) => {
     const style = getComputedStyle(element);
     return [style.borderTopWidth, style.borderRightWidth, style.borderBottomWidth, style.borderLeftWidth];
   });
   expect(outline).toEqual(["1px", "1px", "1px", "1px"]);
+  await expect(wallet.locator(":scope > span").last().locator("svg")).toHaveCount(1);
 });
 
 test("the Hall demonstration lives in the app, marked devnet", async ({ page }) => {
@@ -210,7 +238,7 @@ test("the Hall demonstration lives in the app, marked devnet", async ({ page }) 
   await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/app/alloys");
 });
 
-test("every app page names its network, and the sidebar and tab bar share one route list", async ({ page }) => {
+test("every app page names its network, and the sidebar and mobile register share one route list", async ({ page }) => {
   for (const [path, network] of [
     ["/app", "Mainnet evidence"],
     ["/app/allocation", "Mainnet"],
@@ -224,9 +252,9 @@ test("every app page names its network, and the sidebar and tab bar share one ro
 
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto("/app/alloys/storm");
-  const tabs = page.getByRole("navigation", { name: "Product sections" });
-  await expect(tabs.getByRole("link")).toHaveText(["Desk", "Buy", "Hall", "Assay"]);
-  await expect(tabs.getByRole("link", { name: "Hall" })).toHaveAttribute("aria-current", "page");
+  await page.getByRole("button", { name: "Open product navigation" }).click();
+  const mobile = page.getByRole("navigation", { name: "Mobile product" });
+  await expect(mobile.getByRole("link", { name: "Alloy No. 1" })).toHaveAttribute("aria-current", "page");
 });
 
 test("the app shell reserves icons for reading links and one global wallet control", async ({ page }) => {
@@ -252,6 +280,16 @@ test("the desk cards let their content lead without decorative icons", async ({ 
     const card = page.getByRole("heading", { level: 2, name }).locator("..");
     await expect(card.locator("svg")).toHaveCount(0);
   }
+});
+
+test("the desk reads as one numbered institutional folio", async ({ page }) => {
+  await page.goto("/app");
+  await expect(page.getByTestId("desk-folio").locator("section").getByText(/^0[1-4] \/ /)).toHaveText([
+    "01 / Alloy",
+    "02 / Allocation",
+    "03 / Hall",
+    "04 / Assay",
+  ]);
 });
 
 test("no page scrolls sideways on a 320px phone", async ({ page }) => {

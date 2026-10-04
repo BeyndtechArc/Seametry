@@ -201,7 +201,9 @@ test("a detected Wallet Standard wallet connects from the dashboard header", asy
 
   await page.goto("/app/allocation");
   await page.getByText("Connect wallet", { exact: true }).click();
-  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  const wallet = page.getByRole("button", { name: "Connect Test wallet" });
+  await expect(wallet.locator("img")).toHaveCount(1);
+  await wallet.click();
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
 });
 

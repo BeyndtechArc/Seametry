@@ -24,3 +24,14 @@
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: var(--sm-space-2);
 }
+
+@media (max-width: 700px) {
+  .compactOnNarrow b {
+    display: none;
+  }
+
+  .compactOnNarrow svg {
+    width: var(--sm-space-9);
+    height: var(--sm-space-8);
+  }
+}

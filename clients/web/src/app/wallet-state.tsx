@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useWallet } from "@solana/wallet-adapter-react";
 import type { WalletName } from "@solana/wallet-adapter-base";
 import { QuietAction } from "@seametry/ui";
@@ -44,8 +45,8 @@ export function WalletState() {
   return (
     <details className={styles.walletState}>
       <summary data-connected={connected || undefined}>
+        {connecting ? <span>Connecting</span> : connected && address ? <span aria-label={`Wallet ${address}`}>{middle(address)}</span> : <span>Connect wallet</span>}
         <span className={styles.walletIcon}><Icon name="wallet" /></span>
-        {connecting ? "Connecting" : connected && address ? <span aria-label={`Wallet ${address}`}>{middle(address)}</span> : "Connect wallet"}
       </summary>
       <div className={styles.walletPanel}>
         {connected && address ? (
@@ -57,9 +58,10 @@ export function WalletState() {
           <p>No wallet was detected in this browser. Open the site in a browser with a Solana wallet extension, or use your wallet&apos;s browser on a phone.</p>
         ) : (
           wallets.map((wallet) => (
-            <QuietAction icon="wallet" key={wallet.adapter.name} disabled={connecting} onClick={() => choose(wallet.adapter.name)}>
-              Connect {wallet.adapter.name}
-            </QuietAction>
+            <button className={styles.walletChoice} type="button" key={wallet.adapter.name} disabled={connecting} onClick={() => choose(wallet.adapter.name)}>
+              <Image className={styles.walletBrand} src={wallet.adapter.icon} width={24} height={24} alt="" unoptimized />
+              <span>Connect {wallet.adapter.name}</span>
+            </button>
           ))
         )}
         {connectionError ? <p role="alert">Connection was not completed: {connectionError}</p> : null}
