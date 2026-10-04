@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { admissions } from "@/lib/allocation/admissions";
 import { SLIPPAGE_BPS, USDC_MINT } from "@/lib/allocation/rules";
+import { quoteKey } from "@/lib/compose/quote-config";
 import { jupiter, type JupiterQuote } from "@/lib/jupiter";
 import { Refusal } from "@/lib/refusal";
 
@@ -19,10 +20,11 @@ export async function GET(request: NextRequest) {
   if (unknown) {
     return NextResponse.json({ error: `${unknown} is not a captured instrument, so it cannot enter a Formula draft.` }, { status: 400 });
   }
-  const apiKey = process.env.JUPITER_API_KEY?.trim();
-  if (!apiKey) {
-    return NextResponse.json({ error: "This deployment cannot quote constituents: JUPITER_API_KEY is not set." }, { status: 503 });
+  const key = quoteKey();
+  if ("problem" in key) {
+    return NextResponse.json({ error: key.problem }, { status: 503 });
   }
+  const { apiKey } = key;
 
   // Each constituent answers for itself. On 4 October 2026 three of the seven
   // captured instruments had no mainnet route at all, and one missing route

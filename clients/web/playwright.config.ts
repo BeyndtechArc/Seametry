@@ -25,7 +25,10 @@ export default defineConfig({
       url: "http://localhost:3847",
       reuseExistingServer: false,
       timeout: 120_000,
-      env: { SEAMETRY_API_URL: "http://127.0.0.1:3846" },
+      // Jupiter is the fixture too: a placeholder key so Compose quotes,
+      // answered offline by tests/terminal-api-fixture.mjs. Values set here
+      // win over .env.local, so a local run and CI quote identically.
+      env: { SEAMETRY_API_URL: "http://127.0.0.1:3846", JUPITER_API_URL: "http://127.0.0.1:3846/jupiter", JUPITER_API_KEY: "fixture" },
     },
   ],
 });

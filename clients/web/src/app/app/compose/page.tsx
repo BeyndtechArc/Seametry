@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { admissions, blockingFact, isAdmitted } from "@/lib/allocation/admissions";
+import { quoteKey } from "@/lib/compose/quote-config";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import { PageHeader } from "../_shell/page-header";
 import { Composer, type Candidate } from "./composer";
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 
 export default async function ComposePage() {
   await connection();
+  const key = quoteKey();
   const candidates: Candidate[] = admissions.instruments.map((admission) => ({
     mint: admission.instrument.mint,
     symbol: admission.instrument.symbol ?? admission.instrument.mint,
@@ -33,6 +35,7 @@ export default async function ComposePage() {
       <Composer
         candidates={candidates}
         policy={{ version: admissions.policy_version, age: relativeEvidenceAge(admissions.as_of) }}
+        unquoted={"problem" in key ? key.problem : undefined}
       />
     </>
   );

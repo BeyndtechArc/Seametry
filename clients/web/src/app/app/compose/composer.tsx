@@ -49,7 +49,7 @@ function useQuotes(mints: string[], refresh: number): QuoteReading | undefined {
   return answer?.request === request ? answer.reading : { state: "reading" };
 }
 
-export function Composer({ candidates, policy }: { candidates: Candidate[]; policy: { version: string; age: string } }) {
+export function Composer({ candidates, policy, unquoted }: { candidates: Candidate[]; policy: { version: string; age: string }; unquoted?: string }) {
   const [selected, setSelected] = useState(() => candidates.filter((candidate) => candidate.admitted).map((candidate) => candidate.mint));
   const [method, setMethod] = useState<Weighting["method"]>("value");
   const [valueTyped, setValueTyped] = useState("100");
@@ -59,7 +59,8 @@ export function Composer({ candidates, policy }: { candidates: Candidate[]; poli
   const [refresh, setRefresh] = useState(0);
 
   const chosen = candidates.filter((candidate) => selected.includes(candidate.mint));
-  const reading = useQuotes(chosen.map((candidate) => candidate.mint), refresh);
+  const quoting = useQuotes(unquoted ? [] : chosen.map((candidate) => candidate.mint), refresh);
+  const reading: QuoteReading | undefined = unquoted && chosen.length > 0 ? { state: "unavailable", reason: unquoted } : quoting;
 
   const parsedValue = parseAmount(valueTyped, USDC_SCALE);
   const weighting: Weighting | { refused: string } =
@@ -241,7 +242,7 @@ export function Composer({ candidates, policy }: { candidates: Candidate[]; poli
             </p>
           </>
         ) : null}
-        {reading && reading.state !== "reading" ? (
+        {reading && reading.state !== "reading" && !unquoted ? (
           <QuietAction type="button" onClick={() => setRefresh((count) => count + 1)}>Read the quotes again</QuietAction>
         ) : null}
 

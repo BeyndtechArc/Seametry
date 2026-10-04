@@ -48,25 +48,23 @@ test("the quote route accepts only captured instruments, before it asks Jupiter 
 });
 
 test("Compose names an unpriceable constituent, then drafts the Formula and its founding text", async ({ page }) => {
-  let reply: object = { source: "Jupiter quote, mainnet", observedAt: new Date().toISOString(), quotes: [] };
-  await page.route("**/api/compose/quotes?**", async (route) => {
-    const mints = new URL(route.request().url()).searchParams.get("mints")!.split(",");
-    await route.fulfill({ json: { ...reply, quotes: mints.map((mint, i) => (i === 0 && "unpriced" in reply ? { mint, problem: "No routes found." } : { mint, inAtoms: "100000000", outAtoms: String(10_000_000 * (i + 1)), venues: ["Whirlpool"] })) } });
-  });
-  reply = { ...reply, unpriced: true };
+  // The fixture Jupiter answers with the recorded quotes and no route for TQQQx.
   await page.goto("/app/compose");
-  const sheet = page.getByTestId("formula-draft");
-  await expect(sheet.getByRole("status")).toContainText("cannot be priced on mainnet right now. No routes found.");
+  const main = page.getByRole("main");
+  const sheet = main.getByTestId("formula-draft");
+  await expect(sheet.getByRole("status")).toContainText("TQQQx cannot be priced on mainnet right now. Jupiter answered 400 for /quote");
 
-  reply = { source: "Jupiter quote, mainnet", observedAt: new Date().toISOString(), quotes: [] };
-  await sheet.getByRole("button", { name: "Read the quotes again" }).click();
-  await expect(sheet.locator("tbody tr").first().locator("td").nth(1)).toHaveText(/USDC$/);
+  await main.getByRole("checkbox", { name: /TQQQx/ }).uncheck();
+  const nflx = sheet.getByRole("row", { name: /NFLXx/ });
+  // 100 USDC over two legs is 50,000,000 atoms each; floor(50,000,000 * 14,749,760 / 100,000,000).
+  await expect(nflx.locator("td").nth(0)).toHaveText("0.07374880");
+  await expect(nflx.locator("td").nth(1)).toHaveText("50.000000 USDC");
   await expect(sheet.getByText(/^Jupiter quote, mainnet, 100 USDC per constituent, observed \d+s ago\./)).toBeVisible();
   await expect(sheet.locator("pre")).toHaveCount(0);
 
-  await page.getByLabel("Name", { exact: true }).fill("Technology Five");
-  await page.getByLabel("Symbol", { exact: true }).fill("tfiv");
-  await expect(page.getByLabel("Symbol", { exact: true })).toHaveValue("TFIV");
+  await main.getByLabel("Name", { exact: true }).fill("Technology Five");
+  await main.getByLabel("Symbol", { exact: true }).fill("tfiv");
+  await expect(main.getByLabel("Symbol", { exact: true })).toHaveValue("TFIV");
   const founding = sheet.locator("pre");
   await expect(founding).toContainText('"symbol": "TFIV"');
   await expect(founding).toContainText('"atomsPerShare"');

@@ -3,7 +3,11 @@ import "server-only";
 import { Refusal } from "./refusal";
 
 // The Jupiter base the Go liquidity client uses (server/internal/liquidity/jupiter.go).
-const JUPITER = "https://api.jup.ag/swap/v1";
+// JUPITER_API_URL points the tests at the local fixture, so no test run
+// depends on mainnet liquidity or on the network at all.
+function base() {
+  return process.env.JUPITER_API_URL?.trim() || "https://api.jup.ag/swap/v1";
+}
 
 export type JupiterQuote = {
   inAmount: string;
@@ -14,7 +18,7 @@ export type JupiterQuote = {
 };
 
 export async function jupiter<T>(apiKey: string, path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${JUPITER}${path}`, {
+  const response = await fetch(`${base()}${path}`, {
     ...init,
     headers: { "x-api-key": apiKey, "content-type": "application/json", ...init?.headers },
     cache: "no-store",

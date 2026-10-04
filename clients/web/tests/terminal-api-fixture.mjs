@@ -1,4 +1,11 @@
 import { createServer } from "node:http";
+import admissions from "../../../shared/evidence/admissions.json" with { type: "json" };
+
+// Jupiter quotes recorded on mainnet, 4 October 2026, for 100 USDC, in each
+// stock's own atoms. TQQQx answers with no route, as CATx, PALLx and CRDAx
+// did that day, so the unpriceable state is exercised by every run.
+const recordedQuotes = { NFLXx: "14749760", AAPLx: "29863749", STRKx: "109429622" };
+const symbolOf = new Map(admissions.instruments.map((admission) => [admission.instrument.mint, admission.instrument.symbol]));
 
 const observedAt = "2026-09-29T12:00:00Z";
 const meta = {
@@ -49,7 +56,23 @@ function writeJson(response, status, body) {
 }
 
 const server = createServer((request, response) => {
-  const path = new URL(request.url ?? "/", "http://127.0.0.1:3846").pathname;
+  const url = new URL(request.url ?? "/", "http://127.0.0.1:3846");
+  const path = url.pathname;
+  if (path === "/jupiter/quote") {
+    const outAmount = recordedQuotes[symbolOf.get(url.searchParams.get("outputMint"))];
+    if (!outAmount) {
+      writeJson(response, 400, { error: "No routes found", errorCode: "NO_ROUTES_FOUND" });
+      return;
+    }
+    writeJson(response, 200, {
+      inAmount: url.searchParams.get("amount"),
+      outAmount,
+      otherAmountThreshold: outAmount,
+      contextSlot: 400000000,
+      routePlan: [{ swapInfo: { label: "Fixture" } }],
+    });
+    return;
+  }
   if (path === "/health") {
     writeJson(response, 200, { state: "fixture" });
     return;

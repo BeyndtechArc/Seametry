@@ -22,6 +22,17 @@ const routes = [
   "/the-key",
 ];
 
+test("a shared link previews with the meta flyer, served from this app", async ({ page, request }) => {
+  await page.goto("/");
+  const image = await page.locator('meta[property="og:image"]').getAttribute("content");
+  expect(image).toBe("https://www.seametry.xyz/Seametry%20meta%20flyer.png");
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", image!);
+  const flyer = await request.get(new URL(image!).pathname);
+  expect(flyer.status()).toBe(200);
+  expect(flyer.headers()["content-type"]).toBe("image/png");
+});
+
 test("an unknown route returns the house 404 under the application policy", async ({ page }) => {
   const violations: string[] = [];
   const pageErrors: string[] = [];
