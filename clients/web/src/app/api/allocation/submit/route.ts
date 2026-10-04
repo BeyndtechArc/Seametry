@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { allocationConfig, requestCountry } from "@/lib/allocation/config";
-import { Refusal, submitLeg } from "@/lib/allocation/execution";
+import { submitLeg } from "@/lib/allocation/execution";
+import { Refusal } from "@/lib/refusal";
 import { countryGate } from "@/lib/allocation/rules";
 
 /** Sends a leg the holder signed, only if it is exactly the one approved and its quote has not expired. */

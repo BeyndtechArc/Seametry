@@ -6,40 +6,8 @@ import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
 import { QUOTE_TTL_MS, SLIPPAGE_BPS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, unlistedProgram } from "./rules";
-
-// The Jupiter base the Go liquidity client uses (server/internal/liquidity/jupiter.go).
-const JUPITER = "https://api.jup.ag/swap/v1";
-
-/** A leg this server will not prepare or submit, with the reason a holder reads. */
-export class Refusal extends Error {
-  constructor(
-    readonly status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
-
-type JupiterQuote = {
-  inAmount: string;
-  outAmount: string;
-  otherAmountThreshold: string;
-  contextSlot: number;
-  routePlan: { swapInfo: { label: string } }[];
-};
-
-async function jupiter<T>(config: AllocationConfig, path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${JUPITER}${path}`, {
-    ...init,
-    headers: { "x-api-key": config.jupiterApiKey, "content-type": "application/json", ...init?.headers },
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    const detail = (await response.text()).slice(0, 300);
-    throw new Refusal(502, `Jupiter answered ${response.status} for ${path.split("?")[0]}: ${detail}`);
-  }
-  return (await response.json()) as T;
-}
+import { jupiter, type JupiterQuote } from "../jupiter";
+import { Refusal } from "../refusal";
 
 function admittedLot(mint: string): Admission {
   const admission = findAdmission(mint);
@@ -100,11 +68,11 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     amount: inAtoms.toString(),
     slippageBps: String(SLIPPAGE_BPS),
   });
-  const quote = await jupiter<JupiterQuote>(config, `/quote?${query}`);
+  const quote = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${query}`);
   const receivedAt = new Date();
   const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
 
-  const swap = await jupiter<{ swapTransaction: string; prioritizationFeeLamports?: number }>(config, "/swap", {
+  const swap = await jupiter<{ swapTransaction: string; prioritizationFeeLamports?: number }>(config.jupiterApiKey, "/swap", {
     method: "POST",
     body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true }),
   });

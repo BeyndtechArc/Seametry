@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { allocationConfig, requestCountry } from "@/lib/allocation/config";
-import { Refusal, prepareLeg } from "@/lib/allocation/execution";
+import { prepareLeg } from "@/lib/allocation/execution";
+import { Refusal } from "@/lib/refusal";
 import { countryGate } from "@/lib/allocation/rules";
 
 /** Quotes, builds, checks and simulates one Allocation leg for the connected wallet. Never signs it. */

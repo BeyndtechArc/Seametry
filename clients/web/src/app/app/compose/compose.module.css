@@ -1,0 +1,259 @@
+/* components.md, Formula draft. Inputs on the left in three numbered steps;
+   the draft ledger is the page's figure and stays beside them. */
+
+.compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sm-space-9);
+  margin-top: var(--sm-space-7);
+}
+
+.inputs {
+  display: grid;
+  gap: var(--sm-space-10);
+  min-width: 0;
+}
+
+.inputs section {
+  display: grid;
+  gap: var(--sm-space-4);
+  padding-top: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-strong);
+}
+
+.label {
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+}
+
+.inputs h2,
+.sheet h2 {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-l);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.note {
+  max-width: 62ch;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.55;
+}
+
+.problem {
+  color: var(--sm-accent-provenance);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.55;
+}
+
+.candidates {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.candidates li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: start;
+  gap: var(--sm-space-3) var(--sm-space-6);
+  padding: var(--sm-space-5) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.candidates label,
+.methods label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sm-space-4);
+  cursor: pointer;
+}
+
+.candidates li[data-refused] label {
+  cursor: default;
+}
+
+.candidates input,
+.methods input {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+  margin: var(--sm-space-1) 0 0;
+  accent-color: var(--sm-accent-touch);
+}
+
+.candidates label span,
+.methods label span {
+  display: grid;
+  gap: var(--sm-space-1);
+}
+
+.candidates b,
+.methods b {
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-body);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.candidates li[data-refused] b {
+  color: var(--sm-text-secondary);
+}
+
+.candidates small,
+.methods small {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.5;
+}
+
+.marks {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-3);
+  min-width: 0;
+}
+
+.methods {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border: 0.5px solid var(--sm-line-rule);
+}
+
+.methods label {
+  padding: var(--sm-space-5);
+  background: var(--sm-surface-sheet);
+}
+
+.methods label + label {
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.methods label[data-chosen] {
+  background: var(--sm-surface-raised);
+}
+
+.identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sm-space-5);
+}
+
+.sheet {
+  display: grid;
+  align-content: start;
+  gap: var(--sm-space-5);
+  min-width: 0;
+  padding: var(--sm-space-7);
+  border: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-sheet);
+}
+
+.reading {
+  display: grid;
+  gap: var(--sm-space-4);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sm-font-size-small);
+}
+
+.ledger th,
+.ledger td {
+  padding: var(--sm-space-4) var(--sm-space-2);
+  border-top: 0.5px solid var(--sm-line-rule);
+  text-align: right;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.ledger thead th {
+  border-top: 0;
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.ledger th:first-child {
+  text-align: left;
+}
+
+.ledger tbody th {
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.ledger td {
+  color: var(--sm-text-primary);
+}
+
+.ledger tfoot th,
+.ledger tfoot td {
+  border-top: 0.5px solid var(--sm-line-strong);
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-lead);
+}
+
+.founding {
+  display: grid;
+  gap: var(--sm-space-3);
+  padding-top: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-strong);
+}
+
+.founding pre {
+  max-height: calc(var(--sm-space-13) * 2.5);
+  margin: 0;
+  padding: var(--sm-space-4);
+  overflow: auto;
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-raised);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+  font-variant-ligatures: none;
+  line-height: 1.5;
+}
+
+@media (min-width: 700px) {
+  .identity {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+
+  .methods {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .methods label + label {
+    border-top: 0;
+    border-left: 0.5px solid var(--sm-line-rule);
+  }
+}
+
+@media (min-width: 1100px) {
+  .compose {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .sheet {
+    position: sticky;
+    top: calc(var(--sm-size-target) + var(--sm-space-9));
+  }
+}
+
+@media (max-width: 700px) {
+  .candidates li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .marks {
+    padding-left: var(--sm-space-9);
+  }
+}

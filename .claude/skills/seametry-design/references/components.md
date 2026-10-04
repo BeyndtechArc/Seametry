@@ -299,6 +299,14 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **Data:** Hall mechanism guarantees only. No market quantity, price or participant count.
 **Rules:** no arrows without text, animation, invented market activity or implication that a wallet without the required assets can Strike.
 
+### Formula draft
+**Answers:** what would one share of this Alloy hold, what is each leg worth at a live mainnet quote, and is the draft fit to found?
+**Anatomy:** constituents chosen from assayed instruments (refused ones visible with their blocking fact, never selectable); a weighting choice, equal value at founding or equal units; the share's name and symbol; beside them, the draft ledger: per leg the atoms per share, the value at the quote and the weight, then the total per share, the quote's source and age, and the founding draft as text to copy.
+**Identity:** the draft ledger is the page's figure and stays in view beside the inputs, as the Allocation's order sheet does. There is no Key: nothing is signed here.
+**States:** quotes loading (rule line naming the read); quotes unavailable (the reason, with equal units still drafting quantities and values reading "No observation"); refused draft (the reason in place of the ledger); ready.
+**Data:** the admissions snapshot for constituents; `/api/compose/quotes`, one 100 USDC Jupiter quote per constituent, as integer atoms. Weights are basis points of the per-share value.
+**Rules:** no float anywhere, no estimate and no word that values the Alloy; the value is "at the quote", with its source and age. The page says the weights drift as prices move, because the Formula is fixed and never rebalances. Founding is a separate, deliberate step on the devnet Hall.
+
 ### Mechanism plate
 **Answers:** what does one Hall guarantee look like as a mechanism, before the reader parses the sentence?
 **Anatomy:** an isometric line drawing above a two-to-four-word title and one plain sentence, inside a ruled plate. The drawing is built from blocks, plinths, dashed paths and small floor annotations set along the isometric plane.

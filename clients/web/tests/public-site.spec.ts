@@ -280,6 +280,7 @@ test("the app header logs in with a route action and keeps the mode control besi
     "Overview",
     "Build a basket",
     "Alloys",
+    "Compose",
     "Demo",
     "Instruments",
   ]);
