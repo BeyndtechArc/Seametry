@@ -46,14 +46,14 @@ func (s Server) ListAlloys(ctx context.Context, request api.ListAlloysRequestObj
 	}
 	sort.Slice(accounts, func(i, j int) bool { return accounts[i].Address < accounts[j].Address })
 
-	data := make([]api.Alloy, 0, len(accounts))
-	for _, account := range accounts {
-		view, err := s.decodeAlloy(ctx, account)
-		if err != nil {
-			problem := gatewayProblem(http.StatusBadGateway, "Hall account could not be decoded", err.Error())
-			return api.ListAlloysdefaultApplicationProblemPlusJSONResponse{Body: problem, StatusCode: problem.Status}, nil
-		}
-		data = append(data, view.api)
+	views, err := s.decodeAlloys(ctx, accounts)
+	if err != nil {
+		problem := gatewayProblem(http.StatusBadGateway, "Hall account could not be decoded", err.Error())
+		return api.ListAlloysdefaultApplicationProblemPlusJSONResponse{Body: problem, StatusCode: problem.Status}, nil
+	}
+	data := make([]api.Alloy, len(views))
+	for i, view := range views {
+		data[i] = view.api
 	}
 	now := s.now()
 	return api.ListAlloys200JSONResponse{Data: data, Meta: s.hallMeta(now)}, nil
@@ -161,39 +161,69 @@ func (s Server) getAlloy(ctx context.Context, address string) (alloyView, *api.P
 		problem := gatewayProblem(http.StatusNotFound, "Alloy not found", fmt.Sprintf("the Hall returned no account at %s", address))
 		return alloyView{}, &problem
 	}
-	view, err := s.decodeAlloy(ctx, account)
+	views, err := s.decodeAlloys(ctx, []*solana.Account{account})
 	if err != nil {
 		problem := gatewayProblem(http.StatusBadGateway, "Hall account could not be decoded", err.Error())
 		return alloyView{}, &problem
 	}
-	return view, nil
+	return views[0], nil
 }
 
-func (s Server) decodeAlloy(ctx context.Context, account *solana.Account) (alloyView, error) {
-	if account.Owner != s.HallProgramID {
-		return alloyView{}, fmt.Errorf("account %s is owned by %s, want the configured Hall program %s", account.Address, account.Owner, s.HallProgramID)
-	}
-	address, err := registry.ParsePubkey(account.Address)
-	if err != nil {
-		return alloyView{}, fmt.Errorf("Alloy account address %q: %w", account.Address, err)
-	}
-	chain, err := basket.DecodeAlloy(address, account.Data)
-	if err != nil {
-		return alloyView{}, err
+// decodeAlloys reads every mint and Hall-owned token account the Alloys
+// reference in one batched request. Reading them per Alloy cost one RPC round
+// trip each, and with 47 devnet Alloys the register took about 17 seconds.
+// Demo Alloys share their mints, so the addresses are deduplicated first.
+func (s Server) decodeAlloys(ctx context.Context, accounts []*solana.Account) ([]alloyView, error) {
+	chains := make([]*basket.ChainAlloy, len(accounts))
+	seen := map[string]bool{}
+	addresses := []string{}
+	for i, account := range accounts {
+		if account.Owner != s.HallProgramID {
+			return nil, fmt.Errorf("account %s is owned by %s, want the configured Hall program %s", account.Address, account.Owner, s.HallProgramID)
+		}
+		address, err := registry.ParsePubkey(account.Address)
+		if err != nil {
+			return nil, fmt.Errorf("Alloy account address %q: %w", account.Address, err)
+		}
+		chain, err := basket.DecodeAlloy(address, account.Data)
+		if err != nil {
+			return nil, err
+		}
+		chains[i] = chain
+		for _, leg := range chain.Legs {
+			for _, related := range []string{leg.Mint.String(), leg.HallAccount.String()} {
+				if !seen[related] {
+					seen[related] = true
+					addresses = append(addresses, related)
+				}
+			}
+		}
 	}
 
-	addresses := make([]string, 0, len(chain.Legs)*2)
-	for _, leg := range chain.Legs {
-		addresses = append(addresses, leg.Mint.String(), leg.HallAccount.String())
-	}
 	_, related, err := s.Hall.GetMultipleAccounts(ctx, addresses, "finalized")
 	if err != nil {
-		return alloyView{}, fmt.Errorf("reading mint and Hall-owned accounts for %s: %w", account.Address, err)
+		return nil, fmt.Errorf("reading %d mint and Hall-owned accounts for %d Alloys: %w", len(addresses), len(accounts), err)
 	}
 	if len(related) != len(addresses) {
-		return alloyView{}, fmt.Errorf("reading %d related accounts for %s returned %d", len(addresses), account.Address, len(related))
+		return nil, fmt.Errorf("reading %d mint and Hall-owned accounts returned %d", len(addresses), len(related))
+	}
+	byAddress := make(map[string]*solana.Account, len(addresses))
+	for i, address := range addresses {
+		byAddress[address] = related[i]
 	}
 
+	views := make([]alloyView, len(accounts))
+	for i, account := range accounts {
+		view, err := s.alloyView(account, chains[i], byAddress)
+		if err != nil {
+			return nil, err
+		}
+		views[i] = view
+	}
+	return views, nil
+}
+
+func (s Server) alloyView(account *solana.Account, chain *basket.ChainAlloy, related map[string]*solana.Account) (alloyView, error) {
 	wire := api.Alloy{
 		Address:       account.Address,
 		Cluster:       api.AlloyCluster(s.HallCluster),
@@ -209,8 +239,8 @@ func (s Server) decodeAlloy(ctx context.Context, account *solana.Account) (alloy
 	}
 	core := basket.Alloy{Supply: new(big.Int).SetUint64(chain.Supply), Constituents: make([]basket.Constituent, len(chain.Legs))}
 	for i, leg := range chain.Legs {
-		mintAccount := related[i*2]
-		hallAccount := related[i*2+1]
+		mintAccount := related[leg.Mint.String()]
+		hallAccount := related[leg.HallAccount.String()]
 		if mintAccount == nil {
 			return alloyView{}, fmt.Errorf("mint account %s used by Alloy %s is absent", leg.Mint, account.Address)
 		}

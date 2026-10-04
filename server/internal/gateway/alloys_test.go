@@ -211,6 +211,56 @@ func TestHeldBackComesFromTheHallOwnedTokenAccount(t *testing.T) {
 	}
 }
 
+// countingHall lists the same captured Alloy several times and records every
+// batch the Gateway asks for, so the register's round trips can be counted.
+type countingHall struct {
+	fakeHall
+	listed  int
+	batches *[][]string
+}
+
+func (c countingHall) GetProgramAccounts(context.Context, string, int, string) ([]*solana.Account, error) {
+	accounts := make([]*solana.Account, c.listed)
+	for i := range accounts {
+		accounts[i] = c.alloy
+	}
+	return accounts, nil
+}
+
+func (c countingHall) GetMultipleAccounts(ctx context.Context, addresses []string, commitment string) (uint64, []*solana.Account, error) {
+	*c.batches = append(*c.batches, addresses)
+	return c.fakeHall.GetMultipleAccounts(ctx, addresses, commitment)
+}
+
+func TestTheRegisterReadsEveryAlloysAccountsInOneBatch(t *testing.T) {
+	server, _ := testHall(t)
+	var batches [][]string
+	server.Hall = countingHall{fakeHall: server.Hall.(fakeHall), listed: 3, batches: &batches}
+	httpServer := httptest.NewServer(gateway.NewHandler(server))
+	t.Cleanup(httpServer.Close)
+
+	resp, err := http.Get(httpServer.URL + "/v1/alloys")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+	var body struct {
+		Data []api.Alloy `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatal(err)
+	}
+	if len(body.Data) != 3 {
+		t.Fatalf("register returned %d Alloys, want 3", len(body.Data))
+	}
+	if len(batches) != 1 {
+		t.Fatalf("register made %d account reads for 3 Alloys, want 1 batch", len(batches))
+	}
+	if len(batches[0]) != 4 {
+		t.Errorf("batch asked for %d addresses, want the 4 distinct mints and Hall accounts", len(batches[0]))
+	}
+}
+
 func TestHistoricalHallReadNamesTheMissingPersistence(t *testing.T) {
 	server, address := testHall(t)
 	httpServer := httptest.NewServer(gateway.NewHandler(server))
