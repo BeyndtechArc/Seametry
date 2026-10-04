@@ -182,6 +182,19 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   expect(instrumentHeading.questionTop).toBeGreaterThanOrEqual(instrumentHeading.titleBottom);
 });
 
+test("each mechanism plate title stays on one line at desktop width", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const titles = await page.getByTestId("mechanism-plate").locator("h3").evaluateAll((headings) =>
+    headings.map((heading) => {
+      const style = getComputedStyle(heading);
+      return { text: heading.textContent, lines: Math.round(heading.getBoundingClientRect().height / Number.parseFloat(style.lineHeight)) };
+    }),
+  );
+  expect(titles).toHaveLength(4);
+  for (const title of titles) expect(title.lines, title.text ?? "").toBe(1);
+});
+
 test("each mechanism plate draws one touchable object inside its frame", async ({ page }) => {
   await page.goto("/");
   const plates = await page.getByTestId("mechanism-plate").evaluateAll((articles) =>

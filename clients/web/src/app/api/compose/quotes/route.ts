@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { admissions } from "@/lib/allocation/admissions";
 import { SLIPPAGE_BPS, USDC_MINT } from "@/lib/allocation/rules";
 import { quoteKey } from "@/lib/compose/quote-config";
-import { jupiter, type JupiterQuote } from "@/lib/jupiter";
-import { Refusal } from "@/lib/refusal";
+import { JupiterRefusal, jupiter, type JupiterQuote } from "@/lib/jupiter";
 
 // Every constituent is priced by the same reference purchase, so their
 // quotes compare like for like: what 100 USDC buys on mainnet right now.
@@ -26,25 +25,36 @@ export async function GET(request: NextRequest) {
   }
   const { apiKey } = key;
 
-  // Each constituent answers for itself. On 4 October 2026 three of the seven
-  // captured instruments had no mainnet route at all, and one missing route
-  // must not hide the prices of the others.
-  const quotes = await Promise.all(
-    mints.map(async (mint) => {
-      const query = new URLSearchParams({ inputMint: USDC_MINT, outputMint: mint, amount: REFERENCE_USDC_ATOMS.toString(), slippageBps: String(SLIPPAGE_BPS) });
-      try {
-        const quote = await jupiter<JupiterQuote>(apiKey, `/quote?${query}`);
-        return {
-          mint,
-          inAtoms: quote.inAmount,
-          outAtoms: quote.outAmount,
-          slot: quote.contextSlot,
-          venues: [...new Set(quote.routePlan.map((step) => step.swapInfo.label))],
-        };
-      } catch (error) {
-        return { mint, problem: error instanceof Refusal || error instanceof Error ? error.message : "Quoting failed." };
-      }
-    }),
-  );
+  // Each constituent answers for itself: on 4 October 2026 three of the seven
+  // captured instruments had no mainnet route, and one missing route must not
+  // hide the others' prices. They are asked one after another, because the
+  // free Jupiter plan allows one request a second and a burst of parallel
+  // quotes came back as 429s that read like missing markets.
+  const quotes = [];
+  for (const mint of mints) {
+    const query = new URLSearchParams({ inputMint: USDC_MINT, outputMint: mint, amount: REFERENCE_USDC_ATOMS.toString(), slippageBps: String(SLIPPAGE_BPS) });
+    try {
+      const quote = await jupiter<JupiterQuote>(apiKey, `/quote?${query}`);
+      quotes.push({
+        mint,
+        inAtoms: quote.inAmount,
+        outAtoms: quote.outAmount,
+        slot: quote.contextSlot,
+        venues: [...new Set(quote.routePlan.map((step) => step.swapInfo.label))],
+      });
+    } catch (error) {
+      quotes.push({ mint, problem: problemOf(error) });
+    }
+  }
   return NextResponse.json({ source: "Jupiter quote, mainnet", observedAt: new Date().toISOString(), quotes });
+}
+
+function problemOf(error: unknown): string {
+  if (error instanceof JupiterRefusal && error.upstream === 429) {
+    return "Jupiter is limiting how often this deployment may ask (HTTP 429). This says nothing about the market; read the quotes again in a moment.";
+  }
+  if (error instanceof JupiterRefusal && error.code === "NO_ROUTES_FOUND") {
+    return "No mainnet route buys it with USDC right now.";
+  }
+  return error instanceof Error ? error.message : "Quoting failed.";
 }

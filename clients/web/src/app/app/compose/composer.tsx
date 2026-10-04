@@ -84,7 +84,7 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
     "refused" in weighting
       ? weighting
       : unpriced
-        ? { refused: `${unpriced.candidate.symbol} cannot be priced on mainnet right now. ${unpriced.quote && "problem" in unpriced.quote ? unpriced.quote.problem : ""} Leave it out, or read the quotes again later.` }
+        ? { refused: `${unpriced.candidate.symbol} has no quote. ${unpriced.quote && "problem" in unpriced.quote ? unpriced.quote.problem : ""}` }
         : quoted
           ? draftFormula(quoted, weighting)
           : undefined;

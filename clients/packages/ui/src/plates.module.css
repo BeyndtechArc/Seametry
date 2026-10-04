@@ -43,7 +43,7 @@
 .plate h3 {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title);
+  font-size: var(--sm-font-size-title-s);
   font-weight: var(--sm-font-weight-regular);
   letter-spacing: var(--sm-font-tracking-title);
   line-height: 1.15;

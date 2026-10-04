@@ -52,7 +52,7 @@ test("Compose names an unpriceable constituent, then drafts the Formula and its 
   await page.goto("/app/compose");
   const main = page.getByRole("main");
   const sheet = main.getByTestId("formula-draft");
-  await expect(sheet.getByRole("status")).toContainText("TQQQx cannot be priced on mainnet right now. Jupiter answered 400 for /quote");
+  await expect(sheet.getByRole("status")).toHaveText("TQQQx has no quote. No mainnet route buys it with USDC right now.");
 
   await main.getByRole("checkbox", { name: /TQQQx/ }).uncheck();
   const nflx = sheet.getByRole("row", { name: /NFLXx/ });

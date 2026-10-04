@@ -6,6 +6,10 @@ import admissions from "../../../shared/evidence/admissions.json" with { type: "
 // did that day, so the unpriceable state is exercised by every run.
 const recordedQuotes = { NFLXx: "14749760", AAPLx: "29863749", STRKx: "109429622" };
 const symbolOf = new Map(admissions.instruments.map((admission) => [admission.instrument.mint, admission.instrument.symbol]));
+// The first quote for each mint is refused with 429 and retry-after: 0, as
+// Jupiter's free plan does past one request a second, so every run proves
+// the client waits it out instead of reporting a rate limit as a market.
+const rateLimited = new Set();
 
 const observedAt = "2026-09-29T12:00:00Z";
 const meta = {
@@ -59,7 +63,14 @@ const server = createServer((request, response) => {
   const url = new URL(request.url ?? "/", "http://127.0.0.1:3846");
   const path = url.pathname;
   if (path === "/jupiter/quote") {
-    const outAmount = recordedQuotes[symbolOf.get(url.searchParams.get("outputMint"))];
+    const outputMint = url.searchParams.get("outputMint");
+    if (!rateLimited.has(outputMint)) {
+      rateLimited.add(outputMint);
+      response.writeHead(429, { "Content-Type": "application/json", "Retry-After": "0" });
+      response.end(JSON.stringify({ code: 429, message: "[API Gateway] Too many requests" }));
+      return;
+    }
+    const outAmount = recordedQuotes[symbolOf.get(outputMint)];
     if (!outAmount) {
       writeJson(response, 400, { error: "No routes found", errorCode: "NO_ROUTES_FOUND" });
       return;
