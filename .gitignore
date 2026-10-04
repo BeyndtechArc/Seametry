@@ -28,3 +28,7 @@ coverage.txt
 # Runtime state, rebuilt from shared/fixtures and shared/evidence, which are
 # themselves committed.
 /server/data/
+
+# Storm's visual reference set (third-party screenshots and studies).
+# Kept local: it guides the art direction but is not ours to publish.
+/references/
