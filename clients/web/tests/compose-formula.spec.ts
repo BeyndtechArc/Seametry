@@ -39,6 +39,18 @@ test("the share's name and symbol are checked before they become immutable", () 
   expect(identityProblem("Technology Five", "t5")).toBe("A symbol is 2 to 10 capital letters or digits, starting with a letter.");
 });
 
+test("Compose stops at the twelve legs an Alloy can hold", async ({ page }) => {
+  await page.goto("/app/compose");
+  const main = page.getByRole("main");
+  const admitted = main.locator("li:not([data-refused]) input[type=checkbox]");
+  expect(await admitted.count()).toBeGreaterThan(12);
+  for (let i = 0; i < 12; i++) await admitted.nth(i).check();
+  await expect(main.getByText("12 of at most 12 chosen. An Alloy holds no more legs than this; remove one to choose another.", { exact: true })).toBeVisible();
+  await expect(admitted.nth(12)).toBeDisabled();
+  await admitted.nth(0).uncheck();
+  await expect(admitted.nth(12)).toBeEnabled();
+});
+
 test("the quote route accepts only captured instruments, before it asks Jupiter anything", async ({ request }) => {
   const unknown = await request.get("/api/compose/quotes?mints=So11111111111111111111111111111111111111112");
   expect(unknown.status()).toBe(400);
@@ -52,6 +64,9 @@ test("Compose names an unpriceable constituent, then drafts the Formula and its 
   await page.goto("/app/compose");
   const main = page.getByRole("main");
   const sheet = main.getByTestId("formula-draft");
+  await expect(main.getByText("0 of at most 12 chosen.", { exact: true })).toBeVisible();
+  await expect(sheet.getByText("Choose at least one constituent.", { exact: true })).toBeVisible();
+  for (const symbol of ["NFLXx", "AAPLx", "TQQQx"]) await main.getByRole("checkbox", { name: new RegExp(symbol) }).check();
   await expect(sheet.getByRole("status")).toHaveText("TQQQx has no quote. No mainnet route buys it with USDC right now.");
 
   await main.getByRole("checkbox", { name: /TQQQx/ }).uncheck();

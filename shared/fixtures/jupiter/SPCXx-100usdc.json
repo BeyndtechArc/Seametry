@@ -1,0 +1,9 @@
+{
+  "symbol": "SPCXx",
+  "mint": "Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8",
+  "size_usdc": 100,
+  "captured_at": "2026-10-04T23:08:47Z",
+  "status": 200,
+  "sha256": "e4bba020b02a3fceed86c5bdf64dc1d2e9f16a1924a47bf99e0d354302b2e782",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8\",\"outAmount\":\"62821944\",\"otherAmountThreshold\":\"62507835\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0004017585478199999674375833\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"ByZzakgSmSU5t33DbjPYoyLFB72AQyWkCkGuYhy1s4EG\",\"label\":\"Manifest\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8\",\"inAmount\":\"100000000\",\"outAmount\":\"62821944\",\"updateContextSlot\":\"453399699\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399704,\"timeTaken\":0.009055029,\"swapUsdValue\":\"99.996016355035800\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"ASAxmEaTT1HFe3mVC3zbKDE4tuB28W7732XQrEMBM5W2\":\"62804405\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"99998156\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"MhtEiW13uwKwMacCmEGrAYEU8kxPWLn4ArF222DD7x7\",\"3tNhMJ3sQA4VdYZDpw7HEiJ4Sc8UNGk8LmHce5N1cvYH\",\"AHyaRXddUqiB2YRbubcFLnwc6pRuMTEVsxAcWMdTKPSm\"]}"
+}

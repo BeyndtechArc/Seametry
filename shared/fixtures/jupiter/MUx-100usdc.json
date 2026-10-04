@@ -1,0 +1,9 @@
+{
+  "symbol": "MUx",
+  "mint": "XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav",
+  "size_usdc": 100,
+  "captured_at": "2026-10-04T23:08:17Z",
+  "status": 200,
+  "sha256": "ba907cd6b8088f32675ba4cd4c46713f06bc623dee1215ed2a5665b255219e4a",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav\",\"outAmount\":\"8723428\",\"otherAmountThreshold\":\"8679811\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0676615272170104408180314358\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"HQTp5EiPEyftHcztD3Ejh1G7Fy372Wspqp7DQYixG1nh\",\"label\":\"Manifest\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav\",\"inAmount\":\"100000000\",\"outAmount\":\"8723428\",\"updateContextSlot\":\"453399559\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399596,\"timeTaken\":0.001364646,\"swapUsdValue\":\"99.996016355035800\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"99998156\",\"4ENm84VaA6gVdPzV9HHsFZdEY59A2yMpFt9cDw2Sb64X\":\"8700038\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0}"
+}

@@ -124,10 +124,24 @@ test("a lot is offered only when its capacity decision admits a measured size", 
 
 test("the allocation catalogue exposes policy-issued capacity per offered lot", () => {
   const offered = admissions.instruments.filter(isAdmitted);
+  // The policy engine's output after the 4 October 2026 capture of eighteen
+  // more xStocks (shared/evidence/depth-2026-10-04.md), in snapshot order.
   expect(offered.map((lot) => [lot.instrument.symbol, lot.capacity_usdc])).toEqual([
+    ["AMZNx", 10000],
+    ["SPCXx", 10000],
+    ["GOOGLx", 10000],
+    ["TSLAx", 10000],
     ["NFLXx", 100],
+    ["METAx", 10000],
+    ["TSMx", 1000],
     ["AAPLx", 10000],
+    ["NVDAx", 10000],
+    ["AVGOx", 1000],
+    ["INTCx", 100],
+    ["ORCLx", 100],
     ["TQQQx", 100],
+    ["PLTRx", 1000],
+    ["MSFTx", 10000],
   ]);
   expect(offered.every((lot) => lot.capacity_decision.input_digest.match(/^[0-9a-f]{64}$/))).toBe(true);
 });

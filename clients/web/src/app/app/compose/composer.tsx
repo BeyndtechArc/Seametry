@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Field, Grade, QuietAction, Rule, Stamp } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
-import { SHARE_SCALE, USDC_SCALE, draftFormula, identityProblem, unitsToAtoms, type QuotedLeg, type Weighting } from "@/lib/compose/formula";
+import { MAX_CONSTITUENTS, SHARE_SCALE, USDC_SCALE, draftFormula, identityProblem, unitsToAtoms, type QuotedLeg, type Weighting } from "@/lib/compose/formula";
 import styles from "./compose.module.css";
 
 export type Candidate = {
@@ -50,7 +50,11 @@ function useQuotes(mints: string[], refresh: number): QuoteReading | undefined {
 }
 
 export function Composer({ candidates, policy, unquoted }: { candidates: Candidate[]; policy: { version: string; age: string }; unquoted?: string }) {
-  const [selected, setSelected] = useState(() => candidates.filter((candidate) => candidate.admitted).map((candidate) => candidate.mint));
+  // Nothing is chosen at the start: choosing what a share holds is the point
+  // of the page, and fifteen admitted instruments already exceed what one
+  // Alloy can hold.
+  const [selected, setSelected] = useState<string[]>([]);
+  const full = selected.length >= MAX_CONSTITUENTS;
   const [method, setMethod] = useState<Weighting["method"]>("value");
   const [valueTyped, setValueTyped] = useState("100");
   const [unitsTyped, setUnitsTyped] = useState("0.1");
@@ -116,13 +120,16 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
           <p className={styles.note}>
             Only instruments captured and assayed by the policy engine can enter a Formula ({policy.version}, captured {policy.age} ago). To add another stock, capture it first.
           </p>
+          <p className={full ? styles.problem : styles.note}>
+            {selected.length} of at most {MAX_CONSTITUENTS} chosen{full ? ". An Alloy holds no more legs than this; remove one to choose another." : "."}
+          </p>
           <ul className={styles.candidates}>
             {candidates.map((candidate) => (
               <li key={candidate.mint} data-refused={!candidate.admitted || undefined}>
                 <label>
                   <input
                     type="checkbox"
-                    disabled={!candidate.admitted}
+                    disabled={!candidate.admitted || (full && !selected.includes(candidate.mint))}
                     checked={selected.includes(candidate.mint)}
                     onChange={(event) =>
                       setSelected((current) => (event.target.checked ? [...current, candidate.mint] : current.filter((mint) => mint !== candidate.mint)))

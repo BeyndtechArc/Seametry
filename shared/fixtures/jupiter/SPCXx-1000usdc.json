@@ -1,0 +1,9 @@
+{
+  "symbol": "SPCXx",
+  "mint": "Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8",
+  "size_usdc": 1000,
+  "captured_at": "2026-10-04T23:08:48Z",
+  "status": 200,
+  "sha256": "0b2c2d5c37241d08233f0f5e391d3ce84030847f5bd9ba4d53de4a15ad0da29d",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"1000000000\",\"outputMint\":\"Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8\",\"outAmount\":\"628063310\",\"otherAmountThreshold\":\"624922994\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0000147406784307724123107862\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"5whNk71ua6aRtNKazDqEeAimmfzuX9epJcjh4isQKprn\",\"label\":\"Meteora DLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8\",\"inAmount\":\"1000000000\",\"outAmount\":\"628063310\",\"updateContextSlot\":\"453399639\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399710,\"timeTaken\":0.009613839,\"swapUsdValue\":\"999.960163550358000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"ASAxmEaTT1HFe3mVC3zbKDE4tuB28W7732XQrEMBM5W2\":\"628027847\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"999981299\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb\"]}"
+}

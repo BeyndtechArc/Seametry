@@ -1,0 +1,9 @@
+{
+  "symbol": "MUx",
+  "mint": "XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav",
+  "size_usdc": 10000,
+  "captured_at": "2026-10-04T23:08:19Z",
+  "status": 200,
+  "sha256": "695d8a6e9b1abf01cdccb79b375bf8eacfdb9261a9c10540d676ca5b97297a8a",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"10000000000\",\"outputMint\":\"XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav\",\"outAmount\":\"210911833\",\"otherAmountThreshold\":\"209857274\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.7745826339472499352927186762\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"4ENm84VaA6gVdPzV9HHsFZdEY59A2yMpFt9cDw2Sb64X\",\"label\":\"Meteora DLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav\",\"inAmount\":\"2200000000\",\"outAmount\":\"141969358\",\"updateContextSlot\":\"453399600\"},\"percent\":22,\"bps\":null},{\"swapInfo\":{\"ammKey\":\"HQTp5EiPEyftHcztD3Ejh1G7Fy372Wspqp7DQYixG1nh\",\"label\":\"Manifest\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav\",\"inAmount\":\"7800000000\",\"outAmount\":\"68942475\",\"updateContextSlot\":\"453399600\"},\"percent\":78,\"bps\":null}],\"contextSlot\":453399606,\"timeTaken\":0.048247236,\"swapUsdValue\":\"9999.601635503580000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"9999786800\",\"4ENm84VaA6gVdPzV9HHsFZdEY59A2yMpFt9cDw2Sb64X\":\"Pair insufficient liquidity\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0}"
+}

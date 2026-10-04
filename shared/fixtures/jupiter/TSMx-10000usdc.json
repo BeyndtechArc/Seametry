@@ -1,0 +1,9 @@
+{
+  "symbol": "TSMx",
+  "mint": "XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV",
+  "size_usdc": 10000,
+  "captured_at": "2026-10-04T23:09:07Z",
+  "status": 200,
+  "sha256": "72bc07bedc7e37c963b808b96b655861b917bdbfde23556a6259858fa31bb1b6",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"10000000000\",\"outputMint\":\"XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV\",\"outAmount\":\"1044562429\",\"otherAmountThreshold\":\"1039339617\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.488317872648068241859879119\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"E1YZTLM1grafroWt34o3vN9pygwhJf45wUqEF96fkdGc\",\"label\":\"Whirlpool\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV\",\"inAmount\":\"7600000000\",\"outAmount\":\"581653283\",\"updateContextSlot\":\"453399639\"},\"percent\":76,\"bps\":null},{\"swapInfo\":{\"ammKey\":\"8CRsFy3jsWYgpvwXxvwg1JReVWK2aBjZHPwZ8tX1B8Ys\",\"label\":\"Manifest\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV\",\"inAmount\":\"2400000000\",\"outAmount\":\"462909146\",\"updateContextSlot\":\"453399774\"},\"percent\":24,\"bps\":null}],\"contextSlot\":453399779,\"timeTaken\":0.043809874,\"swapUsdValue\":\"9999.401478285870000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"9999786800\",\"E1YZTLM1grafroWt34o3vN9pygwhJf45wUqEF96fkdGc\":\"645376952\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"4svsyTi5yRpVUUHFcKqDozCuEdhhP3H1VPy4xuTQpump\"]}"
+}

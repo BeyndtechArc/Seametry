@@ -1,0 +1,9 @@
+{
+  "symbol": "TSMx",
+  "mint": "XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV",
+  "size_usdc": 1000,
+  "captured_at": "2026-10-04T23:09:05Z",
+  "status": 200,
+  "sha256": "dbdefabecacbc7a278532fd92822afcdb02d9b2ecdf9ce4d357e192ecf381316",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"1000000000\",\"outputMint\":\"XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV\",\"outAmount\":\"202522519\",\"otherAmountThreshold\":\"201509907\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0079570523812940819427181037\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"8CRsFy3jsWYgpvwXxvwg1JReVWK2aBjZHPwZ8tX1B8Ys\",\"label\":\"Manifest\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV\",\"inAmount\":\"1000000000\",\"outAmount\":\"202522519\",\"updateContextSlot\":\"453399774\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399775,\"timeTaken\":0.001842849,\"swapUsdValue\":\"999.960163550358000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"E1YZTLM1grafroWt34o3vN9pygwhJf45wUqEF96fkdGc\":\"157743198\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"999981299\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"4svsyTi5yRpVUUHFcKqDozCuEdhhP3H1VPy4xuTQpump\"]}"
+}

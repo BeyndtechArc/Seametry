@@ -40,5 +40,113 @@
     "mint": "XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ",
     "issuer": "Backed Finance (xStocks)",
     "note": "Halted by its issuer with no multiplier movement, which separates halt state from corporate action state. The two are independent and a decoder that conflated them would pass on TQQQx alone."
+  },
+  {
+    "symbol": "SPCXx",
+    "mint": "Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Lode). SpaceX listed on Nasdaq on 12 June 2026; the xStock became the highest-volume tokenized stock on Solana. A 1,000 USDC quote routed on 4 October 2026 through ZeroFi and Byreal."
+  },
+  {
+    "symbol": "METAx",
+    "mint": "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Sterling). Meta rose 26.7% in September 2026 on the Muse launch. A 1,000 USDC quote routed on 4 October 2026 through Raydium CLMM."
+  },
+  {
+    "symbol": "NVDAx",
+    "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Crucible): the AI accelerator supplier. A 1,000 USDC quote routed on 4 October 2026 through GoonFi V2."
+  },
+  {
+    "symbol": "INTCx",
+    "mint": "XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Crucible). Intel rose over 30% in September 2026 on AI CPU demand and its foundry turnaround. A 1,000 USDC quote routed on 4 October 2026 through TesseraV and Raydium CLMM."
+  },
+  {
+    "symbol": "MRNAx",
+    "mint": "XsViHjyRbiSBskjizb1gszGTmZqtAH8TuqwJ7sB5AcP",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Lode). Moderna's mRNA melanoma vaccine met its Phase III endpoints on 19 August 2026. Captured as the thin case: on 4 October 2026 a 1,000 USDC quote routed only through Manifest, at high price impact."
+  },
+  {
+    "symbol": "AMDx",
+    "mint": "XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Crucible). A 1,000 USDC quote routed on 4 October 2026 through Meteora DLMM."
+  },
+  {
+    "symbol": "BEx",
+    "mint": "XsmGSEqT6VXpVis3aVBDxaNwPgHNXbkjkVUCncsLkNB",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Furnace). Bloom Energy powers AI data centres on site and joined the S&P 500 on 21 September 2026. Captured as the unroutable case: Jupiter found no route on 4 October 2026."
+  },
+  {
+    "symbol": "SNDKx",
+    "mint": "Xswbpc8UqU6e1j9QZEWCjBMjyvz4twqD7PCy6j2e7jj",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Crucible). Sandisk was the best S&P 500 performer of 2026 through September. A 1,000 USDC quote routed on 4 October 2026 through AlphaQ and Manifest."
+  },
+  {
+    "symbol": "MUx",
+    "mint": "XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Crucible): AI memory. A 1,000 USDC quote routed on 4 October 2026 through Meteora DLMM."
+  },
+  {
+    "symbol": "GOOGLx",
+    "mint": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Sterling). A 1,000 USDC quote routed on 4 October 2026 through Raydium CLMM."
+  },
+  {
+    "symbol": "MSFTx",
+    "mint": "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Sterling). A 1,000 USDC quote routed on 4 October 2026 through TesseraV and Raydium CLMM."
+  },
+  {
+    "symbol": "AMZNx",
+    "mint": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Sterling). A 1,000 USDC quote routed on 4 October 2026 through Raydium CLMM."
+  },
+  {
+    "symbol": "TSLAx",
+    "mint": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate. A 1,000 USDC quote routed on 4 October 2026 through Riptide."
+  },
+  {
+    "symbol": "AVGOx",
+    "mint": "XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Crucible). A 1,000 USDC quote routed on 4 October 2026 through Raydium CLMM."
+  },
+  {
+    "symbol": "TSMx",
+    "mint": "XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Crucible): the foundry most AI chips are made in. A 1,000 USDC quote routed on 4 October 2026 through Manifest."
+  },
+  {
+    "symbol": "DELLx",
+    "mint": "Xsu7Tc5J2fVUE4H5vYAiSr34cvLJeCsYPMjAYnayQn6",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Crucible): AI servers. Captured as a thin case: on 4 October 2026 a 1,000 USDC quote routed only through Manifest, at high price impact."
+  },
+  {
+    "symbol": "ORCLx",
+    "mint": "XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate (Crucible): AI cloud capacity. A 1,000 USDC quote routed on 4 October 2026 through Raydium CLMM."
+  },
+  {
+    "symbol": "PLTRx",
+    "mint": "XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4",
+    "issuer": "Backed Finance (xStocks)",
+    "note": "First-Alloy candidate. A 1,000 USDC quote routed on 4 October 2026 through Orca Whirlpool."
   }
 ]

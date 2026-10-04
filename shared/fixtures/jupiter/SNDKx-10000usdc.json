@@ -1,0 +1,9 @@
+{
+  "symbol": "SNDKx",
+  "mint": "Xswbpc8UqU6e1j9QZEWCjBMjyvz4twqD7PCy6j2e7jj",
+  "size_usdc": 10000,
+  "captured_at": "2026-10-04T23:08:45Z",
+  "status": 200,
+  "sha256": "d83704c898ebec9d6e70fbadf3e0869c91e28b695dfbbbbbf47229cf5ae4e29e",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"10000000000\",\"outputMint\":\"Xswbpc8UqU6e1j9QZEWCjBMjyvz4twqD7PCy6j2e7jj\",\"outAmount\":\"47239979\",\"otherAmountThreshold\":\"47003780\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.9159333329268517452838175986\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"36Mg9GsTu1VWknSyPh1SbTBtu1wXTf2scMzYEwjYf5QJ\",\"label\":\"Manifest\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"Xswbpc8UqU6e1j9QZEWCjBMjyvz4twqD7PCy6j2e7jj\",\"inAmount\":\"10000000000\",\"outAmount\":\"47239979\",\"updateContextSlot\":\"453399699\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399699,\"timeTaken\":0.049291136,\"swapUsdValue\":\"9999.601635503580000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"9999786800\",\"36Mg9GsTu1VWknSyPh1SbTBtu1wXTf2scMzYEwjYf5QJ\":\"47239979\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0}"
+}

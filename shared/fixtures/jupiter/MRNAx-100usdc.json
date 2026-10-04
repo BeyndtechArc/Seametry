@@ -1,0 +1,9 @@
+{
+  "symbol": "MRNAx",
+  "mint": "XsViHjyRbiSBskjizb1gszGTmZqtAH8TuqwJ7sB5AcP",
+  "size_usdc": 100,
+  "captured_at": "2026-10-04T23:08:08Z",
+  "status": 200,
+  "sha256": "28498e46a19debd6c39f9cced46ecb34e07aba4edecc3cda18adf9431f72d682",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"XsViHjyRbiSBskjizb1gszGTmZqtAH8TuqwJ7sB5AcP\",\"outAmount\":\"14026837\",\"otherAmountThreshold\":\"13956703\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.8215891299726851933499104027\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"GoXt3yb95dE1uwYLRQanyPP2Xr5mz1hiYfNTjbc4KdtC\",\"label\":\"Manifest\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsViHjyRbiSBskjizb1gszGTmZqtAH8TuqwJ7sB5AcP\",\"inAmount\":\"100000000\",\"outAmount\":\"14026837\",\"updateContextSlot\":\"453399559\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399563,\"timeTaken\":0.000237783,\"swapUsdValue\":\"99.996016355035800\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"Not used RG: FullLiquidIntermediate, contains ALT: true\",\"5rwijhVoxPeHzA18FXzxRFXtcSXEC7K6ZrCeELVKTxX2\":\"Not found\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0}"
+}

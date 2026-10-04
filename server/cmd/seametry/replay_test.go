@@ -28,14 +28,21 @@ func repoRoot(t *testing.T) string {
 
 func TestLoadSolanaFixtureInputsReadsEveryFixture(t *testing.T) {
 	root := repoRoot(t)
-	inputs, err := loadSolanaFixtureInputs(filepath.Join(root, "shared", "fixtures", "mainnet"))
+	dir := filepath.Join(root, "shared", "fixtures", "mainnet")
+	inputs, err := loadSolanaFixtureInputs(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 7 captured mints, not 8: targets.json lists what to capture, not a
-	// capture itself, and loadSolanaFixtureInputs skips it by name.
-	if len(inputs) != 7 {
-		t.Fatalf("loaded %d inputs, want 7 (one per shared/fixtures/mainnet/*.json, excluding targets.json)", len(inputs))
+	// One input per captured mint, and none for targets.json, which lists what
+	// to capture rather than being a capture. Counted from the directory so
+	// capturing another mint cannot break this, while reading targets.json
+	// as a fixture still would.
+	files, err := filepath.Glob(filepath.Join(dir, "*.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := len(files) - 1; len(inputs) != want {
+		t.Fatalf("loaded %d inputs, want %d (one per shared/fixtures/mainnet/*.json, excluding targets.json)", len(inputs), want)
 	}
 	for _, in := range inputs {
 		if in.Mint == "" {

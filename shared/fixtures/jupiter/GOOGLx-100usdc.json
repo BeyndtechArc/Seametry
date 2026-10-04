@@ -1,0 +1,9 @@
+{
+  "symbol": "GOOGLx",
+  "mint": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN",
+  "size_usdc": 100,
+  "captured_at": "2026-10-04T23:07:55Z",
+  "status": 200,
+  "sha256": "14bffcda5dadc7b73e1a6037d3b9ff49c8123ad7d446ea3f8fda46a9fed0688b",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN\",\"outAmount\":\"28950551\",\"otherAmountThreshold\":\"28805799\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0039063656557630038927308329\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"8FnX3xo2yYw3EUE6w3nQA4GfXGS9wpK6oj3veJpbFzLo\",\"label\":\"BisonFi\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"So11111111111111111111111111111111111111112\",\"inAmount\":\"100000000\",\"outAmount\":\"822348282\",\"updateContextSlot\":\"453399515\"},\"percent\":100,\"bps\":null},{\"swapInfo\":{\"ammKey\":\"Bh3njVo6i3UjgmaevEQMGoidphcueNjoPqGkYLbthzV5\",\"label\":\"Whirlpool\",\"inputMint\":\"So11111111111111111111111111111111111111112\",\"outputMint\":\"XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN\",\"inAmount\":\"822348282\",\"outAmount\":\"28950551\",\"updateContextSlot\":\"453397924\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399515,\"timeTaken\":0.004612742,\"swapUsdValue\":\"99.995753827414700\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"99998156\",\"B8YAwjGYk6qidWzGBXMAxP7nYfG8g74EZ3Y4gFSsobRw\":\"28918736\",\"Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE\":\"821899114\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"BjcRmwm8e25RgjkyaFE56fc7bxRgGPw96JUkXRJFEroT\"]}"
+}

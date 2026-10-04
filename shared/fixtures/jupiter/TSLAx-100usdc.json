@@ -1,0 +1,9 @@
+{
+  "symbol": "TSLAx",
+  "mint": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB",
+  "size_usdc": 100,
+  "captured_at": "2026-10-04T23:08:59Z",
+  "status": 200,
+  "sha256": "1707539ee0c97be5d3d5ffe142072e930e3a1a7de9c0e8fba35a07c8fe4a1d8c",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB\",\"outAmount\":\"26842061\",\"otherAmountThreshold\":\"26707851\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0003471944768699177212610877\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"9p7abUFv31ycgu9kckvnoqMMvBy67dqTDM2m6HP9xokN\",\"label\":\"Whirlpool\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB\",\"inAmount\":\"100000000\",\"outAmount\":\"26842061\",\"updateContextSlot\":\"453399721\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399753,\"timeTaken\":0.004678152,\"swapUsdValue\":\"99.996016355035800\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"99998156\",\"8aDaBQkTrS6HVMjyc6EZebgdiaXhLYGriDWKWWp1NpFF\":\"26822882\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"6woEgPYYfSd5YkruVwhvMKxoGXLCVL8j8cazd5HJiCQd\"]}"
+}

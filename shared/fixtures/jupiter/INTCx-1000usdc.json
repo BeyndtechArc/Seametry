@@ -1,0 +1,9 @@
+{
+  "symbol": "INTCx",
+  "mint": "XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM",
+  "size_usdc": 1000,
+  "captured_at": "2026-10-04T23:08:01Z",
+  "status": 200,
+  "sha256": "bfcb9113de85bae1ee0b9a56a930d0ae2c48bcad60790b2bc7c11273cb04724d",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"1000000000\",\"outputMint\":\"XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM\",\"outAmount\":\"838004620\",\"otherAmountThreshold\":\"833814597\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0100127934696629615167842338\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"7yD7gfXv49SFxhx9uTc11dEd7Nj98rGWeYMdZJgheZbG\",\"label\":\"Kipseli\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"So11111111111111111111111111111111111111112\",\"inAmount\":\"1000000000\",\"outAmount\":\"8223297841\",\"updateContextSlot\":\"453399535\"},\"percent\":100,\"bps\":null},{\"swapInfo\":{\"ammKey\":\"J7riKjqgLoZCES7MRyxHxL7iXybwHKXgfAot8muHKciZ\",\"label\":\"Raydium CLMM\",\"inputMint\":\"So11111111111111111111111111111111111111112\",\"outputMint\":\"XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM\",\"inAmount\":\"8223297841\",\"outAmount\":\"838004620\",\"updateContextSlot\":\"453398825\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399536,\"timeTaken\":0.003949149,\"swapUsdValue\":\"999.957538274147000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"6KoZB86BFDk6TZbB4CTBoAA8PPbpmEwSWFjCyfkt1Uw4\":\"835001723\",\"Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE\":\"8218969556\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"999981299\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"iNTCy1qTsUEZQe3DSocLz1ZXXai34Gdw8THQh5rxFaF\"]}"
+}

@@ -1,0 +1,9 @@
+{
+  "symbol": "NVDAx",
+  "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+  "size_usdc": 100,
+  "captured_at": "2026-10-04T23:08:25Z",
+  "status": 200,
+  "sha256": "52a62d037f6a8a2b06ed7b4ed68bd0bcf00eaf42b3be8ddf8ac6a188a82168d8",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh\",\"outAmount\":\"42406891\",\"otherAmountThreshold\":\"42194857\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0003838397293414174309353124\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"6R4r93V5fcMzc13CL2enEepDSYcr4Qx3ptZBDwudTXCo\",\"label\":\"Whirlpool\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh\",\"inAmount\":\"100000000\",\"outAmount\":\"42406891\",\"updateContextSlot\":\"453399600\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399628,\"timeTaken\":0.009717632,\"swapUsdValue\":\"99.996016355035800\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"49iMatQtoyabsYAQc8GafVq6aeBFVDxSRH44oiatyyw6\":\"42378481\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"99998156\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"DCazF6jBXRHQrWzUa3QL4k5nurXgukyeXjZgCV6bHV6D\"]}"
+}

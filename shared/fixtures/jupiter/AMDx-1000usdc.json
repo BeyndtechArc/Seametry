@@ -1,0 +1,9 @@
+{
+  "symbol": "AMDx",
+  "mint": "XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF",
+  "size_usdc": 1000,
+  "captured_at": "2026-10-04T23:07:27Z",
+  "status": 200,
+  "sha256": "bc5aaa60c47c444b77a51240d9ba31450453ee3b93040aafcfdce203ade1dbc3",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"1000000000\",\"outputMint\":\"XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF\",\"outAmount\":\"146611870\",\"otherAmountThreshold\":\"145878811\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0903063192770663394776569945\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"5JjaEZfYzxQn3DAbAjDi8expi4b4aVnFTYDuonx15w5N\",\"label\":\"Meteora DLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF\",\"inAmount\":\"1000000000\",\"outAmount\":\"146611870\",\"updateContextSlot\":\"453399345\"},\"percent\":100,\"bps\":null}],\"contextSlot\":453399408,\"timeTaken\":0.003185723,\"swapUsdValue\":\"999.957538274147000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"5JjaEZfYzxQn3DAbAjDi8expi4b4aVnFTYDuonx15w5N\":\"146611870\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"999981299\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"EioN9wGsc9U39XnzFesnd7keSywBcPoJc49NhMpivot\"]}"
+}

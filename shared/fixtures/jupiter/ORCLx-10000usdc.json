@@ -1,0 +1,9 @@
+{
+  "symbol": "ORCLx",
+  "mint": "XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL",
+  "size_usdc": 10000,
+  "captured_at": "2026-10-04T23:08:32Z",
+  "status": 200,
+  "sha256": "61e850c85fd51bf3fdfefd7194d9771993ca2e1dbd81332222cf710a26401258",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"10000000000\",\"outputMint\":\"XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL\",\"outAmount\":\"5830486512\",\"otherAmountThreshold\":\"5801334080\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.1607886621816339374241830766\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"GKkhPDvEgCxdD28SWL5vmaESL375pquwevTkp17kWTLt\",\"label\":\"Whirlpool\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL\",\"inAmount\":\"500000000\",\"outAmount\":\"307965288\",\"updateContextSlot\":\"453399639\"},\"percent\":5,\"bps\":null},{\"swapInfo\":{\"ammKey\":\"GWjPMHYsmdosbMCPx14N627qf5WhpaxAwNBRCfqP9CM9\",\"label\":\"Raydium CLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL\",\"inAmount\":\"9500000000\",\"outAmount\":\"5522521224\",\"updateContextSlot\":\"453399639\"},\"percent\":95,\"bps\":null}],\"contextSlot\":453399652,\"timeTaken\":0.000956098,\"swapUsdValue\":\"9999.601635503580000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"Not used RG: FullLiquidIntermediate, contains ALT: true\",\"GWjPMHYsmdosbMCPx14N627qf5WhpaxAwNBRCfqP9CM9\":\"5770516007\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0}"
+}
