@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 test("the landing leads with the recorded issuer-freeze incident", async ({ page }) => {
@@ -117,13 +118,20 @@ test("the public rail carries reading pages and one way into the app", async ({ 
   await expect(page.getByRole("button", { name: "Use dark mode" })).toBeVisible();
 });
 
-test("every shell uses the registered three-part house mark", async ({ page }) => {
+test("every shell and the tab icon draw the house mark from public/logo.svg itself", async ({ page, request }) => {
+  // A copy of the mark's paths once lived in the header and the tab icon and
+  // drifted from the file, so a redrawn logo never reached the site. Every
+  // place now loads the file, and the file served is the file committed.
   for (const path of ["/", "/app"] as const) {
     await page.goto(path);
-    const mark = page.getByRole("link", { name: "Seametry", exact: true }).locator("svg");
-    await expect(mark).toHaveAttribute("viewBox", "0 0 314 235");
-    await expect(mark.locator("path")).toHaveCount(3);
+    const mark = page.getByRole("link", { name: "Seametry", exact: true }).locator("img");
+    await expect(mark).toHaveAttribute("src", "/logo.svg");
+    expect(await mark.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", "/logo.svg");
   }
+  const served = await request.get("/logo.svg");
+  expect(served.headers()["content-type"]).toContain("image/svg+xml");
+  expect(await served.text()).toBe(readFileSync("public/logo.svg", "utf8"));
 });
 
 test("narrow shells give the mark room and disclose one complete navigation register", async ({ page }) => {

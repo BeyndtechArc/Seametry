@@ -16,6 +16,8 @@ const flyer = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.seametry.xyz"),
   title: "Seametry",
+  // The tab icon is the house mark file itself, so redrawing the logo redraws it.
+  icons: { icon: { url: "/logo.svg", type: "image/svg+xml" } },
   description: "Know what it's made of.",
   openGraph: { type: "website", siteName: "Seametry", title: "Seametry", description: "Open-AP ETFs on Solana: baskets that keep working when issuers freeze.", images: [flyer] },
   twitter: { card: "summary_large_image", title: "Seametry", description: "Open-AP ETFs on Solana: baskets that keep working when issuers freeze.", images: [flyer] },

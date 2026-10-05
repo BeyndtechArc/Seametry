@@ -14,10 +14,9 @@
   letter-spacing: var(--sm-font-tracking-title);
 }
 
-.brand svg {
+.mark {
   width: var(--sm-space-8);
-  height: var(--sm-space-6);
-  fill: var(--sm-accent-touch);
+  height: var(--sm-space-8);
 }
 
 .brand:focus-visible {
@@ -30,8 +29,8 @@
     display: none;
   }
 
-  .compactOnNarrow svg {
+  .compactOnNarrow .mark {
     width: var(--sm-space-9);
-    height: var(--sm-space-8);
+    height: var(--sm-space-9);
   }
 }
