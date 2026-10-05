@@ -1,0 +1,23 @@
+{
+  "name": "Stoic Crew",
+  "symbol": "STOIC",
+  "description": "An Alloy on the Seametry Hall. One share is a fixed Formula of six tokenized stocks: AAPLx, MSFTx, GOOGLx, AMZNx, METAx and NVDAx, equal in value at the founding quote and never rebalanced. Any wallet can Strike it or Melt it; no one can stop a Melt. On devnet the constituents are stand-ins carrying the real xStocks' token settings.",
+  "image": "https://www.seametry.xyz/alloys/stoic-crew/artwork.png",
+  "external_url": "https://www.seametry.xyz/app/alloys",
+  "attributes": [
+    { "trait_type": "Network", "value": "devnet" },
+    { "trait_type": "Sponsor", "value": "Seametry" },
+    { "trait_type": "Constituents", "value": "6" },
+    { "trait_type": "Weighting", "value": "Equal value at the founding quote" }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://www.seametry.xyz/alloys/stoic-crew/artwork.png",
+        "type": "image/png",
+        "sha256": "5d24eba35cae3f59a7d9a034fea8d0e2bd2b7c6f529b0504131c810b4502fb76"
+      }
+    ]
+  }
+}

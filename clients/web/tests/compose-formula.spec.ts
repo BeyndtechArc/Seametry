@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { draftFormula, identityProblem, unitsToAtoms, type QuotedLeg } from "../src/lib/compose/formula";
 
@@ -49,6 +50,19 @@ test("Compose stops at the twelve legs an Alloy can hold", async ({ page }) => {
   await expect(admitted.nth(12)).toBeDisabled();
   await admitted.nth(0).uncheck();
   await expect(admitted.nth(12)).toBeEnabled();
+});
+
+test("Stoic Crew's metadata is served whole, and its image is the one it names", async ({ request }) => {
+  const metadata = await request.get("/alloys/stoic-crew/metadata.json");
+  expect(metadata.status()).toBe(200);
+  const body = await metadata.json();
+  expect({ name: body.name, symbol: body.symbol }).toEqual({ name: "Stoic Crew", symbol: "STOIC" });
+  expect(identityProblem(body.name, body.symbol)).toBeUndefined();
+  const file = body.properties.files[0];
+  expect(body.image).toBe(file.uri);
+  const image = await request.get(new URL(file.uri).pathname);
+  expect(image.headers()["content-type"]).toBe("image/png");
+  expect(createHash("sha256").update(await image.body()).digest("hex")).toBe(file.sha256);
 });
 
 test("the quote route accepts only captured instruments, before it asks Jupiter anything", async ({ request }) => {
