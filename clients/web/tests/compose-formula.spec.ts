@@ -5,6 +5,12 @@ import { draftFormula, identityProblem, unitsToAtoms, type QuotedLeg } from "../
 import { SEAMETRY_SPONSOR_MARK } from "../src/lib/compose/founding-transaction";
 import { REGISTER_HALL_PROGRAM_ID } from "../src/lib/hall/constants";
 
+// How long a page may take to show quotes. lib/jupiter spaces calls a little
+// over a second apart, the fixture refuses each mint's first quote with 429,
+// and other workers quote through the same server at the same time.
+const QUOTED = 30_000;
+test.describe.configure({ timeout: 60_000 });
+
 // Quotes recorded from Jupiter on mainnet, 4 October 2026: what 100 USDC
 // (100,000,000 atoms) bought of each stock, in the stock's own atoms.
 const nflx: QuotedLeg = { mint: "nflx", symbol: "NFLXx", decimals: 8, quote: { inAtoms: 100_000_000n, outAtoms: 14_749_760n } };
@@ -106,7 +112,7 @@ test("Compose offers founding once the draft is priced and named, and holds the 
   await main.getByLabel("Name", { exact: true }).fill("Stoic Crew");
   await main.getByLabel("Symbol", { exact: true }).fill("STOIC");
   const founding = main.getByTestId("founding");
-  await expect(founding.getByRole("heading", { level: 3, name: "Found Stoic Crew" })).toBeVisible();
+  await expect(founding.getByRole("heading", { level: 3, name: "Found Stoic Crew" })).toBeVisible({ timeout: QUOTED });
   await expect(founding.getByText("https://www.seametry.xyz/alloys/stoic-crew/metadata.json", { exact: true })).toBeVisible();
   await expect(founding.getByRole("button", { name: "Found on devnet" })).toBeDisabled();
   await expect(founding.getByText("Log in with a devnet wallet: it signs as the sponsor.", { exact: true })).toBeVisible();
@@ -126,6 +132,37 @@ test("each lot draws the logo its mint names, served exactly as the capture reco
   expect(createHash("sha256").update(await served.body()).digest("hex")).toBe(aapl.sha256);
 });
 
+test("ticking several boxes in a row asks for quotes once, after the selection settles", async ({ page }) => {
+  const asked: string[] = [];
+  page.on("request", (sent) => {
+    if (sent.url().includes("/api/compose/quotes")) asked.push(sent.url());
+  });
+  await page.goto("/app/compose");
+  const main = page.getByRole("main");
+  for (const symbol of ["NFLXx", "AAPLx"]) await main.getByRole("checkbox", { name: new RegExp(symbol) }).check();
+  await expect(main.getByTestId("formula-draft").getByRole("row", { name: /AAPLx/ })).toBeVisible({ timeout: QUOTED });
+  expect(asked).toHaveLength(1);
+});
+
+test("a quote asked again within its lifetime is the same observation, not a new call", async ({ request }) => {
+  const mints = JSON.parse(readFileSync("../../shared/evidence/admissions.json", "utf8")).instruments;
+  const nflx = mints.find((admission: { instrument: { symbol: string } }) => admission.instrument.symbol === "NFLXx").instrument.mint;
+  const first = await (await request.get(`/api/compose/quotes?mints=${nflx}`)).json();
+  const second = await (await request.get(`/api/compose/quotes?mints=${nflx}`)).json();
+  expect(second.quotes[0].observedAt).toBe(first.quotes[0].observedAt);
+  expect(second.observedAt).toBe(first.observedAt);
+});
+
+test("the server spaces every Jupiter call at least a second apart, however many requests overlap", async ({ request }) => {
+  const admitted = JSON.parse(readFileSync("../../shared/evidence/admissions.json", "utf8")).instruments.map((admission: { instrument: { mint: string } }) => admission.instrument.mint);
+  // Three overlapping requests for mints no other test quotes, so none is cached.
+  await Promise.all(admitted.slice(-3).map((mint: string) => request.get(`/api/compose/quotes?mints=${mint}`)));
+  const arrivals: number[] = await (await request.get("http://127.0.0.1:3846/jupiter/arrivals")).json();
+  const gaps = arrivals.slice(1).map((at, index) => at - arrivals[index]);
+  expect(gaps.length).toBeGreaterThan(2);
+  expect(Math.min(...gaps)).toBeGreaterThanOrEqual(1_000);
+});
+
 test("the quote route accepts only captured instruments, before it asks Jupiter anything", async ({ request }) => {
   const unknown = await request.get("/api/compose/quotes?mints=So11111111111111111111111111111111111111112");
   expect(unknown.status()).toBe(400);
@@ -142,12 +179,12 @@ test("Compose names an unpriceable constituent, then drafts the Formula and its 
   await expect(main.getByText("0 of at most 12 chosen.", { exact: true })).toBeVisible();
   await expect(sheet.getByText("Choose at least one constituent.", { exact: true })).toBeVisible();
   for (const symbol of ["NFLXx", "AAPLx", "TQQQx"]) await main.getByRole("checkbox", { name: new RegExp(symbol) }).check();
-  await expect(sheet.getByRole("status")).toHaveText("TQQQx has no quote. No mainnet route buys it with USDC right now.");
+  await expect(sheet.getByRole("status")).toHaveText("TQQQx has no quote. No mainnet route buys it with USDC right now.", { timeout: QUOTED });
 
   await main.getByRole("checkbox", { name: /TQQQx/ }).uncheck();
   const nflx = sheet.getByRole("row", { name: /NFLXx/ });
   // 100 USDC over two legs is 50,000,000 atoms each; floor(50,000,000 * 14,749,760 / 100,000,000).
-  await expect(nflx.locator("td").nth(0)).toHaveText("0.07374880");
+  await expect(nflx.locator("td").nth(0)).toHaveText("0.07374880", { timeout: QUOTED });
   await expect(nflx.locator("td").nth(1)).toHaveText("50.000000 USDC");
   await expect(sheet.getByText(/^Jupiter quote, mainnet, 100 USDC per constituent, observed \d+s ago\./)).toBeVisible();
   await expect(sheet.locator("pre")).toHaveCount(0);

@@ -27,26 +27,54 @@ export async function GET(request: NextRequest) {
 
   // Each constituent answers for itself: on 4 October 2026 three of the seven
   // captured instruments had no mainnet route, and one missing route must not
-  // hide the others' prices. They are asked one after another, because the
-  // free Jupiter plan allows one request a second and a burst of parallel
-  // quotes came back as 429s that read like missing markets.
+  // hide the others' prices. They are asked one after another, and lib/jupiter
+  // paces every call, because the free plan allows one request a second.
   const quotes = [];
   for (const mint of mints) {
-    const query = new URLSearchParams({ inputMint: USDC_MINT, outputMint: mint, amount: REFERENCE_USDC_ATOMS.toString(), slippageBps: String(SLIPPAGE_BPS) });
-    try {
-      const quote = await jupiter<JupiterQuote>(apiKey, `/quote?${query}`);
-      quotes.push({
-        mint,
-        inAtoms: quote.inAmount,
-        outAtoms: quote.outAmount,
-        slot: quote.contextSlot,
-        venues: [...new Set(quote.routePlan.map((step) => step.swapInfo.label))],
-      });
-    } catch (error) {
-      quotes.push({ mint, problem: problemOf(error) });
-    }
+    // A selection the page has since replaced cancels its request; asking
+    // Jupiter for the rest of it would spend the shared limit on nobody.
+    if (request.signal.aborted) return new NextResponse(null, { status: 499 });
+    quotes.push(await quoteOf(apiKey, mint));
   }
-  return NextResponse.json({ source: "Jupiter quote, mainnet", observedAt: new Date().toISOString(), quotes });
+  // The response is as old as its oldest quote, so a cached answer is never
+  // presented as fresher than it is.
+  const observedAt = quotes.map((quote) => quote.observedAt).sort()[0];
+  return NextResponse.json({ source: "Jupiter quote, mainnet", observedAt, quotes });
+}
+
+// A draft's selection changes one box at a time, and each change asks for the
+// whole selection again; without this, every tick re-quoted every stock
+// already chosen. An answer about the market (a quote, or no route) is kept
+// briefly; a refusal about our own rate limit is never kept, since it says
+// nothing about the market and the next ask may succeed.
+const QUOTE_LIFETIME_MS = 20_000;
+type Answer = { mint: string; observedAt: string } & ({ inAtoms: string; outAtoms: string; slot: number; venues: string[] } | { problem: string });
+const recent = new Map<string, { at: number; answer: Answer }>();
+
+async function quoteOf(apiKey: string, mint: string): Promise<Answer> {
+  const kept = recent.get(mint);
+  if (kept && Date.now() - kept.at < QUOTE_LIFETIME_MS) return kept.answer;
+
+  const query = new URLSearchParams({ inputMint: USDC_MINT, outputMint: mint, amount: REFERENCE_USDC_ATOMS.toString(), slippageBps: String(SLIPPAGE_BPS) });
+  const at = Date.now();
+  const observedAt = new Date(at).toISOString();
+  try {
+    const quote = await jupiter<JupiterQuote>(apiKey, `/quote?${query}`);
+    const answer: Answer = {
+      mint,
+      observedAt,
+      inAtoms: quote.inAmount,
+      outAtoms: quote.outAmount,
+      slot: quote.contextSlot,
+      venues: [...new Set(quote.routePlan.map((step) => step.swapInfo.label))],
+    };
+    recent.set(mint, { at, answer });
+    return answer;
+  } catch (error) {
+    const answer: Answer = { mint, observedAt, problem: problemOf(error) };
+    if (error instanceof JupiterRefusal && error.code === "NO_ROUTES_FOUND") recent.set(mint, { at, answer });
+    return answer;
+  }
 }
 
 function problemOf(error: unknown): string {

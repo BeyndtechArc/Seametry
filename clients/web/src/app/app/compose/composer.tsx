@@ -28,24 +28,31 @@ function age(observedAt: string) {
   return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m`;
 }
 
-/** One quote per selection, read again only when the selection or a refresh changes the request. */
+// Ticking several boxes in a row is one decision, so the selection is asked
+// about once it has been still this long, not once per tick.
+const SETTLE_MS = 600;
+
+/** One quote per settled selection; a superseded request is cancelled, not merely ignored. */
 function useQuotes(mints: string[], refresh: number): QuoteReading | undefined {
   const request = mints.length > 0 ? `${mints.join(",")}|${refresh}` : undefined;
   const [answer, setAnswer] = useState<{ request: string; reading: QuoteReading }>();
   useEffect(() => {
     if (!request) return;
-    let current = true;
+    const cancel = new AbortController();
     const settle = (reading: QuoteReading) => {
-      if (current) setAnswer({ request, reading });
+      if (!cancel.signal.aborted) setAnswer({ request, reading });
     };
-    fetch(`/api/compose/quotes?mints=${request.split("|")[0]}`)
-      .then(async (response) => {
-        const body = await response.json();
-        settle(response.ok ? { state: "read", quotes: body as Quotes } : { state: "unavailable", reason: body.error });
-      })
-      .catch((error: unknown) => settle({ state: "unavailable", reason: error instanceof Error ? error.message : "The quote request did not complete." }));
+    const timer = setTimeout(() => {
+      fetch(`/api/compose/quotes?mints=${request.split("|")[0]}`, { signal: cancel.signal })
+        .then(async (response) => {
+          const body = await response.json();
+          settle(response.ok ? { state: "read", quotes: body as Quotes } : { state: "unavailable", reason: body.error });
+        })
+        .catch((error: unknown) => settle({ state: "unavailable", reason: error instanceof Error ? error.message : "The quote request did not complete." }));
+    }, SETTLE_MS);
     return () => {
-      current = false;
+      clearTimeout(timer);
+      cancel.abort();
     };
   }, [request]);
   if (!request) return undefined;

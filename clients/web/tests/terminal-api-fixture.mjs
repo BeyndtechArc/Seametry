@@ -10,6 +10,8 @@ const symbolOf = new Map(admissions.instruments.map((admission) => [admission.in
 // Jupiter's free plan does past one request a second, so every run proves
 // the client waits it out instead of reporting a rate limit as a market.
 const rateLimited = new Set();
+// When each quote arrived, so a test can measure the app's own pacing.
+const quoteArrivals = [];
 
 const observedAt = "2026-09-29T12:00:00Z";
 const meta = {
@@ -64,7 +66,12 @@ function writeJson(response, status, body) {
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? "/", "http://127.0.0.1:3846");
   const path = url.pathname;
+  if (path === "/jupiter/arrivals") {
+    writeJson(response, 200, quoteArrivals);
+    return;
+  }
   if (path === "/jupiter/quote") {
+    quoteArrivals.push(Date.now());
     const outputMint = url.searchParams.get("outputMint");
     if (!rateLimited.has(outputMint)) {
       rateLimited.add(outputMint);

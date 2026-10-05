@@ -9,12 +9,29 @@ function base() {
   return process.env.JUPITER_API_URL?.trim() || "https://api.jup.ag/swap/v1";
 }
 
-// The free plan allows one request a second and answers 429 with a
-// retry-after header (developers.jup.ag/docs/portal/rate-limits). A 429 is
-// the plan's limit, not a market fact, so it is waited out a bounded number of
-// times before it is reported as what it is.
+// The free plan allows one request a second, sixty a minute over a sliding
+// window, counted per organisation rather than per key
+// (developers.jup.ag/docs/portal/rate-limits). A 429 is the plan's limit, not
+// a market fact, so it is waited out a bounded number of times before it is
+// reported as what it is.
 const RATE_LIMIT_RETRIES = 2;
 const LONGEST_WAIT_MS = 3_000;
+
+// Every call from this server instance takes the next free slot, a little
+// over a second after the last, so concurrent requests queue instead of
+// bursting into 429s. Compose quoting each ticked box as it was ticked sent
+// overlapping bursts, and AAPLx came back limited on 6 October 2026. It
+// paces one instance only: several warm serverless instances can still
+// together exceed the plan, which the retry and the quote cache absorb.
+const SPACING_MS = 1_100;
+let nextSlot = 0;
+
+function paced() {
+  const now = Date.now();
+  const slot = Math.max(now, nextSlot);
+  nextSlot = slot + SPACING_MS;
+  return new Promise((resolve) => setTimeout(resolve, slot - now));
+}
 
 export type JupiterQuote = {
   inAmount: string;
@@ -43,6 +60,7 @@ function waitFor(retryAfter: string | null) {
 
 export async function jupiter<T>(apiKey: string, path: string, init?: RequestInit): Promise<T> {
   for (let attempt = 0; ; attempt++) {
+    await paced();
     const response = await fetch(`${base()}${path}`, {
       ...init,
       headers: { "x-api-key": apiKey, "content-type": "application/json", ...init?.headers },
