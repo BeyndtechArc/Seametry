@@ -882,6 +882,68 @@
   font-weight: var(--sm-font-weight-medium);
 }
 
+/* A paper is read, not scanned, so its text holds a reading measure
+   rather than the chapter grid's full width. */
+.paperText {
+  display: grid;
+  gap: var(--sm-space-6);
+  max-width: calc(var(--sm-space-13) * 6);
+  padding-top: var(--sm-space-8);
+}
+
+.paperText p {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-lead);
+  line-height: 1.6;
+}
+
+.paperText code,
+.paperFigure {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-small);
+}
+
+.paperEvidence {
+  display: grid;
+  gap: var(--sm-space-5);
+  max-width: calc(var(--sm-space-13) * 6);
+  margin: var(--sm-space-9) 0 0;
+  padding: var(--sm-space-7);
+  overflow-x: auto;
+  background: var(--sm-surface-sheet);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-4)) 0, 100% var(--sm-space-4), 100% 100%, 0 100%);
+}
+
+.paperEvidence figcaption {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.paperEvidence table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sm-font-size-small);
+}
+
+.paperEvidence th {
+  color: var(--sm-text-secondary);
+  font-weight: var(--sm-font-weight-regular);
+  text-align: left;
+}
+
+.paperEvidence th,
+.paperEvidence td {
+  padding: var(--sm-space-3) var(--sm-space-4) var(--sm-space-3) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-primary);
+  vertical-align: top;
+}
+
+.paperEvidence a {
+  color: var(--sm-accent-provenance);
+}
+
 .keyState {
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   align-items: end;

@@ -19,6 +19,43 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   }
 });
 
+// Read straight from the evidence files rather than through the page's own
+// module, so a figure the module derives wrongly cannot agree with itself.
+function evidence(path: string) {
+  return JSON.parse(readFileSync(`../../shared/evidence/${path}`, "utf8"));
+}
+
+test("The exit states the figures the committed evidence holds", async ({ page }) => {
+  const survey = evidence("multiplier-staleness-2026-09-23.json");
+  const depth = evidence("depth-2026-10-04.json");
+  const admissions = evidence("admissions.json");
+  const freeze = evidence("hall-demo/transcript-devnet.json").scenarios.find((scenario: { id: string }) => scenario.id === "freeze");
+
+  await page.goto("/papers/the-exit");
+  const main = page.getByRole("main");
+  await expect(main.getByRole("heading", { level: 1, name: "The exit." })).toBeVisible();
+  await expect(main).toContainText(`we decoded all ${survey.mints_decoded.toLocaleString("en-GB")} xStocks mints`);
+  await expect(main).toContainText(`at slot ${survey.slot.toLocaleString("en-GB")}`);
+  await expect(main).toContainText(`On ${survey.stale_multiplier_field} of them`);
+  await expect(main).toContainText(`${survey.halted_by_issuer} were in an issuer-halted state`);
+  await expect(main).toContainText(`applies ${admissions.policy_version} to ${admissions.instruments.length} captured instruments`);
+
+  const shortfall = main.getByRole("table").filter({ has: page.getByRole("columnheader", { name: "Instrument" }) });
+  for (const instrument of depth.instruments) {
+    const atThousand = instrument.points.find((point: { size_usdc: number }) => point.size_usdc === 1000);
+    const row = shortfall.getByRole("row").filter({ has: page.getByRole("cell", { name: instrument.symbol, exact: true }) });
+    if (instrument.points[0].availability !== "available") {
+      await expect(row).toHaveCount(0);
+      continue;
+    }
+    await expect(row.getByRole("cell").nth(1)).toHaveText(atThousand.shortfall_bps.toLocaleString("en-GB"));
+  }
+
+  for (const step of freeze.steps.filter((candidate: { signature?: string }) => candidate.signature)) {
+    await expect(main.getByRole("link", { name: step.signature.slice(0, 8), exact: true })).toHaveAttribute("href", `https://explorer.solana.com/tx/${step.signature}?cluster=devnet`);
+  }
+});
+
 test("the public narrative and Key pages keep their claims bounded", async ({ page }) => {
   await page.goto("/how-it-works");
   await expect(page.getByRole("heading", { level: 1, name: "The basket is a mechanism." })).toBeVisible();
@@ -404,7 +441,7 @@ test("secondary actions carry the ink cell, primary actions stay green", async (
 
 test("no page scrolls sideways on a 320px phone", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 780 });
-  for (const path of ["/", "/app", "/app/allocation", "/app/alloys", "/app/alloys/storm", "/app/hall", "/app/instruments", "/how-it-works", "/sign-in", "/the-key"]) {
+  for (const path of ["/", "/app", "/app/allocation", "/app/alloys", "/app/alloys/storm", "/app/hall", "/app/instruments", "/how-it-works", "/papers/the-exit", "/sign-in", "/the-key"]) {
     await page.goto(path, { waitUntil: "networkidle" });
     // scrollWidth, not a visible scrollbar: the root hides horizontal overflow,
     // which stops a scrollbar but not a finger dragging the page sideways.

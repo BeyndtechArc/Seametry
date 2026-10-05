@@ -17,6 +17,7 @@ const routes = [
   "/app/instruments",
   "/app/instruments/XsTockMint111111111111111111111111111111111",
   "/how-it-works",
+  "/papers/the-exit",
   "/patterns",
   "/sign-in",
   "/the-key",

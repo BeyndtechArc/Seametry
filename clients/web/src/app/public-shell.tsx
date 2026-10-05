@@ -65,6 +65,7 @@ export function PublicShell({
             title: "The house",
             links: [
               { label: "The Key", href: "/the-key" },
+              { label: "The exit", href: "/papers/the-exit" },
               { label: "Pattern Register", href: "/patterns" },
             ],
           },

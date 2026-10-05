@@ -57,6 +57,17 @@ authorized participant set differs from a closed one. Each claim in the Claim
 grid pattern must be literally true of the shipped product, per
 `foundations.md` section 1, law 5.
 
+### The exit (`/papers/the-exit`)
+
+Answers what happens to a basket's exit when an issuer exercises a power over
+one constituent, and how the Hall settles redemption into claims so one leg
+cannot revert the rest. It is Storm's paper, made canon on 5 October 2026.
+Every figure in it, the survey counts, the depth captures, the admission
+counts and the recorded devnet freeze run, is read from `shared/evidence/`
+through `clients/web/src/lib/papers/the-exit.ts`; the prose types no number of
+its own, so a new capture changes the figure and leaves the argument standing.
+Earlier captures stay dated beside newer ones rather than being replaced.
+
 ### The Key (`/the-key`)
 
 The Key template from `patterns.md` section 2: a still page, no motion at all,
