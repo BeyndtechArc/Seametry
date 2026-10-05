@@ -3,11 +3,6 @@
 // derived from that ratio with bigint arithmetic, never from a float price.
 
 export const USDC_SCALE = 6;
-export const SHARE_SCALE = 6;
-// The Hall holds at most twelve legs per Alloy (MAX_CONSTITUENTS in
-// chain/programs/hall/src/state.rs and server/internal/basket), so a draft
-// that could not be founded is never offered.
-export const MAX_CONSTITUENTS = 12;
 const BPS = 10_000n;
 
 export type QuotedLeg = {

@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { readTerminalApi, terminalProblem } from "@/lib/terminal-api";
 import type { Alloy, AlloyRecordResponse, CostRow, Envelope } from "@/lib/terminal-contract";
+import { ONE_SHARE_ATOMS } from "@/lib/hall/constants";
 
 export const dynamic = "force-dynamic";
 
-const quotedShares = "1000";
+// The record states its terms for one whole share.
+const quotedShares = ONE_SHARE_ATOMS.toString();
 
 export async function GET(_request: Request, context: { params: Promise<{ address: string }> }) {
   const { address } = await context.params;

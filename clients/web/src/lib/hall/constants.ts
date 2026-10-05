@@ -23,6 +23,8 @@ export const LOCKED_SEED = Buffer.from("locked");
 export const CLAIM_SEED = Buffer.from("claim");
 export const MAX_CONSTITUENTS = 12;
 export const SHARE_DECIMALS = 6;
+// One whole share in share atoms, as wallets show the share mint.
+export const ONE_SHARE_ATOMS = 10n ** BigInt(SHARE_DECIMALS);
 
 // chain/tools/devnet-demo/src/main.rs's STOCK_DECIMALS and demo deposit sizes,
 // reused so the on-chain shape this page produces matches the shape the

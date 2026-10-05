@@ -10,6 +10,8 @@ import {
   Rule,
   Stamp,
 } from "@seametry/ui";
+import { formatAmount } from "@/lib/amount";
+import { SHARE_DECIMALS } from "@/lib/hall/constants";
 import { relativeEvidenceAge, stormFixture } from "@/lib/storm-fixture";
 import { NetworkBadge } from "../../_shell/page-header";
 import styles from "./storm.module.css";
@@ -19,8 +21,8 @@ export const metadata: Metadata = {
   description: "A labelled devnet fixture of Alloy No. 1, STORM.",
 };
 
-const supply = stormFixture.supply.atoms.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-const lockedGenesis = stormFixture.lockedGenesis.atoms.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+const supply = formatAmount(stormFixture.supply.atoms, SHARE_DECIMALS);
+const lockedGenesis = formatAmount(stormFixture.lockedGenesis.atoms, SHARE_DECIMALS);
 
 function SectionHeading({
   index,

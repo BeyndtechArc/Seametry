@@ -628,7 +628,7 @@ components:
       required: true
       schema:
         type: string
-      description: A share count, as a string since it may exceed 2^53 (docs/prd/API.md section 4.1).
+      description: Share atoms at the share mint's 6 decimals (1000000 is one share), as a string since it may exceed 2^53 (docs/prd/API.md section 4.1).
     AsOf:
       name: as_of
       in: query
@@ -1099,10 +1099,10 @@ components:
           type: string
         supply:
           type: string
-          description: A share count. Shares have no scale; one share is one share.
+          description: Shares outstanding, in share atoms. The share mint has 6 decimals (SHARE_DECIMALS, chain/programs/hall/src/state.rs), so 1000000 is one share, as every wallet shows it.
         locked_genesis:
           type: string
-          description: The founding sponsor's shares, unrecoverable by design (docs/BRAND_AND_WORLD.md section 5).
+          description: The founding sponsor's shares in share atoms (6 decimals), unrecoverable by design (docs/BRAND_AND_WORLD.md section 5).
         legs:
           type: array
           items:

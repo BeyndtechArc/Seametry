@@ -578,9 +578,9 @@ export interface components {
             sponsor_mark?: string;
             share_mint: string;
             id: string;
-            /** @description A share count. Shares have no scale; one share is one share. */
+            /** @description Shares outstanding, in share atoms. The share mint has 6 decimals (SHARE_DECIMALS, chain/programs/hall/src/state.rs), so 1000000 is one share, as every wallet shows it. */
             supply: string;
-            /** @description The founding sponsor's shares, unrecoverable by design (docs/BRAND_AND_WORLD.md section 5). */
+            /** @description The founding sponsor's shares in share atoms (6 decimals), unrecoverable by design (docs/BRAND_AND_WORLD.md section 5). */
             locked_genesis?: string;
             legs: components["schemas"]["AlloyLeg"][];
             /** @enum {string} */
@@ -751,7 +751,7 @@ export interface components {
         /** @description The mint's base58 address. */
         Mint: string;
         AlloyAddress: string;
-        /** @description A share count, as a string since it may exceed 2^53 (docs/prd/API.md section 4.1). */
+        /** @description Share atoms at the share mint's 6 decimals (1000000 is one share), as a string since it may exceed 2^53 (docs/prd/API.md section 4.1). */
         Shares: string;
         /** @description What Seametry held as true at this instant. Omitted means now (docs/prd/API.md section 4.5). */
         AsOf: string;
@@ -1052,7 +1052,7 @@ export interface operations {
     getAlloyStrikeCost: {
         parameters: {
             query: {
-                /** @description A share count, as a string since it may exceed 2^53 (docs/prd/API.md section 4.1). */
+                /** @description Share atoms at the share mint's 6 decimals (1000000 is one share), as a string since it may exceed 2^53 (docs/prd/API.md section 4.1). */
                 shares: components["parameters"]["Shares"];
             };
             header?: never;
@@ -1081,7 +1081,7 @@ export interface operations {
     getAlloyMeltProceeds: {
         parameters: {
             query: {
-                /** @description A share count, as a string since it may exceed 2^53 (docs/prd/API.md section 4.1). */
+                /** @description Share atoms at the share mint's 6 decimals (1000000 is one share), as a string since it may exceed 2^53 (docs/prd/API.md section 4.1). */
                 shares: components["parameters"]["Shares"];
             };
             header?: never;

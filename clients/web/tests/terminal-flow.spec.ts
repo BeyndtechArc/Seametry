@@ -123,12 +123,14 @@ test("the Terminal moves from the live Hall register into one Alloy record", asy
   await expect(page.getByRole("heading", { level: 1, name: "Alloys" })).toBeVisible();
   const row = page.getByRole("row", { name: /Alloy 1790627156984/ });
   await expect(row).toContainText("1 held as a Claim");
+  // 1,000,000 share atoms at the share mint's 6 decimals is one share, as a wallet shows it.
+  await expect(row).toContainText("1.000000 shares");
   await row.getByRole("link", { name: "Open Alloy" }).click();
 
   await expect(page).toHaveURL(`/app/alloys/${alloyAddress}`);
   await expect(page.getByRole("heading", { level: 1, name: "Alloy 1790627156984" })).toBeVisible();
   await expect(page.getByText("The issuer currently prevents this Hall account from delivering.")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Per 1,000 shares" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Per share" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", { name: "Alloys" })).toHaveAttribute("href", "/app/alloys");
   await expect(page.locator("[data-nextjs-dialog]")).toHaveCount(0);
   expect(browserErrors).toEqual([]);

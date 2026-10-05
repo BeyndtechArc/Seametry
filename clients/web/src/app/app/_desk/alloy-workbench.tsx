@@ -12,6 +12,7 @@ import type {
 } from "@/lib/terminal-contract";
 import { MechanismDrawing } from "@seametry/ui/plates";
 import { formatAmount } from "@/lib/amount";
+import { ONE_SHARE_ATOMS, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { NetworkBadge, PageHeader } from "../_shell/page-header";
 import { useTerminalResource } from "./workbench";
 import styles from "./desk.module.css";
@@ -121,7 +122,7 @@ export function AlloyRegister() {
                         <b>Alloy {alloy.id}</b>
                         <Digest value={alloy.address} />
                       </td>
-                      <td>{formatAmount(alloy.supply, 0)} shares</td>
+                      <td>{formatAmount(alloy.supply, SHARE_DECIMALS)} shares</td>
                       <td>{alloy.legs.length} recorded</td>
                       <td>{held === 0 ? "Every leg available" : `${held} held as a Claim`}</td>
                       <td><Link href={`/app/alloys/${encodeURIComponent(alloy.address)}`}>Open Alloy</Link></td>
@@ -182,7 +183,7 @@ export function AlloyRecord({ address }: { address: string }) {
           <section className={styles.recordFacts} aria-label="Live Alloy figures">
             <Figure
               label="Shares outstanding"
-              value={formatAmount(alloy.supply, 0)}
+              value={formatAmount(alloy.supply, SHARE_DECIMALS)}
               unit="shares"
               source={hallSource(meta)}
               state={evidenceState(meta)}
@@ -191,7 +192,7 @@ export function AlloyRecord({ address }: { address: string }) {
             />
             <Figure
               label="Genesis shares locked"
-              value={alloy.locked_genesis ? formatAmount(alloy.locked_genesis, 0) : undefined}
+              value={alloy.locked_genesis ? formatAmount(alloy.locked_genesis, SHARE_DECIMALS) : undefined}
               unit="shares"
               source={hallSource(meta)}
               state={alloy.locked_genesis ? evidenceState(meta) : "unavailable"}
@@ -246,7 +247,7 @@ export function AlloyRecord({ address }: { address: string }) {
 
             <aside className={styles.recordTerms} aria-labelledby="terms-heading">
               <span className={styles.recordLabel}>02 / Terms</span>
-              <h2 id="terms-heading">Per {formatAmount(value.strike.data.shares, 0)} shares</h2>
+              <h2 id="terms-heading">{value.strike.data.shares === ONE_SHARE_ATOMS.toString() ? "Per share" : `Per ${formatAmount(value.strike.data.shares, SHARE_DECIMALS)} shares`}</h2>
               <p>Integer arithmetic from the Gateway. Not a transaction plan. {hallSource(value.strike.meta)}, {value.strike.meta.completeness}.</p>
               <table className={styles.termsLedger}>
                 <thead><tr><th>Leg</th><th>Strike takes</th><th>Melt returns</th><th>Hall keeps</th></tr></thead>

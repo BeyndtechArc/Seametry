@@ -356,7 +356,7 @@ type Alloy struct {
 	Id      string       `json:"id"`
 	Legs    []AlloyLeg   `json:"legs"`
 
-	// LockedGenesis The founding sponsor's shares, unrecoverable by design (docs/BRAND_AND_WORLD.md section 5).
+	// LockedGenesis The founding sponsor's shares in share atoms (6 decimals), unrecoverable by design (docs/BRAND_AND_WORLD.md section 5).
 	LockedGenesis *string `json:"locked_genesis,omitempty"`
 	ShareMint     string  `json:"share_mint"`
 	Sponsor       string  `json:"sponsor"`
@@ -364,7 +364,7 @@ type Alloy struct {
 	// SponsorMark Hex. Empty until the sponsor registers one (server/cmd/explorer's Hallmark sponsor mark field carries the same emptiness).
 	SponsorMark *string `json:"sponsor_mark,omitempty"`
 
-	// Supply A share count. Shares have no scale; one share is one share.
+	// Supply Shares outstanding, in share atoms. The share mint has 6 decimals (SHARE_DECIMALS, chain/programs/hall/src/state.rs), so 1000000 is one share, as every wallet shows it.
 	Supply string `json:"supply"`
 }
 
@@ -843,7 +843,7 @@ type GetAlloyParams struct {
 
 // GetAlloyMeltProceedsParams defines parameters for GetAlloyMeltProceeds.
 type GetAlloyMeltProceedsParams struct {
-	// Shares A share count, as a string since it may exceed 2^53 (docs/prd/API.md section 4.1).
+	// Shares Share atoms at the share mint's 6 decimals (1000000 is one share), as a string since it may exceed 2^53 (docs/prd/API.md section 4.1).
 	Shares Shares `form:"shares" json:"shares"`
 }
 
@@ -855,7 +855,7 @@ type GetAlloyNavParams struct {
 
 // GetAlloyStrikeCostParams defines parameters for GetAlloyStrikeCost.
 type GetAlloyStrikeCostParams struct {
-	// Shares A share count, as a string since it may exceed 2^53 (docs/prd/API.md section 4.1).
+	// Shares Share atoms at the share mint's 6 decimals (1000000 is one share), as a string since it may exceed 2^53 (docs/prd/API.md section 4.1).
 	Shares Shares `form:"shares" json:"shares"`
 }
 

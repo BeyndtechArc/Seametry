@@ -46,11 +46,13 @@ const alloy = {
     },
   ],
 };
+// Terms for one whole share (1,000,000 share atoms) of an Alloy whose
+// 1,000,000 share atoms hold 5,000,000 and 3,000,000 atoms of its two legs.
 const terms = {
-  shares: "1000",
+  shares: "1000000",
   legs: [
-    { stock: alloy.legs[0].mint, amount: { atoms: "5000", scale: 6 }, kept: { atoms: "0", scale: 6 } },
-    { stock: alloy.legs[1].mint, amount: { atoms: "3000", scale: 6 }, kept: { atoms: "0", scale: 6 } },
+    { stock: alloy.legs[0].mint, amount: { atoms: "5000000", scale: 6 }, kept: { atoms: "0", scale: 6 } },
+    { stock: alloy.legs[1].mint, amount: { atoms: "3000000", scale: 6 }, kept: { atoms: "0", scale: 6 } },
   ],
 };
 

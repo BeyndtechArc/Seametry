@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Field, Grade, QuietAction, Rule, Stamp } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
-import { MAX_CONSTITUENTS, SHARE_SCALE, USDC_SCALE, draftFormula, identityProblem, unitsToAtoms, type QuotedLeg, type Weighting } from "@/lib/compose/formula";
+import { MAX_CONSTITUENTS, SHARE_DECIMALS } from "@/lib/hall/constants";
+import { USDC_SCALE, draftFormula, identityProblem, unitsToAtoms, type QuotedLeg, type Weighting } from "@/lib/compose/formula";
 import styles from "./compose.module.css";
 
 export type Candidate = {
@@ -101,7 +102,7 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
             name: name.trim(),
             symbol,
             network: "devnet",
-            shareDecimals: SHARE_SCALE,
+            shareDecimals: SHARE_DECIMALS,
             weighting: method === "value" ? "equal value at founding" : "equal units",
             formula: draft.legs.map((leg) => ({ mint: leg.mint, symbol: leg.symbol, atomsPerShare: leg.atomsPerShare.toString(), decimals: leg.decimals })),
             pricedBy: { source: reading.quotes.source, observedAt: reading.quotes.observedAt },
