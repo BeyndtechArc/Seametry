@@ -50,8 +50,7 @@ export function HouseRail({ current }: { current?: PublicDestination }) {
           ))}
         </nav>
         <div className={styles.railTools}>
-          <span className={styles.appWide}><RouteAction href="/app">Open app</RouteAction></span>
-          <span className={styles.appNarrow}><RouteAction href="/app">App</RouteAction></span>
+          <RouteAction href="/app">Open app</RouteAction>
           <ThemeControl />
         </div>
         {menuOpen ? (

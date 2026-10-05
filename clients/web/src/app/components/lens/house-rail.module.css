@@ -29,10 +29,6 @@
   align-items: center;
 }
 
-.appNarrow {
-  display: none;
-}
-
 .primaryNav {
   justify-content: flex-end;
   gap: var(--sm-space-2);
@@ -86,14 +82,6 @@
   .railTools {
     grid-column: 4;
     gap: var(--sm-space-2);
-  }
-
-  .appWide {
-    display: none;
-  }
-
-  .appNarrow {
-    display: inline;
   }
 
   .menuControl {

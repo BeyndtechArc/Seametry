@@ -180,7 +180,17 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   const publicMenu = page.getByRole("navigation", { name: "Mobile primary" });
   await expect(publicMenu).toBeVisible();
   await expect(publicMenu.getByRole("link")).toHaveText(["01Home", "02How it works", "03The Key"]);
-  await expect(page.getByRole("banner").getByRole("link", { name: "App", exact: true })).toBeVisible();
+  const openApp = page.getByRole("banner").getByRole("link", { name: "Open app", exact: true });
+  await expect(openApp).toBeVisible();
+  // The full label must fit the narrow rail: one line, inside the header.
+  const fit = await openApp.evaluate((link) => {
+    const bounds = link.getBoundingClientRect();
+    const rail = link.closest("header")!.getBoundingClientRect();
+    const label = document.createRange();
+    label.selectNodeContents(link.firstElementChild!);
+    return { inside: bounds.left >= rail.left && bounds.right <= rail.right, lines: label.getClientRects().length };
+  });
+  expect(fit).toEqual({ inside: true, lines: 1 });
   await expect(page.getByRole("banner").getByRole("button", { name: "Use dark mode" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Close navigation" })).toHaveText("");
   const publicOrder = await page.evaluate(() => ({
