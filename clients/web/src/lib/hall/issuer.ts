@@ -19,14 +19,27 @@ import { Keypair } from "@solana/web3.js";
  * second wallet the presenter would need to hold and switch to mid-flow.
  */
 export function deriveIssuer(allocId: bigint): Keypair {
+  const idBytes = Buffer.alloc(8);
+  idBytes.writeBigUInt64LE(allocId);
+  return Keypair.fromSeed(createHmac("sha256", issuerSeed()).update("hall-demo-issuer").update(idBytes).digest());
+}
+
+/**
+ * The mock issuer of the devnet stand-ins for real xStocks in Alloys founded
+ * on the register's Hall. One authority for all of them, derived from the
+ * same seed under its own label, so the stand-ins can later be frozen or
+ * released the way a real issuer could, without a key ever being stored.
+ */
+export function standInIssuer(): Keypair {
+  return Keypair.fromSeed(createHmac("sha256", issuerSeed()).update("register-stand-in-issuer").digest());
+}
+
+function issuerSeed(): string {
   const seed = process.env.HALL_DEMO_ISSUER_SEED;
   if (!seed) {
     throw new Error(
       "HALL_DEMO_ISSUER_SEED is not set. Generate one (32+ random bytes, base64) and set it as a server-only environment variable; never NEXT_PUBLIC_."
     );
   }
-  const idBytes = Buffer.alloc(8);
-  idBytes.writeBigUInt64LE(allocId);
-  const material = createHmac("sha256", seed).update("hall-demo-issuer").update(idBytes).digest();
-  return Keypair.fromSeed(material);
+  return seed;
 }

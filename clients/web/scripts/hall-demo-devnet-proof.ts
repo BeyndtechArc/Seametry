@@ -32,7 +32,7 @@ import { claimPda, hallTokenAccount, ownerTokenAccount } from "../src/lib/hall/p
 import { decodeAlloy, requiredIn } from "../src/lib/hall/decode";
 import { fetchClaim, hallProgram } from "../src/lib/hall/program";
 import { KeypairWallet } from "../src/lib/hall/keypair-wallet";
-import { DEVNET_RPC_ENDPOINT } from "../src/lib/hall/constants";
+import { DEMO_HALL_PROGRAM_ID, DEVNET_RPC_ENDPOINT } from "../src/lib/hall/constants";
 
 const STRIKE_SHARES = 100_000n;
 const holderPath = process.argv[2] ?? join(homedir(), ".config", "solana", "seametry-devnet-demo-holder.json");
@@ -76,7 +76,7 @@ async function main() {
   const alloy = new PublicKey(founded.alloy);
   const shareMint = new PublicKey(founded.shareMint);
   const provider = new AnchorProvider(connection, new KeypairWallet(holder), { commitment: "confirmed" });
-  const program = hallProgram(provider);
+  const program = hallProgram(provider, DEMO_HALL_PROGRAM_ID);
 
   console.log("2. Reading the alloy from chain");
   let info = await connection.getAccountInfo(alloy, "confirmed");
@@ -117,7 +117,7 @@ async function main() {
   console.log("   ok", freezeSig);
 
   console.log("5. Melt: redeem", STRIKE_SHARES.toString(), "shares");
-  const claim = claimPda(alloy, holder.publicKey);
+  const claim = claimPda(DEMO_HALL_PROGRAM_ID, alloy, holder.publicKey);
   const redeemAccounts = founded.stocks.map((s) => ({ pubkey: hallTokenAccount(alloy, new PublicKey(s.mint)), isWritable: false, isSigner: false }));
   const redeemSig = await program.methods
     .redeem(new BN(STRIKE_SHARES.toString()))

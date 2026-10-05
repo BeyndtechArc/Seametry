@@ -16,6 +16,13 @@ export const DEMO_HALL_PROGRAM_ID = new PublicKey(
   "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx"
 );
 
+// The Hall the Gateway's register reads, where Alloys are founded on
+// purpose. The same address as server/internal/basket HallDevnetProgramID;
+// a test checks the two agree.
+export const REGISTER_HALL_PROGRAM_ID = new PublicKey(
+  "GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE"
+);
+
 // chain/programs/hall/src/state.rs
 export const ALLOY_SEED = Buffer.from("alloy");
 export const SHARE_SEED = Buffer.from("share");

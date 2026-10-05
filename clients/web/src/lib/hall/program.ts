@@ -17,8 +17,10 @@ import idl from "./idl.json";
  * site for that reason; the account and argument names themselves are still
  * checked at runtime, against the real IDL, on every call.
  */
-export function hallProgram(provider: AnchorProvider): Program<Idl> {
-  return new Program(idl as Idl, provider);
+export function hallProgram(provider: AnchorProvider, hall: PublicKey): Program<Idl> {
+  // The IDL is the same for both devnet Halls; only the address differs, so
+  // the caller's Hall replaces the one the IDL was generated with.
+  return new Program({ ...(idl as Idl), address: hall.toBase58() }, provider);
 }
 
 /** chain/programs/hall/src/state.rs's Claim, as Anchor's Borsh coder decodes it (ordinary Borsh, not zero-copy; see decode.ts for why Alloy needs a different route). */

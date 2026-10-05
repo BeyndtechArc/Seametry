@@ -11,7 +11,7 @@ import { formatAmount } from "@/lib/amount";
 import { fetchClaim, hallProgram } from "@/lib/hall/program";
 import { claimPda, hallTokenAccount, ownerTokenAccount } from "@/lib/hall/pda";
 import { decodeAlloy, requiredIn, type DecodedAlloy } from "@/lib/hall/decode";
-import { SHARE_DECIMALS } from "@/lib/hall/constants";
+import { DEMO_HALL_PROGRAM_ID, SHARE_DECIMALS } from "@/lib/hall/constants";
 
 interface Founded {
   allocId: string;
@@ -69,7 +69,7 @@ export function HallDemoFlow() {
     return new AnchorProvider(connection, anchorWallet, { commitment: "confirmed" });
   }, [connection, anchorWallet]);
 
-  const program = useMemo(() => (provider ? hallProgram(provider) : null), [provider]);
+  const program = useMemo(() => (provider ? hallProgram(provider, DEMO_HALL_PROGRAM_ID) : null), [provider]);
 
   const refreshAlloy = useCallback(async () => {
     if (!founded) return;
@@ -79,7 +79,7 @@ export function HallDemoFlow() {
 
   const refreshClaim = useCallback(async () => {
     if (!founded || !publicKey || !program) return;
-    const pda = claimPda(new PublicKey(founded.alloy), publicKey);
+    const pda = claimPda(DEMO_HALL_PROGRAM_ID, new PublicKey(founded.alloy), publicKey);
     const claim = await fetchClaim(program, pda);
     if (claim) {
       setClaimUnits(claim.entries.slice(0, founded.stocks.length).map((e) => BigInt(e.units.toString())));
@@ -175,7 +175,7 @@ export function HallDemoFlow() {
       const alloy = new PublicKey(founded.alloy);
       const shareMint = new PublicKey(founded.shareMint);
       const callerShares = ownerTokenAccount(publicKey, shareMint);
-      const claim = claimPda(alloy, publicKey);
+      const claim = claimPda(DEMO_HALL_PROGRAM_ID, alloy, publicKey);
       const remainingAccounts = founded.stocks.map((s) => ({
         pubkey: hallTokenAccount(alloy, new PublicKey(s.mint)),
         isWritable: false,
@@ -214,7 +214,7 @@ export function HallDemoFlow() {
       try {
         const alloy = new PublicKey(founded.alloy);
         const mint = new PublicKey(founded.stocks[legIndex].mint);
-        const claim = claimPda(alloy, publicKey);
+        const claim = claimPda(DEMO_HALL_PROGRAM_ID, alloy, publicKey);
         const sig = await program.methods
           .withdraw(legIndex, new BN(units.toString()))
           .accounts({

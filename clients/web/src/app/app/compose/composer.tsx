@@ -5,6 +5,7 @@ import { Field, Grade, QuietAction, Rule, Stamp } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
 import { MAX_CONSTITUENTS, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { USDC_SCALE, draftFormula, identityProblem, unitsToAtoms, type QuotedLeg, type Weighting } from "@/lib/compose/formula";
+import { FoundingPanel } from "./founding";
 import styles from "./compose.module.css";
 
 export type Candidate = {
@@ -262,6 +263,9 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
             <p className={styles.note}>Appears once the Formula is priced and the name and symbol are set. Founding happens on the devnet Hall, deliberately, after this draft is agreed.</p>
           )}
         </div>
+        {foundingDraft && draft && "legs" in draft ? (
+          <FoundingPanel legs={draft.legs.map((leg) => ({ mint: leg.mint, atomsPerShare: leg.atomsPerShare }))} name={name.trim()} symbol={symbol} />
+        ) : null}
       </aside>
     </div>
   );

@@ -23,6 +23,7 @@ import { hallProgram } from "./program";
 import { KeypairWallet } from "./keypair-wallet";
 import { alloyPda, hallTokenAccount, lockedSharesPda, ownerTokenAccount, shareMintPda } from "./pda";
 import {
+  DEMO_HALL_PROGRAM_ID,
   GENESIS_DEPOSIT_A,
   GENESIS_DEPOSIT_B,
   GENESIS_SHARES,
@@ -129,14 +130,14 @@ export async function foundAlloyFor(
     [funder, issuer]
   );
 
-  const alloy = alloyPda(funder.publicKey, allocId);
-  const shareMint = shareMintPda(alloy);
-  const locked = lockedSharesPda(alloy);
+  const alloy = alloyPda(DEMO_HALL_PROGRAM_ID, funder.publicKey, allocId);
+  const shareMint = shareMintPda(DEMO_HALL_PROGRAM_ID, alloy);
+  const locked = lockedSharesPda(DEMO_HALL_PROGRAM_ID, alloy);
   const hallA = hallTokenAccount(alloy, stockA);
   const hallB = hallTokenAccount(alloy, stockB);
 
   const provider = new AnchorProvider(connection, new KeypairWallet(funder), { commitment: "confirmed" });
-  const program = hallProgram(provider);
+  const program = hallProgram(provider, DEMO_HALL_PROGRAM_ID);
   const sponsorMark = new Array(32).fill(0);
   const initSig = await program.methods
     .initializeAlloy({

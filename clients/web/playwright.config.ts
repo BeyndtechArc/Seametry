@@ -28,7 +28,16 @@ export default defineConfig({
       // Jupiter is the fixture too: a placeholder key so Compose quotes,
       // answered offline by tests/terminal-api-fixture.mjs. Values set here
       // win over .env.local, so a local run and CI quote identically.
-      env: { SEAMETRY_API_URL: "http://127.0.0.1:3846", JUPITER_API_URL: "http://127.0.0.1:3846/jupiter", JUPITER_API_KEY: "fixture" },
+      // The devnet signing secrets are blanked: a founding route whose guard
+      // regressed reached .env.local's funder in a local run on 5 October 2026
+      // and spent devnet SOL. With them empty no test can sign or spend.
+      env: {
+        SEAMETRY_API_URL: "http://127.0.0.1:3846",
+        JUPITER_API_URL: "http://127.0.0.1:3846/jupiter",
+        JUPITER_API_KEY: "fixture",
+        HALL_DEMO_FUNDER_SECRET_KEY: "",
+        HALL_DEMO_ISSUER_SEED: "",
+      },
     },
   ],
 });

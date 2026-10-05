@@ -1,39 +1,31 @@
 import { PublicKey } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync } from "@solana/spl-token";
-import {
-  ALLOY_SEED,
-  CLAIM_SEED,
-  DEMO_HALL_PROGRAM_ID,
-  LOCKED_SEED,
-  SHARE_SEED,
-} from "./constants";
+import { ALLOY_SEED, CLAIM_SEED, LOCKED_SEED, SHARE_SEED } from "./constants";
+
+// Every program-derived address takes the Hall it belongs to. Two Halls run
+// the same code on devnet (the demo's and the register's), and the same seeds
+// give different accounts under each, so the caller names which one it means.
 
 /** chain/programs/hall's Alloy PDA: [ALLOY_SEED, sponsor, id_le_bytes]. */
-export function alloyPda(sponsor: PublicKey, id: bigint) {
+export function alloyPda(hall: PublicKey, sponsor: PublicKey, id: bigint) {
   const idBytes = Buffer.alloc(8);
   idBytes.writeBigUInt64LE(id);
-  return PublicKey.findProgramAddressSync(
-    [ALLOY_SEED, sponsor.toBuffer(), idBytes],
-    DEMO_HALL_PROGRAM_ID
-  )[0];
+  return PublicKey.findProgramAddressSync([ALLOY_SEED, sponsor.toBuffer(), idBytes], hall)[0];
 }
 
 /** chain/programs/hall's share mint PDA: [SHARE_SEED, alloy]. */
-export function shareMintPda(alloy: PublicKey) {
-  return PublicKey.findProgramAddressSync([SHARE_SEED, alloy.toBuffer()], DEMO_HALL_PROGRAM_ID)[0];
+export function shareMintPda(hall: PublicKey, alloy: PublicKey) {
+  return PublicKey.findProgramAddressSync([SHARE_SEED, alloy.toBuffer()], hall)[0];
 }
 
 /** chain/programs/hall's locked-genesis token account PDA: [LOCKED_SEED, alloy]. */
-export function lockedSharesPda(alloy: PublicKey) {
-  return PublicKey.findProgramAddressSync([LOCKED_SEED, alloy.toBuffer()], DEMO_HALL_PROGRAM_ID)[0];
+export function lockedSharesPda(hall: PublicKey, alloy: PublicKey) {
+  return PublicKey.findProgramAddressSync([LOCKED_SEED, alloy.toBuffer()], hall)[0];
 }
 
 /** chain/programs/hall's Claim PDA: [CLAIM_SEED, alloy, owner]. */
-export function claimPda(alloy: PublicKey, owner: PublicKey) {
-  return PublicKey.findProgramAddressSync(
-    [CLAIM_SEED, alloy.toBuffer(), owner.toBuffer()],
-    DEMO_HALL_PROGRAM_ID
-  )[0];
+export function claimPda(hall: PublicKey, alloy: PublicKey, owner: PublicKey) {
+  return PublicKey.findProgramAddressSync([CLAIM_SEED, alloy.toBuffer(), owner.toBuffer()], hall)[0];
 }
 
 /**
