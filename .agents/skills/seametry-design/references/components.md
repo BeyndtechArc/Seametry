@@ -184,6 +184,13 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Answers:** what did the policy decide, for whom, and why?
 **Anatomy:** actor or instrument; action; Stamp; first reason code in words; link to evidence.
 
+### Step register
+**Answers:** what is this multi-step request doing right now, what has already happened, and if it stopped, why and what was left untouched?
+**Anatomy:** an ordered list of steps, each with an index, a verb-plus-object title, one sentence on what the step does, and a state word: Done, Now, Waiting or Stopped. The current step carries a rule-line skeleton under its sentence. A stopped step carries a plain sentence first and the raw technical message behind a "Technical detail" disclosure. Announced through a polite live region.
+**States:** waiting (every step Waiting); in progress (one Now, earlier ones Done); stopped (one Stopped, later ones Waiting); complete (every step Done).
+**Data:** caller-owned steps and their states. The component owns no product data and never rewrites a technical message; the caller supplies both the plain sentence and the raw one.
+**Rules:** no spinner and no percentage; time is not estimated. A stopped step always says what did not happen (nothing signed, nothing founded) when that is the case. The raw message is never the only explanation. The skeleton respects reduced motion.
+
 ### Changelog entry
 **Anatomy:** relative date, title, one sentence, link. Dates are real.
 

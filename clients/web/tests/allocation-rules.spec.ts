@@ -4,6 +4,7 @@ import { formatAmount, parseAmount, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
 import { countryGate, lotCapAtoms, unlistedProgram } from "../src/lib/allocation/rules";
+import { registerTestWallet } from "./test-wallet";
 
 // Pure rules only: no build, no wallet, no network. The route handlers that
 // call these reach Jupiter and mainnet, which a test here cannot.
@@ -166,53 +167,17 @@ test("the dashboard wallet disclosure opens below its header containment", async
   expect(panelBox?.y).toBeGreaterThan(triggerBox?.y ?? 0);
 });
 
-test("a detected Wallet Standard wallet connects from the dashboard header", async ({ page }) => {
-  await page.addInitScript(() => {
-    const listeners = new Set<(properties: { accounts: unknown[] }) => void>();
-    const publicKey = new Uint8Array(32).fill(1);
-    const account = {
-      address: "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d",
-      publicKey,
-      chains: ["solana:mainnet", "solana:devnet"],
-      features: ["solana:signTransaction"],
-      label: "Test account",
-      icon: undefined,
-    };
-    let accounts: typeof account[] = [];
-    const wallet = {
-      version: "1.0.0",
-      name: "Test wallet",
-      icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>",
-      chains: ["solana:mainnet", "solana:devnet"],
-      get accounts() { return accounts; },
-      features: {
-        "standard:events": {
-          version: "1.0.0",
-          on: (_event: string, listener: (properties: { accounts: unknown[] }) => void) => {
-            listeners.add(listener);
-            return () => listeners.delete(listener);
-          },
-        },
-        "standard:connect": {
-          version: "1.0.0",
-          connect: async () => {
-            accounts = [account];
-            listeners.forEach((listener) => listener({ accounts }));
-            return { accounts };
-          },
-        },
-        "solana:signTransaction": {
-          version: "1.0.0",
-          supportedTransactionVersions: ["legacy", 0],
-          signTransaction: async (...inputs: unknown[]) => inputs,
-        },
-      },
-    };
-    window.addEventListener("wallet-standard:app-ready", (event) => {
-      (event as CustomEvent<{ register: (entry: unknown) => void }>).detail.register(wallet);
-    });
-  });
+test("a wallet that already trusts the site shows as connected the moment it is chosen", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true });
+  await page.goto("/app/allocation");
+  await page.getByText("Log in", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
+  await expect(page.getByTestId("wallet-account")).toBeVisible();
+});
 
+test("a detected Wallet Standard wallet connects from the dashboard header", async ({ page }) => {
+  await registerTestWallet(page, { trusted: false });
   await page.goto("/app/allocation");
   await page.getByText("Log in", { exact: true }).click();
   const wallet = page.getByRole("button", { name: "Connect Test wallet" });

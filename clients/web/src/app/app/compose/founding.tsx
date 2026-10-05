@@ -4,21 +4,51 @@ import { useEffect, useState } from "react";
 import { Connection } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
-import { Digest, Key, TextAction } from "@seametry/ui";
+import { Digest, Key, QuietAction, StepRegister, TextAction, type RegisterStep } from "@seametry/ui";
+import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { buildFoundingTransaction, type FoundingIdentity } from "@/lib/compose/founding-transaction";
 import type { PreparedFounding } from "@/lib/compose/founding-prepare";
 import { metadataPath, metadataUri } from "@/lib/compose/identity";
 import { DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID } from "@/lib/hall/constants";
 import { hallProgram } from "@/lib/hall/program";
+import { foundingProblem, type FoundingStage, type StageProblem } from "@/lib/compose/founding-problem";
 import styles from "./compose.module.css";
 
-type Phase =
-  | { step: "idle" }
-  | { step: "preparing" }
-  | { step: "signing" }
-  | { step: "confirming"; signature: string }
-  | { step: "founded"; signature: string; prepared: PreparedFounding }
-  | { step: "refused"; reason: string };
+type Run =
+  | { state: "running"; stage: FoundingStage }
+  | { state: "stopped"; stage: FoundingStage; problem: StageProblem }
+  | { state: "founded"; signature: string; prepared: PreparedFounding };
+
+const STAGES: { stage: FoundingStage; title: string; detail: string; progress: string }[] = [
+  {
+    stage: "prepare",
+    title: "Prepare the stand-ins",
+    detail: "Seametry's devnet funder creates a stand-in for each stock, puts the genesis deposits in your wallet and writes a lookup table. Nothing is asked of your wallet yet.",
+    progress: "Sending the preparation transactions to devnet",
+  },
+  {
+    stage: "sign",
+    title: "Sign as the sponsor",
+    detail: "Your wallet shows the founding transaction. Signing it is the founding; declining stops here.",
+    progress: "Waiting for your wallet",
+  },
+  {
+    stage: "confirm",
+    title: "Confirm on devnet",
+    detail: "The Hall checks the deposits, fixes the Formula, name, symbol and URI, and locks one genesis share.",
+    progress: "Waiting for devnet to confirm",
+  },
+];
+
+function registerSteps(run: Run | undefined): RegisterStep[] {
+  const reached = run && run.state !== "founded" ? STAGES.findIndex((stage) => stage.stage === run.stage) : run ? STAGES.length : -1;
+  return STAGES.map((stage, index) => {
+    if (run?.state === "founded" || index < reached) return { title: stage.title, detail: stage.detail, state: "done" };
+    if (index > reached || !run) return { title: stage.title, detail: stage.detail, state: "waiting" };
+    if (run.state === "stopped") return { title: stage.title, detail: stage.detail, state: "stopped", problem: run.problem };
+    return { title: stage.title, detail: stage.detail, state: "now", progress: stage.progress };
+  });
+}
 
 /** Whether the metadata this name would be founded with is published, read once per name. */
 function usePublished(name: string): boolean | undefined {
@@ -56,12 +86,15 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
   const { connected } = useWallet();
   const wallet = useAnchorWallet();
   const published = usePublished(name);
-  const [phase, setPhase] = useState<Phase>({ step: "idle" });
+  const [run, setRun] = useState<Run>();
+  const [open, setOpen] = useState(false);
 
   const found = async () => {
     if (!wallet) return;
+    setOpen(true);
+    let stage: FoundingStage = "prepare";
     try {
-      setPhase({ step: "preparing" });
+      setRun({ state: "running", stage });
       const response = await fetch("/api/compose/found", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -71,41 +104,69 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
       if (!response.ok) throw new Error(body.error);
       const { prepared, identity } = body as { prepared: PreparedFounding; identity: FoundingIdentity };
 
-      setPhase({ step: "signing" });
+      stage = "sign";
+      setRun({ state: "running", stage });
       const connection = new Connection(DEVNET_RPC_ENDPOINT, "confirmed");
       const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" });
       const transaction = await buildWhenReady(connection, provider, prepared, identity);
       const signed = await wallet.signTransaction(transaction);
-      const signature = await connection.sendRawTransaction(signed.serialize());
 
-      setPhase({ step: "confirming", signature });
+      stage = "confirm";
+      setRun({ state: "running", stage });
+      const signature = await connection.sendRawTransaction(signed.serialize());
       const confirmation = await connection.confirmTransaction(signature, "confirmed");
-      if (confirmation.value.err) throw new Error(`The Hall refused the founding: ${JSON.stringify(confirmation.value.err)}`);
-      setPhase({ step: "founded", signature, prepared });
+      if (confirmation.value.err) throw new Error(`The Hall refused the founding: ${JSON.stringify(confirmation.value.err)} (transaction ${signature})`);
+      setRun({ state: "founded", signature, prepared });
     } catch (error) {
-      setPhase({ step: "refused", reason: error instanceof Error ? error.message : "The founding did not complete." });
+      setRun({ state: "stopped", stage, problem: foundingProblem(stage, error) });
     }
   };
 
-  if (phase.step === "founded") {
-    return (
-      <section className={styles.founding} aria-labelledby="founded-heading" data-testid="founding">
-        <span className={styles.label}>Founded on devnet</span>
-        <h3 id="founded-heading">{name} is founded</h3>
-        <Digest value={phase.prepared.alloy} />
-        <p className={styles.note}>Its Formula, name, symbol and URI are fixed. One share is locked as the genesis, forever.</p>
-        <TextAction href={`/app/alloys/${phase.prepared.alloy}`}>Open the Alloy record</TextAction>
-        <TextAction href={`https://explorer.solana.com/tx/${phase.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer">Open the founding on Solana</TextAction>
-      </section>
-    );
-  }
-
-  const busy = phase.step === "preparing" || phase.step === "signing" || phase.step === "confirming";
+  const running = run?.state === "running";
   const reason = !connected
     ? "Log in with a devnet wallet: it signs as the sponsor."
     : published === false
       ? `No metadata is published at ${metadataPath(name)}, so this name has no URI to found with.`
       : undefined;
+
+  const sheet = (
+    <ModalSheet
+      open={open}
+      onClose={() => setOpen(false)}
+      title={run?.state === "founded" ? `${name} is founded` : `Founding ${name}`}
+      register="Found on devnet"
+      closeLabel="Close founding"
+      footer={
+        run?.state === "stopped" ? (
+          <QuietAction type="button" onClick={() => void found()}>Try the founding again</QuietAction>
+        ) : run?.state === "founded" ? (
+          <>
+            <TextAction href={`/app/alloys/${run.prepared.alloy}`}>Open the Alloy record</TextAction>
+            <TextAction href={`https://explorer.solana.com/tx/${run.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer">Open the founding on Solana</TextAction>
+          </>
+        ) : (
+          <p className={styles.note}>Closing this sheet does not stop the founding.</p>
+        )
+      }
+    >
+      <StepRegister label={`Founding ${name}`} steps={registerSteps(run)} />
+      {run?.state === "founded" ? <Digest value={run.prepared.alloy} /> : null}
+    </ModalSheet>
+  );
+
+  if (run?.state === "founded") {
+    return (
+      <section className={styles.founding} aria-labelledby="founded-heading" data-testid="founding">
+        <span className={styles.label}>Founded on devnet</span>
+        <h3 id="founded-heading">{name} is founded</h3>
+        <Digest value={run.prepared.alloy} />
+        <p className={styles.note}>Its Formula, name, symbol and URI are fixed. One share is locked as the genesis, forever.</p>
+        <TextAction href={`/app/alloys/${run.prepared.alloy}`}>Open the Alloy record</TextAction>
+        <TextAction href={`https://explorer.solana.com/tx/${run.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer">Open the founding on Solana</TextAction>
+        {sheet}
+      </section>
+    );
+  }
 
   return (
     <section className={styles.founding} aria-labelledby="found-heading" data-testid="founding">
@@ -124,12 +185,13 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
         onClick={() => void found()}
         disabled={Boolean(reason) || published === undefined}
         disabledReason={reason}
-        busy={busy}
-        busyLabel={phase.step === "preparing" ? "Preparing stand-ins" : phase.step === "signing" ? "Waiting for your signature" : "Confirming on devnet"}
+        busy={running}
+        busyLabel="Founding"
       >
         Found on devnet
       </Key>
-      {phase.step === "refused" ? <p className={styles.problem} role="alert">{phase.reason}</p> : null}
+      {run && !open ? <QuietAction type="button" onClick={() => setOpen(true)}>{run.state === "stopped" ? "Read why the founding stopped" : "Show the founding's progress"}</QuietAction> : null}
+      {sheet}
     </section>
   );
 }

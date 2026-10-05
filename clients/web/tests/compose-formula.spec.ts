@@ -2,8 +2,10 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { draftFormula, identityProblem, unitsToAtoms, type QuotedLeg } from "../src/lib/compose/formula";
+import { foundingProblem } from "../src/lib/compose/founding-problem";
 import { SEAMETRY_SPONSOR_MARK } from "../src/lib/compose/founding-transaction";
 import { REGISTER_HALL_PROGRAM_ID } from "../src/lib/hall/constants";
+import { registerTestWallet } from "./test-wallet";
 
 // How long a page may take to show quotes. lib/jupiter spaces calls a little
 // over a second apart, the fixture refuses each mint's first quote with 429,
@@ -161,6 +163,45 @@ test("the server spaces every Jupiter call at least a second apart, however many
   const gaps = arrivals.slice(1).map((at, index) => at - arrivals[index]);
   expect(gaps.length).toBeGreaterThan(2);
   expect(Math.min(...gaps)).toBeGreaterThanOrEqual(1_000);
+});
+
+test("pressing Found opens the founding's steps, and a stop says what did not happen", async ({ page }) => {
+  // The test server has no funder key, so preparation stops at step one.
+  await registerTestWallet(page, { trusted: true });
+  await page.goto("/app/compose");
+  await page.getByText("Log in", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
+
+  const main = page.getByRole("main");
+  for (const symbol of ["NFLXx", "AAPLx"]) await main.getByRole("checkbox", { name: new RegExp(symbol) }).check();
+  await main.getByLabel("Name", { exact: true }).fill("Stoic Crew");
+  await main.getByLabel("Symbol", { exact: true }).fill("STOIC");
+  await main.getByTestId("founding").getByRole("button", { name: "Found on devnet" }).click({ timeout: QUOTED });
+
+  const sheet = page.getByRole("dialog", { name: "Founding Stoic Crew" });
+  await expect(sheet).toBeVisible();
+  const steps = sheet.getByTestId("step-register").getByRole("listitem");
+  await expect(steps.nth(0)).toContainText("Stopped", { timeout: QUOTED });
+  await expect(steps.nth(1)).toContainText("Waiting");
+  await expect(steps.nth(2)).toContainText("Waiting");
+  await expect(steps.nth(0).getByRole("alert")).toContainText("HALL_DEMO_FUNDER_SECRET_KEY is not set");
+  await expect(sheet.getByRole("button", { name: "Try the founding again" })).toBeVisible();
+});
+
+test("every stopped founding says what did not happen, and keeps the raw message beside it", () => {
+  const slot = new Error('Transaction simulation failed: Error processing Instruction 0: invalid instruction data. Logs: [ "Program log: 507896021 is not a recent slot" ]');
+  const prepare = foundingProblem("prepare", slot);
+  expect(prepare.plain).toBe("Devnet refused one of the transactions that prepare your stand-ins. Nothing was founded and your wallet was not asked to sign. Try again in a minute.");
+  expect(prepare.technical).toBe(slot.message);
+
+  const declined = foundingProblem("sign", Object.assign(new Error("User rejected the request."), { name: "WalletSignTransactionError" }));
+  expect(declined.plain).toContain("You declined to sign, so nothing was founded");
+  expect(declined.technical).toBeUndefined();
+
+  expect(foundingProblem("confirm", new Error("The Hall refused the founding: {\"InstructionError\":[2,{\"Custom\":6003}]}")).plain).toContain("the network fee for the attempt was spent");
+  expect(foundingProblem("confirm", new Error("Transaction was not confirmed in 30.00 seconds")).plain).toContain("It may still land");
+  expect(foundingProblem("prepare", new TypeError("Failed to fetch")).plain).toContain("could not be reached");
 });
 
 test("the quote route accepts only captured instruments, before it asks Jupiter anything", async ({ request }) => {

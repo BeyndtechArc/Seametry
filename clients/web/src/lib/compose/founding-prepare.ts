@@ -119,31 +119,48 @@ async function createStandIn(connection: Connection, funder: Keypair, issuer: Ke
   return { mint: mint.publicKey, signature };
 }
 
-const LOOKUP_TABLE_ATTEMPTS = 3;
+const LOOKUP_TABLE_ATTEMPTS = 4;
+const LOOKUP_TABLE_PAUSE_MS = 1_500;
 
 /**
- * The table's address derives from a recent slot, which the program checks
- * against the SlotHashes of the node that executes it. On 5 October 2026 a
- * live founding failed with "507876824 is not a recent slot" although that
- * slot had just been read as finalized from the same endpoint. The likeliest
- * reading is that public devnet's load balancer sent the read and the
- * simulation to different nodes, one behind the other; that is unverified,
- * since twelve samples taken afterwards showed no skew. Each attempt reads a
- * fresh slot, so a retry derives a new table rather than resending the one
- * that failed, and only that refusal is retried.
+ * The table's address derives from a slot the program must find among the
+ * last 512 in the executing node's SlotHashes. Production foundings were
+ * refused twice ("507876824 is not a recent slot", "507896021 is not a
+ * recent slot"), the second time on all three attempts of a retry that read
+ * getSlot("finalized") afresh each time, while the same code passed from a
+ * developer machine. A fresh read failing every time from one region fits a
+ * node behind public devnet's load balancer answering getSlot from minutes in
+ * the past; it is not observed directly, since samples from outside Vercel
+ * showed no stale node.
+ *
+ * So no node is asked what time it is. The slot is the one our own funding
+ * transaction landed in seconds earlier: a real block, recent by
+ * construction, and one a stale node cannot report at all, since it has not
+ * seen that transaction. A node that has not seen it yet answers null, which
+ * is waited out; so is a refusal from an executing node a moment behind.
  */
-async function createLookupTable(connection: Connection, funder: Keypair, addresses: PublicKey[]) {
-  for (let attempt = 1; ; attempt++) {
-    const recentSlot = await connection.getSlot("finalized");
-    const [create, lookupTable] = AddressLookupTableProgram.createLookupTable({ authority: funder.publicKey, payer: funder.publicKey, recentSlot });
+async function createLookupTable(connection: Connection, funder: Keypair, addresses: PublicKey[], landed: string) {
+  let refusal: unknown;
+  for (let attempt = 1; attempt <= LOOKUP_TABLE_ATTEMPTS; attempt++) {
+    if (attempt > 1) await new Promise((resolve) => setTimeout(resolve, LOOKUP_TABLE_PAUSE_MS));
+    const status = (await connection.getSignatureStatus(landed)).value;
+    if (!status) {
+      refusal = new Error(`The devnet node answering did not yet know transaction ${landed}, whose slot names the lookup table.`);
+      continue;
+    }
+    const [create, lookupTable] = AddressLookupTableProgram.createLookupTable({ authority: funder.publicKey, payer: funder.publicKey, recentSlot: status.slot });
     const extend = AddressLookupTableProgram.extendLookupTable({ lookupTable, authority: funder.publicKey, payer: funder.publicKey, addresses });
     try {
       return { lookupTable, signature: await send(connection, [create, extend], funder, []) };
     } catch (error) {
-      if (attempt === LOOKUP_TABLE_ATTEMPTS || !String(error).includes("is not a recent slot")) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 2_000));
+      if (!String(error).includes("is not a recent slot")) throw error;
+      refusal = error;
     }
   }
+  throw new Refusal(
+    503,
+    `Devnet would not accept the lookup table after ${LOOKUP_TABLE_ATTEMPTS} attempts, so nothing was founded and your wallet was not asked to sign. Try again in a minute. Last refusal: ${refusal instanceof Error ? refusal.message : String(refusal)}`,
+  );
 }
 
 /**
@@ -185,10 +202,13 @@ export async function prepareFounding(
     });
   }
 
+  // The last transaction to land names the lookup table's slot.
+  let landed = "";
+
   // Three legs per transaction keeps each well inside the legacy size limit.
   for (let start = 0; start < prepared.length; start += 3) {
     const batch = prepared.slice(start, start + 3);
-    signatures[`fundSponsor${start / 3 + 1}`] = await send(
+    landed = signatures[`fundSponsor${start / 3 + 1}`] = await send(
       connection,
       batch.flatMap((leg) => {
         const mint = new PublicKey(leg.standIn);
@@ -205,7 +225,7 @@ export async function prepareFounding(
 
   const balance = BigInt(await connection.getBalance(sponsor, "confirmed"));
   if (balance < FOUNDING_ALLOWANCE_LAMPORTS) {
-    signatures.topUp = await send(
+    landed = signatures.topUp = await send(
       connection,
       [SystemProgram.transfer({ fromPubkey: funder.publicKey, toPubkey: sponsor, lamports: FOUNDING_ALLOWANCE_LAMPORTS - balance })],
       funder,
@@ -222,7 +242,7 @@ export async function prepareFounding(
     SystemProgram.programId,
     ...prepared.flatMap((leg) => [new PublicKey(leg.standIn), new PublicKey(leg.sponsorAccount), new PublicKey(leg.hallAccount)]),
   ];
-  const { lookupTable, signature: lookupSignature } = await createLookupTable(connection, funder, addresses);
+  const { lookupTable, signature: lookupSignature } = await createLookupTable(connection, funder, addresses, landed);
   signatures.lookupTable = lookupSignature;
 
   return {

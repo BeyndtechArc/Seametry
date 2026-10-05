@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
+import type { WalletError } from "@solana/wallet-adapter-base";
 import { clusterApiUrl } from "@solana/web3.js";
 
 /**
@@ -14,23 +15,42 @@ import { clusterApiUrl } from "@solana/web3.js";
  * No adapters are listed: @solana/wallet-adapter-react detects any Wallet
  * Standard wallet (Phantom, Solflare, Backpack and the rest), which injects
  * no script of its own and so needs no change to proxy.ts's script-src.
- * WalletState performs the connection after a deliberate selection and also
- * reconnects the stored selection on reload, with connection failures shown.
+ *
+ * The provider connects, not WalletState. When WalletState called connect
+ * from its own effect, a wallet that already trusted the site (Phantom, once
+ * approved) connected synchronously inside that child effect, before the
+ * provider's effect had subscribed to the new adapter, so its connect event
+ * was lost: the wallet was connected and the header said "Log in" until a
+ * reload. autoConnect runs in the provider after it subscribes, opens the
+ * wallet's prompt after a deliberate selection, and reconnects silently on
+ * reload without prompting.
  */
 export function walletNetwork(pathname: string): "devnet" | "mainnet" {
   return pathname.startsWith("/app/hall") ? "devnet" : "mainnet";
 }
 
+type ConnectionFailure = { failure?: string; clear: () => void };
+const ConnectionFailureContext = createContext<ConnectionFailure>({ clear: () => {} });
+
+/** The last error the wallet raised, for WalletState to show after a deliberate choice. */
+export function useWalletFailure() {
+  return useContext(ConnectionFailureContext);
+}
+
 export function SiteWalletProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const wallets = useMemo(() => [], []);
+  const [failure, setFailure] = useState<string>();
+  const onError = useCallback((error: WalletError) => setFailure(error.message || error.name), []);
+  const clear = useCallback(() => setFailure(undefined), []);
+  const failureValue = useMemo(() => ({ failure, clear }), [failure, clear]);
   const endpoint = walletNetwork(pathname) === "devnet"
     ? process.env.NEXT_PUBLIC_HALL_DEMO_RPC ?? clusterApiUrl("devnet")
     : clusterApiUrl("mainnet-beta");
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect={false}>
-        {children}
+      <WalletProvider wallets={wallets} autoConnect onError={onError}>
+        <ConnectionFailureContext.Provider value={failureValue}>{children}</ConnectionFailureContext.Provider>
       </WalletProvider>
     </ConnectionProvider>
   );

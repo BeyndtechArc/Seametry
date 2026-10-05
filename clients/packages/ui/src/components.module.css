@@ -945,6 +945,82 @@
   font-size: var(--sm-font-size-small);
 }
 
+.stepRegister {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepRegister li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-6) 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.stepIndex,
+.stepState {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.stepBody {
+  display: grid;
+  gap: var(--sm-space-3);
+  min-width: 0;
+}
+
+.stepBody b {
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.stepBody p {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.5;
+}
+
+.stepRegister li[data-state="waiting"] .stepBody b,
+.stepRegister li[data-state="waiting"] .stepState {
+  color: var(--sm-text-tertiary);
+}
+
+.stepRegister li[data-state="now"] .stepState,
+.stepRegister li[data-state="stopped"] .stepState {
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.stepProblem {
+  display: grid;
+  gap: var(--sm-space-3);
+  padding: var(--sm-space-5);
+  background: var(--sm-surface-tray);
+}
+
+.stepProblem p {
+  color: var(--sm-text-primary);
+}
+
+.stepProblem summary {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  cursor: pointer;
+}
+
+.stepProblem pre {
+  margin: var(--sm-space-3) 0 0;
+  overflow-x: auto;
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-micro);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .claimLine {
   display: grid;
   gap: var(--sm-space-4);

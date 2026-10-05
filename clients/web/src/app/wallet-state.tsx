@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -10,7 +10,7 @@ import { Icon } from "@seametry/ui/icons";
 import { formatAmount } from "@/lib/amount";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import type { Balances } from "@/lib/wallet/balances";
-import { walletNetwork } from "@/lib/wallet-provider";
+import { useWalletFailure, walletNetwork } from "@/lib/wallet-provider";
 import { NetworkBadge } from "./app/_shell/page-header";
 import styles from "./site.module.css";
 
@@ -80,30 +80,25 @@ function Holdings({ reading, network }: { reading: BalanceReading | undefined; n
  */
 export function WalletState() {
   const { publicKey, connected, connecting, wallets, wallet, select, connect, disconnect } = useWallet();
-  const [connectionError, setConnectionError] = useState<string>();
+  const { failure, clear } = useWalletFailure();
+  // A silent reconnect on reload may fail quietly; only a choice made here
+  // earns an error message.
+  const [chose, setChose] = useState(false);
   const [opening, setOpening] = useState<number>();
-  const attempted = useRef<WalletName | null>(null);
   const address = publicKey?.toBase58();
   const network = walletNetwork(usePathname());
   const reading = useBalances(connected ? address : undefined, network, opening);
-
-  useEffect(() => {
-    if (!wallet) {
-      attempted.current = null;
-      return;
-    }
-    if (connected || connecting || attempted.current === wallet.adapter.name) return;
-    attempted.current = wallet.adapter.name;
-    setConnectionError(undefined);
-    void connect().catch((error: unknown) => {
-      setConnectionError(error instanceof Error ? error.message : "The wallet did not complete the connection.");
-    });
-  }, [connect, connected, connecting, wallet]);
+  const connectionError = chose && !connected ? failure : undefined;
 
   const choose = (name: WalletName) => {
-    attempted.current = null;
-    setConnectionError(undefined);
-    select(name);
+    clear();
+    setChose(true);
+    // Choosing the wallet already selected (after declining its prompt, say)
+    // does not change the adapter, so the provider will not connect again on
+    // its own. The provider is already subscribed to that adapter, so asking
+    // it directly is safe; its error reaches useWalletFailure.
+    if (wallet?.adapter.name === name) void connect().catch(() => {});
+    else select(name);
   };
 
   return (
