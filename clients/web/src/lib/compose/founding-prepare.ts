@@ -119,6 +119,33 @@ async function createStandIn(connection: Connection, funder: Keypair, issuer: Ke
   return { mint: mint.publicKey, signature };
 }
 
+const LOOKUP_TABLE_ATTEMPTS = 3;
+
+/**
+ * The table's address derives from a recent slot, which the program checks
+ * against the SlotHashes of the node that executes it. On 5 October 2026 a
+ * live founding failed with "507876824 is not a recent slot" although that
+ * slot had just been read as finalized from the same endpoint. The likeliest
+ * reading is that public devnet's load balancer sent the read and the
+ * simulation to different nodes, one behind the other; that is unverified,
+ * since twelve samples taken afterwards showed no skew. Each attempt reads a
+ * fresh slot, so a retry derives a new table rather than resending the one
+ * that failed, and only that refusal is retried.
+ */
+async function createLookupTable(connection: Connection, funder: Keypair, addresses: PublicKey[]) {
+  for (let attempt = 1; ; attempt++) {
+    const recentSlot = await connection.getSlot("finalized");
+    const [create, lookupTable] = AddressLookupTableProgram.createLookupTable({ authority: funder.publicKey, payer: funder.publicKey, recentSlot });
+    const extend = AddressLookupTableProgram.extendLookupTable({ lookupTable, authority: funder.publicKey, payer: funder.publicKey, addresses });
+    try {
+      return { lookupTable, signature: await send(connection, [create, extend], funder, []) };
+    } catch (error) {
+      if (attempt === LOOKUP_TABLE_ATTEMPTS || !String(error).includes("is not a recent slot")) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
+    }
+  }
+}
+
 /**
  * Everything a founding needs before the sponsor signs, paid by the funder:
  * a stand-in mint per leg, the sponsor's token accounts holding exactly the
@@ -186,8 +213,6 @@ export async function prepareFounding(
     );
   }
 
-  const slot = await connection.getSlot("finalized");
-  const [createTable, lookupTable] = AddressLookupTableProgram.createLookupTable({ authority: funder.publicKey, payer: funder.publicKey, recentSlot: slot });
   const addresses = [
     alloy,
     shareMint,
@@ -197,12 +222,8 @@ export async function prepareFounding(
     SystemProgram.programId,
     ...prepared.flatMap((leg) => [new PublicKey(leg.standIn), new PublicKey(leg.sponsorAccount), new PublicKey(leg.hallAccount)]),
   ];
-  signatures.lookupTable = await send(
-    connection,
-    [createTable, AddressLookupTableProgram.extendLookupTable({ lookupTable, authority: funder.publicKey, payer: funder.publicKey, addresses })],
-    funder,
-    [],
-  );
+  const { lookupTable, signature: lookupSignature } = await createLookupTable(connection, funder, addresses);
+  signatures.lookupTable = lookupSignature;
 
   return {
     hall: hall.toBase58(),
