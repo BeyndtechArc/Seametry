@@ -189,6 +189,19 @@
   gap: var(--sm-space-3);
 }
 
+.lotIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-4);
+  min-width: 0;
+}
+
+.lotIdentity > span:last-child {
+  display: grid;
+  gap: var(--sm-space-3);
+  min-width: 0;
+}
+
 .instrumentTable b {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);

@@ -112,6 +112,20 @@ test("Compose offers founding once the draft is priced and named, and holds the 
   await expect(founding.getByText("Log in with a devnet wallet: it signs as the sponsor.", { exact: true })).toBeVisible();
 });
 
+test("each lot draws the logo its mint names, served exactly as the capture recorded it", async ({ page, request }) => {
+  const manifest = JSON.parse(readFileSync("../../shared/evidence/instrument-logos.json", "utf8"));
+  const aapl = manifest.logos.find((logo: { symbol: string }) => logo.symbol === "AAPLx");
+  expect(aapl.state).toBe("captured");
+
+  await page.goto("/app/compose");
+  const candidate = page.getByRole("main").getByRole("listitem").filter({ has: page.getByText("AAPLx", { exact: true }) });
+  await expect(candidate.getByTestId("lot-mark")).toHaveAttribute("src", aapl.path);
+
+  const served = await request.get(aapl.path);
+  expect(served.status()).toBe(200);
+  expect(createHash("sha256").update(await served.body()).digest("hex")).toBe(aapl.sha256);
+});
+
 test("the quote route accepts only captured instruments, before it asks Jupiter anything", async ({ request }) => {
   const unknown = await request.get("/api/compose/quotes?mints=So11111111111111111111111111111111111111112");
   expect(unknown.status()).toBe(400);

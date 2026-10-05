@@ -940,6 +940,12 @@
   vertical-align: top;
 }
 
+.paperLot {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+}
+
 .paperEvidence a {
   color: var(--sm-accent-provenance);
 }

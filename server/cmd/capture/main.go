@@ -11,6 +11,11 @@
 //
 //	go run ./server/cmd/capture                 # refresh every target in targets.json
 //	go run ./server/cmd/capture -rpc https://...
+//	go run ./server/cmd/capture -logos          # mirror each fixture's issuer logo
+//
+// -logos reads the fixtures already committed and never refetches a mint, so
+// it cannot move the evidence the decoder and policy goldens are tested
+// against. See logos.go.
 //
 // The default endpoint is the public one, which is rate limited and fine for a
 // few dozen accounts. It needs no credentials, which is deliberate: anyone
@@ -91,7 +96,17 @@ func main() {
 	rpc := flag.String("rpc", defaultRPC, "Solana JSON-RPC endpoint")
 	dir := flag.String("dir", filepath.Join("shared", "fixtures", "mainnet"), "fixture directory")
 	commitment := flag.String("commitment", "finalized", "commitment level")
+	logos := flag.Bool("logos", false, "mirror the logo each fixture's on-chain metadata names, instead of capturing mints")
+	logoDir := flag.String("logo-dir", filepath.Join("clients", "web", "public", "instruments"), "where mirrored logos are written")
+	logoManifest := flag.String("logo-manifest", filepath.Join("shared", "evidence", "instrument-logos.json"), "the record of every logo, captured or not")
 	flag.Parse()
+
+	if *logos {
+		if err := mirrorLogos(*dir, *logoDir, *logoManifest); err != nil {
+			fail(err)
+		}
+		return
+	}
 
 	targets, err := loadTargets(filepath.Join(*dir, "targets.json"))
 	if err != nil {

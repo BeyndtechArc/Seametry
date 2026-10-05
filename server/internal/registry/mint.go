@@ -522,6 +522,87 @@ func (m *Mint) ScaledUIAmount() (ScaledUIAmount, bool, error) {
 	return config, true, err
 }
 
+// TokenMetadata is the name, symbol and URI an issuer wrote into the mint
+// itself. It names the instrument and nothing more: it carries no power over
+// a holder, and its URI points at a document the issuer can change at will,
+// so nothing here is used to decide admission.
+type TokenMetadata struct {
+	UpdateAuthority *Pubkey
+	Mint            Pubkey
+	Name            string
+	Symbol          string
+	URI             string
+	Additional      [][2]string
+}
+
+// decodeTokenMetadata reads the Borsh layout of spl-token-metadata-interface:
+// two addresses, three length-prefixed strings, then a length-prefixed list
+// of key and value strings.
+func decodeTokenMetadata(data []byte) (TokenMetadata, error) {
+	var metadata TokenMetadata
+	if len(data) < 64 {
+		return metadata, fmt.Errorf("registry: TokenMetadata is %d bytes, too short for its two addresses (64)", len(data))
+	}
+	authority, err := optionalNonZeroPubkey(data[0:32])
+	if err != nil {
+		return metadata, fmt.Errorf("registry: TokenMetadata update authority: %w", err)
+	}
+	metadata.UpdateAuthority = authority
+	copy(metadata.Mint[:], data[32:64])
+
+	offset := 64
+	text := func(field string) (string, error) {
+		if offset+4 > len(data) {
+			return "", fmt.Errorf("registry: TokenMetadata %s length at byte %d runs past the %d byte extension", field, offset, len(data))
+		}
+		length := int(binary.LittleEndian.Uint32(data[offset : offset+4]))
+		offset += 4
+		if offset+length > len(data) {
+			return "", fmt.Errorf("registry: TokenMetadata %s declares %d bytes but only %d remain", field, length, len(data)-offset)
+		}
+		value := string(data[offset : offset+length])
+		offset += length
+		return value, nil
+	}
+	for _, field := range []struct {
+		name string
+		into *string
+	}{{"name", &metadata.Name}, {"symbol", &metadata.Symbol}, {"uri", &metadata.URI}} {
+		if *field.into, err = text(field.name); err != nil {
+			return metadata, err
+		}
+	}
+	if offset+4 > len(data) {
+		return metadata, fmt.Errorf("registry: TokenMetadata additional metadata count at byte %d runs past the %d byte extension", offset, len(data))
+	}
+	count := int(binary.LittleEndian.Uint32(data[offset : offset+4]))
+	offset += 4
+	for i := 0; i < count; i++ {
+		key, err := text(fmt.Sprintf("additional key %d", i))
+		if err != nil {
+			return metadata, err
+		}
+		value, err := text(fmt.Sprintf("additional value %d", i))
+		if err != nil {
+			return metadata, err
+		}
+		metadata.Additional = append(metadata.Additional, [2]string{key, value})
+	}
+	return metadata, nil
+}
+
+// TokenMetadata returns the metadata stored in the mint account itself. A
+// MetadataPointer naming another account is not followed: that metadata is
+// not in these bytes, and is reported as absent rather than guessed.
+func (m *Mint) TokenMetadata() (TokenMetadata, bool, error) {
+	ext, ok := m.Extension(ExtTokenMetadata)
+	if !ok {
+		return TokenMetadata{}, false, nil
+	}
+	metadata, err := decodeTokenMetadata(ext.Data)
+	return metadata, true, err
+}
+
 // MultiplierSource names which field the live value came from.
 type MultiplierSource string
 

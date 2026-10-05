@@ -76,6 +76,9 @@ test("the Terminal moves from the instrument register into one assay", async ({ 
   await expect(page.getByRole("heading", { level: 1, name: "Instruments" })).toBeVisible();
   const row = page.getByRole("row", { name: /XSTK/ });
   await expect(row).toContainText("Certificate");
+  // No logo was captured for this mint, so its mark is lettered, not an image.
+  await expect(row.getByTestId("lot-mark")).toHaveText("XS");
+  await expect(row.locator("img[data-testid='lot-mark']")).toHaveCount(0);
   await row.getByRole("link", { name: "Open assay" }).click();
 
   await expect(page).toHaveURL(`/app/instruments/${mint}`);

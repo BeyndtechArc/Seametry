@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Field, Grade, QuietAction, Rule, Stamp } from "@seametry/ui";
+import { Field, Grade, LotMark, QuietAction, Rule, Stamp } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
+import { logoFor } from "@/lib/instrument-logos";
 import { MAX_CONSTITUENTS, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { USDC_SCALE, draftFormula, identityProblem, unitsToAtoms, type QuotedLeg, type Weighting } from "@/lib/compose/formula";
 import { FoundingPanel } from "./founding";
@@ -137,6 +138,7 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
                       setSelected((current) => (event.target.checked ? [...current, candidate.mint] : current.filter((mint) => mint !== candidate.mint)))
                     }
                   />
+                  <LotMark symbol={candidate.symbol} src={logoFor(candidate.mint)} />
                   <span>
                     <b>{candidate.symbol}</b>
                     <small>{candidate.issuer}</small>
@@ -216,7 +218,7 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
                     const atoms = unitsToAtoms(unitsTyped, candidate.decimals);
                     return (
                       <tr key={candidate.mint}>
-                        <th scope="row">{candidate.symbol}</th>
+                        <th scope="row"><span className={styles.lot}><LotMark symbol={candidate.symbol} src={logoFor(candidate.mint)} />{candidate.symbol}</span></th>
                         <td>{typeof atoms === "bigint" ? formatAmount(atoms, candidate.decimals) : "No observation"}</td>
                         <td>No observation</td>
                       </tr>
@@ -235,7 +237,7 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
               <tbody>
                 {draft.legs.map((leg) => (
                   <tr key={leg.mint}>
-                    <th scope="row">{leg.symbol}</th>
+                    <th scope="row"><span className={styles.lot}><LotMark symbol={leg.symbol} src={logoFor(leg.mint)} />{leg.symbol}</span></th>
                     <td>{formatAmount(leg.atomsPerShare, leg.decimals)}</td>
                     <td>{formatAmount(leg.usdcPerShare, USDC_SCALE)} USDC</td>
                     <td>{formatAmount(leg.weightBps, 2)}%</td>

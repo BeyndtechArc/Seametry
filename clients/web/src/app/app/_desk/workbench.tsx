@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Digest, RouteAction, Rule, Stamp, TextAction } from "@seametry/ui";
+import { Digest, LotMark, RouteAction, Rule, Stamp, TextAction } from "@seametry/ui";
 import type {
   InstrumentAssayResponse,
   InstrumentRegisterResponse,
   TerminalProblem,
 } from "@/lib/terminal-contract";
 import { formatAmount } from "@/lib/amount";
+import { logoFor } from "@/lib/instrument-logos";
 import { PageHeader } from "../_shell/page-header";
 import styles from "./desk.module.css";
 
@@ -146,8 +147,13 @@ export function InstrumentRegister() {
                 {value.data.map((instrument) => (
                   <tr key={instrument.mint}>
                     <td>
-                      <b>{instrument.symbol ?? "Symbol unavailable"}</b>
-                      <Digest value={instrument.mint} />
+                      <span className={styles.lotIdentity}>
+                        <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} />
+                        <span>
+                          <b>{instrument.symbol ?? "Symbol unavailable"}</b>
+                          <Digest value={instrument.mint} />
+                        </span>
+                      </span>
                     </td>
                     <td>{instrument.grade}</td>
                     <td>{instrument.prerogatives.length} recorded</td>
@@ -184,7 +190,10 @@ export function InstrumentAssay({ mint }: { mint: string }) {
           <section className={styles.assayHero}>
             <div className={styles.assayIdentity}>
               <span>Instrument assay</span>
-              <h1>{instrument.symbol ?? "Symbol unavailable"}</h1>
+              <h1 className={styles.lotIdentity}>
+                <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} size="header" />
+                {instrument.symbol ?? "Symbol unavailable"}
+              </h1>
               <Digest value={instrument.mint} />
             </div>
             <dl className={styles.assayFacts}>

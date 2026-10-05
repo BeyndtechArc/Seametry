@@ -10,7 +10,7 @@ import { admissions, isAdmitted } from "../allocation/admissions";
 // no evidence behind it cannot appear.
 
 type DepthPoint = { size_usdc: number; availability: string; shortfall_bps: number | null };
-type DepthCapture = { captured_at: string; instruments: { symbol: string; points: DepthPoint[] }[] };
+type DepthCapture = { captured_at: string; instruments: { symbol: string; mint: string; points: DepthPoint[] }[] };
 
 const count = (value: number) => value.toLocaleString("en-GB");
 
@@ -36,10 +36,10 @@ function depthSummary(capture: DepthCapture) {
     routedAtSmallest: routed.length,
     unrouted: capture.instruments.length - routed.length,
     shortfall: routed
-      .map((instrument) => ({ symbol: instrument.symbol, middle: at(instrument.points, middle)?.shortfall_bps, largest: at(instrument.points, largest)?.shortfall_bps }))
-      .filter((row): row is { symbol: string; middle: number; largest: number | null | undefined } => typeof row.middle === "number")
+      .map((instrument) => ({ symbol: instrument.symbol, mint: instrument.mint, middle: at(instrument.points, middle)?.shortfall_bps, largest: at(instrument.points, largest)?.shortfall_bps }))
+      .filter((row): row is { symbol: string; mint: string; middle: number; largest: number | null | undefined } => typeof row.middle === "number")
       .sort((a, b) => a.middle - b.middle)
-      .map((row) => ({ symbol: row.symbol, middle: count(row.middle), largest: typeof row.largest === "number" ? count(row.largest) : null })),
+      .map((row) => ({ symbol: row.symbol, mint: row.mint, middle: count(row.middle), largest: typeof row.largest === "number" ? count(row.largest) : null })),
   };
 }
 

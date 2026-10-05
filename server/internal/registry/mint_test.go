@@ -113,6 +113,53 @@ func TestEveryFixtureDecodes(t *testing.T) {
 	}
 }
 
+// The symbol and address a mint writes about itself must agree with what we
+// captured it as; a disagreement means the fixture or the decoder is wrong.
+func TestTokenMetadataIsReadFromTheMint(t *testing.T) {
+	for symbol, f := range loadFixtures(t) {
+		t.Run(symbol, func(t *testing.T) {
+			mint, err := DecodeMint(f.bytes(t))
+			if err != nil {
+				t.Fatalf("decode: %v", err)
+			}
+			metadata, ok, err := mint.TokenMetadata()
+			if err != nil {
+				t.Fatalf("metadata: %v", err)
+			}
+			if !ok {
+				t.Fatal("no TokenMetadata extension, but every captured xStocks mint carries one")
+			}
+			if metadata.Symbol != symbol {
+				t.Errorf("metadata symbol is %q, captured as %q", metadata.Symbol, symbol)
+			}
+			if metadata.Mint.String() != f.Address {
+				t.Errorf("metadata names mint %s, captured from %s", metadata.Mint, f.Address)
+			}
+		})
+	}
+
+	mint, err := DecodeMint(mustFixture(t, "AAPLx").bytes(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	metadata, _, err := mint.TokenMetadata()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if metadata.Name != "Apple xStock" || metadata.URI != "https://xstocks-metadata.backed.fi/tokens/Solana/AAPLx/metadata.json" {
+		t.Errorf("AAPLx metadata is %q at %q", metadata.Name, metadata.URI)
+	}
+}
+
+func TestTokenMetadataRefusesATruncatedString(t *testing.T) {
+	data := make([]byte, 64+4)
+	data[64] = 200 // a name of 200 bytes, with none following
+	_, err := decodeTokenMetadata(data)
+	if err == nil || !contains(err.Error(), "name declares 200 bytes") {
+		t.Fatalf("got %v, want a refusal naming the truncated name", err)
+	}
+}
+
 // The catastrophic case, and the reason the resolver exists. NFLXx reads 1.0
 // in the field named multiplier while the live value has been 10.0 since
 // November 2025. A reader of the obvious field prices the position at a tenth

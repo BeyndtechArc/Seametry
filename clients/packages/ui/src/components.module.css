@@ -258,6 +258,32 @@
 }
 
 .digest:focus-visible,
+.lotMark {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
+  border-radius: var(--sm-radius-data);
+  object-fit: cover;
+}
+
+.lotMarkHeader {
+  width: var(--sm-space-10);
+  height: var(--sm-space-10);
+}
+
+.lotMarkLettered {
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.lotMarkHeader.lotMarkLettered {
+  font-size: var(--sm-font-size-small);
+}
+
 .grade:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: var(--sm-space-2);

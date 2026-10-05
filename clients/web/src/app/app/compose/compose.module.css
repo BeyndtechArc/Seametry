@@ -99,6 +99,12 @@
   font-weight: var(--sm-font-weight-medium);
 }
 
+.lot {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+}
+
 .candidates li[data-refused] b {
   color: var(--sm-text-secondary);
 }

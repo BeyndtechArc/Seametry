@@ -1,0 +1,281 @@
+{
+  "producer": "go run ./server/cmd/capture -logos",
+  "captured_at": "2026-10-05T22:18:59Z",
+  "logos": [
+    {
+      "symbol": "AAPLx",
+      "mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/AAPLx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/AAPLx.png",
+      "content_type": "image/png",
+      "bytes": 14540,
+      "sha256": "930db19951493787ee286650222311b5158317bdb811205b450cfb412ab89295",
+      "path": "/instruments/XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp.png"
+    },
+    {
+      "symbol": "AMDx",
+      "mint": "XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/AMDx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/AMDx.png",
+      "content_type": "image/png",
+      "bytes": 8408,
+      "sha256": "d4b3a6dc338de3d4e6574d106ee937595557a4aa5a7dfb94a323163be2e9bbbf",
+      "path": "/instruments/XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF.png"
+    },
+    {
+      "symbol": "AMZNx",
+      "mint": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/AMZNx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/AMZNx.png",
+      "content_type": "image/png",
+      "bytes": 22616,
+      "sha256": "dbf6bfee7c8cd38e53a9191a5a3df6bbd69690c84a39330228b8cbe203f0d478",
+      "path": "/instruments/Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg.png"
+    },
+    {
+      "symbol": "AVGOx",
+      "mint": "XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/AVGOx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/AVGOx.png",
+      "content_type": "image/png",
+      "bytes": 15819,
+      "sha256": "ce27288249edbe36b246d21b661a583b92da9c10a388f2de43b3e5512c0ca95a",
+      "path": "/instruments/XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo.png"
+    },
+    {
+      "symbol": "BEx",
+      "mint": "XsmGSEqT6VXpVis3aVBDxaNwPgHNXbkjkVUCncsLkNB",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/BEx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/BEx.png",
+      "content_type": "image/png",
+      "bytes": 27052,
+      "sha256": "9553cccb0354f5cc67fcac7f08a441c0ee3fea030de1e222c53a3af73a66e17b",
+      "path": "/instruments/XsmGSEqT6VXpVis3aVBDxaNwPgHNXbkjkVUCncsLkNB.png"
+    },
+    {
+      "symbol": "CATx",
+      "mint": "XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/CATx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/CATx.png",
+      "content_type": "image/png",
+      "bytes": 16652,
+      "sha256": "051bd013e6e305eedc0e51bbad2283d3923037bda9fd04b89bf5624979f27ec8",
+      "path": "/instruments/XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6.png"
+    },
+    {
+      "symbol": "CRDAx",
+      "mint": "XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/CRDAx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/CRDAx.png",
+      "content_type": "image/png",
+      "bytes": 17861,
+      "sha256": "0f9fd1aa58fc622ca87926481c1195df5208eee690d709c0f1a91ff4245bada3",
+      "path": "/instruments/XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ.png"
+    },
+    {
+      "symbol": "DELLx",
+      "mint": "Xsu7Tc5J2fVUE4H5vYAiSr34cvLJeCsYPMjAYnayQn6",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/DELLx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/DELLx.png",
+      "content_type": "image/png",
+      "bytes": 16024,
+      "sha256": "95adcc037abadc475ca053f3f030bc6e9ea6b8818fc49bc87d655a78c2520396",
+      "path": "/instruments/Xsu7Tc5J2fVUE4H5vYAiSr34cvLJeCsYPMjAYnayQn6.png"
+    },
+    {
+      "symbol": "GOOGLx",
+      "mint": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/GOOGLx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/GOOGLx.png",
+      "content_type": "image/png",
+      "bytes": 26598,
+      "sha256": "b9240e1eb8a5174f437d82eb7852e54f318ae05f55409be38df3b851f9a8e876",
+      "path": "/instruments/XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN.png"
+    },
+    {
+      "symbol": "INTCx",
+      "mint": "XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/INTCx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/INTCx.png",
+      "content_type": "image/png",
+      "bytes": 14292,
+      "sha256": "9d2a44123644f9dc5380fa51b2db887fbf9a0e16ec395ae29c088a85f64ee44f",
+      "path": "/instruments/XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM.png"
+    },
+    {
+      "symbol": "METAx",
+      "mint": "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/METAx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/METAx.png",
+      "content_type": "image/png",
+      "bytes": 27546,
+      "sha256": "52cb2a0719cdc068ccccc28ba2f6451d4db43e48734a2e7832da7e66b0d7e806",
+      "path": "/instruments/Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu.png"
+    },
+    {
+      "symbol": "MRNAx",
+      "mint": "XsViHjyRbiSBskjizb1gszGTmZqtAH8TuqwJ7sB5AcP",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/MRNAx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/MRNAx.png",
+      "content_type": "image/png",
+      "bytes": 22906,
+      "sha256": "25826607307cd2c9dea488328c2fd09fc52254f4df986ba91b25bb9e01203640",
+      "path": "/instruments/XsViHjyRbiSBskjizb1gszGTmZqtAH8TuqwJ7sB5AcP.png"
+    },
+    {
+      "symbol": "MSFTx",
+      "mint": "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/MSFTx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/MSFTx.png",
+      "content_type": "image/png",
+      "bytes": 5646,
+      "sha256": "254e57a4c746213c9773c00933ab360ff81ba023c3cc7ed9f2a3fd5224e4e3c2",
+      "path": "/instruments/XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX.png"
+    },
+    {
+      "symbol": "MUx",
+      "mint": "XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/MUx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/MUx.png",
+      "content_type": "image/png",
+      "bytes": 24291,
+      "sha256": "580adef0a2b7c9623e545933b1a20c4c3a15ce8c6dca8b5694fb17979beecc32",
+      "path": "/instruments/XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav.png"
+    },
+    {
+      "symbol": "NFLXx",
+      "mint": "XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/NFLXx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/NFLXx.png",
+      "content_type": "image/png",
+      "bytes": 10186,
+      "sha256": "c2bf0dec601909d4b5228d28dd3d3682517d4cdccfcf42707c0ac7a4d617c44a",
+      "path": "/instruments/XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL.png"
+    },
+    {
+      "symbol": "NVDAx",
+      "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/NVDAx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/NVDAx.png",
+      "content_type": "image/png",
+      "bytes": 23218,
+      "sha256": "6b639eff0158850c474d378ed8580375c396dda494cfff9040e6b1735b8ef623",
+      "path": "/instruments/Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh.png"
+    },
+    {
+      "symbol": "ORCLx",
+      "mint": "XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/ORCLx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/ORCLx.png",
+      "content_type": "image/png",
+      "bytes": 18122,
+      "sha256": "33f8faea39d4ad48654be04de6a4679a4c9dbbfecccdbd7c5c872b4609cf0877",
+      "path": "/instruments/XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL.png"
+    },
+    {
+      "symbol": "PALLx",
+      "mint": "XsTTtPA5V19YwHKDv4xeVXNM6kdsQNJvg3MyWkRUckt",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/PALLx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/PALLx.png",
+      "content_type": "image/png",
+      "bytes": 18689,
+      "sha256": "ba931e0d165b7e57b8415806e04ceecbae5665964ed1dfbe006b284bfc5304c6",
+      "path": "/instruments/XsTTtPA5V19YwHKDv4xeVXNM6kdsQNJvg3MyWkRUckt.png"
+    },
+    {
+      "symbol": "PLTRx",
+      "mint": "XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/PLTRx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/PLTRx.png",
+      "content_type": "image/png",
+      "bytes": 20139,
+      "sha256": "edada1087693ec0de61c5386c0a166617b8b140658d6532326133a563441fd6e",
+      "path": "/instruments/XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4.png"
+    },
+    {
+      "symbol": "SNDKx",
+      "mint": "Xswbpc8UqU6e1j9QZEWCjBMjyvz4twqD7PCy6j2e7jj",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/SNDKx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/SNDKx.png",
+      "content_type": "image/png",
+      "bytes": 35180,
+      "sha256": "60a690470a0b21675c393557245c51619c696e8fd4dc0373bec3111ec512c28b",
+      "path": "/instruments/Xswbpc8UqU6e1j9QZEWCjBMjyvz4twqD7PCy6j2e7jj.png"
+    },
+    {
+      "symbol": "SPCXx",
+      "mint": "Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/SPCXx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/SPCXx.png",
+      "content_type": "image/png",
+      "bytes": 17947,
+      "sha256": "cf54500376d08d55e7b8a8508ea6b02a18d3f665ed0fb7f3fcd6fe8697a0029d",
+      "path": "/instruments/Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8.png"
+    },
+    {
+      "symbol": "STRKx",
+      "mint": "XsaQGz41BEQkS9xAB44uvUtuXcdLJAXEU1dogEzWMZ8",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/STRKx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/STRKx.png",
+      "content_type": "image/png",
+      "bytes": 12068,
+      "sha256": "868e6594129c614c7aa45b77b8a47dc90e0e3755a03121e61773d97e9a9026fd",
+      "path": "/instruments/XsaQGz41BEQkS9xAB44uvUtuXcdLJAXEU1dogEzWMZ8.png"
+    },
+    {
+      "symbol": "TQQQx",
+      "mint": "XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/TQQQx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/TQQQx.png",
+      "content_type": "image/png",
+      "bytes": 23419,
+      "sha256": "9b59da1b4c8c9921750c04ad599c53c37d8df2b98ea2593f2e47e226860f8175",
+      "path": "/instruments/XsjQP3iMAaQ3kQScQKthQpx9ALRbjKAjQtHg6TFomoc.png"
+    },
+    {
+      "symbol": "TSLAx",
+      "mint": "XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/TSLAx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/TSLAx.png",
+      "content_type": "image/png",
+      "bytes": 16972,
+      "sha256": "42cb949ac9a7e6385df10a59bcd47576260c6a78bf54df0eea962343644d7fd8",
+      "path": "/instruments/XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB.png"
+    },
+    {
+      "symbol": "TSMx",
+      "mint": "XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/TSMx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/TSMx.png",
+      "content_type": "image/png",
+      "bytes": 18034,
+      "sha256": "1425b20cb8df64e7c02f8ab6b36ba6253aeed7538228f051af06eb822b1390d0",
+      "path": "/instruments/XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV.png"
+    }
+  ]
+}

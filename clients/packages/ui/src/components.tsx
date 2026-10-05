@@ -197,6 +197,20 @@ export function Stamp({ kind, reason }: { kind: StampKind; reason: string }) {
   );
 }
 
+// A plain img, not next/image: this package is framework-free, and next/image
+// writes an inline style the site's CSP refuses.
+export function LotMark({ symbol, src, size = "row" }: { symbol: string; src?: string; size?: "row" | "header" }) {
+  const className = `${styles.lotMark} ${size === "header" ? styles.lotMarkHeader : ""}`;
+  if (src) {
+    return <img className={className} src={src} alt="" width={40} height={40} data-testid="lot-mark" />;
+  }
+  return (
+    <span className={`${className} ${styles.lotMarkLettered}`} aria-hidden="true" data-testid="lot-mark">
+      {symbol.slice(0, 2)}
+    </span>
+  );
+}
+
 export function Grade({ name }: { name: GradeName }) {
   return (
     <span className={styles.grade} tabIndex={0} title={gradeDefinitions[name]} aria-label={`${name}. ${gradeDefinitions[name]}`}>

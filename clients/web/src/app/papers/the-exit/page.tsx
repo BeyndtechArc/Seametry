@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { ClaimLine, TextAction } from "@seametry/ui";
+import { ClaimLine, LotMark, TextAction } from "@seametry/ui";
+import { logoFor } from "@/lib/instrument-logos";
 import { theExit } from "@/lib/papers/the-exit";
 import { PublicShell, SectionHeading } from "../../public-shell";
 import styles from "../../site.module.css";
@@ -177,7 +178,12 @@ export default async function TheExitPage() {
               <tbody>
                 {latestDepth.shortfall.map((row) => (
                   <tr key={row.symbol}>
-                    <td>{row.symbol}</td>
+                    <td>
+                      <span className={styles.paperLot}>
+                        <LotMark symbol={row.symbol} src={logoFor(row.mint)} />
+                        {row.symbol}
+                      </span>
+                    </td>
                     <td className={styles.paperFigure}>{row.middle}</td>
                     <td className={styles.paperFigure}>{row.largest ?? "no observation"}</td>
                   </tr>

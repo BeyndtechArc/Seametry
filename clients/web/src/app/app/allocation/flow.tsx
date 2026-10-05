@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ConditionReport, Field, Grade, Key, QuietAction, QuoteBlock, Rule, Stamp } from "@seametry/ui";
+import { ConditionReport, Field, Grade, Key, LotMark, QuietAction, QuoteBlock, Rule, Stamp } from "@seametry/ui";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
+import { logoFor } from "@/lib/instrument-logos";
 import { USDC_SCALE, lotCapAtoms } from "@/lib/allocation/rules";
 import styles from "./allocation.module.css";
 
@@ -380,6 +381,7 @@ export function AllocationFlow({
                             )
                           }
                         />
+                        <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} />
                         <span>
                           <b>{lot.symbol}</b>
                           <small>{lot.issuer}</small>
