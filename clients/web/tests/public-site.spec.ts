@@ -100,18 +100,21 @@ test("the wallet state lives in the app's top bar, and connecting signs nothing"
 test("the Allocation explains direct ownership before introducing its execution terms", async ({ page }) => {
   await page.goto("/app/allocation");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Build a basket" })).toBeVisible();
-  await expect(page.getByText("Each token settles directly into your wallet; nothing is pooled and no basket token is issued.", { exact: false })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Choose the constituents" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Set the basket amount" })).toBeVisible();
+  // Scoped to main: while the page streams, the loading boundary holds a
+  // hidden copy of the same text outside it, and an unscoped lookup matches twice.
+  const main = page.getByRole("main");
+  await expect(main.getByRole("heading", { level: 1, name: "Build a basket" })).toBeVisible();
+  await expect(main.getByText("Each token settles directly into your wallet; nothing is pooled and no basket token is issued.", { exact: false })).toBeVisible();
+  await expect(main.getByRole("heading", { level: 2, name: "Choose the constituents" })).toBeVisible();
+  await expect(main.getByRole("heading", { level: 2, name: "Set the basket amount" })).toBeVisible();
 });
 
 test("the Allocation keeps the plan beside the work and hides deployment plumbing", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app/allocation");
 
-  const amount = page.getByRole("heading", { level: 2, name: "Set the basket amount" });
-  const constituents = page.getByRole("heading", { level: 2, name: "Choose the constituents" });
+  const amount = page.getByRole("main").getByRole("heading", { level: 2, name: "Set the basket amount" });
+  const constituents = page.getByRole("main").getByRole("heading", { level: 2, name: "Choose the constituents" });
   expect(
     await amount.evaluate((amountHeading, constituentHeading) =>
       Boolean(amountHeading.compareDocumentPosition(constituentHeading as Node) & Node.DOCUMENT_POSITION_FOLLOWING),
