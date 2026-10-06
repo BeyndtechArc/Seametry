@@ -28,7 +28,9 @@ const STAGES: { stage: FoundingStage; title: string; glyph: RegisterStep["glyph"
 ];
 
 function registerSteps(run: Run | undefined): RegisterStep[] {
-  const reached = run && run.state !== "founded" ? STAGES.findIndex((stage) => stage.stage === run.stage) : run ? STAGES.length : -1;
+  // Assembling the transaction happens just before the wallet is asked, so it reads as part of signing.
+  const shown = (stage: FoundingStage) => (stage === "build" ? "sign" : stage);
+  const reached = run && run.state !== "founded" ? STAGES.findIndex((stage) => stage.stage === shown(run.stage)) : run ? STAGES.length : -1;
   return STAGES.map((stage, index) => {
     const step = { title: stage.title, glyph: stage.glyph };
     if (run?.state === "founded" || index < reached) return { ...step, state: "done" };
@@ -92,11 +94,14 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
       if (!response.ok) throw new Error(body.error);
       const { prepared, identity } = body as { prepared: PreparedFounding; identity: FoundingIdentity };
 
-      stage = "sign";
+      stage = "build";
       setRun({ state: "running", stage });
       const connection = new Connection(DEVNET_RPC_ENDPOINT, "confirmed");
       const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" });
       const transaction = await buildWhenReady(connection, provider, prepared, identity);
+
+      stage = "sign";
+      setRun({ state: "running", stage });
       const signed = await wallet.signTransaction(transaction);
 
       stage = "confirm";

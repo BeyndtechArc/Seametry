@@ -200,11 +200,19 @@ test("every stopped founding says what did not happen, and keeps the raw message
   const slot = new Error('Transaction simulation failed: Error processing Instruction 0: invalid instruction data. Logs: [ "Program log: 507896021 is not a recent slot" ]');
   const prepare = foundingProblem("prepare", slot);
   expect(prepare.plain).toBe("Devnet refused one of the transactions that prepare your stand-ins. Nothing was founded and your wallet was not asked to sign. Try again in a minute.");
-  expect(prepare.technical).toBe(slot.message);
+  expect(prepare.technical).toBe(`Error: ${slot.message}`);
 
-  const declined = foundingProblem("sign", Object.assign(new Error("User rejected the request."), { name: "WalletSignTransactionError" }));
+  const declined = foundingProblem("sign", Object.assign(new Error("User rejected the request."), { name: "WalletSignTransactionError", error: { code: 4001, message: "User rejected the request." } }));
   expect(declined.plain).toContain("You declined to sign, so nothing was founded");
   expect(declined.technical).toBeUndefined();
+
+  // Adapters raise every signing failure under the same name; only the wallet's rejection is a decline.
+  const failed = foundingProblem("sign", Object.assign(new Error("Unexpected error"), { name: "WalletSignTransactionError", error: { code: -32603, message: "Unexpected error" } }));
+  expect(failed.plain).not.toContain("declined");
+  expect(failed.plain).toContain("must be Solana Devnet, not Testnet");
+  expect(failed.technical).toBe('WalletSignTransactionError: Unexpected error\nCause: {"code":-32603,"message":"Unexpected error"}');
+
+  expect(foundingProblem("build", new Error("failed to get info about account FWnN")).plain).toContain("could not be assembled from devnet");
 
   expect(foundingProblem("confirm", new Error("The Hall refused the founding: {\"InstructionError\":[2,{\"Custom\":6003}]}")).plain).toContain("the network fee for the attempt was spent");
   expect(foundingProblem("confirm", new Error("Transaction was not confirmed in 30.00 seconds")).plain).toContain("It may still land");
