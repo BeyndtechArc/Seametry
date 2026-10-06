@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Connection, PublicKey, type VersionedTransaction } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { Digest, Key, QuietAction, StepRegister, TextAction, type RegisterStep } from "@seametry/ui";
@@ -11,11 +11,11 @@ import type { PreparedFounding } from "@/lib/compose/founding-prepare";
 import { metadataPath, metadataUri } from "@/lib/compose/identity";
 import { DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID } from "@/lib/hall/constants";
 import { hallProgram } from "@/lib/hall/program";
-import { foundingProblem, isDecline, type FoundingStage, type StageProblem } from "@/lib/compose/founding-problem";
+import { foundingProblem, type FoundingStage, type StageProblem } from "@/lib/compose/founding-problem";
 import styles from "./compose.module.css";
 
 type Run =
-  | { state: "running"; stage: FoundingStage; note?: string }
+  | { state: "running"; stage: FoundingStage }
   | { state: "stopped"; stage: FoundingStage; problem: StageProblem }
   | { state: "founded"; signature: string; prepared: PreparedFounding };
 
@@ -36,7 +36,7 @@ function registerSteps(run: Run | undefined): RegisterStep[] {
     if (run?.state === "founded" || index < reached) return { ...step, state: "done" };
     if (index > reached || !run) return { ...step, state: "waiting" };
     if (run.state === "stopped") return { ...step, state: "stopped", problem: run.problem };
-    return { ...step, state: "now", note: run.note ?? stage.note };
+    return { ...step, state: "now", note: stage.note };
   });
 }
 
@@ -59,28 +59,6 @@ function usePublished(name: string): boolean | undefined {
 }
 
 const LOOKUP_TABLE_ATTEMPTS = 5;
-const SETTLE_POLL_MS = 1_500;
-const SETTLE_LIMIT_MS = 60_000;
-
-/**
- * On 6 October 2026 a founding that devnet simulated successfully failed in
- * Phantom with only "Unexpected error". The likeliest reading is that Phantom
- * resolves the lookup table through its own RPC and read a table confirmed
- * seconds earlier as missing; Phantom says nothing more specific, so that is
- * inferred. Waiting for finalization costs about fifteen seconds, so the
- * wallet is asked at once, and only a failure that is not a decline waits
- * for the table to finalize and asks once more.
- */
-async function waitForSettledTable(connection: Connection, table: string) {
-  const address = new PublicKey(table);
-  const started = Date.now();
-  while (!(await connection.getAddressLookupTable(address, { commitment: "finalized" })).value) {
-    if (Date.now() - started > SETTLE_LIMIT_MS) {
-      throw new Error(`The founding's lookup table ${table} was not finalized on devnet within ${SETTLE_LIMIT_MS / 1000} seconds.`);
-    }
-    await new Promise((resolve) => setTimeout(resolve, SETTLE_POLL_MS));
-  }
-}
 
 /** A lookup table answers from the slot after it was extended, so the first read can be a moment early. */
 async function buildWhenReady(connection: Connection, provider: AnchorProvider, prepared: PreparedFounding, identity: FoundingIdentity) {
@@ -95,7 +73,7 @@ async function buildWhenReady(connection: Connection, provider: AnchorProvider, 
 }
 
 export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; atomsPerShare: bigint }[]; name: string; symbol: string }) {
-  const { connected } = useWallet();
+  const { connected, sendTransaction } = useWallet();
   const wallet = useAnchorWallet();
   const published = usePublished(name);
   const [run, setRun] = useState<Run>();
@@ -120,27 +98,20 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
       setRun({ state: "running", stage });
       const connection = new Connection(DEVNET_RPC_ENDPOINT, "confirmed");
       const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" });
-      let transaction = await buildWhenReady(connection, provider, prepared, identity);
+      const transaction = await buildWhenReady(connection, provider, prepared, identity);
 
+      // The wallet signs and sends in one step. Phantom showed this founding
+      // and accepted the approval twice on 6 October 2026, then failed signing
+      // it with only "Unexpected error", after devnet had simulated the same
+      // transaction successfully. Phantom documents signAndSendTransaction,
+      // not signTransaction, for versioned transactions, which this is; the
+      // adapter's sendTransaction uses it when the wallet offers it.
       stage = "sign";
       setRun({ state: "running", stage });
-      let signed: VersionedTransaction;
-      try {
-        signed = await wallet.signTransaction(transaction);
-      } catch (first) {
-        if (isDecline(first)) throw first;
-        stage = "build";
-        setRun({ state: "running", stage, note: "Your wallet could not read the founding yet; letting devnet settle it" });
-        await waitForSettledTable(connection, prepared.lookupTable);
-        transaction = await buildWhenReady(connection, provider, prepared, identity);
-        stage = "sign";
-        setRun({ state: "running", stage });
-        signed = await wallet.signTransaction(transaction);
-      }
+      const signature = await sendTransaction(transaction, connection);
 
       stage = "confirm";
       setRun({ state: "running", stage });
-      const signature = await connection.sendRawTransaction(signed.serialize());
       const confirmation = await connection.confirmTransaction(signature, "confirmed");
       if (confirmation.value.err) throw new Error(`The Hall refused the founding: ${JSON.stringify(confirmation.value.err)} (transaction ${signature})`);
       setRun({ state: "founded", signature, prepared });
