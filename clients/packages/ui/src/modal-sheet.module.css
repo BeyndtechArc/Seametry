@@ -110,8 +110,107 @@
   }
 }
 
+/* components.md, Process dialog: centred, because it is watched, not worked in. */
+.process {
+  width: min(calc(100% - var(--sm-space-7) * 2), calc(var(--sm-space-13) * 3));
+  max-height: min(88dvh, calc(var(--sm-space-13) * 5));
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-top: 0.5px solid var(--sm-line-highlight);
+  border-radius: var(--sm-radius-sheet);
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-raised);
+  overflow: auto;
+  overscroll-behavior: contain;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    transform var(--sm-motion-duration-base) var(--sm-motion-easing-standard),
+    opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+}
+
+.process::backdrop {
+  background: color-mix(in srgb, var(--sm-surface-ground) 76%, transparent);
+}
+
+@starting-style {
+  .process[open] {
+    opacity: 0;
+    transform: translateY(var(--sm-space-5));
+  }
+}
+
+.processHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-7) var(--sm-space-7) var(--sm-space-6);
+}
+
+.processHeader > div {
+  display: grid;
+  gap: var(--sm-space-2);
+}
+
+.processHeader span {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.processHeader h2 {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.iconClose {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--sm-size-target);
+  height: var(--sm-size-target);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--sm-text-secondary);
+  background: var(--sm-surface-sheet);
+  cursor: pointer;
+}
+
+.iconClose svg {
+  width: var(--sm-space-6);
+  height: var(--sm-space-6);
+}
+
+.iconClose:hover {
+  color: var(--sm-text-primary);
+}
+
+.iconClose:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
+}
+
+.processBody {
+  min-width: 0;
+  padding: 0 var(--sm-space-7) var(--sm-space-7);
+}
+
+.processFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-6) var(--sm-space-7) var(--sm-space-7);
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .dialog {
+  .dialog,
+  .process {
     transition: none;
   }
 }

@@ -10,7 +10,7 @@ Every component states:
 - **Data**: the API fields it renders. Never invented values.
 - **Rules**: what it must never do.
 
-Universal states, required unless stated otherwise: default, loading, empty, stale, unavailable, error. Loading is a rule-line skeleton plus a sentence naming what is loading. Never a spinner.
+Universal states, required unless stated otherwise: default, loading, empty, stale, unavailable, error. Loading is a rule-line skeleton plus a sentence naming what is loading. Never a spinner, except a running step's mark in a Step register.
 
 ## Contents
 1. Atoms
@@ -186,10 +186,17 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 
 ### Step register
 **Answers:** what is this multi-step request doing right now, what has already happened, and if it stopped, why and what was left untouched?
-**Anatomy:** an ordered list of steps, each with an index, a verb-plus-object title, one sentence on what the step does, and a state word: Done, Now, Waiting or Stopped. The current step carries a rule-line skeleton under its sentence. A stopped step carries a plain sentence first and the raw technical message behind a "Technical detail" disclosure. Announced through a polite live region.
-**States:** waiting (every step Waiting); in progress (one Now, earlier ones Done); stopped (one Stopped, later ones Waiting); complete (every step Done).
-**Data:** caller-owned steps and their states. The component owns no product data and never rewrites a technical message; the caller supplies both the plain sentence and the raw one.
-**Rules:** no spinner and no percentage; time is not estimated. A stopped step always says what did not happen (nothing signed, nothing founded) when that is the case. The raw message is never the only explanation. The skeleton respects reduced motion.
+**Anatomy:** a vertical ordered list. Each step has a round status mark joined to the next by a trailing connector line, a short verb-plus-object title, and at most one short line, shown only while the step is running or stopped. Marks: waiting shows the step's own glyph on the quiet surface; running shows a turning ring in `accent.provenance`; done shows a check in ink, and the connector below it turns ink; stopped shows an X on `surface.inverse`, the same inversion a BLOCK stamp uses. A stopped step's line is a plain sentence, with the raw technical message behind a "Technical detail" disclosure. The state is also given as visually hidden text. Announced through a polite live region.
+**States:** waiting (every step waiting); in progress (one running, earlier ones done); stopped (one stopped, later ones waiting); complete (every step done).
+**Data:** caller-owned steps, glyphs and states. The component owns no product data and never rewrites a technical message; the caller supplies both the plain sentence and the raw one.
+**Rules:** a step is understood from its title and mark alone; anything longer belongs to the page, not the step. No percentage, and time is not estimated. A stopped step always says what did not happen (nothing signed, nothing founded) when that is the case. The raw message is never the only explanation. The turning ring is the only spinner the system allows, and under reduced motion it holds still.
+
+### Process dialog
+**Answers:** what is the request I just started doing, without leaving the page that started it?
+**Anatomy:** native dialog centred in the viewport; quiet register label; title; a Step register; an icon-only round close control labelled for assistive technology, a named full-round case; optional footer for the one follow-up action.
+**Identity:** a `radius.sheet` plate with the single top highlight rule and tonal elevation; no shadow, blur or glow.
+**States:** closed; open. The request's own states live in its Step register.
+**Rules:** for watching a request (founding, signing, confirming), never for a task the user edits; that is the Modal sheet. Closing does not cancel the request, and the opening surface offers a way back. Native focus and Escape contract; focus returns to the opening control.
 
 ### Changelog entry
 **Anatomy:** relative date, title, one sentence, link. Dates are real.

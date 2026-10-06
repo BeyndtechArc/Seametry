@@ -544,26 +544,32 @@ export type StepState = "waiting" | "now" | "done" | "stopped";
 
 export type RegisterStep = {
   title: string;
-  detail: string;
+  /** The step's own glyph, shown while it waits. */
+  glyph: IconName;
   state: StepState;
-  /** What is happening, named while the step is current. */
-  progress?: string;
+  /** One short line, shown only while the step runs. */
+  note?: string;
   /** Required when stopped: the plain account, then the raw message behind a disclosure. */
   problem?: { plain: string; technical?: string };
 };
 
-const stepWords: Record<StepState, string> = { waiting: "Waiting", now: "Now", done: "Done", stopped: "Stopped" };
+const stepWords: Record<StepState, string> = { waiting: "Waiting", now: "Running", done: "Done", stopped: "Stopped" };
+const stepMarks: Record<Exclude<StepState, "waiting">, IconName> = { now: "running", done: "check", stopped: "close" };
 
 export function StepRegister({ steps, label }: { steps: RegisterStep[]; label: string }) {
   return (
     <ol className={styles.stepRegister} aria-label={label} aria-live="polite" data-testid="step-register">
-      {steps.map((step, index) => (
+      {steps.map((step) => (
         <li key={step.title} data-state={step.state}>
-          <span className={styles.stepIndex}>{String(index + 1).padStart(2, "0")}</span>
+          <span className={styles.stepMark} aria-hidden="true">
+            <Icon name={step.state === "waiting" ? step.glyph : stepMarks[step.state]} />
+          </span>
           <div className={styles.stepBody}>
-            <b>{step.title}</b>
-            <p>{step.detail}</p>
-            {step.state === "now" && step.progress ? <Rule label={step.progress} /> : null}
+            <b>
+              {step.title}
+              <span className={styles.srOnly}>, {stepWords[step.state]}</span>
+            </b>
+            {step.state === "now" && step.note ? <p>{step.note}</p> : null}
             {step.state === "stopped" && step.problem ? (
               <div className={styles.stepProblem} role="alert">
                 <p>{step.problem.plain}</p>
@@ -576,7 +582,6 @@ export function StepRegister({ steps, label }: { steps: RegisterStep[]; label: s
               </div>
             ) : null}
           </div>
-          <span className={styles.stepState}>{stepWords[step.state]}</span>
         </li>
       ))}
     </ol>

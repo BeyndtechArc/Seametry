@@ -186,7 +186,14 @@ test("pressing Found opens the founding's steps, and a stop says what did not ha
   await expect(steps.nth(1)).toContainText("Waiting");
   await expect(steps.nth(2)).toContainText("Waiting");
   await expect(steps.nth(0).getByRole("alert")).toContainText("HALL_DEMO_FUNDER_SECRET_KEY is not set");
-  await expect(sheet.getByRole("button", { name: "Try the founding again" })).toBeVisible();
+  await expect(sheet.getByRole("button", { name: "Try again" })).toBeVisible();
+  // The process is watched, not worked in, so it is centred rather than an end sheet.
+  const box = (await sheet.boundingBox())!;
+  const viewport = page.viewportSize()!;
+  expect(Math.abs(box.x + box.width / 2 - viewport.width / 2)).toBeLessThan(2);
+  await sheet.getByRole("button", { name: "Close founding" }).click();
+  await expect(sheet).toBeHidden();
+  await expect(main.getByRole("button", { name: "Read why the founding stopped" })).toBeVisible();
 });
 
 test("every stopped founding says what did not happen, and keeps the raw message beside it", () => {

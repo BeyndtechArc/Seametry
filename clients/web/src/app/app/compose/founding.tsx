@@ -5,7 +5,7 @@ import { Connection } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { Digest, Key, QuietAction, StepRegister, TextAction, type RegisterStep } from "@seametry/ui";
-import { ModalSheet } from "@seametry/ui/modal-sheet";
+import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { buildFoundingTransaction, type FoundingIdentity } from "@/lib/compose/founding-transaction";
 import type { PreparedFounding } from "@/lib/compose/founding-prepare";
 import { metadataPath, metadataUri } from "@/lib/compose/identity";
@@ -19,34 +19,22 @@ type Run =
   | { state: "stopped"; stage: FoundingStage; problem: StageProblem }
   | { state: "founded"; signature: string; prepared: PreparedFounding };
 
-const STAGES: { stage: FoundingStage; title: string; detail: string; progress: string }[] = [
-  {
-    stage: "prepare",
-    title: "Prepare the stand-ins",
-    detail: "Seametry's devnet funder creates a stand-in for each stock, puts the genesis deposits in your wallet and writes a lookup table. Nothing is asked of your wallet yet.",
-    progress: "Sending the preparation transactions to devnet",
-  },
-  {
-    stage: "sign",
-    title: "Sign as the sponsor",
-    detail: "Your wallet shows the founding transaction. Signing it is the founding; declining stops here.",
-    progress: "Waiting for your wallet",
-  },
-  {
-    stage: "confirm",
-    title: "Confirm on devnet",
-    detail: "The Hall checks the deposits, fixes the Formula, name, symbol and URI, and locks one genesis share.",
-    progress: "Waiting for devnet to confirm",
-  },
+// A step is read from its title and mark; the one line beneath appears only
+// while it runs, so nothing has to be read before the process makes sense.
+const STAGES: { stage: FoundingStage; title: string; glyph: RegisterStep["glyph"]; note: string }[] = [
+  { stage: "prepare", title: "Prepare the stand-ins", glyph: "hall", note: "Creating devnet stand-ins and funding your wallet" },
+  { stage: "sign", title: "Sign in your wallet", glyph: "wallet", note: "Approve the founding in your wallet" },
+  { stage: "confirm", title: "Confirm on devnet", glyph: "confirm", note: "Waiting for devnet" },
 ];
 
 function registerSteps(run: Run | undefined): RegisterStep[] {
   const reached = run && run.state !== "founded" ? STAGES.findIndex((stage) => stage.stage === run.stage) : run ? STAGES.length : -1;
   return STAGES.map((stage, index) => {
-    if (run?.state === "founded" || index < reached) return { title: stage.title, detail: stage.detail, state: "done" };
-    if (index > reached || !run) return { title: stage.title, detail: stage.detail, state: "waiting" };
-    if (run.state === "stopped") return { title: stage.title, detail: stage.detail, state: "stopped", problem: run.problem };
-    return { title: stage.title, detail: stage.detail, state: "now", progress: stage.progress };
+    const step = { title: stage.title, glyph: stage.glyph };
+    if (run?.state === "founded" || index < reached) return { ...step, state: "done" };
+    if (index > reached || !run) return { ...step, state: "waiting" };
+    if (run.state === "stopped") return { ...step, state: "stopped", problem: run.problem };
+    return { ...step, state: "now", note: stage.note };
   });
 }
 
@@ -130,28 +118,22 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
       : undefined;
 
   const sheet = (
-    <ModalSheet
+    <ProcessDialog
       open={open}
       onClose={() => setOpen(false)}
       title={run?.state === "founded" ? `${name} is founded` : `Founding ${name}`}
-      register="Found on devnet"
+      register="Devnet"
       closeLabel="Close founding"
       footer={
         run?.state === "stopped" ? (
-          <QuietAction type="button" onClick={() => void found()}>Try the founding again</QuietAction>
+          <QuietAction type="button" onClick={() => void found()}>Try again</QuietAction>
         ) : run?.state === "founded" ? (
-          <>
-            <TextAction href={`/app/alloys/${run.prepared.alloy}`}>Open the Alloy record</TextAction>
-            <TextAction href={`https://explorer.solana.com/tx/${run.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer">Open the founding on Solana</TextAction>
-          </>
-        ) : (
-          <p className={styles.note}>Closing this sheet does not stop the founding.</p>
-        )
+          <TextAction href={`/app/alloys/${run.prepared.alloy}`}>Open the Alloy</TextAction>
+        ) : undefined
       }
     >
       <StepRegister label={`Founding ${name}`} steps={registerSteps(run)} />
-      {run?.state === "founded" ? <Digest value={run.prepared.alloy} /> : null}
-    </ModalSheet>
+    </ProcessDialog>
   );
 
   if (run?.state === "founded") {

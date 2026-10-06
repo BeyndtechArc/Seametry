@@ -48,7 +48,7 @@ This is not internal reasoning to skip under a short prompt. `scripts/check-buil
 
 - No shadows, gradients, glows, or 3D decoration. Elevation is tone plus the single top hairline. Blur is reserved for the scrolled House rail's Lens state and the named Lens surfaces in foundations.md.
 - No raw colours or font families. No emoji. No em or en dashes. No arrows appended to actions. No all-caps labels.
-- No spinners. Loading is a rule-line skeleton with a sentence naming what is loading.
+- No spinners. Loading is a rule-line skeleton with a sentence naming what is loading. The one exception is the status mark of a step that is running in a Step register (Storm, 6 October 2026): a request the user started and is waiting on shows that it is alive.
 - GSAP on web, Reanimated and Skia on mobile. No other animation library.
 - Gains and losses carry no colour. Decisions: ALLOW in primary text, WARN in provenance blue, BLOCK as an inverted stamp. No red anywhere.
 - Never an estimate, never a price opinion, never true, correct, fair, safe, guaranteed or pure about a value.

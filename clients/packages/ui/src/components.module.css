@@ -953,22 +953,83 @@
 }
 
 .stepRegister li {
+  position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: var(--sm-space-8) minmax(0, 1fr);
+  align-items: start;
   gap: var(--sm-space-5);
-  padding: var(--sm-space-6) 0;
-  border-top: 0.5px solid var(--sm-line-rule);
+  padding-bottom: var(--sm-space-7);
 }
 
-.stepIndex,
-.stepState {
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
+.stepRegister li:last-child {
+  padding-bottom: 0;
+}
+
+/* The trailing connector: from below this step's mark to the next mark. */
+.stepRegister li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--sm-space-8) + var(--sm-space-2));
+  bottom: var(--sm-space-2);
+  left: calc(var(--sm-space-8) / 2);
+  border-left: 1px solid var(--sm-line-rule);
+}
+
+.stepRegister li[data-state="done"]:not(:last-child)::after {
+  border-left-color: var(--sm-text-primary);
+}
+
+.stepMark {
+  display: grid;
+  place-items: center;
+  width: var(--sm-space-8);
+  height: var(--sm-space-8);
+  border: 1px solid var(--sm-line-strong);
+  border-radius: 50%;
+  color: var(--sm-text-tertiary);
+  background: var(--sm-surface-sheet);
+}
+
+.stepMark svg {
+  width: 55%;
+  height: 55%;
+}
+
+.stepRegister li[data-state="now"] .stepMark {
+  border-color: var(--sm-accent-provenance);
+  color: var(--sm-accent-provenance);
+}
+
+.stepRegister li[data-state="now"] .stepMark svg {
+  animation: step-turn 0.9s linear infinite;
+}
+
+.stepRegister li[data-state="done"] .stepMark {
+  border-color: var(--sm-text-primary);
+  color: var(--sm-text-primary);
+}
+
+.stepRegister li[data-state="stopped"] .stepMark {
+  border-color: var(--sm-surface-inverse);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
+}
+
+@keyframes step-turn {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepRegister li[data-state="now"] .stepMark svg {
+    animation: none;
+  }
 }
 
 .stepBody {
   display: grid;
-  gap: var(--sm-space-3);
+  gap: var(--sm-space-2);
+  min-height: var(--sm-space-8);
+  align-content: center;
   min-width: 0;
 }
 
@@ -977,32 +1038,27 @@
   font-weight: var(--sm-font-weight-medium);
 }
 
-.stepBody p {
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  line-height: 1.5;
-}
-
-.stepRegister li[data-state="waiting"] .stepBody b,
-.stepRegister li[data-state="waiting"] .stepState {
+.stepRegister li[data-state="waiting"] .stepBody b {
   color: var(--sm-text-tertiary);
 }
 
-.stepRegister li[data-state="now"] .stepState,
-.stepRegister li[data-state="stopped"] .stepState {
-  color: var(--sm-text-primary);
-  font-weight: var(--sm-font-weight-medium);
+.stepBody > p {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
 }
 
 .stepProblem {
   display: grid;
   gap: var(--sm-space-3);
-  padding: var(--sm-space-5);
+  margin-top: var(--sm-space-2);
+  padding: var(--sm-space-4) var(--sm-space-5);
   background: var(--sm-surface-tray);
 }
 
 .stepProblem p {
   color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.5;
 }
 
 .stepProblem summary {
