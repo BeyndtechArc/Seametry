@@ -224,14 +224,20 @@
   background: var(--sm-surface-tray);
 }
 
+/* Round marks overlapping by half read as one stack rather than a row. */
 .lotStack > * + * {
-  margin-left: calc(var(--sm-space-2) * -1);
+  margin-left: calc(var(--sm-space-4) * -1);
 }
 
-/* A tray-coloured ring separates overlapping marks; an outline, not a shadow. */
+/* A tray-coloured ring separates overlapping marks; an outline, not a
+   shadow. Greyscale alone left white logos glaring, so brightness and
+   contrast come down until they sit in the tray's tone. */
 .lotStack > * {
+  width: var(--sm-space-8);
+  height: var(--sm-space-8);
+  border-radius: 50%;
   outline: 2px solid var(--sm-surface-tray);
-  filter: grayscale(1);
+  filter: grayscale(1) brightness(0.78) contrast(0.85);
 }
 
 .alloyRowOpen {
