@@ -585,6 +585,14 @@ export interface components {
             legs: components["schemas"]["AlloyLeg"][];
             /** @enum {string} */
             cluster: "devnet" | "mainnet";
+            /** @description The share mint's own name, symbol and URI. The Hall gives up their update authority at founding, so they cannot change. Absent when the share mint carries no TokenMetadata, as Alloys founded before the Hall wrote it do not. */
+            metadata?: components["schemas"]["MintMetadata"];
+        };
+        /** @description What a Token-2022 mint's TokenMetadata extension says about itself, decoded from the mint account's bytes (server/internal/registry). The URI names a document off chain, whose content its host can change; only these three fields are on chain. */
+        MintMetadata: {
+            name: string;
+            symbol: string;
+            uri: string;
         };
         /** @description One constituent's position (chain/programs/hall/src/state.rs::LegRecord). held_back is not a chain field: the program stores none, so the gateway derives it by checking whether this leg's own Hall-owned token account is frozen (Registry). */
         AlloyLeg: {
@@ -603,6 +611,8 @@ export interface components {
             held_back: boolean;
             /** @description Present only when held_back is true. Never a smaller amount in its place (docs/prd/TERMINAL.md section 5). */
             held_back_reason?: string;
+            /** @description The constituent mint's own name, symbol and URI, as its issuer wrote them. Absent when the mint carries no TokenMetadata. */
+            metadata?: components["schemas"]["MintMetadata"];
         };
         /** @description Every field is absent until its source exists; meta.missing names why (docs/prd/API.md section 14). Never a placeholder figure. */
         Nav: {

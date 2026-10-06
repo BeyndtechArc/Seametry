@@ -72,6 +72,7 @@ func testHall(t *testing.T) (gateway.Server, string) {
 	alloy := readHallFixture(t, "alloy.json")
 	leg0 := readHallFixture(t, "leg-0-hall-account.json")
 	leg1 := readHallFixture(t, "leg-1-hall-account.json")
+	shareMint := readHallFixture(t, "share-mint.json")
 
 	// Both mock stocks in the captured founding scenario use six decimals.
 	// A base SPL mint is sufficient for this boundary: Registry owns the
@@ -82,8 +83,9 @@ func testHall(t *testing.T) (gateway.Server, string) {
 	assets := map[string]*solana.Account{
 		"94L9f6NLadaF9YcDffBw4Ub7tsJb9BJBmFqCUm3zovwH": {Address: "94L9f6NLadaF9YcDffBw4Ub7tsJb9BJBmFqCUm3zovwH", Owner: registry.Token2022ProgramID, Data: mintData},
 		"ADcBszQLxMZ4jfcvuTtYpvhDXSeLNHi4MhHFHQrerKyw": {Address: "ADcBszQLxMZ4jfcvuTtYpvhDXSeLNHi4MhHFHQrerKyw", Owner: registry.Token2022ProgramID, Data: mintData},
-		leg0.Address: leg0,
-		leg1.Address: leg1,
+		leg0.Address:      leg0,
+		leg1.Address:      leg1,
+		shareMint.Address: shareMint,
 	}
 	now := time.Date(2026, 9, 29, 19, 0, 0, 0, time.UTC)
 	server := gateway.NewServer(nil, nil).WithHall(fakeHall{alloy: alloy, assets: assets}, hallProgramID, "devnet")
@@ -141,6 +143,14 @@ func TestHallEndpointsReadTheCapturedDevnetAlloy(t *testing.T) {
 	}
 	if body.Data.Legs[0].HeldBack || body.Data.Legs[1].HeldBack {
 		t.Error("the founding fixture has no frozen Hall account")
+	}
+	// The share mint was captured from devnet with the name and symbol the
+	// Hall wrote at founding; the leg mints here are bare SPL mints with none.
+	if body.Data.Metadata == nil || body.Data.Metadata.Name != "Hall Demo Alloy" || body.Data.Metadata.Symbol != "DEMO" {
+		t.Errorf("share metadata = %#v, want Hall Demo Alloy (DEMO)", body.Data.Metadata)
+	}
+	if body.Data.Legs[0].Metadata != nil {
+		t.Errorf("leg 0 metadata = %#v, want none from a mint that carries none", body.Data.Legs[0].Metadata)
 	}
 }
 
@@ -256,8 +266,10 @@ func TestTheRegisterReadsEveryAlloysAccountsInOneBatch(t *testing.T) {
 	if len(batches) != 1 {
 		t.Fatalf("register made %d account reads for 3 Alloys, want 1 batch", len(batches))
 	}
-	if len(batches[0]) != 4 {
-		t.Errorf("batch asked for %d addresses, want the 4 distinct mints and Hall accounts", len(batches[0]))
+	// The three listed Alloys are one account, so the batch holds its share
+	// mint and each leg's mint and Hall account once.
+	if want := 1 + 2*len(body.Data[0].Legs); len(batches[0]) != want {
+		t.Errorf("batch asked for %d addresses, want the %d distinct share mint, leg mints and Hall accounts", len(batches[0]), want)
 	}
 }
 

@@ -358,8 +358,11 @@ type Alloy struct {
 
 	// LockedGenesis The founding sponsor's shares in share atoms (6 decimals), unrecoverable by design (docs/BRAND_AND_WORLD.md section 5).
 	LockedGenesis *string `json:"locked_genesis,omitempty"`
-	ShareMint     string  `json:"share_mint"`
-	Sponsor       string  `json:"sponsor"`
+
+	// Metadata The share mint's own name, symbol and URI. The Hall gives up their update authority at founding, so they cannot change. Absent when the share mint carries no TokenMetadata, as Alloys founded before the Hall wrote it do not.
+	Metadata  *MintMetadata `json:"metadata,omitempty"`
+	ShareMint string        `json:"share_mint"`
+	Sponsor   string        `json:"sponsor"`
 
 	// SponsorMark Hex. Empty until the sponsor registers one (server/cmd/explorer's Hallmark sponsor mark field carries the same emptiness).
 	SponsorMark *string `json:"sponsor_mark,omitempty"`
@@ -381,7 +384,10 @@ type AlloyLeg struct {
 
 	// Ledger What backs outstanding shares.
 	Ledger Amount `json:"ledger"`
-	Mint   string `json:"mint"`
+
+	// Metadata The constituent mint's own name, symbol and URI, as its issuer wrote them. Absent when the mint carries no TokenMetadata.
+	Metadata *MintMetadata `json:"metadata,omitempty"`
+	Mint     string        `json:"mint"`
 
 	// Pending Credited but not yet vested.
 	Pending Amount `json:"pending"`
@@ -643,6 +649,13 @@ type MetaCluster string
 
 // MetaCompleteness defines model for Meta.Completeness.
 type MetaCompleteness string
+
+// MintMetadata What a Token-2022 mint's TokenMetadata extension says about itself, decoded from the mint account's bytes (server/internal/registry). The URI names a document off chain, whose content its host can change; only these three fields are on chain.
+type MintMetadata struct {
+	Name   string `json:"name"`
+	Symbol string `json:"symbol"`
+	Uri    string `json:"uri"`
+}
 
 // MissingPart defines model for MissingPart.
 type MissingPart struct {

@@ -190,12 +190,14 @@ func (s Server) decodeAlloys(ctx context.Context, accounts []*solana.Account) ([
 			return nil, err
 		}
 		chains[i] = chain
+		related := []string{chain.ShareMint.String()}
 		for _, leg := range chain.Legs {
-			for _, related := range []string{leg.Mint.String(), leg.HallAccount.String()} {
-				if !seen[related] {
-					seen[related] = true
-					addresses = append(addresses, related)
-				}
+			related = append(related, leg.Mint.String(), leg.HallAccount.String())
+		}
+		for _, address := range related {
+			if !seen[address] {
+				seen[address] = true
+				addresses = append(addresses, address)
 			}
 		}
 	}
@@ -236,6 +238,17 @@ func (s Server) alloyView(account *solana.Account, chain *basket.ChainAlloy, rel
 	}
 	if mark := hex.EncodeToString(chain.SponsorMark[:]); mark != "0000000000000000000000000000000000000000000000000000000000000000" {
 		wire.SponsorMark = &mark
+	}
+	shareAccount := related[chain.ShareMint.String()]
+	if shareAccount == nil {
+		return alloyView{}, fmt.Errorf("share mint %s of Alloy %s is absent", chain.ShareMint, account.Address)
+	}
+	shareMint, err := registry.DecodeMint(shareAccount.Data)
+	if err != nil {
+		return alloyView{}, fmt.Errorf("decoding share mint %s of Alloy %s: %w", chain.ShareMint, account.Address, err)
+	}
+	if wire.Metadata, err = mintMetadata(shareMint); err != nil {
+		return alloyView{}, fmt.Errorf("share mint %s of Alloy %s: %w", chain.ShareMint, account.Address, err)
 	}
 	core := basket.Alloy{Supply: new(big.Int).SetUint64(chain.Supply), Constituents: make([]basket.Constituent, len(chain.Legs))}
 	for i, leg := range chain.Legs {
@@ -285,6 +298,9 @@ func (s Server) alloyView(account *solana.Account, chain *basket.ChainAlloy, rel
 			reason := "The issuer currently prevents this Hall account from delivering."
 			wireLeg.HeldBackReason = &reason
 		}
+		if wireLeg.Metadata, err = mintMetadata(mint); err != nil {
+			return alloyView{}, fmt.Errorf("mint %s used by Alloy %s: %w", leg.Mint, account.Address, err)
+		}
 		if !leg.VestStart.IsZero() {
 			wireLeg.VestStart = &leg.VestStart
 		}
@@ -298,6 +314,17 @@ func (s Server) alloyView(account *solana.Account, chain *basket.ChainAlloy, rel
 		}
 	}
 	return alloyView{chain: chain, api: wire, core: core}, nil
+}
+
+// mintMetadata reports the mint's own TokenMetadata, or nil when it carries
+// none. A mint whose metadata is present but malformed is an error, not an
+// absence: dropping it would make the two indistinguishable.
+func mintMetadata(mint *registry.Mint) (*api.MintMetadata, error) {
+	metadata, ok, err := mint.TokenMetadata()
+	if err != nil || !ok {
+		return nil, err
+	}
+	return &api.MintMetadata{Name: metadata.Name, Symbol: metadata.Symbol, Uri: metadata.URI}, nil
 }
 
 func (s Server) hallConfigured() *api.Problem {

@@ -1110,6 +1110,25 @@ components:
         cluster:
           type: string
           enum: [devnet, mainnet]
+        metadata:
+          $ref: '#/components/schemas/MintMetadata'
+          description: The share mint's own name, symbol and URI. The Hall gives up their update authority at founding, so they cannot change. Absent when the share mint carries no TokenMetadata, as Alloys founded before the Hall wrote it do not.
+
+    MintMetadata:
+      type: object
+      description: >
+        What a Token-2022 mint's TokenMetadata extension says about itself,
+        decoded from the mint account's bytes (server/internal/registry).
+        The URI names a document off chain, whose content its host can
+        change; only these three fields are on chain.
+      required: [name, symbol, uri]
+      properties:
+        name:
+          type: string
+        symbol:
+          type: string
+        uri:
+          type: string
 
     AlloyLeg:
       type: object
@@ -1143,6 +1162,9 @@ components:
         held_back_reason:
           type: string
           description: Present only when held_back is true. Never a smaller amount in its place (docs/prd/TERMINAL.md section 5).
+        metadata:
+          $ref: '#/components/schemas/MintMetadata'
+          description: The constituent mint's own name, symbol and URI, as its issuer wrote them. Absent when the mint carries no TokenMetadata.
 
     Nav:
       type: object
