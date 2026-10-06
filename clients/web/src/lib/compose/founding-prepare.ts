@@ -58,6 +58,18 @@ export const GENESIS_SHARES = ONE_SHARE_ATOMS;
  */
 export const FOUNDING_ALLOWANCE_LAMPORTS = 50_000_000n;
 
+/**
+ * What the funder spends per stand-in, its token account and their share of
+ * the lookup table, with fees: 5,501,320 lamports per leg on a six-leg devnet
+ * founding on 6 October 2026, beyond the top-up. Held at 0.01 SOL so a
+ * founding is refused before it runs out partway rather than after.
+ */
+const FUNDER_PER_LEG_LAMPORTS = 10_000_000n;
+
+function formatSol(lamports: bigint) {
+  return `${lamports / 1_000_000_000n}.${(lamports % 1_000_000_000n).toString().padStart(9, "0")}`;
+}
+
 export type FoundingLeg = { symbol: string; realMint: string; decimals: number; atomsPerShare: bigint };
 
 export type PreparedFounding = {
@@ -133,7 +145,7 @@ const LOOKUP_TABLE_PAUSE_MS = 1_500;
  * the past; it is not observed directly, since samples from outside Vercel
  * showed no stale node.
  *
- * So no node is asked what time it is. The slot is the one our own funding
+ * So no node is asked what time it is. The slot is the one our own stand-in
  * transaction landed in seconds earlier: a real block, recent by
  * construction, and one a stale node cannot report at all, since it has not
  * seen that transaction. A node that has not seen it yet answers null, which
@@ -188,50 +200,36 @@ export async function prepareFounding(
   const lockedShares = lockedSharesPda(hall, alloy);
   const signatures: Record<string, string> = {};
 
-  const prepared: PreparedFounding["legs"] = [];
-  for (const leg of legs) {
-    const { mint, signature } = await createStandIn(connection, funder, issuer, leg);
-    signatures[`standIn${leg.symbol}`] = signature;
-    prepared.push({
+  // An empty funder fails halfway and leaves stand-ins behind, so it is
+  // refused before anything is spent, and said to be ours to fix.
+  const funds = BigInt(await connection.getBalance(funder.publicKey, "confirmed"));
+  const needed = FOUNDING_ALLOWANCE_LAMPORTS + BigInt(legs.length + 1) * FUNDER_PER_LEG_LAMPORTS;
+  if (funds < needed) {
+    throw new Refusal(
+      503,
+      `Seametry's devnet funder holds ${formatSol(funds)} SOL, short of the ${formatSol(needed)} SOL a founding of ${legs.length} stocks prepares with. Nothing was spent and nothing is needed from your wallet; Seametry has to refill the funder.`,
+    );
+  }
+
+  // Two rounds instead of one transaction after another: every stand-in at
+  // once, then the deposits, the top-up and the lookup table at once. The
+  // table only names addresses, so it needs none of the round-two accounts
+  // to exist; it takes its slot from a stand-in that has just landed. The
+  // cost of sending at once: public devnet answered one 429 during the
+  // six-leg proof on 6 October 2026, which web3.js retried on its own.
+  const standIns = await Promise.all(legs.map((leg) => createStandIn(connection, funder, issuer, leg)));
+  const prepared: PreparedFounding["legs"] = legs.map((leg, index) => {
+    const mint = standIns[index].mint;
+    signatures[`standIn${leg.symbol}`] = standIns[index].signature;
+    return {
       symbol: leg.symbol,
       realMint: leg.realMint,
       standIn: mint.toBase58(),
       sponsorAccount: ownerTokenAccount(sponsor, mint).toBase58(),
       hallAccount: hallTokenAccount(alloy, mint).toBase58(),
       deposit: ((leg.atomsPerShare * GENESIS_SHARES) / ONE_SHARE_ATOMS).toString(),
-    });
-  }
-
-  // The last transaction to land names the lookup table's slot.
-  let landed = "";
-
-  // Three legs per transaction keeps each well inside the legacy size limit.
-  for (let start = 0; start < prepared.length; start += 3) {
-    const batch = prepared.slice(start, start + 3);
-    landed = signatures[`fundSponsor${start / 3 + 1}`] = await send(
-      connection,
-      batch.flatMap((leg) => {
-        const mint = new PublicKey(leg.standIn);
-        const account = new PublicKey(leg.sponsorAccount);
-        return [
-          createAssociatedTokenAccountIdempotentInstruction(funder.publicKey, account, sponsor, mint, TOKEN_2022_PROGRAM_ID),
-          createMintToInstruction(mint, account, issuer.publicKey, BigInt(leg.deposit), [], TOKEN_2022_PROGRAM_ID),
-        ];
-      }),
-      funder,
-      [issuer],
-    );
-  }
-
-  const balance = BigInt(await connection.getBalance(sponsor, "confirmed"));
-  if (balance < FOUNDING_ALLOWANCE_LAMPORTS) {
-    landed = signatures.topUp = await send(
-      connection,
-      [SystemProgram.transfer({ fromPubkey: funder.publicKey, toPubkey: sponsor, lamports: FOUNDING_ALLOWANCE_LAMPORTS - balance })],
-      funder,
-      [],
-    );
-  }
+    };
+  });
 
   const addresses = [
     alloy,
@@ -242,8 +240,34 @@ export async function prepareFounding(
     SystemProgram.programId,
     ...prepared.flatMap((leg) => [new PublicKey(leg.standIn), new PublicKey(leg.sponsorAccount), new PublicKey(leg.hallAccount)]),
   ];
-  const { lookupTable, signature: lookupSignature } = await createLookupTable(connection, funder, addresses, landed);
-  signatures.lookupTable = lookupSignature;
+  const balance = BigInt(await connection.getBalance(sponsor, "confirmed"));
+  // Three legs per transaction keeps each well inside the legacy size limit.
+  const batches = Array.from({ length: Math.ceil(prepared.length / 3) }, (_, index) => prepared.slice(index * 3, index * 3 + 3));
+  const [table, topUp, ...funded] = await Promise.all([
+    createLookupTable(connection, funder, addresses, standIns[0].signature),
+    balance < FOUNDING_ALLOWANCE_LAMPORTS
+      ? send(connection, [SystemProgram.transfer({ fromPubkey: funder.publicKey, toPubkey: sponsor, lamports: FOUNDING_ALLOWANCE_LAMPORTS - balance })], funder, [])
+      : Promise.resolve(undefined),
+    ...batches.map((batch) =>
+      send(
+        connection,
+        batch.flatMap((leg) => {
+          const mint = new PublicKey(leg.standIn);
+          const account = new PublicKey(leg.sponsorAccount);
+          return [
+            createAssociatedTokenAccountIdempotentInstruction(funder.publicKey, account, sponsor, mint, TOKEN_2022_PROGRAM_ID),
+            createMintToInstruction(mint, account, issuer.publicKey, BigInt(leg.deposit), [], TOKEN_2022_PROGRAM_ID),
+          ];
+        }),
+        funder,
+        [issuer],
+      ),
+    ),
+  ]);
+  const { lookupTable } = table;
+  signatures.lookupTable = table.signature;
+  if (topUp) signatures.topUp = topUp;
+  funded.forEach((signature, index) => (signatures[`fundSponsor${index + 1}`] = signature));
 
   return {
     hall: hall.toBase58(),

@@ -15,7 +15,7 @@ const SIMULATION = /simulation failed|invalid instruction data|custom program er
 // decline: EIP-1193's 4001, which Phantom and Solflare use, or its wording.
 // Reading the name as a decline told a sponsor on 6 October 2026 that they
 // had declined when they had not.
-function declined(error: unknown): boolean {
+export function isDecline(error: unknown): boolean {
   const inner = (error as { error?: { code?: unknown; message?: unknown } } | undefined)?.error;
   const code = (error as { code?: unknown } | undefined)?.code ?? inner?.code;
   if (code === 4001) return true;
@@ -57,7 +57,7 @@ export function foundingProblem(stage: FoundingStage, error: unknown): StageProb
   }
 
   if (stage === "sign") {
-    if (declined(error)) {
+    if (isDecline(error)) {
       return { plain: "You declined to sign, so nothing was founded and nothing left your wallet." };
     }
     return {
