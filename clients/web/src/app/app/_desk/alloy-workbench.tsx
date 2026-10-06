@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Digest, Figure, Key, LotMark, RouteAction, Rule, Stamp, TextAction, type EvidenceState } from "@seametry/ui";
+import { Digest, Figure, LotMark, RouteAction, Rule, Stamp, type EvidenceState } from "@seametry/ui";
 import type {
   Alloy,
   AlloyRecordResponse,
@@ -14,6 +14,7 @@ import { alloyIdentity, legIdentity } from "@/lib/alloys/records";
 import { formatAmount } from "@/lib/amount";
 import { ONE_SHARE_ATOMS, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { NetworkBadge, PageHeader } from "../_shell/page-header";
+import { AlloyActions } from "./alloy-actions";
 import { useTerminalResource } from "./workbench";
 import styles from "./desk.module.css";
 
@@ -155,7 +156,7 @@ function amountFor(row: CostRow, mint: string) {
 }
 
 export function AlloyRecord({ address }: { address: string }) {
-  const { value, problem, loading } = useTerminalResource<AlloyRecordResponse>(
+  const { value, problem, loading, reload } = useTerminalResource<AlloyRecordResponse>(
     `/api/terminal/alloys/${encodeURIComponent(address)}`,
   );
   const alloy = value?.alloy.data;
@@ -221,10 +222,7 @@ export function AlloyRecord({ address }: { address: string }) {
             </p>
           </section>
 
-          <section className={styles.alloyActions} aria-label="Actions">
-            <Key disabled disabledReason="Strike and Melt for this Alloy are not connected yet. The demo signs them on its own devnet Hall.">Strike a share</Key>
-            <TextAction href="/app/hall">Run the demo</TextAction>
-          </section>
+          <AlloyActions alloy={alloy} onChanged={reload} />
 
           <section className={styles.recordFacts} aria-label="Live Alloy figures">
             <Figure

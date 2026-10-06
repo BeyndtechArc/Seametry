@@ -11,18 +11,18 @@ import type { PreparedFounding } from "@/lib/compose/founding-prepare";
 import { metadataPath, metadataUri } from "@/lib/compose/identity";
 import { DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID } from "@/lib/hall/constants";
 import { hallProgram } from "@/lib/hall/program";
-import { foundingProblem, type FoundingStage, type StageProblem } from "@/lib/compose/founding-problem";
-import { awaitLanding } from "@/lib/compose/landing";
+import { FOUNDING, requestProblem, type RequestStage, type StageProblem } from "@/lib/request-problem";
+import { awaitLanding } from "@/lib/landing";
 import styles from "./compose.module.css";
 
 type Run =
-  | { state: "running"; stage: FoundingStage }
-  | { state: "stopped"; stage: FoundingStage; problem: StageProblem }
+  | { state: "running"; stage: RequestStage }
+  | { state: "stopped"; stage: RequestStage; problem: StageProblem }
   | { state: "founded"; signature: string; prepared: PreparedFounding };
 
 // A step is read from its title and mark; the one line beneath appears only
 // while it runs, so nothing has to be read before the process makes sense.
-const STAGES: { stage: FoundingStage; title: string; glyph: RegisterStep["glyph"]; note: string }[] = [
+const STAGES: { stage: RequestStage; title: string; glyph: RegisterStep["glyph"]; note: string }[] = [
   { stage: "prepare", title: "Prepare the stand-ins", glyph: "hall", note: "Creating devnet stand-ins and funding your wallet" },
   { stage: "sign", title: "Sign in your wallet", glyph: "wallet", note: "Approve the founding in your wallet" },
   { stage: "confirm", title: "Confirm on devnet", glyph: "confirm", note: "Waiting for devnet" },
@@ -30,7 +30,7 @@ const STAGES: { stage: FoundingStage; title: string; glyph: RegisterStep["glyph"
 
 function registerSteps(run: Run | undefined): RegisterStep[] {
   // Assembling the transaction happens just before the wallet is asked, so it reads as part of signing.
-  const shown = (stage: FoundingStage) => (stage === "build" ? "sign" : stage);
+  const shown = (stage: RequestStage) => (stage === "build" ? "sign" : stage);
   const reached = run && run.state !== "founded" ? STAGES.findIndex((stage) => stage.stage === shown(run.stage)) : run ? STAGES.length : -1;
   return STAGES.map((stage, index) => {
     const step = { title: stage.title, glyph: stage.glyph };
@@ -83,7 +83,7 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
   const found = async () => {
     if (!wallet) return;
     setOpen(true);
-    let stage: FoundingStage = "prepare";
+    let stage: RequestStage = "prepare";
     try {
       setRun({ state: "running", stage });
       const response = await fetch("/api/compose/found", {
@@ -116,7 +116,7 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
       await awaitLanding(connection, signature, transaction.message.recentBlockhash);
       setRun({ state: "founded", signature, prepared });
     } catch (error) {
-      setRun({ state: "stopped", stage, problem: foundingProblem(stage, error) });
+      setRun({ state: "stopped", stage, problem: requestProblem(FOUNDING, stage, error) });
     }
   };
 

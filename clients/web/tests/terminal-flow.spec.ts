@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { registerTestWallet } from "./test-wallet";
 
 const mint = "XsTockMint111111111111111111111111111111111";
 const servedAt = "2026-09-29T12:00:17Z";
@@ -176,4 +177,44 @@ test("a founded Alloy is named, pictured and listed by stock from its founding r
     const logo = logos.find((entry: { mint: string }) => entry.mint === leg.real_mint);
     await expect(row.getByTestId("lot-mark")).toHaveAttribute("src", logo.path);
   }
+});
+
+test("Strike and Melt are held, with their reasons, until a wallet logs in", async ({ page }) => {
+  await page.goto(`/app/alloys/${alloyAddress}`);
+  const actions = page.getByRole("main").getByRole("region", { name: "Strike or Melt" });
+  await expect(actions.getByRole("button", { name: "Strike shares" })).toBeDisabled();
+  await expect(actions.getByRole("button", { name: "Melt shares" })).toBeDisabled();
+  await expect(actions.getByText("Log in with a devnet wallet: it signs the Strike or Melt.").first()).toBeVisible();
+});
+
+test("a Strike opens its steps and stops at the first with what did not happen", async ({ page }) => {
+  // The page reads the wallet's shares and Claim from devnet; answering with
+  // an RPC error keeps the test off the public network, and reads as none.
+  await page.route("https://api.devnet.solana.com/**", (route) => route.fulfill({ json: { jsonrpc: "2.0", id: 1, error: { code: -32000, message: "fixture" } } }));
+  await registerTestWallet(page, { trusted: true });
+  await page.goto(`/app/alloys/${alloyAddress}`);
+  await page.getByText("Log in", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  const actions = page.getByRole("main").getByRole("region", { name: "Strike or Melt" });
+  // The fixture's share mint is not a real address: the panel says so
+  // rather than waiting on a read that cannot be made.
+  await expect(actions.getByText("is not a Solana address, so your shares cannot be read.", { exact: false }).first()).toBeVisible();
+  await expect(actions.getByRole("button", { name: "Melt shares" })).toBeDisabled();
+
+  await actions.getByRole("button", { name: "Strike shares" }).click();
+  // The test server has no funder key, so preparation stops at step one.
+  const dialog = page.getByRole("dialog", { name: "Strike 1.000000 shares" });
+  await expect(dialog).toBeVisible();
+  const steps = dialog.getByTestId("step-register").getByRole("listitem");
+  await expect(steps.nth(0)).toContainText("Stopped");
+  await expect(steps.nth(1)).toContainText("Waiting");
+  await expect(steps.nth(0).getByRole("alert")).toContainText("HALL_DEMO_FUNDER_SECRET_KEY is not set");
+});
+
+test("the Strike route refuses what it cannot prepare before it spends anything", async ({ request }) => {
+  const bad = await request.post("/api/alloys/strike", { data: { alloy: alloyAddress, striker: "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d", shares: "1.5" } });
+  expect(bad.status()).toBe(400);
+  expect((await bad.json()).error).toBe('shares must be a whole number of share atoms above zero, as a string, received "1.5".');
+  const notKey = await request.post("/api/alloys/strike", { data: { alloy: "nope", striker: "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d", shares: "1000000" } });
+  expect((await notKey.json()).error).toBe('alloy must be a Solana public key, received "nope".');
 });

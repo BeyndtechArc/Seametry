@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -13,6 +13,8 @@ import type { Balances } from "@/lib/wallet/balances";
 import { useWalletFailure, walletNetwork } from "@/lib/wallet-provider";
 import { NetworkBadge } from "./app/_shell/page-header";
 import styles from "./site.module.css";
+
+const noSubscription = () => () => {};
 
 function middle(address: string) {
   return `${address.slice(0, 4)}…${address.slice(-4)}`;
@@ -89,6 +91,11 @@ export function WalletState() {
   const network = walletNetwork(usePathname());
   const reading = useBalances(connected ? address : undefined, network, opening);
   const connectionError = chose && !connected ? failure : undefined;
+  // The server sees no wallet, while a browser with one installed lists it on
+  // its first render, so the two disagreed and React redrew the header (error
+  // #418) for every visitor with a wallet. The list waits until after the
+  // page has hydrated; false on the server and during hydration, true after.
+  const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
 
   const choose = (name: WalletName) => {
     clear();
@@ -121,6 +128,8 @@ export function WalletState() {
             <Holdings reading={reading} network={network} />
             <QuietAction icon="wallet" onClick={() => void disconnect()}>Disconnect wallet</QuietAction>
           </div>
+        ) : !hydrated ? (
+          <p>Looking for wallets in this browser.</p>
         ) : wallets.length === 0 ? (
           <p>No wallet was detected in this browser. Open the site in a browser with a Solana wallet extension, or use your wallet&apos;s browser on a phone.</p>
         ) : (

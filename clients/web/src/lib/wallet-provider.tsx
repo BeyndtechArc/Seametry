@@ -25,8 +25,12 @@ import { clusterApiUrl } from "@solana/web3.js";
  * wallet's prompt after a deliberate selection, and reconnects silently on
  * reload without prompting.
  */
+// The Hall, the Alloy register and Compose's founding all run on devnet, so
+// a wallet there is shown its devnet balances; Allocation trades on mainnet.
+const DEVNET_ROUTES = ["/app/hall", "/app/alloys", "/app/compose"];
+
 export function walletNetwork(pathname: string): "devnet" | "mainnet" {
-  return pathname.startsWith("/app/hall") ? "devnet" : "mainnet";
+  return DEVNET_ROUTES.some((route) => pathname.startsWith(route)) ? "devnet" : "mainnet";
 }
 
 type ConnectionFailure = { failure?: string; clear: () => void };

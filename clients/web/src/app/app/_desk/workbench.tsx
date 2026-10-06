@@ -16,6 +16,9 @@ import styles from "./desk.module.css";
 export function useTerminalResource<T>(path: string) {
   const [value, setValue] = useState<T>();
   const [problem, setProblem] = useState<TerminalProblem>();
+  // Bumped after the visitor changes the chain (a Strike or a Melt), so the
+  // record is read again; the shown value stays until the new one arrives.
+  const [reads, setReads] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -39,9 +42,9 @@ export function useTerminalResource<T>(path: string) {
     }
     void load();
     return () => controller.abort();
-  }, [path]);
+  }, [path, reads]);
 
-  return { value, problem, loading: !value && !problem };
+  return { value, problem, loading: !value && !problem, reload: () => setReads((count) => count + 1) };
 }
 
 function Boundary({ problem }: { problem: TerminalProblem }) {
