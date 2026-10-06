@@ -299,12 +299,129 @@
   line-height: 1;
 }
 
-.recordIdentity h1 span {
+.alloyTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-6);
+  min-width: 0;
+}
+
+.alloyTitle > div {
+  display: grid;
+  gap: var(--sm-space-2);
+  min-width: 0;
+}
+
+.alloyArtwork {
+  flex: none;
+  width: var(--sm-space-12);
+  height: var(--sm-space-12);
+  border-radius: var(--sm-radius-data);
+  object-fit: cover;
+}
+
+.alloyArtworkRow {
+  flex: none;
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
+  border-radius: var(--sm-radius-data);
+  object-fit: cover;
+}
+
+.alloySymbol {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.alloySentence {
+  max-width: var(--sm-size-readable);
+  color: var(--sm-text-secondary);
+  line-height: 1.5;
+}
+
+.alloySource {
   color: var(--sm-text-tertiary);
-  font-family: var(--sm-font-family-digest);
-  font-size: var(--sm-font-size-title-s);
-  letter-spacing: 0;
-  font-variant-ligatures: none;
+  font-size: var(--sm-font-size-micro);
+}
+
+.holdings {
+  display: grid;
+  gap: var(--sm-space-5);
+  margin-top: var(--sm-space-8);
+}
+
+.holdings h2 {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-regular);
+}
+
+.holdings ol {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 0.5px solid var(--sm-line-strong);
+}
+
+.holdings li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-5) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.holdings li b {
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.holdingAmount {
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.holdingState {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.holdings > p {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.alloyActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-6);
+  margin: var(--sm-space-8) 0;
+}
+
+.recordDetails {
+  margin-top: var(--sm-space-10);
+  border-top: 0.5px solid var(--sm-line-strong);
+}
+
+.recordDetails > summary {
+  padding: var(--sm-space-5) 0;
+  color: var(--sm-text-secondary);
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .holdings li {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .holdings li > :last-child {
+    grid-column: 2 / -1;
+  }
 }
 
 .recordRegistry {
@@ -333,13 +450,6 @@
   margin: 0;
   color: var(--sm-text-primary);
   font-size: var(--sm-font-size-small);
-}
-
-.recordDrawing {
-  display: grid;
-  place-items: center;
-  padding: var(--sm-space-8);
-  border-top: 0.5px solid var(--sm-line-rule);
 }
 
 .recordFacts {
@@ -516,15 +626,6 @@
 }
 
 @media (min-width: 1000px) {
-  .recordHead {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  }
-
-  .recordDrawing {
-    border-top: 0;
-    border-left: 0.5px solid var(--sm-line-rule);
-  }
-
   .recordFacts {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

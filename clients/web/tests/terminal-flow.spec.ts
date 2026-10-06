@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 const mint = "XsTockMint111111111111111111111111111111111";
 const servedAt = "2026-09-29T12:00:17Z";
@@ -131,10 +132,48 @@ test("the Terminal moves from the live Hall register into one Alloy record", asy
   await row.getByRole("link", { name: "Open Alloy" }).click();
 
   await expect(page).toHaveURL(`/app/alloys/${alloyAddress}`);
+  // No metadata on the share mint and no founding record: titled by its id.
   await expect(page.getByRole("heading", { level: 1, name: "Alloy 1790627156984" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "One share holds" })).toBeVisible();
+  await expect(page.getByTestId("lot-mark")).toHaveCount(3);
+  await page.getByText("Technical details: addresses, ledger and per-share terms").click();
   await expect(page.getByText("The issuer currently prevents this Hall account from delivering.")).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Per share" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", { name: "Alloys" })).toHaveAttribute("href", "/app/alloys");
   await expect(page.locator("[data-nextjs-dialog]")).toHaveCount(0);
   expect(browserErrors).toEqual([]);
+});
+
+test("a founded Alloy is named, pictured and listed by stock from its founding record", async ({ page }) => {
+  // What the Gateway returns before it reads mint metadata: addresses and
+  // amounts only. The founding record must supply the rest.
+  const record = JSON.parse(readFileSync("../../shared/evidence/alloys/stoic-crew/founding.json", "utf8"));
+  const logos = JSON.parse(readFileSync("../../shared/evidence/instrument-logos.json", "utf8")).logos;
+  const amount = (atoms: string) => ({ atoms, scale: 8 });
+  const alloy = {
+    address: record.alloy, sponsor: record.sponsor, share_mint: record.share_mint, id: record.id,
+    supply: record.supply_atoms, locked_genesis: record.locked_genesis_atoms, cluster: "devnet",
+    legs: record.legs.map((leg: { stand_in: string; atoms_per_share: string }) => ({
+      mint: leg.stand_in, ledger: amount(leg.atoms_per_share), pending: amount("0"), unclaimed: amount("0"), held_back: false,
+    })),
+  };
+  const terms = { shares: "1000000", legs: alloy.legs.map((leg: { mint: string; ledger: object }) => ({ stock: leg.mint, amount: leg.ledger, kept: amount("0") })) };
+  const meta = { served_at: servedAt, as_of: servedAt, completeness: "complete", cluster: "devnet" };
+  await page.route(`**/api/terminal/alloys/${record.alloy}`, (route) =>
+    route.fulfill({ json: { alloy: { data: alloy, meta }, strike: { data: terms, meta }, melt: { data: terms, meta } } }),
+  );
+
+  await page.goto(`/app/alloys/${record.alloy}`);
+  const main = page.getByRole("main");
+  await expect(main.getByRole("heading", { level: 1, name: record.name })).toBeVisible();
+  await expect(main.getByText(record.symbol, { exact: true })).toBeVisible();
+  await expect(main.getByRole("img", { name: `${record.name} artwork` })).toHaveAttribute("src", new URL(record.image).pathname);
+  const holdings = main.getByRole("region", { name: "One share holds" }).getByRole("listitem");
+  await expect(holdings).toHaveCount(record.legs.length);
+  for (const [index, leg] of record.legs.entries()) {
+    const row = holdings.nth(index);
+    await expect(row).toContainText(leg.symbol);
+    const logo = logos.find((entry: { mint: string }) => entry.mint === leg.real_mint);
+    await expect(row.getByTestId("lot-mark")).toHaveAttribute("src", logo.path);
+  }
 });

@@ -14,7 +14,7 @@
  *   npx tsx scripts/record-founding.ts <founding signature> <alloy address>
  */
 import { createHash } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 import { TOKEN_2022_PROGRAM_ID, getTokenMetadata } from "@solana/spl-token";
@@ -70,6 +70,7 @@ async function main() {
 
   const document = await fetch(share.uri);
   const metadataBody = document.ok ? Buffer.from(await document.arrayBuffer()) : undefined;
+  const image = metadataBody ? (JSON.parse(metadataBody.toString("utf8")) as { image?: unknown }).image : undefined;
   const record = {
     producer: `npx tsx scripts/record-founding.ts ${signature} ${address}`,
     recorded_at: new Date().toISOString(),
@@ -84,6 +85,7 @@ async function main() {
     symbol: share.symbol,
     uri: share.uri,
     uri_sha256: metadataBody ? createHash("sha256").update(metadataBody).digest("hex") : null,
+    image: typeof image === "string" ? image : null,
     founding: {
       signature,
       slot: transaction.slot,
@@ -96,10 +98,20 @@ async function main() {
     matching: "Each stand-in is matched to the captured mainnet instrument whose symbol its own TokenMetadata names; the founding route wrote that symbol from shared/evidence/admissions.json.",
   };
 
-  const directory = `../../shared/evidence/alloys/${alloySlug(share.name)}`;
+  const root = "../../shared/evidence/alloys";
+  const directory = `${root}/${alloySlug(share.name)}`;
   mkdirSync(directory, { recursive: true });
   writeFileSync(`${directory}/founding.json`, JSON.stringify(record, null, 2) + "\n");
   console.log(`${share.name} (${share.symbol}): ${legs.length} legs recorded in ${directory}/founding.json`);
+
+  // One index of every record, rebuilt from the directories, so the site
+  // imports a single file and a new founding cannot be left out of it.
+  const records = readdirSync(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && existsSync(`${root}/${entry.name}/founding.json`))
+    .map((entry) => JSON.parse(readFileSync(`${root}/${entry.name}/founding.json`, "utf8")))
+    .sort((a, b) => String(a.founding.block_time).localeCompare(String(b.founding.block_time)));
+  writeFileSync(`${root}/index.json`, JSON.stringify({ producer: "npx tsx scripts/record-founding.ts", alloys: records }, null, 2) + "\n");
+  console.log(`index.json lists ${records.length} founded Alloys`);
   for (const leg of legs) console.log(`  ${leg.index} ${leg.symbol} ${leg.stand_in} -> ${leg.real_mint} ${leg.atoms_per_share} atoms per share`);
 }
 
