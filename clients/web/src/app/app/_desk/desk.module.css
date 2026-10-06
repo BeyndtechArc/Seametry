@@ -127,8 +127,7 @@
 }
 
 .instrumentTable,
-.depthTable,
-.alloyTable {
+.depthTable {
   width: 100%;
   border-collapse: collapse;
   color: var(--sm-text-secondary);
@@ -136,8 +135,7 @@
 }
 
 .instrumentTable th,
-.depthTable th,
-.alloyTable th {
+.depthTable th {
   padding: var(--sm-space-4) var(--sm-space-5);
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
@@ -145,8 +143,7 @@
 }
 
 .instrumentTable td,
-.depthTable td,
-.alloyTable td {
+.depthTable td {
   min-width: var(--sm-space-12);
   padding: var(--sm-space-6) var(--sm-space-5);
   border-top: 0.5px solid var(--sm-line-rule);
@@ -157,20 +154,79 @@
   min-width: calc(var(--sm-space-13) * 2);
 }
 
-.alloyTable td:first-child {
+/* The Alloys register: one balanced row per Alloy, identity first, then the
+   three facts a visitor compares, then the way in. */
+.alloyRows {
   display: grid;
-  min-width: calc(var(--sm-space-13) * 2);
-  gap: var(--sm-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 0.5px solid var(--sm-line-strong);
 }
 
-.alloyTable b {
+.alloyRows > li {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.2fr) auto;
+  align-items: center;
+  gap: var(--sm-space-7);
+  padding: var(--sm-space-7) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.alloyRowIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-5);
+  min-width: 0;
+}
+
+.alloyRowIdentity > div {
+  display: grid;
+  gap: var(--sm-space-2);
+  min-width: 0;
+}
+
+.alloyRowIdentity b {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title);
   font-weight: var(--sm-font-weight-regular);
+  line-height: 1.1;
 }
 
-.alloyTable a {
+.alloyRowIdentity span {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.alloyRowCell {
+  display: grid;
+  gap: var(--sm-space-2);
+  min-width: 0;
+  color: var(--sm-text-primary);
+}
+
+.alloyRowCell small {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+/* Constituent logos overlap a little, so six read as one group. */
+.lotStack {
+  display: flex;
+}
+
+.lotStack > * + * {
+  margin-left: calc(var(--sm-space-2) * -1);
+}
+
+/* A ground-coloured ring separates overlapping marks; an outline, not a shadow. */
+.lotStack > * {
+  outline: 2px solid var(--sm-surface-ground);
+}
+
+.alloyRowOpen {
   display: inline-flex;
   align-items: center;
   min-height: var(--sm-size-target);
@@ -178,9 +234,20 @@
   font-weight: var(--sm-font-weight-medium);
 }
 
-.alloyTable a:focus-visible {
+.alloyRowOpen:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: var(--sm-space-2);
+}
+
+@media (max-width: 900px) {
+  .alloyRows > li {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .alloyRowIdentity,
+  .alloyRowOpen {
+    grid-column: 1 / -1;
+  }
 }
 
 .instrumentTable td:first-child,
@@ -322,8 +389,8 @@
 
 .alloyArtworkRow {
   flex: none;
-  width: var(--sm-space-7);
-  height: var(--sm-space-7);
+  width: var(--sm-space-11);
+  height: var(--sm-space-11);
   border-radius: var(--sm-radius-data);
   object-fit: cover;
 }

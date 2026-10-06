@@ -102,47 +102,48 @@ export function AlloyRegister() {
             <h2 id="alloy-register-heading">Recorded Alloys</h2>
             <p>Observed {observedAge(value.meta.as_of)} ago. Evidence state: {value.meta.completeness}.</p>
           </header>
-          <div className={styles.tableViewport}>
-            <table className={styles.alloyTable}>
-              <thead>
-                <tr>
-                  <th>Alloy</th>
-                  <th>Supply</th>
-                  <th>Constituents</th>
-                  <th>Delivery</th>
-                  <th><span className={styles.srOnly}>Open</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                {value.data.map((alloy) => {
-                  const held = heldCount(alloy);
-                  const identity = alloyIdentity(alloy);
-                  return (
-                    <tr key={alloy.address}>
-                      <td>
-                        <span className={styles.lotIdentity}>
-                          {identity.artwork ? (
-                            // eslint-disable-next-line @next/next/no-img-element -- next/image writes an inline style attribute, which this site's CSP refuses.
-                            <img className={styles.alloyArtworkRow} src={identity.artwork} alt="" width={40} height={40} />
-                          ) : (
-                            <LotMark symbol={identity.symbol ?? identity.title} />
-                          )}
-                          <span>
-                            <b>{identity.title}{identity.symbol ? ` (${identity.symbol})` : ""}</b>
-                            <Digest value={alloy.address} />
-                          </span>
-                        </span>
-                      </td>
-                      <td>{formatAmount(alloy.supply, SHARE_DECIMALS)} shares</td>
-                      <td>{alloy.legs.length} recorded</td>
-                      <td>{held === 0 ? "Every leg available" : `${held} held as a Claim`}</td>
-                      <td><Link href={`/app/alloys/${encodeURIComponent(alloy.address)}`}>Open Alloy</Link></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <ol className={styles.alloyRows}>
+            {value.data.map((alloy) => {
+              const held = heldCount(alloy);
+              const identity = alloyIdentity(alloy);
+              return (
+                <li key={alloy.address} aria-label={identity.title}>
+                  <div className={styles.alloyRowIdentity}>
+                    {identity.artwork ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- next/image writes an inline style attribute, which this site's CSP refuses.
+                      <img className={styles.alloyArtworkRow} src={identity.artwork} alt="" width={64} height={64} />
+                    ) : (
+                      <LotMark symbol={identity.symbol ?? identity.title} size="header" />
+                    )}
+                    <div>
+                      <b>{identity.title}</b>
+                      {identity.symbol ? <span>{identity.symbol}</span> : null}
+                      <Digest value={alloy.address} />
+                    </div>
+                  </div>
+                  <div className={styles.alloyRowCell}>
+                    <small>Holds</small>
+                    <span className={styles.lotStack}>
+                      {alloy.legs.map((leg, index) => {
+                        const lot = legIdentity(alloy, leg.mint);
+                        return <LotMark key={leg.mint} symbol={lot.symbol ?? String(index + 1)} src={lot.logo} />;
+                      })}
+                    </span>
+                    <span>{alloy.legs.length} {alloy.legs.length === 1 ? "stock" : "stocks"}</span>
+                  </div>
+                  <div className={styles.alloyRowCell}>
+                    <small>Supply</small>
+                    <span>{formatAmount(alloy.supply, SHARE_DECIMALS)} shares</span>
+                  </div>
+                  <div className={styles.alloyRowCell}>
+                    <small>Delivery</small>
+                    <span>{held === 0 ? "Every leg delivering" : `${held} held as a Claim`}</span>
+                  </div>
+                  <Link className={styles.alloyRowOpen} href={`/app/alloys/${encodeURIComponent(alloy.address)}`}>Open Alloy</Link>
+                </li>
+              );
+            })}
+          </ol>
         </section>
       ) : null}
     </div>

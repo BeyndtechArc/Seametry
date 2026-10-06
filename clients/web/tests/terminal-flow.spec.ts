@@ -125,7 +125,7 @@ test("the Terminal moves from the live Hall register into one Alloy record", asy
   page.on("pageerror", (error) => browserErrors.push(error.message));
   await page.goto("/app/alloys");
   await expect(page.getByRole("heading", { level: 1, name: "Alloys" })).toBeVisible();
-  const row = page.getByRole("row", { name: /Alloy 1790627156984/ });
+  const row = page.getByRole("listitem", { name: "Alloy 1790627156984" });
   await expect(row).toContainText("1 held as a Claim");
   // 1,000,000 share atoms at the share mint's 6 decimals is one share, as a wallet shows it.
   await expect(row).toContainText("1.000000 shares");
