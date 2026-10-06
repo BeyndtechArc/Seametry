@@ -219,6 +219,7 @@ test("every stopped founding says what did not happen, and keeps the raw message
 
   expect(foundingProblem("confirm", new Error("The Hall refused the founding: {\"InstructionError\":[2,{\"Custom\":6003}]}")).plain).toContain("the network fee for the attempt was spent");
   expect(foundingProblem("confirm", new Error("Transaction was not confirmed in 30.00 seconds")).plain).toContain("It may still land");
+  expect(foundingProblem("confirm", new Error("Founding 53Zh did not land: its blockhash expired before devnet received it.")).plain).toContain("never received the signed founding");
   expect(foundingProblem("prepare", new TypeError("Failed to fetch")).plain).toContain("could not be reached");
 });
 

@@ -72,6 +72,9 @@ export function foundingProblem(stage: FoundingStage, error: unknown): StageProb
   if (SIMULATION.test(message)) {
     return { plain: "Devnet refused the signed founding before it was sent. Nothing was founded and nothing was spent.", technical };
   }
+  if (/did not land/.test(message)) {
+    return { plain: "Devnet never received the signed founding before it expired, so nothing was founded and nothing was spent. Try again.", technical };
+  }
   return {
     plain: "Your signed founding was sent, but devnet did not confirm it in time. It may still land: open the Alloys register in a minute before trying again.",
     technical,

@@ -12,6 +12,7 @@ import { metadataPath, metadataUri } from "@/lib/compose/identity";
 import { DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID } from "@/lib/hall/constants";
 import { hallProgram } from "@/lib/hall/program";
 import { foundingProblem, type FoundingStage, type StageProblem } from "@/lib/compose/founding-problem";
+import { awaitLanding } from "@/lib/compose/landing";
 import styles from "./compose.module.css";
 
 type Run =
@@ -112,8 +113,7 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
 
       stage = "confirm";
       setRun({ state: "running", stage });
-      const confirmation = await connection.confirmTransaction(signature, "confirmed");
-      if (confirmation.value.err) throw new Error(`The Hall refused the founding: ${JSON.stringify(confirmation.value.err)} (transaction ${signature})`);
+      await awaitLanding(connection, signature, transaction.message.recentBlockhash);
       setRun({ state: "founded", signature, prepared });
     } catch (error) {
       setRun({ state: "stopped", stage, problem: foundingProblem(stage, error) });
