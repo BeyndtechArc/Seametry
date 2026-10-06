@@ -169,7 +169,7 @@ test("the dashboard wallet disclosure opens below its header containment", async
 
 test("a page loaded with a wallet installed hydrates without React redrawing it", async ({ page }) => {
   // The server lists no wallets; a browser with one installed used to list
-  // it on its first render, a mismatch React reports as error #418.
+  // it on its first render, a mismatch React reports as error number 418.
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await registerTestWallet(page, { trusted: false });

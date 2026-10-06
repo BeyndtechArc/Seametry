@@ -213,17 +213,25 @@
 }
 
 /* Constituent logos overlap a little, so six read as one group. */
+/* Six issuers' brand colours in one row compete with everything else on it,
+   so the group sits in a sunken tray and the marks read in neutral grey; the
+   Alloy's own page shows them in colour, one per row. */
 .lotStack {
-  display: flex;
+  display: inline-flex;
+  justify-self: start;
+  padding: var(--sm-space-2) var(--sm-space-3);
+  border-radius: var(--sm-radius-data);
+  background: var(--sm-surface-tray);
 }
 
 .lotStack > * + * {
   margin-left: calc(var(--sm-space-2) * -1);
 }
 
-/* A ground-coloured ring separates overlapping marks; an outline, not a shadow. */
+/* A tray-coloured ring separates overlapping marks; an outline, not a shadow. */
 .lotStack > * {
-  outline: 2px solid var(--sm-surface-ground);
+  outline: 2px solid var(--sm-surface-tray);
+  filter: grayscale(1);
 }
 
 .alloyRowOpen {

@@ -93,7 +93,7 @@ export function WalletState() {
   const connectionError = chose && !connected ? failure : undefined;
   // The server sees no wallet, while a browser with one installed lists it on
   // its first render, so the two disagreed and React redrew the header (error
-  // #418) for every visitor with a wallet. The list waits until after the
+  // number 418) for every visitor with a wallet. The list waits until after the
   // page has hydrated; false on the server and during hydration, true after.
   const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
 
