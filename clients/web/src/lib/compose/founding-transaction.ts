@@ -13,8 +13,10 @@ import type { PreparedFounding } from "./founding-prepare";
 /**
  * SHA-256 of clients/web/public/sponsor-mark.svg: the Alloy records which
  * mark sponsored it as these 32 bytes. A test recomputes it from the file.
+ * The mark was redrawn on 6 October 2026; Stoic Crew, founded before that,
+ * carries the earlier file's hash, 6156faf1...ad19, on chain for good.
  */
-export const SEAMETRY_SPONSOR_MARK = "6156faf19139776468e3ded0a4493cc51b2997d741549f13fe4fcb046827ad19";
+export const SEAMETRY_SPONSOR_MARK = "36fc4cfbb83cb6f08adc3f57ad942c0cd1adc3c709e49d9a2f92559f713571e6";
 
 /**
  * A six-leg founding consumed 253,393 compute units on devnet on 5 October
