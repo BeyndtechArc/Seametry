@@ -1,0 +1,80 @@
+{
+  "producer": "npx tsx scripts/record-founding.ts 53Zhb1yXBYfGCo97PinaeZweuN871r7dkpgYahbanW4yY1mBASWHHLe8K52y2p3rmsaRChk9bdi6j7xBDP6YNri8 BXEC7QPTZFuKdgNrXYrnLEX6JbyLD8UaPe2Y2LMt9x7N",
+  "recorded_at": "2026-10-06T03:15:46.323Z",
+  "cluster": "devnet",
+  "endpoint": "https://api.devnet.solana.com",
+  "hall": "GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE",
+  "alloy": "BXEC7QPTZFuKdgNrXYrnLEX6JbyLD8UaPe2Y2LMt9x7N",
+  "id": "1",
+  "sponsor": "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM",
+  "share_mint": "HPRJFcRukVuWr9FVD6AGQw1uYVUTy3uxRuHatsut9i4z",
+  "name": "Stoic Crew",
+  "symbol": "STOIC",
+  "uri": "https://www.seametry.xyz/alloys/stoic-crew/metadata.json",
+  "uri_sha256": "68d8b0ec74eb6e9b793d787f9a7a8720062a4607b7ef751b5103639cd3f1bb5f",
+  "founding": {
+    "signature": "53Zhb1yXBYfGCo97PinaeZweuN871r7dkpgYahbanW4yY1mBASWHHLe8K52y2p3rmsaRChk9bdi6j7xBDP6YNri8",
+    "slot": 507947401,
+    "block_time": "2026-10-06T02:48:34.000Z",
+    "compute_units": 252252
+  },
+  "supply_atoms": "1000000",
+  "locked_genesis_atoms": "1000000",
+  "legs": [
+    {
+      "index": 1,
+      "symbol": "AMZNx",
+      "stand_in": "HwnGZXB8tbg5TU1ZZjg7sukcNTQFSZBEMWa4D344xkoh",
+      "stand_in_name": "AMZNx devnet stand-in",
+      "real_mint": "Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg",
+      "issuer": "Backed Finance (xStocks)",
+      "atoms_per_share": "6618883"
+    },
+    {
+      "index": 2,
+      "symbol": "GOOGLx",
+      "stand_in": "Ca4xBtN1FCRAs2Ngr1xCQyKRLos7cPUsiX6KDvkBzUgp",
+      "stand_in_name": "GOOGLx devnet stand-in",
+      "real_mint": "XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN",
+      "issuer": "Backed Finance (xStocks)",
+      "atoms_per_share": "4791545"
+    },
+    {
+      "index": 3,
+      "symbol": "METAx",
+      "stand_in": "HMicg41GqJrXPmLrXHJYojc1DxYUg7McktecZeLTPSnA",
+      "stand_in_name": "METAx devnet stand-in",
+      "real_mint": "Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu",
+      "issuer": "Backed Finance (xStocks)",
+      "atoms_per_share": "2237313"
+    },
+    {
+      "index": 4,
+      "symbol": "AAPLx",
+      "stand_in": "ZM4qKApSyg3rTSgKFckV123uL8okULUMXuLb9LyFrXc",
+      "stand_in_name": "AAPLx devnet stand-in",
+      "real_mint": "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
+      "issuer": "Backed Finance (xStocks)",
+      "atoms_per_share": "4981821"
+    },
+    {
+      "index": 5,
+      "symbol": "NVDAx",
+      "stand_in": "6atkP5bcKrVDUzADHVWesa1Egu2QXR1ibgE3YRWfsJYH",
+      "stand_in_name": "NVDAx devnet stand-in",
+      "real_mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh",
+      "issuer": "Backed Finance (xStocks)",
+      "atoms_per_share": "6947843"
+    },
+    {
+      "index": 6,
+      "symbol": "MSFTx",
+      "stand_in": "BNHsyPtpRR8uMuZDoxNfEfHTrNhFXQ83vF9zatWz9u8c",
+      "stand_in_name": "MSFTx devnet stand-in",
+      "real_mint": "XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX",
+      "issuer": "Backed Finance (xStocks)",
+      "atoms_per_share": "3155256"
+    }
+  ],
+  "matching": "Each stand-in is matched to the captured mainnet instrument whose symbol its own TokenMetadata names; the founding route wrote that symbol from shared/evidence/admissions.json."
+}
