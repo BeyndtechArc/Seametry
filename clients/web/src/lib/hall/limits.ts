@@ -50,7 +50,7 @@ export const FOUNDING_WINDOW_MS = 60 * 60 * 1000;
  * a single client hammering one instance, not a determined attacker spread
  * across many; that would need shared storage this app does not have yet.
  */
-export class FoundingThrottle {
+export class WindowThrottle {
   private readonly windows = new Map<string, { start: number; count: number }>();
 
   constructor(
@@ -58,7 +58,7 @@ export class FoundingThrottle {
     private readonly windowMs = FOUNDING_WINDOW_MS,
   ) {}
 
-  /** Milliseconds until `client` may found again, or zero when it may now. */
+  /** Milliseconds until `client` may act again, or zero when it may now. */
   retryAfter(client: string, now: number): number {
     const current = this.windows.get(client);
     if (!current || now - current.start >= this.windowMs) {

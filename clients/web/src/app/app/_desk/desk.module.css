@@ -278,15 +278,15 @@
 .recordIdentity {
   display: grid;
   align-content: start;
-  justify-items: start;
-  gap: var(--sm-space-5);
+  gap: var(--sm-space-4);
   min-width: 0;
-  padding: var(--sm-space-8);
+  padding: var(--sm-space-7);
 }
 
 .recordIdentity header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--sm-space-5);
 }
 
@@ -335,7 +335,6 @@
 }
 
 .alloySentence {
-  max-width: var(--sm-size-readable);
   color: var(--sm-text-secondary);
   line-height: 1.5;
 }

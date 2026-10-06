@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   FOUNDINGS_PER_WINDOW,
   FOUNDING_WINDOW_MS,
-  FoundingThrottle,
+  WindowThrottle,
   HOLDER_FEE_ALLOWANCE_LAMPORTS,
   HOLDER_SIGNED_TRANSACTIONS,
   clientAddress,
@@ -26,7 +26,7 @@ test("a wallet already holding the target receives nothing", () => {
 });
 
 test("one address founds up to the limit, then waits out the rest of its window", () => {
-  const throttle = new FoundingThrottle();
+  const throttle = new WindowThrottle();
   for (let i = 0; i < FOUNDINGS_PER_WINDOW; i += 1) {
     expect(throttle.retryAfter("203.0.113.7", 1_000 + i)).toBe(0);
   }
@@ -34,14 +34,14 @@ test("one address founds up to the limit, then waits out the rest of its window"
 });
 
 test("a refused address does not hold back a different one", () => {
-  const throttle = new FoundingThrottle(1, FOUNDING_WINDOW_MS);
+  const throttle = new WindowThrottle(1, FOUNDING_WINDOW_MS);
   expect(throttle.retryAfter("203.0.113.7", 0)).toBe(0);
   expect(throttle.retryAfter("203.0.113.7", 1)).toBeGreaterThan(0);
   expect(throttle.retryAfter("198.51.100.2", 1)).toBe(0);
 });
 
 test("a new window opens once the old one has elapsed", () => {
-  const throttle = new FoundingThrottle(1, FOUNDING_WINDOW_MS);
+  const throttle = new WindowThrottle(1, FOUNDING_WINDOW_MS);
   expect(throttle.retryAfter("203.0.113.7", 0)).toBe(0);
   expect(throttle.retryAfter("203.0.113.7", FOUNDING_WINDOW_MS - 1)).toBe(1);
   expect(throttle.retryAfter("203.0.113.7", FOUNDING_WINDOW_MS)).toBe(0);

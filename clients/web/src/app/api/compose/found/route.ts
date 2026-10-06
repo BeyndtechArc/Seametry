@@ -7,10 +7,10 @@ import { metadataPath, metadataUri } from "@/lib/compose/identity";
 import { DEVNET_RPC_ENDPOINT, MAX_CONSTITUENTS, REGISTER_HALL_PROGRAM_ID } from "@/lib/hall/constants";
 import { demoFunder } from "@/lib/hall/env";
 import { standInIssuer } from "@/lib/hall/issuer";
-import { FOUNDINGS_PER_WINDOW, FoundingThrottle, clientAddress } from "@/lib/hall/limits";
+import { FOUNDINGS_PER_WINDOW, WindowThrottle, clientAddress } from "@/lib/hall/limits";
 import { Refusal } from "@/lib/refusal";
 
-const throttle = new FoundingThrottle();
+const throttle = new WindowThrottle();
 const U64_MAX = 2n ** 64n - 1n;
 
 type Body = { sponsor?: string; name?: string; symbol?: string; legs?: { mint?: string; atomsPerShare?: string }[] };

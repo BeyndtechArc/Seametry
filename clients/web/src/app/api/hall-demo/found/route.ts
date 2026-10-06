@@ -4,9 +4,9 @@ import { demoFunder } from "@/lib/hall/env";
 import { deriveIssuer } from "@/lib/hall/issuer";
 import { foundAlloyFor } from "@/lib/hall/found";
 import { DEVNET_RPC_ENDPOINT } from "@/lib/hall/constants";
-import { FOUNDINGS_PER_WINDOW, FoundingThrottle, clientAddress } from "@/lib/hall/limits";
+import { FOUNDINGS_PER_WINDOW, WindowThrottle, clientAddress } from "@/lib/hall/limits";
 
-const throttle = new FoundingThrottle();
+const throttle = new WindowThrottle();
 
 /**
  * Founds a fresh demo alloy and funds the requesting wallet with mock stock.
