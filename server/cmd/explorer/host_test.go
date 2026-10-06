@@ -25,6 +25,65 @@ func TestLayoutIncludesHouseMarkAndModeControl(t *testing.T) {
 	}
 }
 
+func TestLayoutUsesHamburgerNavigationRegister(t *testing.T) {
+	data, err := templates.ReadFile("templates/layout.html")
+	if err != nil {
+		t.Fatalf("read layout template: %v", err)
+	}
+	for _, want := range [][]byte{
+		[]byte(`<div class="header-actions">`),
+		[]byte(`<details class="explorer-menu">`),
+		[]byte(`<summary class="menu-control">`),
+		[]byte(`<nav class="menu-register" aria-label="Explorer">`),
+	} {
+		if !bytes.Contains(data, want) {
+			t.Errorf("Explorer layout is missing %q", want)
+		}
+	}
+}
+
+func TestExplorerControlsUseSquareRegistrationEdges(t *testing.T) {
+	data, err := assets.ReadFile("assets/explorer.css")
+	if err != nil {
+		t.Fatalf("read Explorer stylesheet: %v", err)
+	}
+	css := string(data)
+	for _, selector := range []string{".field {", "button.key {", "button.quiet {", ".chip {"} {
+		start := strings.Index(css, selector)
+		if start < 0 {
+			t.Errorf("Explorer stylesheet is missing %s", selector)
+			continue
+		}
+		end := strings.Index(css[start:], "}\n")
+		if end < 0 {
+			t.Fatalf("%s has no closing brace", selector)
+		}
+		block := css[start : start+end]
+		if !strings.Contains(block, "border-radius: var(--sm-radius-data)") {
+			t.Errorf("%s does not use square registration edges", selector)
+		}
+	}
+}
+
+func TestExplorerHeaderDoesNotClipMenuRegister(t *testing.T) {
+	data, err := assets.ReadFile("assets/explorer.css")
+	if err != nil {
+		t.Fatalf("read Explorer stylesheet: %v", err)
+	}
+	css := string(data)
+	start := strings.Index(css, "header.top {")
+	if start < 0 {
+		t.Fatal("Explorer stylesheet is missing header.top")
+	}
+	end := strings.Index(css[start:], "}\n")
+	if end < 0 {
+		t.Fatal("header.top has no closing brace")
+	}
+	if strings.Contains(css[start:start+end], "clip-path") {
+		t.Fatal("header.top clips the navigation register when the menu opens")
+	}
+}
+
 func TestExplorerGroundDoesNotRepaintWithViewport(t *testing.T) {
 	data, err := assets.ReadFile("assets/explorer.css")
 	if err != nil {

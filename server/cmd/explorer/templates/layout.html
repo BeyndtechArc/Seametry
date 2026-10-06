@@ -17,17 +17,28 @@
       <img class="house-mark" src="{{.MarkAsset}}" alt="">
       <span class="word-lockup"><strong>Seametry</strong><small>Explorer</small></span>
     </a>
-    <nav aria-label="Explorer">
-      <a href="index.html"{{if eq .Nav "verify"}} aria-current="page"{{end}}>Verify</a>
-      <a href="catalogue.html"{{if eq .Nav "catalogue"}} aria-current="page"{{end}}>Catalogue</a>
-      <a href="evidence.html"{{if eq .Nav "evidence"}} aria-current="page"{{end}}>Evidence</a>
-      <a href="hall.html"{{if eq .Nav "hall"}} aria-current="page"{{end}}>The Hall</a>
-      <span class="devnet">Devnet</span>
-    </nav>
-    <button class="mode" id="theme-control" type="button" aria-label="Use dark mode">
-      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"></path></svg>
-      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A8 8 0 0 1 8.8 4a8.2 8.2 0 1 0 11.2 11.2Z"></path></svg>
-    </button>
+    <div class="header-actions">
+      <button class="mode" id="theme-control" type="button" aria-label="Use dark mode">
+        <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"></path></svg>
+        <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A8 8 0 0 1 8.8 4a8.2 8.2 0 1 0 11.2 11.2Z"></path></svg>
+      </button>
+      <details class="explorer-menu">
+        <summary class="menu-control">
+          <span class="sr-only">Open Explorer menu</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M3 16h18"></path></svg>
+        </summary>
+        <nav class="menu-register" aria-label="Explorer">
+          <div class="menu-register-head">
+            <span>Explorer register</span>
+            <span class="devnet">Devnet</span>
+          </div>
+          <a href="index.html"{{if eq .Nav "verify"}} aria-current="page"{{end}}><span>01</span>Verify</a>
+          <a href="catalogue.html"{{if eq .Nav "catalogue"}} aria-current="page"{{end}}><span>02</span>Catalogue</a>
+          <a href="evidence.html"{{if eq .Nav "evidence"}} aria-current="page"{{end}}><span>03</span>Evidence</a>
+          <a href="hall.html"{{if eq .Nav "hall"}} aria-current="page"{{end}}><span>04</span>The Hall</a>
+        </nav>
+      </details>
+    </div>
   </header>
 {{end}}
 

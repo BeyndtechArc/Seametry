@@ -108,14 +108,13 @@ header.top {
   top: var(--sm-space-3);
   z-index: 4;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--sm-space-6);
   min-height: var(--sm-space-11);
-  padding: var(--sm-space-3) var(--sm-space-4);
+  padding: var(--sm-space-3) 0;
   border-bottom: .5px solid var(--sm-line-rule);
   background: var(--sm-surface-ground);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-3)) 0, 100% var(--sm-space-3), 100% 100%, var(--sm-space-3) 100%, 0 calc(100% - var(--sm-space-3)));
 }
 .word {
   display: inline-flex;
@@ -147,18 +146,12 @@ header.top {
   font-size: var(--sm-font-size-small);
   font-weight: var(--sm-font-weight-medium);
 }
-nav { display: flex; justify-content: flex-end; gap: var(--sm-space-1); flex-wrap: wrap; align-items: center }
-nav .devnet { margin-left: var(--sm-space-3) }
-nav a {
-  color: var(--sm-text-secondary);
-  text-decoration: none;
-  font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-medium);
-  padding: var(--sm-space-3) var(--sm-space-4);
-  border-radius: var(--sm-radius-control);
+.header-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-2);
 }
-nav a:hover { color: var(--sm-text-primary); background: var(--sm-surface-sheet) }
-nav a[aria-current="page"] { color: var(--sm-text-primary); background: var(--sm-surface-sheet) }
 
 .mode {
   all: unset;
@@ -169,6 +162,7 @@ nav a[aria-current="page"] { color: var(--sm-text-primary); background: var(--sm
   height: var(--sm-size-target);
   color: var(--sm-accent-touchText);
   background: var(--sm-surface-sheet);
+  border-radius: var(--sm-radius-data);
   cursor: pointer;
 }
 .mode svg {
@@ -182,6 +176,70 @@ nav a[aria-current="page"] { color: var(--sm-text-primary); background: var(--sm
 }
 :root[data-theme="light"] .mode .moon { display: none }
 :root[data-theme="dark"] .mode .sun { display: none }
+
+.explorer-menu { position: relative }
+.explorer-menu summary { list-style: none }
+.explorer-menu summary::-webkit-details-marker { display: none }
+.menu-control {
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: var(--sm-size-target);
+  height: var(--sm-size-target);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
+  border-radius: var(--sm-radius-data);
+  cursor: pointer;
+}
+.menu-control svg {
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: square;
+}
+.menu-register {
+  position: absolute;
+  top: calc(100% + var(--sm-space-3));
+  right: 0;
+  width: min(22rem, calc(100vw - 2 * var(--sm-space-7)));
+  padding: var(--sm-space-5);
+  background: var(--sm-surface-raised);
+  border: .5px solid var(--sm-line-rule);
+  border-top-color: var(--sm-line-highlight);
+  clip-path: polygon(0 0, calc(100% - var(--sm-space-3)) 0, 100% var(--sm-space-3), 100% 100%, 0 100%);
+}
+.menu-register-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sm-space-5);
+  padding-bottom: var(--sm-space-4);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+  border-bottom: .5px solid var(--sm-line-rule);
+}
+.menu-register a {
+  display: grid;
+  grid-template-columns: var(--sm-space-8) 1fr;
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-4) 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  text-decoration: none;
+  border-bottom: .5px solid var(--sm-line-rule);
+}
+.menu-register a span {
+  padding-top: var(--sm-space-1);
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-micro);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.menu-register a:hover,
+.menu-register a[aria-current="page"] { color: var(--sm-accent-touchText) }
 
 /* Where this runs. Shrunk from a paragraph to one word, never removed:
  * EXPLORER.md section 4 lets an operational fact shrink, never disappear.
@@ -454,7 +512,7 @@ code, .mono, .addr, dl.hashes dd, pre, .formula {
 .field {
   flex: 1 1 240px;
   background: var(--sm-surface-sheet);
-  border-radius: var(--sm-radius-control);
+  border-radius: var(--sm-radius-data);
   display: flex;
   align-items: center;
   padding: 0 var(--sm-space-6);
@@ -477,13 +535,13 @@ code, .mono, .addr, dl.hashes dd, pre, .formula {
   letter-spacing: var(--sm-font-tracking-body);
   font-weight: var(--sm-font-weight-regular);
 }
-.tray { background: var(--sm-surface-tray); border-radius: var(--sm-radius-control); padding: var(--sm-size-tray); display: flex }
+.tray { background: var(--sm-surface-tray); border-radius: var(--sm-radius-data); padding: var(--sm-size-tray); display: flex }
 button.key {
   all: unset;
   cursor: pointer;
   background: var(--sm-accent-touch);
   color: var(--sm-text-onTouch);
-  border-radius: var(--sm-radius-control);
+  border-radius: var(--sm-radius-data);
   padding: 0 var(--sm-space-8);
   min-height: var(--sm-size-target);
   display: flex;
@@ -501,7 +559,7 @@ button.quiet {
   font-size: var(--sm-font-size-small);
   font-weight: var(--sm-font-weight-medium);
   padding: var(--sm-space-3) var(--sm-space-5);
-  border-radius: var(--sm-radius-control);
+  border-radius: var(--sm-radius-data);
   background: var(--sm-surface-sheet);
   border: .5px solid var(--sm-line-rule);
   min-height: var(--sm-size-target);
@@ -530,7 +588,7 @@ pre.editable:focus { outline: 2px solid var(--sm-accent-provenance); outline-off
   letter-spacing: var(--sm-font-tracking-serial);
   font-variant-numeric: tabular-nums lining-nums;
   padding: var(--sm-space-2) var(--sm-space-4);
-  border-radius: var(--sm-radius-control);
+  border-radius: var(--sm-radius-data);
   background: var(--sm-surface-sheet);
   color: var(--sm-text-secondary);
   border: .5px solid var(--sm-line-rule);
@@ -698,16 +756,6 @@ footer p { color: var(--sm-text-tertiary); max-width: var(--sm-size-readable) }
 }
 
 @media (max-width: 760px) {
-  header.top {
-    grid-template-columns: 1fr auto;
-    gap: var(--sm-space-2) var(--sm-space-3);
-  }
-  header.top nav {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    justify-content: flex-start;
-    border-top: .5px solid var(--sm-line-rule);
-  }
   .word-lockup small { display: none }
   .pagination { justify-content: flex-start; overflow-x: auto }
 }
