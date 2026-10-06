@@ -43,17 +43,6 @@ body {
   min-height: 100vh;
 }
 
-/* Grain: static monochrome noise on ground, never animated. The only texture. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: .04;
-  z-index: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); /* design-lint-disable-line lens-scope the ground grain is an approved texture, foundations section 7, and feTurbulence is how it is drawn */
-}
-
 /* The page is narrower than the token's full content width by a gutter's
  * worth each side: generous margins are the saleroom (foundations.md section
  * 4), and they are where the entrance pillars stand. */

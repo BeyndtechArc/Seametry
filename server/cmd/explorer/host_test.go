@@ -13,17 +13,35 @@ func TestLayoutIncludesHouseMarkAndModeControl(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read layout template: %v", err)
 	}
-	if !bytes.Contains(data, []byte(`<link rel="icon" href="seametry-mark.svg" type="image/svg+xml">`)) {
-		t.Fatal("Explorer layout does not load the supplied house mark as its favicon")
-	}
 	for _, want := range [][]byte{
-		[]byte(`<img class="house-mark" src="seametry-mark.svg" alt="">`),
+		[]byte(`<link rel="icon" href="{{.MarkAsset}}" type="image/svg+xml">`),
+		[]byte(`<img class="house-mark" src="{{.MarkAsset}}" alt="">`),
 		[]byte(`aria-label="Use dark mode"`),
 		[]byte(`<script src="theme.js"></script>`),
 	} {
 		if !bytes.Contains(data, want) {
 			t.Errorf("Explorer layout is missing %q", want)
 		}
+	}
+}
+
+func TestExplorerGroundDoesNotRepaintWithViewport(t *testing.T) {
+	data, err := assets.ReadFile("assets/explorer.css")
+	if err != nil {
+		t.Fatalf("read Explorer stylesheet: %v", err)
+	}
+	css := string(data)
+	start := strings.Index(css, "body::before {")
+	if start < 0 {
+		return
+	}
+	end := strings.Index(css[start:], "}\n")
+	if end < 0 {
+		t.Fatal("body::before has no closing brace")
+	}
+	ground := css[start : start+end]
+	if strings.Contains(ground, "position: fixed") || strings.Contains(ground, "feTurbulence") {
+		t.Fatal("Explorer ground uses a fixed SVG filter, which repaints while the visitor scrolls")
 	}
 }
 

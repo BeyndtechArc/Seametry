@@ -19,6 +19,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"embed"
 	"encoding/base64"
 	"encoding/json"
@@ -195,6 +196,7 @@ type staleSurveyRow struct {
 type page struct {
 	Title       string
 	Nav         string
+	MarkAsset   string
 	Generated   string
 	Instruments []Instrument
 	Survey      *survey
@@ -266,6 +268,7 @@ func main() {
 	}
 
 	base := page{
+		MarkAsset:   versionedAsset("seametry-mark.svg", filepath.Join("clients", "web", "public", "logo.svg")),
 		Generated:   time.Now().UTC().Format("2 January 2006, 15:04 UTC"),
 		Instruments: instruments,
 		Survey:      surveyData,
@@ -354,6 +357,15 @@ func main() {
 	if *addr != "" {
 		serve(*out, *addr)
 	}
+}
+
+func versionedAsset(name, source string) string {
+	data, err := os.ReadFile(source)
+	if err != nil {
+		fail(fmt.Errorf("read %s for asset revision: %w", source, err))
+	}
+	sum := sha256.Sum256(data)
+	return fmt.Sprintf("%s?v=%x", name, sum[:8])
 }
 
 func evidenceFile(n int) string {

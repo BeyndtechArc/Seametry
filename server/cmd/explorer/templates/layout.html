@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{{.Title}} · Seametry</title>
-<link rel="icon" href="seametry-mark.svg" type="image/svg+xml">
+<link rel="icon" href="{{.MarkAsset}}" type="image/svg+xml">
 <script src="theme.js"></script>
 <link rel="preload" href="fonts/Switzer-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="tokens.css">
@@ -14,7 +14,7 @@
 <div class="wrap">
   <header class="top">
     <a class="word" href="index.html" aria-label="Seametry Explorer">
-      <img class="house-mark" src="seametry-mark.svg" alt="">
+      <img class="house-mark" src="{{.MarkAsset}}" alt="">
       <span class="word-lockup"><strong>Seametry</strong><small>Explorer</small></span>
     </a>
     <nav aria-label="Explorer">
