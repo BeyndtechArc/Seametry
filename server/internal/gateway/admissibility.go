@@ -10,14 +10,6 @@ import (
 	"github.com/BeyndtechArc/Seametry/server/internal/policy"
 )
 
-// admissibilityGrade is docs/prd/API.md's stated assumption: nothing in this
-// codebase classifies grade from real data yet, and Storm chose to match
-// server/cmd/explorer/main.go's own hardcoded "certificate" rather than
-// report every instrument ungraded, which would block all of them on
-// CodeUngraded before real classification exists. Revisit together with
-// that file's own hardcode when grade is decoded for real.
-const admissibilityGrade = "certificate"
-
 // evaluate is server/cmd/explorer/main.go's decide(), read from what A2
 // persisted instead of from fixture files: the same policy.FromRegistry,
 // policy.DepthFromCurve and policy.Evaluate calls, so a live decision and
@@ -35,7 +27,7 @@ func (s Server) evaluate(ctx context.Context, d *decodedMint, mint string, asOf 
 	}
 	json.Unmarshal(d.Observation.Payload, &p)
 
-	input, err := policy.FromRegistry(p.Symbol, mint, admissibilityGrade, d.Mint, asOf, p.Slot, false, false)
+	input, err := policy.FromRegistry(p.Symbol, mint, d.Mint, asOf, p.Slot, false, false)
 	if err != nil {
 		return policy.Result{}, fmt.Errorf("building policy input for %s: %w", mint, err)
 	}

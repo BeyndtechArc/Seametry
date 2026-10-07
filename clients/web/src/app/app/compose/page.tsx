@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { admissions, blockingFact, isAdmitted } from "@/lib/allocation/admissions";
+import { admissions, blockingFact, gradeOf, isAdmitted } from "@/lib/allocation/admissions";
 import { quoteKey } from "@/lib/compose/quote-config";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import { PageHeader } from "../_shell/page-header";
@@ -18,6 +18,7 @@ export default async function ComposePage() {
     mint: admission.instrument.mint,
     symbol: admission.instrument.symbol ?? admission.instrument.mint,
     issuer: admission.issuer,
+    grade: gradeOf(admission),
     decimals: admission.decimals,
     decision: admission.capacity_decision.decision,
     admitted: isAdmitted(admission),

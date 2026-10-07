@@ -13,16 +13,19 @@
 // Usage:
 //
 //	go run ./server/cmd/depth
+//	go run ./server/cmd/depth -symbols SPCX,NFLX   # measure only these
 package main
 
 import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/BeyndtechArc/Seametry/server/internal/amount"
@@ -70,8 +73,14 @@ func main() {
 		fmt.Fprintln(os.Stderr, "depth: JUP_KEY is not set. The public endpoint answers without one, but at a lower limit.")
 	}
 
+	symbols := flag.String("symbols", "", "comma separated fixture symbols to measure; empty measures every captured instrument")
+	flag.Parse()
+
 	mints, err := loadMints()
 	if err != nil {
+		fail(err)
+	}
+	if mints, err = selectMints(mints, *symbols); err != nil {
 		fail(err)
 	}
 
@@ -198,6 +207,31 @@ func loadMints() ([]mint, error) {
 		out = append(out, mint{f.Symbol, f.Address, decoded.Decimals})
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].symbol < out[j].symbol })
+	return out, nil
+}
+
+// selectMints keeps the instruments a comma separated list names, so a newly
+// captured instrument can be measured without re-quoting the rest: the
+// admissions snapshot reads each instrument's own captures, and re-quoting
+// them would move every existing capacity on the day a new one is added.
+// A name with no fixture is refused rather than skipped.
+func selectMints(all []mint, list string) ([]mint, error) {
+	if strings.TrimSpace(list) == "" {
+		return all, nil
+	}
+	bySymbol := make(map[string]mint, len(all))
+	for _, m := range all {
+		bySymbol[m.symbol] = m
+	}
+	var out []mint
+	for _, symbol := range strings.Split(list, ",") {
+		symbol = strings.TrimSpace(symbol)
+		m, ok := bySymbol[symbol]
+		if !ok {
+			return nil, fmt.Errorf("-symbols names %q, which has no fixture in shared/fixtures/mainnet; capture it first: go run ./server/cmd/capture -symbols %s", symbol, symbol)
+		}
+		out = append(out, m)
+	}
 	return out, nil
 }
 

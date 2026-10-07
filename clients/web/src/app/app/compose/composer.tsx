@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Field, Grade, LotMark, QuietAction, Rule, Stamp } from "@seametry/ui";
+import { Field, Grade, LotMark, QuietAction, Rule, Stamp, type GradeName } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
 import { logoFor } from "@/lib/instrument-logos";
 import { MAX_CONSTITUENTS, SHARE_DECIMALS } from "@/lib/hall/constants";
@@ -13,6 +13,7 @@ export type Candidate = {
   mint: string;
   symbol: string;
   issuer: string;
+  grade: GradeName;
   decimals: number;
   decision: "ALLOW" | "WARN" | "BLOCK";
   admitted: boolean;
@@ -152,7 +153,7 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
                   </span>
                 </label>
                 <div className={styles.marks}>
-                  <Grade name="Certificate" />
+                  <Grade name={candidate.grade} />
                   {candidate.admitted ? (
                     <Stamp kind={candidate.decision === "ALLOW" ? "allow" : "warn"} reason={candidate.decision === "ALLOW" ? "Admitted" : "Admitted with a warning"} />
                   ) : (

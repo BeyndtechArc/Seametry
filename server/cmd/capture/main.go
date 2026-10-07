@@ -11,6 +11,7 @@
 //
 //	go run ./server/cmd/capture                 # refresh every target in targets.json
 //	go run ./server/cmd/capture -rpc https://...
+//	go run ./server/cmd/capture -symbols SPCX,NFLX   # capture only these
 //	go run ./server/cmd/capture -logos          # mirror each fixture's issuer logo
 //
 // -logos reads the fixtures already committed and never refetches a mint, so
@@ -35,6 +36,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -99,6 +101,7 @@ func main() {
 	logos := flag.Bool("logos", false, "mirror the logo each fixture's on-chain metadata names, instead of capturing mints")
 	logoDir := flag.String("logo-dir", filepath.Join("clients", "web", "public", "instruments"), "where mirrored logos are written")
 	logoManifest := flag.String("logo-manifest", filepath.Join("shared", "evidence", "instrument-logos.json"), "the record of every logo, captured or not")
+	symbols := flag.String("symbols", "", "comma separated symbols from targets.json to capture; empty captures every target")
 	flag.Parse()
 
 	if *logos {
@@ -110,6 +113,9 @@ func main() {
 
 	targets, err := loadTargets(filepath.Join(*dir, "targets.json"))
 	if err != nil {
+		fail(err)
+	}
+	if targets, err = selectTargets(targets, *symbols); err != nil {
 		fail(err)
 	}
 	fmt.Printf("capturing %d mints from %s at %s commitment\n", len(targets), *rpc, *commitment)
@@ -186,6 +192,32 @@ func loadTargets(path string) ([]Target, error) {
 		return nil, fmt.Errorf("%s lists no targets", path)
 	}
 	return targets, nil
+}
+
+// selectTargets keeps the targets a comma separated list names, so a new
+// issuer's mints can be captured without re-reading every committed fixture:
+// a re-read moves the slot and bytes the decoder and policy goldens were
+// checked against. An empty list keeps every target. A name not in
+// targets.json is refused rather than skipped, since a typo would otherwise
+// capture nothing and say so only in a count.
+func selectTargets(targets []Target, list string) ([]Target, error) {
+	if strings.TrimSpace(list) == "" {
+		return targets, nil
+	}
+	bySymbol := make(map[string]Target, len(targets))
+	for _, t := range targets {
+		bySymbol[t.Symbol] = t
+	}
+	var out []Target
+	for _, symbol := range strings.Split(list, ",") {
+		symbol = strings.TrimSpace(symbol)
+		t, ok := bySymbol[symbol]
+		if !ok {
+			return nil, fmt.Errorf("-symbols names %q, which targets.json does not list; add it there first, with the reason it earns a fixture", symbol)
+		}
+		out = append(out, t)
+	}
+	return out, nil
 }
 
 func fetchAccounts(endpoint string, addresses []string, commitment string) (uint64, []*accountValue, error) {

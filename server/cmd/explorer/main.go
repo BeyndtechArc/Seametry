@@ -110,7 +110,7 @@ var depthSizes = []int64{100, 1000, 10000}
 // decide runs the engine's own decision on the captured bytes, and returns the
 // depth curve it was made against so the page can show its working.
 func decide(f fixture, mint *registry.Mint, asOf time.Time) (policy.Result, []DepthRow, int64, policy.Result, error) {
-	input, err := policy.FromRegistry(f.Symbol, f.Address, "certificate", mint, asOf, f.Slot, halted[f.Symbol], false)
+	input, err := policy.FromRegistry(f.Symbol, f.Address, mint, asOf, f.Slot, halted[f.Symbol], false)
 	if err != nil {
 		return policy.Result{}, nil, 0, policy.Result{}, err
 	}

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ConditionReport, Field, Grade, Key, LotMark, QuietAction, QuoteBlock, Rule, Stamp } from "@seametry/ui";
+import { ConditionReport, Field, Grade, Key, LotMark, QuietAction, QuoteBlock, Rule, Stamp, type GradeName } from "@seametry/ui";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
@@ -15,6 +15,7 @@ export type OfferedLot = {
   mint: string;
   symbol: string;
   issuer: string;
+  grade: GradeName;
   decision: string;
   capacityUsdc: number;
   stampReason: string;
@@ -395,7 +396,7 @@ export function AllocationFlow({
                         </span>
                       </label>
                       <div className={styles.lotMarks}>
-                        <Grade name="Certificate" />
+                        <Grade name={lot.grade} />
                         <Stamp kind={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
                       </div>
                     </div>

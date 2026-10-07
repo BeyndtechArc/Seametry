@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { headers } from "next/headers";
-import { blockingFact, admissions, partitionAdmissions } from "@/lib/allocation/admissions";
+import { blockingFact, admissions, gradeOf, partitionAdmissions } from "@/lib/allocation/admissions";
 import { allocationConfig, requestCountry } from "@/lib/allocation/config";
 import { ROUTING_FEE_BPS, SLIPPAGE_BPS, countryGate } from "@/lib/allocation/rules";
 import { formatAmount } from "@/lib/amount";
@@ -46,6 +46,7 @@ export default async function AllocationPage() {
       mint: lot.instrument.mint,
       symbol: lot.instrument.symbol ?? lot.instrument.mint,
       issuer: lot.issuer,
+      grade: gradeOf(lot),
       decision: lot.capacity_decision.decision,
       capacityUsdc: lot.capacity_usdc,
       stampReason: beyondPowers[0] ?? `Admitted through ${formatAmount(BigInt(lot.capacity_usdc), 0)} USDC on the captured depth curve.`,

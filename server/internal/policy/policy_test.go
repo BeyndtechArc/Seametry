@@ -78,7 +78,7 @@ func inputsFromFixtures(t *testing.T) []Input {
 		// Halted state is not in the mint; TQQQx and CRDAx were halted at
 		// capture, per their fixture notes.
 		halted := f.Symbol == "TQQQx" || f.Symbol == "CRDAx"
-		in, err := FromRegistry(f.Symbol, f.Address, "certificate", mint, referenceTime, f.Slot, halted, false)
+		in, err := FromRegistry(f.Symbol, f.Address, mint, referenceTime, f.Slot, halted, false)
 		if err != nil {
 			t.Fatalf("%s: %v", f.Symbol, err)
 		}

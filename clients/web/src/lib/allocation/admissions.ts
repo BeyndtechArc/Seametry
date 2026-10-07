@@ -1,3 +1,4 @@
+import type { GradeName } from "@seametry/ui";
 import snapshot from "../../../../../shared/evidence/admissions.json";
 import type { Decision, Instrument } from "../terminal-contract";
 
@@ -43,6 +44,22 @@ export function partitionAdmissions(all: Admission[]) {
 
 export function findAdmission(mint: string): Admission | undefined {
   return admissions.instruments.find((admission) => admission.instrument.mint === mint);
+}
+
+const gradeNames: Record<string, GradeName> = {
+  entitlement: "Entitlement",
+  certificate: "Certificate",
+  interest: "Interest",
+  ungraded: "Ungraded",
+};
+
+/**
+ * The engine's grade, as the interface names it. A grade this build does not
+ * know shows as Ungraded rather than borrowing a known name, since a legal
+ * shape mislabelled is worse than one left unclassified.
+ */
+export function gradeOf(admission: Admission): GradeName {
+  return gradeNames[admission.instrument.grade] ?? "Ungraded";
 }
 
 /** The first reason that blocked a refused lot, stated as the engine wrote it. */

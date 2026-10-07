@@ -59,13 +59,7 @@ func (s Server) loadMint(ctx context.Context, mint string, asOf time.Time) (*dec
 	return &decodedMint{Mint: m, Prerogatives: prerogatives, Observation: obs}, true, nil
 }
 
-// toAPIInstrument builds the response shape from a decoded mint. Grade is
-// "certificate" for every instrument: nothing in this codebase classifies
-// grade from real data yet (server/cmd/explorer/main.go's loadInstruments
-// hardcodes the same value for its own static build), and Storm chose to
-// match that existing behavior rather than report every instrument as
-// ungraded, which would block every one of them on CodeUngraded before
-// real classification exists. Revisit when grade is decoded for real.
+// toAPIInstrument builds the response shape from a decoded mint.
 func toAPIInstrument(d *decodedMint, mint string) api.Instrument {
 	// The slot is real, not derived from a timestamp (EXPLORER.md section
 	// 3.2: "a fact with no slot is an assertion"): adapter_solana.go's
@@ -92,7 +86,7 @@ func toAPIInstrument(d *decodedMint, mint string) api.Instrument {
 func InstrumentView(m *registry.Mint, p registry.Prerogatives, mint, symbol string, slot uint64, capturedAt *time.Time, resolveAt time.Time) api.Instrument {
 	inst := api.Instrument{
 		Mint:              mint,
-		Grade:             "certificate",
+		Grade:             p.Grade(),
 		Prerogatives:      toAPIPrerogatives(p.Sentences()),
 		UnknownExtensions: []int{},
 	}

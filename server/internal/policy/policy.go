@@ -481,18 +481,20 @@ func wholeUSDC(size amount.Amount) (int64, error) {
 	return whole.Atoms().Int64(), nil
 }
 
-// FromRegistry flattens a decoded mint into decision inputs.
+// FromRegistry flattens a decoded mint into decision inputs. The grade comes
+// from the issuer the mint's own keys identify, so an unrecognised token is
+// ungraded and blocked rather than graded by whoever calls this.
 //
 // It lives here rather than in registry so that registry stays a decoder with
 // no opinion about what its findings mean.
-func FromRegistry(symbol, mint, grade string, m *registry.Mint, asOf time.Time, slot uint64, halted, quarantined bool) (Input, error) {
+func FromRegistry(symbol, mint string, m *registry.Mint, asOf time.Time, slot uint64, halted, quarantined bool) (Input, error) {
 	prerogatives, err := m.Prerogatives()
 	if err != nil {
 		return Input{}, fmt.Errorf("policy: %w", err)
 	}
 
 	in := Input{
-		Symbol: symbol, Mint: mint, Grade: grade,
+		Symbol: symbol, Mint: mint, Grade: prerogatives.Grade(),
 		AsOf: asOf.UTC(), ObservedAtSlot: slot,
 		HaltedByIssuer: halted, Quarantined: quarantined,
 		Prerogatives: PrerogativeFacts{
