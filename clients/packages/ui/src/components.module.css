@@ -778,24 +778,47 @@
   background: transparent;
 }
 
+/* Steps as terminals on one trace: each mark joined to the next by a broken
+   line, solid once the step behind it is finished, like a circuit run. */
 .stepTrack {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--sm-space-2) var(--sm-space-6);
+  align-items: center;
   margin: 0;
   padding: 0;
-  border-bottom: 0.5px solid var(--sm-line-rule);
   list-style: none;
+}
+
+.stepTrack li {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.stepTrack li:not(:last-child) {
+  flex: 1;
+}
+
+.stepTrack li:not(:last-child)::after {
+  content: "";
+  flex: 1;
+  min-width: var(--sm-space-8);
+  margin: 0 var(--sm-space-4);
+  border-top: 1px dashed var(--sm-line-strong);
+}
+
+.stepTrack li[data-state="done"]:not(:last-child)::after {
+  border-top-style: solid;
+  border-top-color: var(--sm-text-secondary);
 }
 
 .stepTrack li > * {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: var(--sm-space-3);
   min-height: var(--sm-size-target);
   padding: 0;
   border: 0;
-  border-bottom: 2px solid transparent;
   color: var(--sm-text-tertiary);
   background: none;
   font-family: var(--sm-font-family-ui);
@@ -813,9 +836,14 @@
 }
 
 .stepTrack li[data-state="current"] > * {
-  border-bottom-color: var(--sm-text-primary);
   color: var(--sm-text-primary);
   font-weight: var(--sm-font-weight-medium);
+}
+
+.stepTrack li[data-state="current"] > * b {
+  border-color: var(--sm-surface-inverse);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
 }
 
 .stepTrack li[data-state="done"] > button {

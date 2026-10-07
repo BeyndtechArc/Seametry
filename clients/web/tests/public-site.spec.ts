@@ -142,37 +142,37 @@ test("the Allocation keeps its terms behind an info note, and the order sheet st
   await expect(sheet.getByText("0.50% of each swap", { exact: true })).toBeVisible();
 });
 
-test("the Allocation asks one question per step, the plan beside it, and hides deployment plumbing", async ({ page }) => {
+test("the Allocation builds the plan in one step and reviews it in the next, the order sheet beside both", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app/allocation");
   const main = page.getByRole("main");
   const steps = main.getByRole("list", { name: "Allocation steps" });
-  await expect(steps.locator("[aria-current=step]")).toHaveText("1Choose");
-  await expect(main.getByLabel("USDC to spend")).toHaveCount(0);
+  await expect(steps.locator("[aria-current=step]")).toHaveText("1Build");
 
   const sheet = page.getByRole("complementary", { name: "Order sheet" });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Direct ownership", { exact: true })).toBeVisible();
   await expect(page.getByText(/JUPITER_API_KEY|MAINNET_RPC_URL|ALLOCATION_APPROVAL_SECRET|ALLOCATION_BLOCKED_COUNTRIES|ALLOCATION_FEE_WALLET/)).toHaveCount(0);
 
-  // Continue waits for an answer, and says what it is waiting for.
-  const next = main.getByRole("button", { name: "Set amount" });
-  await expect(next).toBeDisabled();
-  await expect(main.getByText("Nothing chosen", { exact: true })).toBeVisible();
+  // Review waits for a plan, and the bar says what it is waiting for.
+  const review = main.getByRole("button", { name: "Review purchases" });
+  await expect(review).toBeDisabled();
+  await expect(main.getByText("Choose what the basket holds.", { exact: true })).toBeVisible();
 
   // Two lots, 250 USDC: 125 each; a two-constituent plan pays 15 basis
-  // points, 0.1875 each, 0.375 in all. Back to one lot, 25 basis points.
+  // points, 0.1875 each, 0.375 in all. Down to one lot, 25 basis points.
   const lots = main.locator('[aria-label="Choose the constituents"] > ul > li input[type=checkbox]');
   await lots.nth(0).check();
   await lots.nth(1).check();
-  await next.click();
-  await expect(steps.locator("[aria-current=step]")).toHaveText("2Amount");
   await main.getByLabel("USDC to spend").fill("250");
-  const fee = sheet.getByText("Seametry routing fee, 0.15%", { exact: true });
-  await expect(fee.locator("xpath=following-sibling::dd")).toHaveText("0.375000 USDC");
-  await steps.getByRole("button", { name: "Choose" }).click();
+  await expect(sheet.getByText("Seametry routing fee, 0.15%", { exact: true }).locator("xpath=following-sibling::dd")).toHaveText("0.375000 USDC");
   await lots.nth(1).uncheck();
   await expect(sheet.getByText("Seametry routing fee, 0.25%", { exact: true }).locator("xpath=following-sibling::dd")).toHaveText("0.625000 USDC");
+
+  await review.click();
+  await expect(steps.locator("[aria-current=step]")).toHaveText("2Review");
+  await steps.getByRole("button", { name: "Build" }).click();
+  await expect(main.getByLabel("USDC to spend")).toHaveValue("250");
 });
 
 test("on a phone, the Review step carries the order sheet where signing happens", async ({ page }) => {
@@ -182,7 +182,6 @@ test("on a phone, the Review step carries the order sheet where signing happens"
 
   await expect(page.getByRole("complementary", { name: "Order sheet" })).toBeHidden();
   await main.locator('[aria-label="Choose the constituents"] > ul > li input[type=checkbox]').first().check();
-  await main.getByRole("button", { name: "Set amount" }).click();
   await main.getByLabel("USDC to spend").fill("10");
   await main.getByRole("button", { name: "Review purchases" }).click();
   await expect(main.getByText("Direct ownership", { exact: true }).filter({ visible: true })).toHaveCount(1);

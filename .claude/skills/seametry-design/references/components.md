@@ -206,9 +206,9 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 
 ### Step track
 **Answers:** where am I in this flow, and what is left?
-**Anatomy:** the flow's steps in order, numbered, one line; the current step by weight and a rule beneath, finished steps as quiet links back, later steps in `text.tertiary` and inert. Below the step's content, a step bar pinned to the bottom of the view: Back (Quiet action), one line summarising the plan so far, and Continue (Route action as a button).
+**Anatomy:** the flow's steps in order on one trace: each a numbered square mark, joined to the next by a dashed line that turns solid once the step behind it is finished, like a circuit run. The current mark is inverted, finished steps are quiet links back, later steps sit in `text.tertiary` and inert. Below the step's content, a step bar pinned to the bottom of the view: Back (Quiet action), one line summarising the plan so far, and Continue (Route action as a button). The bar may hold the step's one input, compact, its message carried by the summary line.
 **States:** each step current, finished or ahead; Continue unavailable with its reason in the bar; Back unavailable once anything irreversible has started, with that reason.
-**Rules:** one question per step; the plan survives moving between steps. Never skips a step that has something to decide. Used for consumer flows (Allocation; the mobile app); a deliberate, desktop sponsor tool such as Compose stays on one page (Storm, 7 October 2026).
+**Rules:** one question per step; the plan survives moving between steps. Never skips a step that has something to decide. Used for consumer flows (Allocation, two steps: Build and Review; the mobile app); a deliberate, desktop sponsor tool such as Compose stays on one page (Storm, 7 October 2026).
 
 ### Mark line
 **Answers:** what backs this row, and what was decided about it, in one glance?

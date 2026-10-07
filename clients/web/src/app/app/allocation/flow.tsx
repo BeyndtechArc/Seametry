@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ConditionReport, ContinueAction, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, StepTrack, Stamp, type GradeName } from "@seametry/ui";
+import { ConditionReport, ContinueAction, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, StepTrack, Stamp, type GradeName } from "@seametry/ui";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import { logoFor } from "@/lib/instrument-logos";
@@ -353,17 +353,13 @@ export function AllocationFlow({
     />
   );
 
-  const steps = ["Choose", "Amount", "Review"];
-  const continueReason =
-    step === 0
-      ? chosen.length === 0
-        ? "Choose at least one constituent."
-        : undefined
-      : step === 1
-        ? (amountProblem ?? (legs.length === 0 ? "Enter the USDC to spend." : undefined))
-        : undefined;
+  // Two steps: building the plan (what and how much) is one decision, made
+  // with the list in view; signing it is the other.
+  const steps = ["Build", "Review"];
+  const continueReason = chosen.length === 0 ? "Choose at least one constituent." : (amountProblem ?? (legs.length === 0 ? "Enter the USDC to spend." : undefined));
   const backReason = started ? "Purchases have started. Start a new allocation to change the plan." : undefined;
   const planLine = [chosen.length === 0 ? "Nothing chosen" : `${chosen.length} chosen`, parsed && "atoms" in parsed ? total : ""].filter(Boolean).join(", ");
+  const buildLine = amountProblem ?? (legs.length > 0 ? describeSplit(legs, USDC_SCALE, "USDC") : chosen.length === 0 ? "Choose what the basket holds." : `${chosen.length} chosen. Enter one total; Seametry divides it evenly.`);
 
   return (
     <div className={styles.flow}>
@@ -480,24 +476,7 @@ export function AllocationFlow({
               </section>
           ) : null}
 
-          {step === 1 ? (
-            <section className={styles.section} aria-label="Set the basket amount">
-              <Field
-                id="allocation-usdc"
-                label="USDC to spend"
-                inputMode="decimal"
-                autoComplete="off"
-                placeholder="250"
-                value={typed}
-                disabled={started}
-                invalid={Boolean(amountProblem)}
-                message={amountProblem ?? (legs.length > 0 ? describeSplit(legs, USDC_SCALE, "USDC") : "Seametry divides one total evenly across what you chose.")}
-                onChange={(event) => setTyped(event.target.value)}
-              />
-            </section>
-          ) : null}
-
-          {step === 2 && legs.length > 0 ? (
+          {step === 1 && legs.length > 0 ? (
             <>
               {/* On a phone the order sheet is not beside the steps, so the
                   step where signing happens carries it. */}
@@ -571,23 +550,39 @@ export function AllocationFlow({
         </aside>
       </div>
 
-      <div className={styles.stepBar}>
-        {step > 0 ? (
-          <QuietAction disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(step - 1)}>
-            Back
-          </QuietAction>
+      {/* The amount lives in the bar so it stays beside the list it divides. */}
+      <div className={styles.stepBar} data-step={step === 0 ? "build" : "review"}>
+        {step === 0 ? (
+          <>
+            <label className={styles.barAmount}>
+              <span>USDC to spend</span>
+              <input
+                id="allocation-usdc"
+                inputMode="decimal"
+                autoComplete="off"
+                placeholder="250"
+                value={typed}
+                aria-invalid={Boolean(amountProblem) || undefined}
+                aria-describedby="allocation-plan"
+                onChange={(event) => setTyped(event.target.value)}
+              />
+            </label>
+            <span className={styles.stepPlan} id="allocation-plan" aria-live="polite" data-invalid={Boolean(amountProblem) || undefined}>
+              {buildLine}
+            </span>
+            <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
+              Review purchases
+            </ContinueAction>
+          </>
         ) : (
-          <span />
-        )}
-        <span className={styles.stepPlan} aria-live="polite">
-          {step < 2 && continueReason && (step > 0 || chosen.length > 0) ? continueReason : planLine}
-        </span>
-        {step < 2 ? (
-          <ContinueAction disabled={Boolean(continueReason)} onClick={() => setStep(step + 1)}>
-            {step === 0 ? "Set amount" : "Review purchases"}
-          </ContinueAction>
-        ) : (
-          <span />
+          <>
+            <QuietAction disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
+              Back
+            </QuietAction>
+            <span className={styles.stepPlan} aria-live="polite">
+              {planLine}
+            </span>
+          </>
         )}
       </div>
     </div>
