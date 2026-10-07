@@ -2,8 +2,9 @@
 // Enforces the SKILL.md build-note discipline as a real artifact instead of an
 // internal reasoning step a fast model can silently skip under a short prompt.
 //
-// Rule: any changeset touching apps/ or packages/ui/ must also add or modify at
-// least one file under .plan/. This does not verify the note is *good*, only that
+// Rule: any changeset touching interface source (clients/web/src,
+// clients/packages/ui/src, clients/mobile) must also add or modify at least one
+// file under .plan/. This does not verify the note is *good*, only that
 // one exists; catching quality is still a human or review-pass job. Catching its
 // absence, which is the actual failure mode with a rushed model, is what this buys.
 //
@@ -14,14 +15,17 @@
 const files = process.argv.slice(2);
 if (!files.length) { console.log('No changed files passed in. Nothing to check.'); process.exit(0); }
 
-const UI_PATH = /^(apps\/|packages\/ui\/)/;
+// The interface moved under clients/ (docs/decisions/2026-09-27-repository-layout.md).
+// Until 7 October 2026 this still matched apps/ and packages/ui/, which no longer
+// exist, so it passed every change; shared/tools/design/build_note_test.mjs pins it.
+const UI_PATH = /^clients\/(web\/src|packages\/ui\/src|mobile)\//;
 const PLAN_PATH = /^\.plan\//;
 
 const uiChanges = files.filter((f) => UI_PATH.test(f));
 const planChanges = files.filter((f) => PLAN_PATH.test(f));
 
 if (!uiChanges.length) {
-  console.log('No apps/ or packages/ui/ changes in this set. Build note not required.');
+  console.log('No interface source changes in this set. Build note not required.');
   process.exit(0);
 }
 if (planChanges.length) {

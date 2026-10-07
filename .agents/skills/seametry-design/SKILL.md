@@ -32,7 +32,7 @@ Names:       <every user-facing name, from the register in foundations.md>
 Assumptions: <anything decided without being told>
 ```
 
-This is not internal reasoning to skip under a short prompt. `scripts/check-build-note.mjs` fails any changeset that touches `apps/` or `packages/ui/` with no matching file under `.plan/`, so the step is a checked artifact, not a hope. It checks that a note exists, not that it's good; if the ambiguity would change the structure, ask one question, otherwise decide, state the assumption in the note, and proceed.
+This is not internal reasoning to skip under a short prompt. `scripts/check-build-note.mjs` fails any changeset that touches interface source under `clients/` (`web/src`, `packages/ui/src`, `mobile`) with no matching file under `.plan/`, so the step is a checked artifact, not a hope. It checks that a note exists, not that it's good; if the ambiguity would change the structure, ask one question, otherwise decide, state the assumption in the note, and proceed.
 
 ## Workflow
 
