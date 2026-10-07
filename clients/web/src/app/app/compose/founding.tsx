@@ -45,6 +45,7 @@ function registerSteps(run: Run | undefined): RegisterStep[] {
 function usePublished(name: string): boolean | undefined {
   const [answer, setAnswer] = useState<{ name: string; published: boolean }>();
   useEffect(() => {
+    if (!name) return;
     let current = true;
     fetch(metadataPath(name), { cache: "no-store" })
       .then(async (response) => {
@@ -73,7 +74,14 @@ async function buildWhenReady(connection: Connection, provider: AnchorProvider, 
   }
 }
 
-export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; atomsPerShare: bigint }[]; name: string; symbol: string }) {
+export type Founding = ReturnType<typeof useFounding>;
+
+/**
+ * The founding's state and action, apart from where they are drawn: the
+ * panel shows the terms and progress, and the Key sits in the step bar with
+ * the flow's other next moves. `reason` says why it cannot run yet.
+ */
+export function useFounding(legs: { mint: string; atomsPerShare: bigint }[], name: string, symbol: string) {
   const { connected, sendTransaction } = useWallet();
   const wallet = useAnchorWallet();
   const published = usePublished(name);
@@ -125,7 +133,24 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
     ? "Log in with a devnet wallet: it signs as the sponsor."
     : published === false
       ? `No metadata is published at ${metadataPath(name)}, so this name has no URI to found with.`
-      : undefined;
+      : published === undefined
+        ? "Checking this name's published metadata."
+        : undefined;
+
+  return { name, run, open, setOpen, found, running, reason };
+}
+
+/** The founding's Key, for the step bar. */
+export function FoundingKey({ founding, disabled }: { founding: Founding; disabled: boolean }) {
+  return (
+    <Key type="button" onClick={() => void founding.found()} disabled={disabled || Boolean(founding.reason)} busy={founding.running} busyLabel="Founding">
+      Found on devnet
+    </Key>
+  );
+}
+
+export function FoundingPanel({ founding }: { founding: Founding }) {
+  const { name, run, open, setOpen, found } = founding;
 
   const sheet = (
     <ProcessDialog
@@ -171,17 +196,7 @@ export function FoundingPanel({ legs, name, symbol }: { legs: { mint: string; at
         <div><dt>Genesis</dt><dd>One share, locked forever</dd></div>
         <div><dt>URI</dt><dd>{metadataUri(name)}</dd></div>
       </dl>
-      <p className={styles.note}>The Formula, name, symbol and URI cannot change after this.</p>
-      <Key
-        type="button"
-        onClick={() => void found()}
-        disabled={Boolean(reason) || published === undefined}
-        disabledReason={reason}
-        busy={running}
-        busyLabel="Founding"
-      >
-        Found on devnet
-      </Key>
+      <p className={styles.note}>The Formula, name, symbol and URI cannot change after this. Found sits in the bar below.</p>
       {run && !open ? <QuietAction type="button" onClick={() => setOpen(true)}>{run.state === "stopped" ? "Read why the founding stopped" : "Show the founding's progress"}</QuietAction> : null}
       {sheet}
     </section>

@@ -128,8 +128,10 @@ test("Compose offers founding once the draft is priced and named, and holds the 
   const founding = main.getByTestId("founding");
   await expect(founding.getByRole("heading", { level: 3, name: "Found Stoic Crew" })).toBeVisible({ timeout: QUOTED });
   await expect(founding.getByText("https://www.seametry.xyz/alloys/stoic-crew/metadata.json", { exact: true })).toBeVisible();
-  await expect(founding.getByRole("button", { name: "Found on devnet" })).toBeDisabled();
-  await expect(founding.getByText("Log in with a devnet wallet: it signs as the sponsor.", { exact: true })).toBeVisible();
+  // The Key sits in the step bar with the flow's other next moves, and the bar says why it waits.
+  await expect(main.getByRole("button", { name: "Found on devnet" })).toBeDisabled();
+  await expect(founding.getByRole("button", { name: "Found on devnet" })).toHaveCount(0);
+  await expect(main.getByText("Log in with a devnet wallet: it signs as the sponsor.", { exact: true })).toBeVisible();
 });
 
 test("each lot draws the logo its mint names, served exactly as the capture recorded it", async ({ page, request }) => {
@@ -193,7 +195,7 @@ test("pressing Found opens the founding's steps, and a stop says what did not ha
   await main.getByRole("button", { name: "Set the Formula" }).click();
   await main.getByLabel("Name", { exact: true }).fill("Stoic Crew");
   await main.getByLabel("Symbol", { exact: true }).fill("STOIC");
-  await main.getByTestId("founding").getByRole("button", { name: "Found on devnet" }).click({ timeout: QUOTED });
+  await main.getByRole("button", { name: "Found on devnet" }).click({ timeout: QUOTED });
 
   const sheet = page.getByRole("dialog", { name: "Founding Stoic Crew" });
   await expect(sheet).toBeVisible();

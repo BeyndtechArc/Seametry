@@ -7,7 +7,7 @@ import { logoFor } from "@/lib/instrument-logos";
 import { shortIssuer } from "@/lib/issuers";
 import { MAX_CONSTITUENTS, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { USDC_SCALE, draftFormula, identityProblem, unitsToAtoms, type QuotedLeg, type Weighting } from "@/lib/compose/formula";
-import { FoundingPanel } from "./founding";
+import { FoundingKey, FoundingPanel, useFounding } from "./founding";
 import styles from "./compose.module.css";
 
 export type Candidate = {
@@ -134,6 +134,9 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
         )
       : undefined;
 
+  const foundingLegs = foundingDraft && draft && "legs" in draft ? draft.legs.map((leg) => ({ mint: leg.mint, atomsPerShare: leg.atomsPerShare })) : [];
+  const founding = useFounding(foundingLegs, name.trim(), symbol);
+
   const ready = "Ready to found on the devnet Hall.";
   const missing =
     chosen.length === 0
@@ -148,7 +151,7 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
               ? name || symbol
                 ? identity
                 : "Name and symbol needed."
-              : ready;
+              : (founding.reason ?? ready);
 
   return (
     <>
@@ -321,8 +324,8 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
             <p className={styles.note}>Appears once the Formula is priced and the name and symbol are set. Founding happens on the devnet Hall, deliberately, after this draft is agreed.</p>
           )}
         </div>
-        {foundingDraft && draft && "legs" in draft ? (
-          <FoundingPanel legs={draft.legs.map((leg) => ({ mint: leg.mint, atomsPerShare: leg.atomsPerShare }))} name={name.trim()} symbol={symbol} />
+        {foundingLegs.length > 0 ? (
+          <FoundingPanel founding={founding} />
         ) : null}
       </aside>
     </div>
@@ -342,7 +345,9 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
           <ContinueAction disabled={chosen.length === 0} title={chosen.length === 0 ? "Choose at least one constituent." : undefined} onClick={() => setStep(1)}>
             Set the Formula
           </ContinueAction>
-        ) : undefined
+        ) : (
+          <FoundingKey founding={founding} disabled={foundingLegs.length === 0} />
+        )
       }
     />
     </>

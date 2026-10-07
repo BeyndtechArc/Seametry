@@ -14,3 +14,6 @@ Assumptions: Storm, 7 October 2026: Allocation reads cleaner because it asks one
              Compose stay one page: the draft panel already gives sponsors the whole Formula at a glance.
              Below the side-by-side width the draft panel waits for Found rather than following the whole list.
              Filters shape the Formula as they shape an Allocation; search only moves the view.
+             Revised the same day: Found moves from the founding panel into the step bar, beside Back, since the bar
+             holds each step's next move. The panel keeps the founding's terms and progress; any reason Found waits
+             (no wallet, unpublished metadata) joins the bar's missing line instead of a note under the Key.
