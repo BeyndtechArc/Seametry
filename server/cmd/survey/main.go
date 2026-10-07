@@ -90,7 +90,15 @@ type report struct {
 func main() {
 	rpc := flag.String("rpc", solana.EndpointFromEnv(defaultRPC), "Solana JSON-RPC endpoint")
 	out := flag.String("out", filepath.Join("shared", "evidence"), "output directory")
+	listings := flag.Bool("listings", false, "write each issuer's published mint list, read back from the chain, instead of the multiplier survey")
 	flag.Parse()
+
+	if *listings {
+		if err := runListings(*rpc, *out); err != nil {
+			fail(err)
+		}
+		return
+	}
 
 	assets, err := fetchAssets()
 	if err != nil {
