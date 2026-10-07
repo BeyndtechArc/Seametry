@@ -176,6 +176,18 @@ test("each lot shows its own issuer's grade, so two issuers of one stock never r
   await expect(xstocks.getByText("Certificate", { exact: true })).toBeVisible();
 });
 
+test("a mirrored SVG logo is drawn on its row and served under the script policy", async ({ page, request }) => {
+  const path = "/instruments/SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb.svg";
+  const served = await request.get(path);
+  expect(served.headers()["content-type"]).toContain("image/svg+xml");
+  // The mirror refuses script in an SVG; this policy is the second guard,
+  // for anyone who opens the file directly rather than through an img.
+  expect(served.headers()["content-security-policy"]).toContain("script-src 'self' 'nonce-");
+  await page.goto("/app/allocation");
+  const row = page.getByRole("main").locator("[aria-labelledby=lots-heading] ul > li").filter({ has: page.getByText("SPCX", { exact: true }) });
+  await expect(row.locator(`img[src="${path}"]`)).toBeVisible();
+});
+
 test("the committed snapshot is the policy engine's, for every captured lot", () => {
   expect(admissions.producer).toContain("server/cmd/explorer -admissions");
   expect(admissions.instruments.length).toBeGreaterThan(0);

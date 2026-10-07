@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -24,9 +25,13 @@ import (
 // what the issuer served at a recorded moment, with its digest, and a later
 // change on the issuer's side cannot change our pages.
 //
-// Only raster images are kept. An SVG is a document that can carry script,
-// and this one would be served from Seametry's own origin, so it is recorded
-// as unsupported rather than mirrored.
+// An SVG is a document that can carry script, and a mirrored one is served
+// from Seametry's own origin, so one is kept only when every element and
+// attribute in it is plain drawing (svgElements, svgAttributes) and every
+// reference stays inside the file. Anything else is recorded as unsupported,
+// naming what refused it. Backpack Securities serves every logo as SVG. The
+// site's Content-Security-Policy also covers /instruments, so a script that
+// got past this check would still not run.
 
 // LogoState says what became of one fixture's logo. Every fixture gets an
 // entry: a logo that could not be mirrored is recorded with the reason,
@@ -91,6 +96,87 @@ func sniffRaster(body []byte) (string, string, bool) {
 	return "", "", false
 }
 
+const svgNamespace = "http://www.w3.org/2000/svg"
+
+var svgElements = setOf("svg", "g", "defs", "path", "rect", "circle", "ellipse", "line", "polyline", "polygon",
+	"linearGradient", "radialGradient", "stop", "clipPath", "title", "desc")
+
+var svgAttributes = setOf("xmlns", "version", "width", "height", "viewBox", "id", "transform", "opacity",
+	"d", "x", "y", "x1", "y1", "x2", "y2", "cx", "cy", "r", "rx", "ry", "points",
+	"fill", "fill-rule", "fill-opacity", "clip-rule", "clip-path",
+	"stroke", "stroke-width", "stroke-linecap", "stroke-linejoin", "stroke-opacity",
+	"offset", "stop-color", "stop-opacity", "gradientUnits", "gradientTransform")
+
+func setOf(names ...string) map[string]bool {
+	set := make(map[string]bool, len(names))
+	for _, name := range names {
+		set[name] = true
+	}
+	return set
+}
+
+// plainSVG reports why an SVG cannot be mirrored, or "" when every element
+// and attribute in it is plain drawing. A reference may only point inside the
+// file (url(#id)); one to another document is refused like a script is.
+func plainSVG(body []byte) string {
+	decoder := xml.NewDecoder(bytes.NewReader(body))
+	root := true
+	for {
+		token, err := decoder.Token()
+		if err == io.EOF {
+			if root {
+				return "the document holds no <svg> element"
+			}
+			return ""
+		}
+		if err != nil {
+			return "the SVG is not well formed XML: " + err.Error()
+		}
+		switch t := token.(type) {
+		case xml.Directive:
+			return "the SVG carries a <!" + strings.SplitN(string(t), " ", 2)[0] + "> directive"
+		case xml.StartElement:
+			if root && t.Name.Local != "svg" {
+				return "the document's root is <" + t.Name.Local + ">, not <svg>"
+			}
+			root = false
+			if (t.Name.Space != "" && t.Name.Space != svgNamespace) || !svgElements[t.Name.Local] {
+				return "the SVG carries <" + t.Name.Local + ">, which the mirror does not keep"
+			}
+			for _, attribute := range t.Attr {
+				if attribute.Name.Space != "" || !svgAttributes[attribute.Name.Local] {
+					return "the SVG's <" + t.Name.Local + "> carries the attribute " + qualified(attribute.Name) + ", which the mirror does not keep"
+				}
+				if value := strings.ToLower(attribute.Value); strings.Count(value, "url(") != strings.Count(value, "url(#") {
+					return "the SVG's " + attribute.Name.Local + " points outside the file: " + attribute.Value
+				}
+			}
+		}
+	}
+}
+
+func qualified(name xml.Name) string {
+	if name.Space == "" {
+		return name.Local
+	}
+	return name.Space + ":" + name.Local
+}
+
+// sniffImage names the type of a logo the mirror can keep and the extension
+// it is written with, or the reason it cannot be kept.
+func sniffImage(body []byte) (contentType, extension, refusal string) {
+	if contentType, extension, ok := sniffRaster(body); ok {
+		return contentType, extension, ""
+	}
+	if !bytes.Contains(bytes.ToLower(body[:min(len(body), 1024)]), []byte("<svg")) {
+		return "", "", "the image is not PNG, JPEG, WebP or SVG by its leading bytes"
+	}
+	if refusal := plainSVG(body); refusal != "" {
+		return "", "", refusal
+	}
+	return "image/svg+xml", ".svg", ""
+}
+
 func fetchLimited(client *http.Client, uri string, limit int) ([]byte, error) {
 	response, err := client.Get(uri)
 	if err != nil {
@@ -143,9 +229,9 @@ func resolveLogo(client *http.Client, symbol, mint string, metadata registry.Tok
 		entry.State, entry.Reason = LogoUnreachable, "image: "+err.Error()
 		return entry, nil
 	}
-	contentType, _, ok := sniffRaster(image)
-	if !ok {
-		entry.State, entry.Reason = LogoUnsupported, "the image is not PNG, JPEG or WebP by its leading bytes"
+	contentType, _, refusal := sniffImage(image)
+	if refusal != "" {
+		entry.State, entry.Reason = LogoUnsupported, refusal
 		return entry, nil
 	}
 	sum := sha256.Sum256(image)
@@ -194,7 +280,7 @@ func mirrorLogos(fixtureDir, logoDir, manifestPath string) error {
 
 		entry, image := resolveLogo(client, fixture.Symbol, fixture.Address, metadata, hasMetadata)
 		if image != nil {
-			_, extension, _ := sniffRaster(image)
+			_, extension, _ := sniffImage(image)
 			name := fixture.Address + extension
 			if err := os.WriteFile(filepath.Join(logoDir, name), image, 0o644); err != nil {
 				return fmt.Errorf("write %s logo: %w", target.Symbol, err)
