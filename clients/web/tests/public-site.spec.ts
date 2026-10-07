@@ -136,7 +136,8 @@ test("the Allocation keeps its terms behind an info note, and the order sheet st
   await expect(terms).toBeVisible();
   // components.md, Info note: what the note says about cost is never only there.
   const sheet = main.getByRole("complementary", { name: "Order sheet" });
-  await expect(sheet.getByText("Seametry routing fee, 0.50%", { exact: true })).toBeVisible();
+  // Every lot starts selected, so the plan is at the widest tier.
+  await expect(sheet.getByText("Seametry routing fee, 0.10%", { exact: true })).toBeVisible();
   await expect(sheet.getByText("Slippage tolerance", { exact: true })).toBeVisible();
   await expect(sheet.getByText("0.50% of each swap", { exact: true })).toBeVisible();
   await expect(main.getByRole("heading", { level: 2, name: "Choose the constituents" })).toBeVisible();
@@ -163,13 +164,16 @@ test("the Allocation keeps the plan beside the work and hides deployment plumbin
   await expect(page.getByText(/JUPITER_API_KEY|MAINNET_RPC_URL|ALLOCATION_APPROVAL_SECRET|ALLOCATION_BLOCKED_COUNTRIES|ALLOCATION_FEE_WALLET/)).toHaveCount(0);
 
   // Every offered lot starts selected; keep two. 250 USDC over two lots is
-  // 125 each, and 50 basis points of each is 0.625, 1.25 in all.
+  // 125 each; a two-constituent plan pays 15 basis points, 0.1875 each,
+  // 0.375 in all. Down to one lot, the tier rises to 25 basis points.
   const main = page.getByRole("main");
   for (const lot of (await main.getByRole("checkbox").all()).slice(2)) await lot.uncheck();
   await main.getByLabel("USDC to spend").fill("250");
-  const fee = sheet.getByText("Seametry routing fee, 0.50%", { exact: true });
+  const fee = sheet.getByText("Seametry routing fee, 0.15%", { exact: true });
   await expect(fee).toBeVisible();
-  await expect(fee.locator("xpath=following-sibling::dd")).toHaveText("1.250000 USDC");
+  await expect(fee.locator("xpath=following-sibling::dd")).toHaveText("0.375000 USDC");
+  await main.getByRole("checkbox").nth(1).uncheck();
+  await expect(sheet.getByText("Seametry routing fee, 0.25%", { exact: true }).locator("xpath=following-sibling::dd")).toHaveText("0.625000 USDC");
 });
 
 test("the Allocation order sheet becomes an accessible mobile dialog", async ({ page }) => {

@@ -5,7 +5,7 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { QUOTE_TTL_MS, ROUTING_FEE_BPS, SLIPPAGE_BPS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, unlistedProgram } from "./rules";
+import { QUOTE_TTL_MS, SLIPPAGE_BPS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, routingFeeBps, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 
@@ -38,6 +38,8 @@ export type PreparedLeg = {
   receivedAt: string;
   expiresAt: string;
   priorityFeeLamports: string;
+  /** The tier this leg was quoted at, from the plan's size. */
+  routingFeeBps: number;
   /** USDC atoms the simulation moved into Seametry's fee account. */
   routingFeeAtoms: string;
   simulated: BalanceChange[];
@@ -49,9 +51,20 @@ export type PreparedLeg = {
  * Quotes, builds, checks and simulates one leg, and signs an approval over
  * exactly what was simulated. Every refusal names its reason. Nothing here
  * signs for the holder: the transaction goes back unsigned.
+ *
+ * `planMints` is every lot the plan buys, which sets the fee's tier. A buyer
+ * could name a wider plan than they go on to sign; each leg is its own swap,
+ * so nothing ties them, and the cost is bounded at the gap between tiers on
+ * the legs actually bought. Every named lot must be admitted, so the plan
+ * cannot be padded with anything this deployment would not sell.
  */
-export async function prepareLeg(config: AllocationConfig, walletText: string, mint: string, inAtoms: bigint): Promise<PreparedLeg> {
+export async function prepareLeg(config: AllocationConfig, walletText: string, mint: string, inAtoms: bigint, planMints: string[]): Promise<PreparedLeg> {
   const lot = admittedLot(mint);
+  const plan = new Set(planMints);
+  if (plan.size !== planMints.length) throw new Refusal(400, "The plan names a constituent more than once.");
+  if (!plan.has(mint)) throw new Refusal(400, `The plan does not include ${lot.instrument.symbol ?? mint}, the constituent this leg buys.`);
+  planMints.forEach(admittedLot);
+  const feeBps = routingFeeBps(plan.size);
   let wallet: PublicKey;
   try {
     wallet = new PublicKey(walletText);
@@ -77,7 +90,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     outputMint: mint,
     amount: inAtoms.toString(),
     slippageBps: String(SLIPPAGE_BPS),
-    platformFeeBps: String(ROUTING_FEE_BPS),
+    platformFeeBps: String(feeBps),
   });
   const quote = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${query}`);
   const receivedAt = new Date();
@@ -159,6 +172,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     receivedAt: receivedAt.toISOString(),
     expiresAt: expiresAt.toISOString(),
     priorityFeeLamports: String(swap.prioritizationFeeLamports ?? 0),
+    routingFeeBps: feeBps,
     routingFeeAtoms: feeAtoms.toString(),
     simulated,
     transaction: swap.swapTransaction,

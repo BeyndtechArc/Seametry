@@ -136,7 +136,8 @@ five are set the page says which are missing and nothing can be bought.
   It signs approvals; rotating it only invalidates legs prepared but not yet
   sent.
 - `ALLOCATION_FEE_WALLET`: the mainnet wallet that receives the routing fee
-  (`ROUTING_FEE_BPS`, 50 basis points, in `src/lib/allocation/rules.ts`),
+  (`ROUTING_FEE_TIERS` in `src/lib/allocation/rules.ts`, by how many
+  constituents the plan buys),
   paid in USDC into that wallet's USDC account. The account must already
   be open; every leg is refused, naming it, while it is missing.
 - `ALLOCATION_BLOCKED_COUNTRIES`: comma separated ISO country codes, from

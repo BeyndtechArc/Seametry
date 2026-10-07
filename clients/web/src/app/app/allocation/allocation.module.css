@@ -97,7 +97,9 @@
   overflow-wrap: anywhere;
 }
 
+/* One line across the list it qualifies, not a readable-width paragraph. */
 .provenance {
+  max-width: none;
   padding-left: var(--sm-space-4);
   border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
   color: var(--sm-accent-provenance);
@@ -130,7 +132,7 @@
 .lotRegister {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  align-items: start;
+  align-items: stretch;
   gap: var(--sm-space-4) var(--sm-space-7);
 }
 
@@ -165,21 +167,27 @@
   font-size: var(--sm-font-size-small);
 }
 
-/* Grade and stamp sit side by side at every width, so a row's backing and
-   verdict read in one glance. The stamp's line wraps as one block, which
-   would push it whole under the grade; its label and reason flow in this
-   row instead. */
+/* Grade, hairline and stamp on one line, the reason on the next, spread
+   down the row's full height: the marks align with the symbol and the
+   reason with the row's last line, so both columns end together. The
+   stamp's own wrapper is dissolved so its label joins the marks line. */
 .lotMarks {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: start;
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr);
+  align-content: space-between;
   align-items: center;
-  gap: var(--sm-space-3);
+  justify-items: start;
+  gap: var(--sm-space-2) var(--sm-space-3);
   min-width: 0;
+  height: 100%;
 }
 
 .lotMarks > :last-child {
   display: contents;
+}
+
+.lotMarks > :last-child > span {
+  grid-column: 1 / -1;
 }
 
 .markDivider {

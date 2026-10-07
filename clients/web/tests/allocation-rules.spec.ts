@@ -3,7 +3,7 @@ import { Keypair, PublicKey, TransactionInstruction, TransactionMessage, Version
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
-import { ROUTING_FEE_BPS, countryGate, lotCapAtoms, routingFeeAtoms, unlistedProgram } from "../src/lib/allocation/rules";
+import { countryGate, feeSchedule, lotCapAtoms, routingFeeAtoms, routingFeeBps, unlistedProgram } from "../src/lib/allocation/rules";
 import { registerTestWallet } from "./test-wallet";
 
 // Pure rules only: no build, no wallet, no network. The route handlers that
@@ -44,12 +44,14 @@ test("a split reads as one line however many constituents share it, naming the r
   expect(describeSplit(legs(250_000_000n, ["AMD"]), 6, "USDC")).toBe("All 250.000000 USDC to AMD.");
 });
 
-test("the routing fee is 50 basis points of each leg, rounded down to whole USDC atoms", () => {
-  expect(ROUTING_FEE_BPS).toBe(50);
-  expect(routingFeeAtoms(125_000_000n)).toBe(625_000n);
-  // 199 atoms of USDC carry 0.995 atoms of fee, which no account can hold.
-  expect(routingFeeAtoms(199n)).toBe(0n);
-  expect(routingFeeAtoms(200n)).toBe(1n);
+test("the routing fee is capped at 25 basis points and falls as the basket grows", () => {
+  // Storm, 7 October 2026: 0.25% for one constituent, 0.15% for two to four, 0.10% for five or more.
+  expect([1, 2, 4, 5, 23].map(routingFeeBps)).toEqual([25, 15, 15, 10, 10]);
+  expect(feeSchedule()).toBe("0.25% for 1, 0.15% for 2 to 4, 0.10% for 5 or more constituents");
+  expect(routingFeeAtoms(125_000_000n, 25)).toBe(312_500n);
+  // 399 atoms of USDC carry 0.9975 atoms of fee at 25 bps, which no account can hold.
+  expect(routingFeeAtoms(399n, 25)).toBe(0n);
+  expect(routingFeeAtoms(400n, 25)).toBe(1n);
 });
 
 test("one lot cap converts its policy-issued capacity to exact atoms", () => {

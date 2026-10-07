@@ -1,4 +1,5 @@
 import { VersionedTransaction } from "@solana/web3.js";
+import { formatAmount } from "../amount";
 
 // ENGINEERING_STANDARD.md section 11, applied in this app's route handlers
 // until the Go Execution service exists (API.md step A7). Pure, so each rule
@@ -16,18 +17,43 @@ export const USDC_TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 export const SLIPPAGE_BPS = 50;
 
 /**
- * Seametry's routing fee, 50 basis points of the USDC each leg spends, set
- * by Storm on 7 October 2026. Jupiter takes it from the input in USDC and
- * pays it to the fee wallet's USDC account (platformFeeBps and feeAccount,
- * developers.jup.ag/docs/swap-api/add-fees-to-swap). It is a line on the
- * order sheet and in every prepared leg; MOBILE.md section 11 forbids a
- * fee anyone has to discover.
+ * Seametry's routing fee in basis points of the USDC each leg spends, by how
+ * many constituents the plan buys, set by Storm on 7 October 2026: capped at
+ * 25, and lower for a basket, since buying several together is what only
+ * Seametry does. It replaced a flat 50 the same day, after comparison with
+ * Kraken, Backpack and Jupiter Mobile at 0 to 20. Jupiter takes it from the
+ * input in USDC and pays it to the fee wallet's USDC account (platformFeeBps
+ * and feeAccount, developers.jup.ag/docs/swap-api/add-fees-to-swap). It is a
+ * line on the order sheet and in every prepared leg; MOBILE.md section 11
+ * forbids a fee anyone has to discover. Ordered widest basket first.
  */
-export const ROUTING_FEE_BPS = 50;
+export const ROUTING_FEE_TIERS = [
+  { fromConstituents: 5, bps: 10 },
+  { fromConstituents: 2, bps: 15 },
+  { fromConstituents: 1, bps: 25 },
+] as const;
 
-/** The routing fee on `inAtoms` of USDC, rounded down to whole atoms as Jupiter's integer arithmetic does. */
-export function routingFeeAtoms(inAtoms: bigint): bigint {
-  return (inAtoms * BigInt(ROUTING_FEE_BPS)) / 10_000n;
+/** The routing fee's basis points for a plan buying `constituents` distinct lots. */
+export function routingFeeBps(constituents: number): number {
+  return (ROUTING_FEE_TIERS.find((tier) => constituents >= tier.fromConstituents) ?? ROUTING_FEE_TIERS[ROUTING_FEE_TIERS.length - 1]).bps;
+}
+
+/** The schedule in words, from the table itself, so the page cannot state a rate the server does not charge. */
+export function feeSchedule(): string {
+  const ascending = [...ROUTING_FEE_TIERS].sort((a, b) => a.fromConstituents - b.fromConstituents);
+  return ascending
+    .map((tier, i) => {
+      const next = ascending[i + 1];
+      const span = !next ? `${tier.fromConstituents} or more` : next.fromConstituents - 1 === tier.fromConstituents ? `${tier.fromConstituents}` : `${tier.fromConstituents} to ${next.fromConstituents - 1}`;
+      return `${formatAmount(BigInt(tier.bps), 2)}% for ${span}`;
+    })
+    .join(", ")
+    .concat(" constituents");
+}
+
+/** The routing fee on `inAtoms` of USDC at `bps`, rounded down to whole atoms as Jupiter's integer arithmetic does. */
+export function routingFeeAtoms(inAtoms: bigint, bps: number): bigint {
+  return (inAtoms * BigInt(bps)) / 10_000n;
 }
 
 /**

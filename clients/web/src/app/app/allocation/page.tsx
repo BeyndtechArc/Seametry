@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { headers } from "next/headers";
 import { blockingFact, admissions, gradeOf, partitionAdmissions } from "@/lib/allocation/admissions";
 import { allocationConfig, requestCountry } from "@/lib/allocation/config";
-import { ROUTING_FEE_BPS, SLIPPAGE_BPS, countryGate } from "@/lib/allocation/rules";
+import { SLIPPAGE_BPS, countryGate, feeSchedule } from "@/lib/allocation/rules";
 import { formatAmount } from "@/lib/amount";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import { PageHeader } from "../_shell/page-header";
@@ -70,8 +70,8 @@ export default async function AllocationPage() {
             <>
               <p>One swap per constituent, each settling to your wallet. Nothing is pooled and no basket token is issued.</p>
               <p>
-                Seametry&apos;s routing fee is {ROUTING_FEE_BPS} basis points of each swap, with {SLIPPAGE_BPS} basis points of slippage
-                tolerance; both are lines on the order sheet. Every swap is freshly quoted and simulated before you sign.
+                Seametry&apos;s routing fee falls as the basket grows: {feeSchedule()}. Slippage tolerance is {formatAmount(BigInt(SLIPPAGE_BPS), 2)}%. Both are
+                lines on the order sheet, and every swap is freshly quoted and simulated before you sign.
               </p>
               <p>You remain bound by each issuer&apos;s terms of eligibility.</p>
             </>

@@ -8,7 +8,7 @@ import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import { logoFor } from "@/lib/instrument-logos";
-import { ROUTING_FEE_BPS, SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, routingFeeAtoms } from "@/lib/allocation/rules";
+import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
 import styles from "./allocation.module.css";
 
 export type OfferedLot = {
@@ -89,6 +89,7 @@ function OrderSummary({
   selectedSymbols,
   total,
   fee,
+  feeBps,
   wallet,
   readiness,
   inFlight,
@@ -98,6 +99,7 @@ function OrderSummary({
   selectedSymbols: string[];
   total: string;
   fee: string;
+  feeBps: number;
   wallet?: string;
   readiness?: string;
   inFlight?: Leg;
@@ -125,7 +127,7 @@ function OrderSummary({
           <dd>One swap per constituent</dd>
         </div>
         <div>
-          <dt>Seametry routing fee, {formatAmount(BigInt(ROUTING_FEE_BPS), 2)}%</dt>
+          <dt>Seametry routing fee, {formatAmount(BigInt(feeBps), 2)}%</dt>
           <dd>{fee}</dd>
         </div>
         <div>
@@ -249,7 +251,9 @@ export function AllocationFlow({
   };
 
   const prepare = useCallback(
-    async (leg: Leg) => {
+    // planMints travels with each leg because the plan's size sets the fee
+    // tier, and the server charges it, not this page.
+    async (leg: Leg, planMints: string[]) => {
       if (!publicKey) return;
       update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined });
       try {
@@ -257,6 +261,7 @@ export function AllocationFlow({
           wallet: publicKey.toBase58(),
           mint: leg.mint,
           usdcAtoms: leg.atoms.toString(),
+          planMints,
         });
         setNow(Date.now());
         update(leg.mint, { phase: "prepared", prepared });
@@ -335,12 +340,14 @@ export function AllocationFlow({
   const total = parsed && "atoms" in parsed ? `${formatAmount(parsed.atoms, USDC_SCALE)} USDC` : "Not set";
   // Per leg, as Jupiter rounds each swap's fee, then summed; the prepared leg
   // later shows the exact fee its simulation moved.
-  const fee = split.length > 0 ? `${formatAmount(split.reduce((sum, atoms) => sum + routingFeeAtoms(atoms), 0n), USDC_SCALE)} USDC` : "Not set";
+  const feeBps = routingFeeBps(Math.max(chosen.length, 1));
+  const fee = split.length > 0 ? `${formatAmount(split.reduce((sum, atoms) => sum + routingFeeAtoms(atoms, feeBps), 0n), USDC_SCALE)} USDC` : "Not set";
   const orderSummary = (
     <OrderSummary
       selectedSymbols={chosen.map((lot) => lot.symbol)}
       total={total}
       fee={fee}
+      feeBps={feeBps}
       wallet={publicKey?.toBase58()}
       readiness={keyDisabledReason}
       inFlight={inFlight}
@@ -522,7 +529,7 @@ export function AllocationFlow({
                             expected={formatAmount(leg.prepared.outAtoms, leg.prepared.outScale)}
                             unit={leg.symbol}
                             fees={[
-                              { label: `Seametry routing fee, ${formatAmount(BigInt(ROUTING_FEE_BPS), 2)}%`, value: `${formatAmount(leg.prepared.routingFeeAtoms, USDC_SCALE)} USDC` },
+                              { label: `Seametry routing fee, ${formatAmount(BigInt(leg.prepared.routingFeeBps), 2)}%`, value: `${formatAmount(leg.prepared.routingFeeAtoms, USDC_SCALE)} USDC` },
                               { label: "Priority fee set by the route", value: `${formatAmount(leg.prepared.priorityFeeLamports, 9)} SOL` },
                               { label: "Venue fees", value: "Included in the expected output" },
                             ]}
@@ -543,7 +550,7 @@ export function AllocationFlow({
                         </a>
                       ) : null}
                       {leg.phase === "idle" || (leg.phase === "prepared" && secondsLeft === 0) ? (
-                        <QuietAction disabled={!connected || Boolean(unavailable)} onClick={() => void prepare(leg)}>
+                        <QuietAction disabled={!connected || Boolean(unavailable)} onClick={() => void prepare(leg, chosen.map((lot) => lot.mint))}>
                           {leg.phase === "idle" ? "Preview purchase" : "Refresh quote"}
                         </QuietAction>
                       ) : null}
