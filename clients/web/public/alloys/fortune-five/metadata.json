@@ -1,0 +1,23 @@
+{
+  "name": "Fortune Five",
+  "symbol": "FFF",
+  "description": "An Alloy on the Seametry Hall. One share is a fixed Formula of five tokenized stocks: AAPLx, MSFTx, NVDAx, GOOGLx and SPCXx, equal in value at the founding quote and never rebalanced. Any wallet can Strike it or Melt it; no one can stop a Melt. On devnet the constituents are stand-ins carrying the real xStocks' token settings.",
+  "image": "https://www.seametry.xyz/alloys/fortune-five/artwork.png",
+  "external_url": "https://www.seametry.xyz/app/alloys",
+  "attributes": [
+    { "trait_type": "Network", "value": "devnet" },
+    { "trait_type": "Sponsor", "value": "Seametry" },
+    { "trait_type": "Constituents", "value": "5" },
+    { "trait_type": "Weighting", "value": "Equal value at the founding quote" }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://www.seametry.xyz/alloys/fortune-five/artwork.png",
+        "type": "image/png",
+        "sha256": "c6a53b0e6436f89a48be8cfbe4b8675f6a864f603b20b13e8348c2eaf8acf5a8"
+      }
+    ]
+  }
+}

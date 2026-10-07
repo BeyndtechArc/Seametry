@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { draftFormula, identityProblem, unitsToAtoms, type QuotedLeg } from "../src/lib/compose/formula";
 import { FOUNDING, requestProblem } from "../src/lib/request-problem";
@@ -65,17 +65,28 @@ test("Compose stops at the twelve legs an Alloy can hold", async ({ page }) => {
   await expect(admitted.nth(12)).toBeEnabled();
 });
 
-test("Stoic Crew's metadata is served whole, and its image is the one it names", async ({ request }) => {
-  const metadata = await request.get("/alloys/stoic-crew/metadata.json");
-  expect(metadata.status()).toBe(200);
-  const body = await metadata.json();
-  expect({ name: body.name, symbol: body.symbol }).toEqual({ name: "Stoic Crew", symbol: "STOIC" });
-  expect(identityProblem(body.name, body.symbol)).toBeUndefined();
-  const file = body.properties.files[0];
-  expect(body.image).toBe(file.uri);
-  const image = await request.get(new URL(file.uri).pathname);
-  expect(image.headers()["content-type"]).toBe("image/png");
-  expect(createHash("sha256").update(await image.body()).digest("hex")).toBe(file.sha256);
+// Every published Alloy, by the directory its URI names. A share mint's URI is
+// locked at founding, so a directory missing here, or a file drifting from the
+// hash its metadata states, has to fail before anyone founds with it.
+const published = {
+  "stoic-crew": { name: "Stoic Crew", symbol: "STOIC" },
+  "fortune-five": { name: "Fortune Five", symbol: "FFF" },
+};
+
+test("every published Alloy's metadata is served whole, and its image is the one it names", async ({ request }) => {
+  expect(readdirSync("public/alloys").sort()).toEqual(Object.keys(published).sort());
+  for (const [slug, identity] of Object.entries(published)) {
+    const metadata = await request.get(`/alloys/${slug}/metadata.json`);
+    expect(metadata.status(), slug).toBe(200);
+    const body = await metadata.json();
+    expect({ name: body.name, symbol: body.symbol }).toEqual(identity);
+    expect(identityProblem(body.name, body.symbol)).toBeUndefined();
+    const file = body.properties.files[0];
+    expect(body.image).toBe(file.uri);
+    const image = await request.get(new URL(file.uri).pathname);
+    expect(image.headers()["content-type"], slug).toBe("image/png");
+    expect(createHash("sha256").update(await image.body()).digest("hex"), slug).toBe(file.sha256);
+  }
 });
 
 test("the founding records the sponsor mark by its file's hash, on the register's Hall", () => {
