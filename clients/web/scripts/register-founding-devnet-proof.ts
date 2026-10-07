@@ -56,7 +56,7 @@ async function main() {
   const sponsor = Keypair.generate();
   console.log("hall", hall.toBase58(), "sponsor", sponsor.publicKey.toBase58());
 
-  const prepared = await prepareFounding(connection, funderKey(), standInIssuer(), hall, sponsor.publicKey, 1n, legs);
+  const prepared = await prepareFounding(connection, funderKey(), standInIssuer(), hall, sponsor.publicKey, legs);
   console.log("prepared", JSON.stringify(prepared, null, 2));
 
   // A lookup table is usable from the slot after it was extended.

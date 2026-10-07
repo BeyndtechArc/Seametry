@@ -175,6 +175,26 @@ async function createLookupTable(connection: Connection, funder: Keypair, addres
   );
 }
 
+/** How many of a sponsor's Alloy numbers are read per call while looking for a free one. */
+const ID_BATCH = 10;
+
+/**
+ * The sponsor's lowest Alloy number with no account on this Hall. An Alloy's
+ * address is [ALLOY_SEED, sponsor, id], so every founding needs its own id;
+ * the route asked for 1 every time until 8 October 2026, which refused a
+ * sponsor's second Alloy as already founded. Two foundings by one sponsor at
+ * the same moment can pick the same number; the later one then fails on
+ * chain, because initialize_alloy will not create an account that exists.
+ */
+export async function nextAlloyId(connection: Connection, hall: PublicKey, sponsor: PublicKey): Promise<bigint> {
+  for (let first = 1n; ; first += BigInt(ID_BATCH)) {
+    const ids = Array.from({ length: ID_BATCH }, (_, i) => first + BigInt(i));
+    const accounts = await connection.getMultipleAccountsInfo(ids.map((id) => alloyPda(hall, sponsor, id)), "confirmed");
+    const free = accounts.findIndex((account) => account === null);
+    if (free >= 0) return ids[free];
+  }
+}
+
 /**
  * Everything a founding needs before the sponsor signs, paid by the funder:
  * a stand-in mint per leg, the sponsor's token accounts holding exactly the
@@ -189,13 +209,10 @@ export async function prepareFounding(
   issuer: Keypair,
   hall: PublicKey,
   sponsor: PublicKey,
-  id: bigint,
   legs: FoundingLeg[],
 ): Promise<PreparedFounding> {
+  const id = await nextAlloyId(connection, hall, sponsor);
   const alloy = alloyPda(hall, sponsor, id);
-  if (await connection.getAccountInfo(alloy, "confirmed")) {
-    throw new Refusal(409, `This sponsor already founded Alloy ${id} on this Hall, at ${alloy.toBase58()}.`);
-  }
   const shareMint = shareMintPda(hall, alloy);
   const lockedShares = lockedSharesPda(hall, alloy);
   const signatures: Record<string, string> = {};

@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const connection = new Connection(DEVNET_RPC_ENDPOINT, "confirmed");
-    const prepared = await prepareFounding(connection, demoFunder(), standInIssuer(), REGISTER_HALL_PROGRAM_ID, sponsor, 1n, legs);
+    const prepared = await prepareFounding(connection, demoFunder(), standInIssuer(), REGISTER_HALL_PROGRAM_ID, sponsor, legs);
     return NextResponse.json({ prepared, identity: { name, symbol, uri: metadataUri(name) } });
   } catch (error) {
     if (error instanceof Refusal) return refuse(error.message, error.status);
