@@ -1,7 +1,8 @@
 import "server-only";
 
 import { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { ExtensionType, getAccountLen, getAccountTypeOfMintType, getAssociatedTokenAddressSync, getExtensionTypes, getMint, type Mint } from "@solana/spl-token";
+import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
@@ -22,6 +23,56 @@ function admittedLot(mint: string): Admission {
 function tokenAmount(data: Buffer | Uint8Array | null | undefined): bigint {
   if (!data || data.length < 72) return 0n;
   return Buffer.from(data).readBigUInt64LE(64);
+}
+
+/**
+ * The size the associated token program gives a new holder's account for
+ * this mint. spl-token's getAccountLenForMint counts a ConfidentialTransfer
+ * account extension the program never adds unasked, which made AMD's 478
+ * bytes against the 179 that real holder accounts measured on mainnet on
+ * 7 October 2026, and would refuse wallets that can pay.
+ */
+function newHolderAccountLen(mint: Mint): number {
+  const accountTypes = getExtensionTypes(mint.tlvData)
+    .map(getAccountTypeOfMintType)
+    .filter((type) => type !== ExtensionType.Uninitialized && type !== ExtensionType.ConfidentialTransferAccount);
+  return getAccountLen([...new Set(accountTypes), ExtensionType.ImmutableOwner]);
+}
+
+/** The base fee for the one signature a leg carries, in lamports. */
+const SIGNATURE_FEE_LAMPORTS = 5_000n;
+
+/**
+ * Refuses a leg the wallet cannot pay for, naming what it holds and what
+ * the leg needs. The SOL floor is the rent to open the wallet's account for
+ * this lot when it has none yet, sized from the mint's own extensions, plus
+ * the signature and priority fees; the rent comes back if that account is
+ * ever closed.
+ */
+async function refuseUnfunded(
+  connection: Connection,
+  lot: Admission,
+  mint: string,
+  inAtoms: bigint,
+  priorityFeeLamports: bigint,
+  [walletAccount, usdcAccount, lotAccount]: Awaited<ReturnType<Connection["getMultipleAccountsInfo"]>>,
+): Promise<void> {
+  const symbol = lot.instrument.symbol ?? mint;
+  const usdcHeld = tokenAmount(usdcAccount?.data);
+  if (usdcHeld < inAtoms) {
+    throw new Refusal(402, `This wallet holds ${formatAmount(usdcHeld, 6)} USDC; buying ${symbol} spends ${formatAmount(inAtoms, 6)} USDC.`);
+  }
+  let rent = 0n;
+  if (!lotAccount) {
+    const mintAccount = await getMint(connection, new PublicKey(mint), "confirmed", new PublicKey(lot.token_program));
+    rent = BigInt(await connection.getMinimumBalanceForRentExemption(newHolderAccountLen(mintAccount)));
+  }
+  const needed = rent + SIGNATURE_FEE_LAMPORTS + priorityFeeLamports;
+  const held = BigInt(walletAccount?.lamports ?? 0);
+  if (held < needed) {
+    const opening = rent > 0n ? `${formatAmount(rent, 9)} SOL to open its ${symbol} account, returned if that account is closed, and ` : "";
+    throw new Refusal(402, `This wallet holds ${formatAmount(held, 9)} SOL; buying ${symbol} needs ${opening}${formatAmount(needed - rent, 9)} SOL in network fees. Add SOL to the wallet and preview again.`);
+  }
 }
 
 export type BalanceChange = { atoms: string; scale: number; unit: string };
@@ -118,6 +169,10 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
   const watched = [wallet, usdcAccount, lotAccount, feeAccount];
 
   const before = await connection.getMultipleAccountsInfo(watched, "confirmed");
+  // Checked before simulating because simulation reports a short wallet as
+  // the System program's error 0x1 inside the account opening instruction,
+  // which names neither the shortfall nor what to do about it.
+  await refuseUnfunded(connection, lot, mint, inAtoms, BigInt(swap.prioritizationFeeLamports ?? 0), before);
   const simulation = await connection.simulateTransaction(transaction, {
     sigVerify: false,
     replaceRecentBlockhash: false,
