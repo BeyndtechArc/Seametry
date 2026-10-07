@@ -110,7 +110,8 @@ alone would.
 
 Mainnet. Buys lots the policy engine admitted into the connected wallet,
 one Jupiter swap per lot, with the holder signing every leg. Seametry holds
-nothing and takes no fee. Which lots are offered comes from
+nothing; its routing fee is a line on the order sheet (see
+`ALLOCATION_FEE_WALLET` below). Which lots are offered comes from
 `shared/evidence/admissions.json`, which the policy engine writes
 (`go run ./server/cmd/explorer -admissions shared/evidence/admissions.json`)
 and CI checks for drift; this app decides nothing about admission itself.
@@ -123,7 +124,7 @@ the wallet sees anything, a mainnet simulation shown before signing, and an
 approval that refuses any transaction other than the one simulated.
 
 **Environment variables, server-only, never committed.** Until the first
-four are set the page says which are missing and nothing can be bought.
+five are set the page says which are missing and nothing can be bought.
 
 - `JUPITER_API_KEY`: the same key the Go liquidity client uses.
 - `MAINNET_RPC_URL`: a mainnet RPC that accepts `simulateTransaction` and
@@ -147,10 +148,9 @@ four are set the page says which are missing and nothing can be bought.
 - `ALLOCATION_ASSUME_COUNTRY`: local runs only, where no host sets the
   country header.
 
-What limits what it can offer today: the admissions snapshot covers seven
-instruments captured as decoder edge cases, and only AAPLx is admitted at
-the 1,000 USDC reference size. Offering more needs the liquid xStocks added
-to `shared/fixtures/mainnet/targets.json`, captured
+What it can offer is whatever the snapshot admits; the snapshot is the
+record, so this file names no instruments. Offering another instrument needs
+it added to `shared/fixtures/mainnet/targets.json`, captured
 (`go run ./server/cmd/capture`), measured (`go run ./server/cmd/depth`, with
 a Jupiter key), and the snapshot regenerated.
 

@@ -395,11 +395,36 @@
     opacity: 0.22;
   }
 
+  /* A phone shows fifteen or more stocks; stacked marks made each row taller
+     than the screen's width, so they share one line under the symbol. */
+  .lots {
+    gap: var(--sm-space-4);
+  }
+
+  .lot {
+    gap: var(--sm-space-2);
+    padding-top: var(--sm-space-3);
+  }
+
   .lotRegister {
     grid-template-columns: minmax(0, 1fr);
+    gap: var(--sm-space-2);
   }
 
   .lotMarks {
-    justify-content: start;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sm-space-2) var(--sm-space-3);
+  }
+
+  /* The stamp's line wraps as one block, which pushed it whole under the
+     grade; its label and reason flow in this row instead. */
+  .lotMarks > :last-child {
+    display: contents;
+  }
+
+  .lotMarks {
+    font-size: var(--sm-font-size-small);
   }
 }

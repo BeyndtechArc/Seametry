@@ -1,6 +1,32 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
+test("saved to a home screen, the site opens on Allocation with icons at the sizes it names", async ({ page, request }) => {
+  await page.goto("/");
+  const manifestHref = await page.locator("link[rel=manifest]").getAttribute("href");
+  expect(await page.locator("link[rel=apple-touch-icon]").getAttribute("href")).toBe("/icons/apple-touch-icon.png");
+  const manifest = await (await request.get(manifestHref!)).json();
+  expect({ start_url: manifest.start_url, display: manifest.display }).toEqual({ start_url: "/app/allocation", display: "standalone" });
+  const icons = [...manifest.icons, { src: "/icons/apple-touch-icon.png", sizes: "180x180" }];
+  for (const icon of icons) {
+    const png = await (await request.get(icon.src)).body();
+    // A PNG's IHDR chunk holds its width and height at bytes 16 and 20.
+    expect(`${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`, icon.src).toBe(icon.sizes);
+  }
+});
+
+test("on a phone, a stock's grade and stamp share one line and the page never scrolls sideways", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app/allocation");
+  const lot = page.getByRole("main").locator("[aria-labelledby=lots-heading] ul > li").first();
+  const grade = lot.getByText("Certificate", { exact: true });
+  const stamp = lot.getByText("Warn", { exact: true });
+  await expect(stamp).toBeVisible();
+  const [gradeBox, stampBox] = [await grade.boundingBox(), await stamp.boundingBox()];
+  expect(Math.abs(gradeBox!.y + gradeBox!.height / 2 - (stampBox!.y + stampBox!.height / 2))).toBeLessThan(4);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+});
+
 test("the landing leads with the recorded issuer-freeze incident", async ({ page }) => {
   await page.goto("/");
 
