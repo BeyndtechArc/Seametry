@@ -73,6 +73,11 @@ export default async function AllocationPage() {
                 Seametry&apos;s routing fee falls as the basket grows: {feeSchedule()}. Slippage tolerance is {formatAmount(BigInt(SLIPPAGE_BPS), 2)}%. Both are
                 lines on the order sheet, and every swap is freshly quoted and simulated before you sign.
               </p>
+              <p>
+                Constituents are admitted by policy {admissions.policy_version} from a snapshot captured{" "}
+                <time dateTime={admissions.as_of}>{new Date(admissions.as_of).toUTCString().slice(5, 16)}</time>, {relativeEvidenceAge(admissions.as_of)} old, not a
+                live issuer read.
+              </p>
               <p>You remain bound by each issuer&apos;s terms of eligibility.</p>
             </>
           }
@@ -80,12 +85,6 @@ export default async function AllocationPage() {
         <AllocationFlow
           offered={offered}
           refused={refusedLots}
-          snapshot={{
-            asOf: admissions.as_of,
-            age: relativeEvidenceAge(admissions.as_of),
-            policyVersion: admissions.policy_version,
-            referenceUsdc: admissions.reference_usdc,
-          }}
           unavailable={unavailable}
         />
     </div>

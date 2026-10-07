@@ -60,7 +60,7 @@
 .candidates li {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-  align-items: start;
+  align-items: stretch;
   gap: var(--sm-space-3) var(--sm-space-6);
   padding: var(--sm-space-5) 0;
   border-bottom: 0.5px solid var(--sm-line-rule);
@@ -104,7 +104,7 @@
   gap: var(--sm-space-1);
 }
 
-.candidates b,
+.candidates label b,
 .methods b {
   color: var(--sm-text-primary);
   font-size: var(--sm-font-size-body);
@@ -117,7 +117,7 @@
   gap: var(--sm-space-3);
 }
 
-.candidates li[data-refused] b {
+.candidates li[data-refused] label b {
   color: var(--sm-text-secondary);
 }
 
@@ -126,13 +126,6 @@
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-small);
   line-height: 1.5;
-}
-
-.marks {
-  display: grid;
-  justify-items: start;
-  gap: var(--sm-space-3);
-  min-width: 0;
 }
 
 .methods {
@@ -158,6 +151,13 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--sm-space-5);
+}
+
+.identityBlock {
+  display: grid;
+  gap: var(--sm-space-4);
+  padding-bottom: var(--sm-space-6);
+  border-bottom: 0.5px solid var(--sm-line-strong);
 }
 
 .sheet {

@@ -197,6 +197,18 @@ export function Stamp({ kind, reason }: { kind: StampKind; reason: string }) {
   );
 }
 
+/** components.md, Mark line: grade and verdict on one line, the reason on its own beneath, spread to the row's height. */
+export function MarkLine({ grade, stamp, reason }: { grade: GradeName; stamp: StampKind; reason: string }) {
+  return (
+    <div className={styles.markLine}>
+      <Grade name={grade} />
+      <span className={styles.markDivider} aria-hidden="true" />
+      <strong className={classes(styles.stamp, styles[`stamp_${stamp}`])}>{stampLabels[stamp]}</strong>
+      <span className={styles.markReason}>{reason}</span>
+    </div>
+  );
+}
+
 // A plain img, not next/image: this package is framework-free, and next/image
 // writes an inline style the site's CSP refuses.
 const lotMarkSizes = { row: "", list: styles.lotMarkList, header: styles.lotMarkHeader } as const;

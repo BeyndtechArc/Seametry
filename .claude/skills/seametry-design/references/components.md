@@ -54,7 +54,7 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 **Answers:** does this meet the published standard, or what was decided?
 **Variants:** Good Delivery (outline, `text.primary`); NGD (outline, `accent.provenance`, reasons adjacent); ALLOW (plain `text.primary`); WARN (`accent.provenance`); BLOCK (inverted: `surface.inverse`, `text.inverse`).
 **Identity:** a double rule and square corners make it read as struck evidence. The reason begins on the same baseline so verdict and evidence cannot separate.
-**Rules:** a stamp is always followed by its reasons. Never a bare verdict.
+**Rules:** a stamp is always followed by its reasons. Never a bare verdict. Beside a Grade, the reason drops to its own line inside the Mark line.
 
 ### Grade
 **Answers:** what legal claim do I actually hold?
@@ -77,14 +77,14 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 
 ### Key
 **Answers:** what happens if I press this?
-**Anatomy:** cornerless `accent.touch` plate, label and a separate icon cell, seated in a square `surface.tray` housing, height `size.key`.
+**Anatomy:** cornerless `accent.touch` plate, label and a separate icon cell in `accent.touchPressed` with no rule between them, seated in a square `surface.tray` housing, height `size.key`.
 **Identity:** short registration rules protrude from both horizontal edges. The tray remains when the action is disabled, like an empty keyway.
 **States:** default, pressed (drops 1px, `accent.touchPressed`), disabled (tray only, label in `text.tertiary`, reason available), busy (label becomes the action in progress: "Signing").
 **Rules:** verb plus object ("Approve and sign"). One key per view. Quieter than the figures above it.
 
 ### Route action
 **Answers:** which destination begins the next part of this journey?
-**Anatomy:** cornerless `accent.touch` fill, label and a separately housed route icon, no tray, minimum target height.
+**Anatomy:** cornerless `accent.touch` fill, label and a separately housed route icon in `accent.touchPressed` with no rule between them, no tray, minimum target height.
 **Identity:** short registration rules protrude from both horizontal edges. Its lack of a surrounding tray distinguishes navigation from the Key's custody-changing keyway.
 **States:** default, pressed, keyboard focus, unavailable with its reason adjacent.
 **Data:** a real route that resolves.
@@ -203,6 +203,11 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Identity:** a `radius.sheet` plate with the single top highlight rule and tonal elevation; no shadow, blur or glow.
 **States:** closed; open. The request's own states live in its Step register.
 **Rules:** for watching a request (founding, signing, confirming), never for a task the user edits; that is the Modal sheet. Closing does not cancel the request, and the opening surface offers a way back. Native focus and Escape contract; focus returns to the opening control.
+
+### Mark line
+**Answers:** what backs this row, and what was decided about it, in one glance?
+**Anatomy:** Grade, a short vertical hairline, the Stamp's verdict, all on one line; the Stamp's reason on its own line beneath, spanning the column. The line spreads to the row's height, so the marks sit level with the row's title and the reason with its last line.
+**Rules:** the reason never leaves the verdict's block; it moves below it, not away. Used wherever a row carries both a grade and a stamp (Storm, 7 October 2026: tags on one line, reason on its own, both columns ending together).
 
 ### Filter bar
 **Answers:** which of these rows do I want in front of me?

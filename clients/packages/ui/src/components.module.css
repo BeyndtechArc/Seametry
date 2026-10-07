@@ -339,6 +339,32 @@
   letter-spacing: var(--sm-font-tracking-serial);
 }
 
+/* Height 100% fills a stretched row cell, so space-between can hold the
+   marks level with the row's title and the reason with its last line. */
+.markLine {
+  display: grid;
+  grid-template-columns: auto auto auto minmax(0, 1fr);
+  align-content: space-between;
+  align-items: center;
+  justify-items: start;
+  gap: var(--sm-space-2) var(--sm-space-3);
+  min-width: 0;
+  height: 100%;
+}
+
+.markDivider {
+  height: var(--sm-space-5);
+  border-left: 0.5px solid var(--sm-line-strong);
+}
+
+.markReason {
+  grid-column: 1 / -1;
+  min-width: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  overflow-wrap: anywhere;
+}
+
 .stampLine {
   display: flex;
   flex-wrap: wrap;
@@ -721,8 +747,12 @@
   background: var(--sm-accent-touch);
 }
 
+/* The darker cell is the separation on a filled action; a hairline on top
+   of it read as an off border (Storm, 7 October 2026). Outline actions keep
+   theirs, where it is the only separation. */
 .key .actionIcon,
 .routeAction .actionIcon {
+  border-left: 0;
   background: var(--sm-accent-touchPressed);
 }
 

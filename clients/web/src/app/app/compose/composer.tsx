@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Field, Grade, LotMark, QuietAction, Rule, Stamp, type GradeName } from "@seametry/ui";
+import { Field, LotMark, MarkLine, QuietAction, Rule, type GradeName } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
 import { logoFor } from "@/lib/instrument-logos";
 import { MAX_CONSTITUENTS, SHARE_DECIMALS } from "@/lib/hall/constants";
@@ -60,7 +60,7 @@ function useQuotes(mints: string[], refresh: number): QuoteReading | undefined {
   return answer?.request === request ? answer.reading : { state: "reading" };
 }
 
-export function Composer({ candidates, policy, unquoted }: { candidates: Candidate[]; policy: { version: string; age: string }; unquoted?: string }) {
+export function Composer({ candidates, unquoted }: { candidates: Candidate[]; unquoted?: string }) {
   // Nothing is chosen at the start: choosing what a share holds is the point
   // of the page, and fifteen admitted instruments already exceed what one
   // Alloy can hold.
@@ -125,12 +125,8 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
   return (
     <div className={styles.compose}>
       <div className={styles.inputs}>
-        <section aria-labelledby="constituents-heading">
-          <span className={styles.label}>01 / Constituents</span>
-          <h2 id="constituents-heading">Choose what a share holds</h2>
-          <p className={styles.note}>
-            Only instruments captured and assayed by the policy engine can enter a Formula ({policy.version}, captured {policy.age} ago). To add another stock, capture it first.
-          </p>
+        <section aria-labelledby="constituents-label">
+          <span className={styles.label} id="constituents-label">01 / Constituents</span>
           <p className={full ? styles.problem : styles.note}>
             {selected.length} of at most {MAX_CONSTITUENTS} chosen{full ? ". An Alloy holds no more legs than this; remove one to choose another." : "."}
           </p>
@@ -152,14 +148,11 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
                     <small>{candidate.issuer}</small>
                   </span>
                 </label>
-                <div className={styles.marks}>
-                  <Grade name={candidate.grade} />
-                  {candidate.admitted ? (
-                    <Stamp kind={candidate.decision === "ALLOW" ? "allow" : "warn"} reason={candidate.decision === "ALLOW" ? "Admitted" : "Admitted with a warning"} />
-                  ) : (
-                    <Stamp kind="block" reason={candidate.fact ?? "Refused by the policy engine"} />
-                  )}
-                </div>
+                <MarkLine
+                  grade={candidate.grade}
+                  stamp={!candidate.admitted ? "block" : candidate.decision === "ALLOW" ? "allow" : "warn"}
+                  reason={!candidate.admitted ? (candidate.fact ?? "Refused by the policy engine") : candidate.decision === "ALLOW" ? "Admitted" : "Admitted with a warning"}
+                />
               </li>
             ))}
           </ul>
@@ -191,10 +184,13 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
           )}
           <p className={styles.note}>A Formula is fixed at founding and never rebalances, so these weights hold only at the quote and drift as prices move.</p>
         </section>
+      </div>
 
-        <section aria-labelledby="identity-heading">
-          <span className={styles.label}>03 / Identity</span>
-          <h2 id="identity-heading">Name the share</h2>
+      <aside className={styles.sheet} aria-labelledby="draft-heading" data-testid="formula-draft">
+        {/* First in the panel that stays in view, so the name and symbol a
+            founding needs are asked for before anyone scrolls looking for them. */}
+        <section className={styles.identityBlock} aria-labelledby="identity-label">
+          <span className={styles.label} id="identity-label">03 / Identity</span>
           <div className={styles.identity}>
             <Field id="alloy-name" label="Name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Alloy name" />
             <Field id="alloy-symbol" label="Symbol" value={symbol} onChange={(event) => setSymbol(event.target.value.toUpperCase())} placeholder="SYMBOL" />
@@ -203,9 +199,6 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
             {identity && (name || symbol) ? identity : "Written into the share mint at founding and never changeable after it."}
           </p>
         </section>
-      </div>
-
-      <aside className={styles.sheet} aria-labelledby="draft-heading" data-testid="formula-draft">
         <span className={styles.label}>Draft</span>
         <h2 id="draft-heading">One share holds</h2>
         {!reading ? (

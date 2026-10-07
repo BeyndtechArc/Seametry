@@ -87,7 +87,6 @@
 }
 
 .quiet,
-.provenance,
 .note,
 .simulated,
 .loading {
@@ -95,14 +94,6 @@
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
   overflow-wrap: anywhere;
-}
-
-/* One line across the list it qualifies, not a readable-width paragraph. */
-.provenance {
-  max-width: none;
-  padding-left: var(--sm-space-4);
-  border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
-  color: var(--sm-accent-provenance);
 }
 
 .loading {
@@ -167,33 +158,8 @@
   font-size: var(--sm-font-size-small);
 }
 
-/* Grade, hairline and stamp on one line, the reason on the next, spread
-   down the row's full height: the marks align with the symbol and the
-   reason with the row's last line, so both columns end together. The
-   stamp's own wrapper is dissolved so its label joins the marks line. */
 .lotMarks {
-  display: grid;
-  grid-template-columns: auto auto auto minmax(0, 1fr);
-  align-content: space-between;
-  align-items: center;
-  justify-items: start;
-  gap: var(--sm-space-2) var(--sm-space-3);
   min-width: 0;
-  height: 100%;
-}
-
-.lotMarks > :last-child {
-  display: contents;
-}
-
-.lotMarks > :last-child > span {
-  grid-column: 1 / -1;
-}
-
-.markDivider {
-  align-self: center;
-  height: var(--sm-space-5);
-  border-left: 0.5px solid var(--sm-line-strong);
 }
 
 @media (max-width: 700px) {
@@ -421,10 +387,5 @@
   .lotRegister {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--sm-space-2);
-  }
-
-  .lotMarks {
-    gap: var(--sm-space-2) var(--sm-space-3);
-    font-size: var(--sm-font-size-small);
   }
 }

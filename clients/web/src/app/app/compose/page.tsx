@@ -35,12 +35,15 @@ export default async function ComposePage() {
           <>
             <p>Draft what one share holds, from assayed instruments priced by live mainnet quotes.</p>
             <p>Nothing is founded here: founding is a separate step on the devnet Hall.</p>
+            <p>
+              Only instruments captured and assayed by the policy engine can enter a Formula ({admissions.policy_version}, captured {relativeEvidenceAge(admissions.as_of)} ago). To
+              add another stock, capture it first.
+            </p>
           </>
         }
       />
       <Composer
         candidates={candidates}
-        policy={{ version: admissions.policy_version, age: relativeEvidenceAge(admissions.as_of) }}
         unquoted={"problem" in key ? key.problem : undefined}
       />
     </>

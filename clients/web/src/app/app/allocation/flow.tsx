@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ConditionReport, Field, FilterBar, Grade, Key, LotMark, QuietAction, QuoteBlock, Rule, Stamp, type GradeName } from "@seametry/ui";
+import { ConditionReport, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, Rule, Stamp, type GradeName } from "@seametry/ui";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
@@ -30,8 +30,6 @@ export type RefusedLot = { symbol: string; fact: string };
 function shortIssuer(name: string): string {
   return /\(([^)]+)\)/.exec(name)?.[1] ?? name.split(" ")[0];
 }
-
-type Snapshot = { asOf: string; age: string; policyVersion: string; referenceUsdc: number };
 
 type Phase = "idle" | "preparing" | "prepared" | "signing" | "sending" | "settled" | "failed";
 
@@ -174,12 +172,10 @@ function OrderSummary({
 export function AllocationFlow({
   offered,
   refused,
-  snapshot,
   unavailable,
 }: {
   offered: OfferedLot[];
   refused: RefusedLot[];
-  snapshot: Snapshot;
   unavailable?: string;
 }) {
   const { publicKey, connected, signTransaction } = useWallet();
@@ -394,13 +390,6 @@ export function AllocationFlow({
           <section className={styles.section} aria-labelledby="lots-heading">
             <Rule />
             <h2 id="lots-heading">Choose the constituents</h2>
-            <p className={styles.provenance}>
-              Policy {snapshot.policyVersion}, captured{" "}
-              <time dateTime={snapshot.asOf} title={snapshot.asOf}>
-                {new Date(snapshot.asOf).toUTCString().slice(5, 16)}
-              </time>
-              , {snapshot.age} old. This is a snapshot, not a live issuer read.
-            </p>
             {offered.length > 0 ? (
               <FilterBar
                 searchLabel="Search by symbol or issuer"
@@ -473,9 +462,7 @@ export function AllocationFlow({
                         </span>
                       </label>
                       <div className={styles.lotMarks}>
-                        <Grade name={lot.grade} />
-                        <span className={styles.markDivider} aria-hidden="true" />
-                        <Stamp kind={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
+                        <MarkLine grade={lot.grade} stamp={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
                       </div>
                     </div>
                     <details className={styles.conditionDisclosure}>
