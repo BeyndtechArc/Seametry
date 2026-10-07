@@ -359,48 +359,7 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-.stepPlan[data-invalid] {
-  color: var(--sm-accent-provenance);
-}
-
-/* The bar's one input: label above, the figure large enough to read. */
-.barAmount {
-  display: grid;
-  gap: var(--sm-space-1);
-  min-width: 0;
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.barAmount input {
-  width: calc(var(--sm-space-13) * 1.25);
-  min-width: 0;
-  min-height: var(--sm-space-8);
-  padding: 0 var(--sm-space-3);
-  border: 0;
-  border-bottom: 0.5px solid var(--sm-line-strong);
-  outline: 0;
-  color: var(--sm-text-primary);
-  background: var(--sm-surface-sheet);
-  font-family: var(--sm-font-family-ui);
-  font-size: var(--sm-font-size-body);
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
-.barAmount input::placeholder {
-  color: var(--sm-text-faint);
-}
-
-.barAmount input:focus-visible {
-  outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-1);
-}
-
-.barAmount input[aria-invalid] {
-  border-bottom-color: var(--sm-accent-provenance);
-}
-
-/* Beside the steps on a wide screen; inside the Review step on a narrow one. */
+/* Beside the steps on a wide screen; inside the Buy step on a narrow one. */
 .orderInline {
   display: none;
 }

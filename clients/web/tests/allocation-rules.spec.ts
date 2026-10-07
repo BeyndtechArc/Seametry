@@ -336,6 +336,7 @@ test("field placeholders are quieter than entered values in both modes", async (
   await page.goto("/app/allocation");
   const main = page.getByRole("main");
   await main.locator('[aria-label="Choose the constituents"] > ul > li input[type=checkbox]').first().check();
+  await main.getByRole("button", { name: "Set amount" }).click();
   const input = page.getByLabel("USDC to spend");
   const read = () =>
     input.evaluate((node) => ({
