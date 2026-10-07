@@ -656,6 +656,14 @@
   font-size: var(--sm-font-size-micro);
 }
 
+/* The group's 4px gap read as touching the field once a message ran to a
+   sentence; 12px separates it from the field while it still reads as the
+   field's own note. */
+.fieldMessage {
+  margin-top: var(--sm-space-3);
+  line-height: 1.5;
+}
+
 .fieldGroup {
   display: grid;
   gap: var(--sm-space-2);
