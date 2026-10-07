@@ -134,8 +134,17 @@ test("a lot is offered only when its capacity decision admits a measured size", 
 test("the allocation catalogue exposes policy-issued capacity per offered lot", () => {
   const offered = admissions.instruments.filter(isAdmitted);
   // The policy engine's output after the 4 October 2026 capture of eighteen
-  // more xStocks (shared/evidence/depth-2026-10-04.md), in snapshot order.
+  // more xStocks (shared/evidence/depth-2026-10-04.md) and the 7 October 2026
+  // capture of eight Backpack Securities twins (depth-2026-10-07.md), in
+  // snapshot order.
   expect(offered.map((lot) => [lot.instrument.symbol, lot.capacity_usdc])).toEqual([
+    ["AMD", 10000],
+    ["BE", 1000],
+    ["MRNA", 10000],
+    ["MU", 10000],
+    ["NFLX", 10000],
+    ["SNDK", 10000],
+    ["SPCX", 10000],
     ["AMZNx", 10000],
     ["SPCXx", 10000],
     ["GOOGLx", 10000],
@@ -151,8 +160,20 @@ test("the allocation catalogue exposes policy-issued capacity per offered lot", 
     ["TQQQx", 100],
     ["PLTRx", 1000],
     ["MSFTx", 10000],
+    ["INTC", 1000],
   ]);
   expect(offered.every((lot) => lot.capacity_decision.input_digest.match(/^[0-9a-f]{64}$/))).toBe(true);
+});
+
+test("each lot shows its own issuer's grade, so two issuers of one stock never read alike", async ({ page }) => {
+  await page.goto("/app/allocation");
+  const lots = page.getByRole("main").locator("[aria-labelledby=lots-heading] ul > li");
+  const backpack = lots.filter({ has: page.getByText("SPCX", { exact: true }) });
+  const xstocks = lots.filter({ has: page.getByText("SPCXx", { exact: true }) });
+  await expect(backpack.getByText("Backpack Securities", { exact: true })).toBeVisible();
+  await expect(backpack.getByText("Entitlement", { exact: true })).toBeVisible();
+  await expect(xstocks.getByText("Backed Finance (xStocks)", { exact: true })).toBeVisible();
+  await expect(xstocks.getByText("Certificate", { exact: true })).toBeVisible();
 });
 
 test("the committed snapshot is the policy engine's, for every captured lot", () => {

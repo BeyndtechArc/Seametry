@@ -1,0 +1,9 @@
+{
+  "symbol": "MU",
+  "mint": "MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1",
+  "size_usdc": 100,
+  "captured_at": "2026-10-07T13:02:06Z",
+  "status": 200,
+  "sha256": "30d80b7b7cbc490058c9212a752755506126309211a91d6cee519971e8f65e2a",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1\",\"outAmount\":\"98037\",\"otherAmountThreshold\":\"97547\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0013828171347299180568962787\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"FrQuDkgAc1WQ9Vswxq3LWjB5BgnFxaKareWK4YGh1ZMM\",\"label\":\"GoonFi V2\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1\",\"inAmount\":\"100000000\",\"outAmount\":\"98037\",\"updateContextSlot\":\"454230548\"},\"percent\":100,\"bps\":null}],\"contextSlot\":454230550,\"timeTaken\":0.003259903,\"swapUsdValue\":\"99.985780480501600\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"13MEx6gjRadJNUdmToaGSzgeWHLH7FzScUQS9Mc5nYF5\":\"97889\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"100003736\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"SKHYhSjuRWHgikq8eRKbtBbpABgJSkd7ytQV14i9EQ3\"]}"
+}

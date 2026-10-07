@@ -19,7 +19,7 @@ test("on a phone, a stock's grade and stamp share one line and the page never sc
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app/allocation");
   const lot = page.getByRole("main").locator("[aria-labelledby=lots-heading] ul > li").first();
-  const grade = lot.getByText("Certificate", { exact: true });
+  const grade = lot.getByText(/^(Entitlement|Certificate|Interest|Ungraded)$/);
   const stamp = lot.getByText("Warn", { exact: true });
   await expect(stamp).toBeVisible();
   const [gradeBox, stampBox] = [await grade.boundingBox(), await stamp.boundingBox()];

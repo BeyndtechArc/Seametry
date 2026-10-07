@@ -148,5 +148,53 @@
     "mint": "XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4",
     "issuer": "Backed Finance (xStocks)",
     "note": "First-Alloy candidate. A 1,000 USDC quote routed on 4 October 2026 through Orca Whirlpool."
+  },
+  {
+    "symbol": "SPCX",
+    "mint": "SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb",
+    "issuer": "Backpack Securities",
+    "note": "A second issuer of the same underlying as SPCXx, so the two grades and their keys sit side by side. Jupiter listed at least six other tokens called SPCX on 7 October 2026; this one is chosen by address, and its keys are Backpack's on every token it issues."
+  },
+  {
+    "symbol": "NFLX",
+    "mint": "NFLX7qV57zuVxCoHy3s1jiGZyALraLNwttbxdvmYJLJ",
+    "issuer": "Backpack Securities",
+    "note": "Backpack's twin of NFLXx. Its multiplier read 1 with nothing scheduled on 7 October 2026: Backpack listed after NFLXx's ten for one split, so how Backpack carries a corporate action has no evidence yet."
+  },
+  {
+    "symbol": "AMD",
+    "mint": "AMD8XwJXgQ9WV45Wyj9yFLejxzf2J6VM1PJY8bJEjeES",
+    "issuer": "Backpack Securities",
+    "note": "Backpack's twin of AMDx, compared on depth at size."
+  },
+  {
+    "symbol": "INTC",
+    "mint": "iNTCy1qTsUEZQe3DSocLz1ZXXai34Gdw8THQh5rxFaF",
+    "issuer": "Backpack Securities",
+    "note": "Backpack's twin of INTCx. Backpack's Intel opened with a pool of roughly 199,000 USDC (docs/PRODUCT_ARCHITECTURE.md section 12), the case that depth is checked before admission."
+  },
+  {
+    "symbol": "MU",
+    "mint": "MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1",
+    "issuer": "Backpack Securities",
+    "note": "Backpack's twin of MUx, which the policy blocks on depth; whether the other issuer's pool is deeper is the question."
+  },
+  {
+    "symbol": "MRNA",
+    "mint": "MRNAzXzhNcaEXJPibHEn8cd4vyekCDiivTyEwswLUCT",
+    "issuer": "Backpack Securities",
+    "note": "Backpack's twin of MRNAx, compared on depth at size."
+  },
+  {
+    "symbol": "SNDK",
+    "mint": "SNDKbwMUQvZhnLnxLduradgLHG5KrPuKwpnrkkGRhfH",
+    "issuer": "Backpack Securities",
+    "note": "Backpack's twin of SNDKx, compared on depth at size."
+  },
+  {
+    "symbol": "BE",
+    "mint": "BEBVfXZ8uCxRBuunEbW9wcq9r7W9ySNo14oJBJkDgpZx",
+    "issuer": "Backpack Securities",
+    "note": "Backpack's twin of BEx, compared on depth at size."
   }
 ]

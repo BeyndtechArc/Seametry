@@ -1,6 +1,6 @@
 {
   "producer": "go run ./server/cmd/capture -logos",
-  "captured_at": "2026-10-05T22:18:59Z",
+  "captured_at": "2026-10-07T13:03:26Z",
   "logos": [
     {
       "symbol": "AAPLx",
@@ -12,6 +12,14 @@
       "bytes": 14540,
       "sha256": "930db19951493787ee286650222311b5158317bdb811205b450cfb412ab89295",
       "path": "/instruments/XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp.png"
+    },
+    {
+      "symbol": "AMD",
+      "mint": "AMD8XwJXgQ9WV45Wyj9yFLejxzf2J6VM1PJY8bJEjeES",
+      "state": "unsupported",
+      "reason": "the image is not PNG, JPEG or WebP by its leading bytes",
+      "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/amd.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/AMD"
     },
     {
       "symbol": "AMDx",
@@ -45,6 +53,14 @@
       "bytes": 15819,
       "sha256": "ce27288249edbe36b246d21b661a583b92da9c10a388f2de43b3e5512c0ca95a",
       "path": "/instruments/XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo.png"
+    },
+    {
+      "symbol": "BE",
+      "mint": "BEBVfXZ8uCxRBuunEbW9wcq9r7W9ySNo14oJBJkDgpZx",
+      "state": "unsupported",
+      "reason": "the image is not PNG, JPEG or WebP by its leading bytes",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/be.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/BE"
     },
     {
       "symbol": "BEx",
@@ -102,6 +118,14 @@
       "path": "/instruments/XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN.png"
     },
     {
+      "symbol": "INTC",
+      "mint": "iNTCy1qTsUEZQe3DSocLz1ZXXai34Gdw8THQh5rxFaF",
+      "state": "unsupported",
+      "reason": "the image is not PNG, JPEG or WebP by its leading bytes",
+      "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/intc.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/INTC"
+    },
+    {
       "symbol": "INTCx",
       "mint": "XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM",
       "state": "captured",
@@ -122,6 +146,14 @@
       "bytes": 27546,
       "sha256": "52cb2a0719cdc068ccccc28ba2f6451d4db43e48734a2e7832da7e66b0d7e806",
       "path": "/instruments/Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu.png"
+    },
+    {
+      "symbol": "MRNA",
+      "mint": "MRNAzXzhNcaEXJPibHEn8cd4vyekCDiivTyEwswLUCT",
+      "state": "unsupported",
+      "reason": "the image is not PNG, JPEG or WebP by its leading bytes",
+      "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/mrna.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/MRNA"
     },
     {
       "symbol": "MRNAx",
@@ -146,6 +178,17 @@
       "path": "/instruments/XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX.png"
     },
     {
+      "symbol": "MU",
+      "mint": "MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1",
+      "state": "captured",
+      "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/mu.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/MU",
+      "content_type": "image/png",
+      "bytes": 88427,
+      "sha256": "744f458ab12f5b3087401ea1368c0b44eb26c00fafcbd8d96fc271ee6ba26074",
+      "path": "/instruments/MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1.png"
+    },
+    {
       "symbol": "MUx",
       "mint": "XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav",
       "state": "captured",
@@ -155,6 +198,14 @@
       "bytes": 24291,
       "sha256": "580adef0a2b7c9623e545933b1a20c4c3a15ce8c6dca8b5694fb17979beecc32",
       "path": "/instruments/XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav.png"
+    },
+    {
+      "symbol": "NFLX",
+      "mint": "NFLX7qV57zuVxCoHy3s1jiGZyALraLNwttbxdvmYJLJ",
+      "state": "unsupported",
+      "reason": "the image is not PNG, JPEG or WebP by its leading bytes",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/nflx.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/NFLX"
     },
     {
       "symbol": "NFLXx",
@@ -212,6 +263,14 @@
       "path": "/instruments/XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4.png"
     },
     {
+      "symbol": "SNDK",
+      "mint": "SNDKbwMUQvZhnLnxLduradgLHG5KrPuKwpnrkkGRhfH",
+      "state": "unsupported",
+      "reason": "the image is not PNG, JPEG or WebP by its leading bytes",
+      "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/sndk.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/SNDK"
+    },
+    {
       "symbol": "SNDKx",
       "mint": "Xswbpc8UqU6e1j9QZEWCjBMjyvz4twqD7PCy6j2e7jj",
       "state": "captured",
@@ -221,6 +280,14 @@
       "bytes": 35180,
       "sha256": "60a690470a0b21675c393557245c51619c696e8fd4dc0373bec3111ec512c28b",
       "path": "/instruments/Xswbpc8UqU6e1j9QZEWCjBMjyvz4twqD7PCy6j2e7jj.png"
+    },
+    {
+      "symbol": "SPCX",
+      "mint": "SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb",
+      "state": "unsupported",
+      "reason": "the image is not PNG, JPEG or WebP by its leading bytes",
+      "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/spcx.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/SPCX"
     },
     {
       "symbol": "SPCXx",

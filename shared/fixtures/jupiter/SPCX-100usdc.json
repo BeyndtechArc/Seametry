@@ -1,0 +1,9 @@
+{
+  "symbol": "SPCX",
+  "mint": "SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb",
+  "size_usdc": 100,
+  "captured_at": "2026-10-07T13:01:50Z",
+  "status": 200,
+  "sha256": "26409de1702d11ce9321a323eb90d68cd478434c5f9f1eda371635f4a441bfb5",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb\",\"outAmount\":\"594327\",\"otherAmountThreshold\":\"591356\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"D7sZfY6mrfjdauaXhaRzhL7QNzWVjXtkLScQNMXJqc2p\",\"label\":\"GoonFi V2\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb\",\"inAmount\":\"100000000\",\"outAmount\":\"594327\",\"updateContextSlot\":\"454230485\"},\"percent\":100,\"bps\":null}],\"contextSlot\":454230492,\"timeTaken\":0.00895483,\"swapUsdValue\":\"99.985780480501600\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"HwUtFGRqg351BNJjtzkXnzG82bUeDcYMR2ZtXktqhpFo\":\"593582\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"100003736\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"7w2NKguxSSusPw8CbXEjKSKpKokD4EkRUNgtD1eFPEbp\",\"GFyooX9DbnV1uVmsoAZ1kWgfQPC19aYH5UDpWcNYpump\",\"A6pdSaEg2PEPLbU59A9rzKdZ6wwnvbTYqGQckursuPRS\"]}"
+}

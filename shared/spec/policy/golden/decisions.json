@@ -100,6 +100,85 @@
       }
     },
     {
+      "name": "AMD",
+      "input": {
+        "symbol": "AMD",
+        "mint": "AMD8XwJXgQ9WV45Wyj9yFLejxzf2J6VM1PJY8bJEjeES",
+        "grade": "entitlement",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 454230392,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 11,
+          "stated_impact_bps": 7,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "6d9715d0ff886cb305e4e9c3e34184d47f6f0621fa0613221a218bc61df4d640"
+      }
+    },
+    {
       "name": "AMDx",
       "input": {
         "symbol": "AMDx",
@@ -344,6 +423,85 @@
         ],
         "policy_version": "policy-2026.10.1",
         "input_digest": "3726e992956fbdb9326a551a9c33b1ab49dbd2a9275a0f30484461dae1cf7835"
+      }
+    },
+    {
+      "name": "BE",
+      "input": {
+        "symbol": "BE",
+        "mint": "BEBVfXZ8uCxRBuunEbW9wcq9r7W9ySNo14oJBJkDgpZx",
+        "grade": "entitlement",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 454230392,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 35,
+          "stated_impact_bps": 46,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "741b5eca31e404e98497ccee42c52f729344915f44b759697474d96dfddb85fc"
       }
     },
     {
@@ -777,6 +935,85 @@
       }
     },
     {
+      "name": "INTC",
+      "input": {
+        "symbol": "INTC",
+        "mint": "iNTCy1qTsUEZQe3DSocLz1ZXXai34Gdw8THQh5rxFaF",
+        "grade": "entitlement",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 454230392,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 22,
+          "stated_impact_bps": 95,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "eaaf34b29db9c8f7ce327aaaf47369110a938b4aead6d4dc8cc52b9e3802bcd2"
+      }
+    },
+    {
       "name": "INTCx",
       "input": {
         "symbol": "INTCx",
@@ -942,6 +1179,85 @@
         ],
         "policy_version": "policy-2026.10.1",
         "input_digest": "3c9b6ee273689a301bfb235bae314728d25ce4e4b97a1ede051d40bced1cd6a6"
+      }
+    },
+    {
+      "name": "MRNA",
+      "input": {
+        "symbol": "MRNA",
+        "mint": "MRNAzXzhNcaEXJPibHEn8cd4vyekCDiivTyEwswLUCT",
+        "grade": "entitlement",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 454230392,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 7,
+          "stated_impact_bps": 43,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "5144ccdafc70dea47f88e9e35be5b0aaa2964d8483fc099e2e74f29fe8107980"
       }
     },
     {
@@ -1113,6 +1429,85 @@
       }
     },
     {
+      "name": "MU",
+      "input": {
+        "symbol": "MU",
+        "mint": "MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1",
+        "grade": "entitlement",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 454230392,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 7,
+          "stated_impact_bps": 21,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1.0001069376513369579839718426228500902652740478515625",
+          "naive_value": "1.0001069376513369579839718426228500902652740478515625"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "fecce6649513144fa5039edf132f5f7e0ed70a0966d833df7ee788e877cc14d3"
+      }
+    },
+    {
       "name": "MUx",
       "input": {
         "symbol": "MUx",
@@ -1199,6 +1594,85 @@
         ],
         "policy_version": "policy-2026.10.1",
         "input_digest": "55f8c0f3d9568d0dfcdfd38417ce5818485d7078345186d4c762b8b90b5050d1"
+      }
+    },
+    {
+      "name": "NFLX",
+      "input": {
+        "symbol": "NFLX",
+        "mint": "NFLX7qV57zuVxCoHy3s1jiGZyALraLNwttbxdvmYJLJ",
+        "grade": "entitlement",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 454230392,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 18,
+          "stated_impact_bps": 20,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "cacc9a03636c5d33b21540f8bf274cf2d2423d9d8d1b9798bfd3b5df25a10d23"
       }
     },
     {
@@ -1632,6 +2106,85 @@
       }
     },
     {
+      "name": "SNDK",
+      "input": {
+        "symbol": "SNDK",
+        "mint": "SNDKbwMUQvZhnLnxLduradgLHG5KrPuKwpnrkkGRhfH",
+        "grade": "entitlement",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 454230392,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 9,
+          "stated_impact_bps": 11,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "0e400ece318f8197d2c29c2d6556dd92cc09a64587e5876d1c5514d48f7f2ba7"
+      }
+    },
+    {
       "name": "SNDKx",
       "input": {
         "symbol": "SNDKx",
@@ -1713,6 +2266,85 @@
         ],
         "policy_version": "policy-2026.10.1",
         "input_digest": "2e729713b7e0aac12ee55ca33bdeea95ba9040c3fe514ec9da3243a9e1245c48"
+      }
+    },
+    {
+      "name": "SPCX",
+      "input": {
+        "symbol": "SPCX",
+        "mint": "SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb",
+        "grade": "entitlement",
+        "as_of": "2026-09-23T12:00:00Z",
+        "observed_at_slot": 454230392,
+        "halted_by_issuer": false,
+        "quarantined": false,
+        "depth": {
+          "observed": true,
+          "size_usdc": 1000,
+          "availability": "available",
+          "provider_code": "",
+          "shortfall_bps": 4,
+          "stated_impact_bps": 3,
+          "baseline_size_usdc": 100
+        },
+        "prerogatives": {
+          "has_freeze_authority": true,
+          "has_permanent_delegate": true,
+          "has_mint_authority": true,
+          "can_change_multiplier": true,
+          "pausable": true,
+          "paused_now": false,
+          "non_transferable": false,
+          "freezes_new_accounts": false,
+          "transfer_hook_state": "initialized_disabled",
+          "transfer_hook_program": ""
+        },
+        "multiplier": {
+          "present": true,
+          "resolved": true,
+          "naive_is_stale": false,
+          "activation_pending": false,
+          "live_value": "1",
+          "naive_value": "1"
+        },
+        "unknown_extensions": []
+      },
+      "result": {
+        "decision": "WARN",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "severity": "WARN",
+            "fact": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "severity": "WARN",
+            "fact": "The issuer can freeze this where it sits."
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "severity": "WARN",
+            "fact": "The issuer can create more of these."
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "severity": "WARN",
+            "fact": "The issuer can pause all movement of this."
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "severity": "WARN",
+            "fact": "The issuer can take this back from any wallet."
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "severity": "WARN",
+            "fact": "The issuer can switch on a check of who may receive this."
+          }
+        ],
+        "policy_version": "policy-2026.10.1",
+        "input_digest": "0061de045462eaae74f4d580282653c2167e27950eba50508a33c4993d8d844c"
       }
     },
     {

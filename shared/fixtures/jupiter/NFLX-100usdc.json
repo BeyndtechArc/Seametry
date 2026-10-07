@@ -1,0 +1,9 @@
+{
+  "symbol": "NFLX",
+  "mint": "NFLX7qV57zuVxCoHy3s1jiGZyALraLNwttbxdvmYJLJ",
+  "size_usdc": 100,
+  "captured_at": "2026-10-07T13:01:53Z",
+  "status": 200,
+  "sha256": "9c90383c136e9d1415d98242dd29d58508fb5a17ee5ab3726149c9091f7b7e4f",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"NFLX7qV57zuVxCoHy3s1jiGZyALraLNwttbxdvmYJLJ\",\"outAmount\":\"1449768\",\"otherAmountThreshold\":\"1442520\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0001629545369358778045743267\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"8cyhqTZ3mkXukzQwwFYY5Vtb4vHDj4KRqsPYg6NUeNiX\",\"label\":\"Manifest\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"NFLX7qV57zuVxCoHy3s1jiGZyALraLNwttbxdvmYJLJ\",\"inAmount\":\"100000000\",\"outAmount\":\"1449768\",\"updateContextSlot\":\"454230501\"},\"percent\":100,\"bps\":null}],\"contextSlot\":454230502,\"timeTaken\":0.003729225,\"swapUsdValue\":\"99.985780480501600\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"GAp8RNaea129GTe5xjsAjn9YJq9SNQLSJoBxSBy5dRsd\":\"1336515\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"100003736\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"4o1Y8cxUaiaji4rowfm8x2FkyvMreN81ZjNWXQZxVSFC\"]}"
+}

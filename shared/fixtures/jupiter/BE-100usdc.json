@@ -1,0 +1,9 @@
+{
+  "symbol": "BE",
+  "mint": "BEBVfXZ8uCxRBuunEbW9wcq9r7W9ySNo14oJBJkDgpZx",
+  "size_usdc": 100,
+  "captured_at": "2026-10-07T13:02:18Z",
+  "status": 200,
+  "sha256": "de7a3d8775687d80de4505ece7f79d384474c0b355685e311106772035f06ff9",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"BEBVfXZ8uCxRBuunEbW9wcq9r7W9ySNo14oJBJkDgpZx\",\"outAmount\":\"349540\",\"otherAmountThreshold\":\"347793\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0010987052052133701566811031\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"3wKycdEd5pALqBeghivbTJSPDKquv26AMvJDvEZfFUVw\",\"label\":\"Raydium CLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"BEBVfXZ8uCxRBuunEbW9wcq9r7W9ySNo14oJBJkDgpZx\",\"inAmount\":\"100000000\",\"outAmount\":\"349540\",\"updateContextSlot\":\"454230527\"},\"percent\":100,\"bps\":null}],\"contextSlot\":454230598,\"timeTaken\":0.002990018,\"swapUsdValue\":\"99.982621515007100\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"9BJqUNRATHr6e6hRY4dHqMtxPrdKxR1TLaS37muxW18G\":\"AnchorError { error_name: \\\"LiquidityInsufficient\\\", error_code_number: 6019, error_msg: \\\"Liquidity insufficient\\\", error_origin: None, compared_values: None }\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"100003736\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"DjfYyqQcZfLWoZa4hY79b6dL1G3z1iTHkayPUEU6LnES\",\"BRJmyGPcHmNxLvFrTquYRTigUHuhirs3WQSh4bpLtS8H\"]}"
+}
