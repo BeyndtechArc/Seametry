@@ -1,12 +1,14 @@
 import index from "../../../../../shared/evidence/alloys/index.json";
 import { METADATA_ORIGIN } from "../compose/identity";
-import { logoFor } from "../instrument-logos";
+import { logoFor, logoForSymbol } from "../instrument-logos";
 import type { Alloy } from "../terminal-contract";
 
 // shared/evidence/alloys/index.json is written by scripts/record-founding.ts
-// from devnet. It names each founded Alloy and maps every devnet stand-in to
-// the captured xStock it stands in for, which is the only way a stand-in leg
-// gets its stock's logo: a stand-in carries no pointer to the real mint.
+// from devnet. It names a founded Alloy and maps each devnet stand-in to the
+// captured stock it stands in for, a pointer a stand-in mint does not carry.
+// It is evidence written by hand after a founding, so nothing here depends on
+// it existing: an Alloy without one is named from its share mint, and its
+// legs from the symbols their stand-ins state.
 
 type FoundingRecord = (typeof index.alloys)[number];
 
@@ -38,11 +40,14 @@ export type LegIdentity = { symbol?: string; logo?: string; realMint?: string };
 export function legIdentity(alloy: Alloy, legMint: string): LegIdentity {
   const leg = alloy.legs.find((candidate) => candidate.mint === legMint);
   const recorded = byAddress.get(alloy.address)?.legs.find((candidate) => candidate.stand_in === legMint);
-  // A recorded leg points at the real xStock, whose logo was captured; a
-  // leg without a record shows its own mint's symbol and a lettered tile.
+  const symbol = leg?.metadata?.symbol ?? recorded?.symbol;
+  // A recorded leg points at the real stock, whose logo was captured. A leg
+  // with no record, any Alloy founded after the record was written, finds
+  // the logo by the symbol its stand-in states on chain; until 8 October
+  // 2026 it fell to a lettered tile, so every new Alloy looked unfinished.
   return {
-    symbol: leg?.metadata?.symbol ?? recorded?.symbol,
-    logo: recorded ? logoFor(recorded.real_mint) : logoFor(legMint),
+    symbol,
+    logo: (recorded ? logoFor(recorded.real_mint) : logoFor(legMint)) ?? logoForSymbol(symbol),
     realMint: recorded?.real_mint,
   };
 }

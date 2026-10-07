@@ -11,6 +11,7 @@ import type {
   TerminalProblem,
 } from "@/lib/terminal-contract";
 import { alloyIdentity, legIdentity } from "@/lib/alloys/records";
+import { AlloyArtwork } from "./alloy-artwork";
 import { formatAmount } from "@/lib/amount";
 import { ONE_SHARE_ATOMS, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { NetworkBadge, PageHeader } from "../_shell/page-header";
@@ -110,12 +111,7 @@ export function AlloyRegister() {
               return (
                 <li key={alloy.address} aria-label={identity.title}>
                   <div className={styles.alloyRowIdentity}>
-                    {identity.artwork ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- next/image writes an inline style attribute, which this site's CSP refuses.
-                      <img className={styles.alloyArtworkRow} src={identity.artwork} alt="" width={64} height={64} />
-                    ) : (
-                      <LotMark symbol={identity.symbol ?? identity.title} size="header" />
-                    )}
+                    <AlloyArtwork alloy={alloy} identity={identity} className={styles.alloyArtworkRow} size={64} alt="" />
                     <div>
                       <b>{identity.title}</b>
                       {identity.symbol ? <span>{identity.symbol}</span> : null}
@@ -181,12 +177,7 @@ export function AlloyRecord({ address }: { address: string }) {
                 <NetworkBadge network="Devnet" />
               </header>
               <div className={styles.alloyTitle}>
-                {identity.artwork ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- next/image writes an inline style attribute, which this site's CSP refuses.
-                  <img className={styles.alloyArtwork} src={identity.artwork} alt={`${identity.title} artwork`} width={96} height={96} />
-                ) : (
-                  <LotMark symbol={identity.symbol ?? identity.title} size="header" />
-                )}
+                <AlloyArtwork alloy={alloy} identity={identity} className={styles.alloyArtwork} size={96} alt={`${identity.title} artwork`} />
                 <div>
                   <h1 id="live-alloy-title">{identity.title}</h1>
                   {identity.symbol ? <span className={styles.alloySymbol}>{identity.symbol}</span> : null}

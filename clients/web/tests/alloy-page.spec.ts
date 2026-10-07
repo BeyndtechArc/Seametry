@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { legIdentity } from "../src/lib/alloys/records";
+import type { Alloy } from "../src/lib/terminal-contract";
 
 test("the Alloy surface exposes the recorded formula and missing market evidence", async ({ page }) => {
   await page.goto("/app/alloys/storm");
@@ -37,4 +39,18 @@ test("the Alloy surface carries the page-wide colour mode control", async ({ pag
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.getByRole("button", { name: "Use light mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+});
+
+test("an Alloy founded after the founding record still draws each leg's logo from the symbol its stand-in states", () => {
+  // Fortune Five on 8 October 2026 had no record, and every leg fell to a
+  // lettered tile. A stand-in's own mint has no captured logo; its symbol does.
+  const alloy = {
+    address: "8scqwARNetuBJPi32d97fRQUV3hAQngjeKqbvKSQ61VX",
+    legs: [{ mint: "4YEHgM5SjppERHtU6P7LMgMRkFXb5MdYZXDvbuBiJjs1", metadata: { name: "AAPLx devnet stand-in", symbol: "AAPLx", uri: "" } }],
+  } as unknown as Alloy;
+  expect(legIdentity(alloy, "4YEHgM5SjppERHtU6P7LMgMRkFXb5MdYZXDvbuBiJjs1")).toEqual({
+    symbol: "AAPLx",
+    logo: "/instruments/XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp.png",
+    realMint: undefined,
+  });
 });

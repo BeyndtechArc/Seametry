@@ -10,3 +10,15 @@ const captured = new Map(manifest.logos.filter((logo) => logo.state === "capture
 export function logoFor(mint: string): string | undefined {
   return captured.get(mint);
 }
+
+const capturedBySymbol = new Map(manifest.logos.filter((logo) => logo.state === "captured" && logo.path).map((logo) => [logo.symbol, logo.path as string]));
+
+/**
+ * The captured logo for an instrument named by its symbol. For a devnet
+ * stand-in, whose mint is not the real one: the stand-in names the stock it
+ * stands in for in its own metadata, and captured symbols are distinct
+ * across issuers (SPCX and SPCXx are two instruments).
+ */
+export function logoForSymbol(symbol: string | undefined): string | undefined {
+  return symbol ? capturedBySymbol.get(symbol) : undefined;
+}
