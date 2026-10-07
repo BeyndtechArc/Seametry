@@ -351,3 +351,16 @@ test("field placeholders are quieter than entered values in both modes", async (
   expect(colours.placeholder).not.toBe("");
   expect(colours.placeholder).not.toBe(colours.value);
 });
+
+test("the offer the mobile app reads lists the lots the page offers, with their terms and logos", async ({ request }) => {
+  const response = await request.get("/api/allocation/offer");
+  expect(response.headers()["access-control-allow-origin"]).toBe("*");
+  const offer = await response.json();
+  const admitted = admissions.instruments.filter(isAdmitted);
+  expect(offer.offered.map((lot: { symbol: string }) => lot.symbol)).toEqual(admitted.map((lot) => lot.instrument.symbol));
+  expect(offer.refused).toHaveLength(admissions.instruments.length - admitted.length);
+  expect(offer.feeSchedule).toBe("0.25% for 1, 0.15% for 2 to 4, 0.10% for 5 or more constituents");
+  expect(offer.policyVersion).toBe(admissions.policy_version);
+  const apple = offer.offered.find((lot: { symbol: string }) => lot.symbol === "AAPLx");
+  expect(apple.logo).toBe("/instruments/XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp.png");
+});

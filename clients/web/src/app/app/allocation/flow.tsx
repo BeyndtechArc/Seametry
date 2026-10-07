@@ -3,28 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ConditionReport, ContinueAction, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, StepBar, StepTrack, Stamp, type GradeName } from "@seametry/ui";
+import { ConditionReport, ContinueAction, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, StepBar, StepTrack, Stamp } from "@seametry/ui";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
+import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
 import { logoFor } from "@/lib/instrument-logos";
 import { shortIssuer } from "@/lib/issuers";
 import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
 import styles from "./allocation.module.css";
-
-export type OfferedLot = {
-  mint: string;
-  symbol: string;
-  issuer: string;
-  grade: GradeName;
-  decision: string;
-  capacityUsdc: number;
-  stampReason: string;
-  prerogatives: string[];
-  multiplier: string;
-  slot: string;
-};
-
-export type RefusedLot = { symbol: string; fact: string };
 
 type Phase = "idle" | "preparing" | "prepared" | "signing" | "sending" | "settled" | "failed";
 
