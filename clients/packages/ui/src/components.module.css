@@ -442,21 +442,197 @@
   margin-top: var(--sm-space-3);
 }
 
-.grade {
-  display: inline-flex;
+.filterBar {
+  display: grid;
+  gap: var(--sm-space-3);
+  min-width: 0;
+}
+
+/* Positioned so the panel opens under the whole row, right-aligned to the
+   glyph, instead of from the glyph alone at a narrow screen's edge. */
+.filterRow {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--sm-space-3);
+  min-width: 0;
+}
+
+.searchField {
+  display: flex;
+  flex: 1;
   align-items: center;
   gap: var(--sm-space-3);
+  min-width: 0;
+  min-height: var(--sm-size-target);
+  padding: 0 var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-tertiary);
+  background: var(--sm-surface-sheet);
+}
+
+.searchField:focus-within {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: calc(var(--sm-space-1) * -1);
+}
+
+.searchField input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: var(--sm-text-primary);
+  background: transparent;
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-body);
+}
+
+.searchField input::placeholder {
+  color: var(--sm-text-faint);
+}
+
+.filterMenu summary {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--sm-size-target);
+  height: 100%;
+  min-height: var(--sm-size-target);
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-secondary);
+  background: var(--sm-surface-sheet);
+  list-style: none;
+  cursor: pointer;
+}
+
+.filterMenu summary::-webkit-details-marker {
+  display: none;
+}
+
+.filterMenu[open] summary,
+.filterMenu summary:hover {
   color: var(--sm-text-primary);
 }
 
-.grade > span {
-  width: var(--sm-space-6);
-  border-top: 0.5px solid var(--sm-line-strong);
+.filterMenu summary:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: calc(var(--sm-space-1) * -1);
+}
+
+.filterMenu summary b {
+  position: absolute;
+  top: var(--sm-space-1);
+  right: var(--sm-space-1);
+  display: grid;
+  place-items: center;
+  min-width: var(--sm-space-5);
+  height: var(--sm-space-5);
+  border-radius: var(--sm-radius-control);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
+  font-size: var(--sm-font-size-micro);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.filterPanel {
+  position: absolute;
+  top: calc(100% + var(--sm-space-2));
+  right: 0;
+  z-index: 3;
+  display: grid;
+  gap: var(--sm-space-5);
+  width: min(100%, calc(var(--sm-space-13) * 3.5));
+  padding: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  outline: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-raised);
+}
+
+.filterGroup {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filterGroup legend {
+  padding: 0;
+  margin-bottom: var(--sm-space-2);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.filterGroup > div {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.filterOption {
+  position: relative;
+  cursor: pointer;
+}
+
+.filterOption input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.filterOption span {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sm-size-target);
+  padding: 0 var(--sm-space-4);
+  border-bottom: 2px solid transparent;
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.filterOption input:checked + span {
+  border-bottom-color: var(--sm-text-primary);
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.filterOption input:focus-visible + span {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: calc(var(--sm-space-1) * -1);
+}
+
+.filterCount {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+/* The Stamp's family (square, double rule, micro semibold) so the two read
+   as one line of marks; the glyph names the backing before the word does. */
+.grade {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-2);
+  padding: var(--sm-space-1) var(--sm-space-3);
+  border: 3px double var(--sm-line-strong);
+  border-radius: var(--sm-radius-data);
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-micro);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.grade svg {
+  flex: none;
 }
 
 .grade b {
-  font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-medium);
+  font-weight: var(--sm-font-weight-semibold);
+  letter-spacing: var(--sm-font-tracking-serial);
 }
 
 .keyGroup {

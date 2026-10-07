@@ -165,12 +165,27 @@
   font-size: var(--sm-font-size-small);
 }
 
+/* Grade and stamp sit side by side at every width, so a row's backing and
+   verdict read in one glance. The stamp's line wraps as one block, which
+   would push it whole under the grade; its label and reason flow in this
+   row instead. */
 .lotMarks {
-  display: grid;
-  justify-items: start;
+  display: flex;
+  flex-wrap: wrap;
   align-content: start;
+  align-items: center;
   gap: var(--sm-space-3);
   min-width: 0;
+}
+
+.lotMarks > :last-child {
+  display: contents;
+}
+
+.markDivider {
+  align-self: center;
+  height: var(--sm-space-5);
+  border-left: 0.5px solid var(--sm-line-strong);
 }
 
 @media (max-width: 700px) {
@@ -401,19 +416,7 @@
   }
 
   .lotMarks {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
     gap: var(--sm-space-2) var(--sm-space-3);
-  }
-
-  /* The stamp's line wraps as one block, which pushed it whole under the
-     grade; its label and reason flow in this row instead. */
-  .lotMarks > :last-child {
-    display: contents;
-  }
-
-  .lotMarks {
     font-size: var(--sm-font-size-small);
   }
 }

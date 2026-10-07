@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ConditionReport, Field, Grade, Key, LotMark, QuietAction, QuoteBlock, Rule, Stamp, type GradeName } from "@seametry/ui";
+import { ConditionReport, Field, FilterBar, Grade, Key, LotMark, QuietAction, QuoteBlock, Rule, Stamp, type GradeName } from "@seametry/ui";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
@@ -25,6 +25,11 @@ export type OfferedLot = {
 };
 
 export type RefusedLot = { symbol: string; fact: string };
+
+/** "Backed Finance (xStocks)" reads as xStocks, "Backpack Securities" as Backpack: the name a buyer knows the product by. */
+function shortIssuer(name: string): string {
+  return /\(([^)]+)\)/.exec(name)?.[1] ?? name.split(" ")[0];
+}
 
 type Snapshot = { asOf: string; age: string; policyVersion: string; referenceUsdc: number };
 
@@ -182,8 +187,23 @@ export function AllocationFlow({
   const [now, setNow] = useState(() => Date.now());
   const [orderOpen, setOrderOpen] = useState(false);
 
+  const [query, setQuery] = useState("");
+  const [backing, setBacking] = useState("any");
+  const [issuer, setIssuer] = useState("any");
+  const [minCapacity, setMinCapacity] = useState("0");
+  const issuers = [...new Set(offered.map((lot) => lot.issuer))].sort();
+
   const parsed = typed.trim() === "" ? undefined : parseAmount(typed, USDC_SCALE);
-  const chosen = offered.filter((lot) => selected.includes(lot.mint));
+  // Filters state a preference, so they shape the plan: a chosen lot they
+  // hide leaves it, counted, rather than being bought out of sight. Search
+  // only moves the view, so a chosen lot it hides stays in the plan.
+  const preferred = offered.filter(
+    (lot) => (backing === "any" || lot.grade === backing) && (issuer === "any" || lot.issuer === issuer) && lot.capacityUsdc >= Number(minCapacity),
+  );
+  const needle = query.trim().toLowerCase();
+  const visible = needle === "" ? preferred : preferred.filter((lot) => lot.symbol.toLowerCase().includes(needle) || lot.issuer.toLowerCase().includes(needle));
+  const chosen = preferred.filter((lot) => selected.includes(lot.mint));
+  const hiddenChosen = offered.filter((lot) => selected.includes(lot.mint)).length - chosen.length;
   const split = parsed && "atoms" in parsed ? splitEvenly(parsed.atoms, chosen.length) : [];
   const overCapacity = split.findIndex((atoms, index) => atoms > lotCapAtoms(chosen[index]?.capacityUsdc ?? 0));
   const amountProblem =
@@ -198,7 +218,7 @@ export function AllocationFlow({
   // The plan is derived from the inputs on every render. Progress is kept as
   // each leg's changes, and only while it belongs to the same plan; the
   // inputs lock once a leg has started, so progress never lands on another.
-  const plan = `${typed}|${selected.join(",")}`;
+  const plan = `${typed}|${chosen.map((lot) => lot.mint).join(",")}`;
   const changes = progress.plan === plan ? progress.changes : {};
   const legs: Leg[] =
     amountProblem || split.length === 0
@@ -374,11 +394,57 @@ export function AllocationFlow({
               </time>
               , {snapshot.age} old. This is a snapshot, not a live issuer read.
             </p>
+            {offered.length > 0 ? (
+              <FilterBar
+                searchLabel="Search by symbol or issuer"
+                query={query}
+                onQuery={setQuery}
+                shown={visible.length}
+                total={offered.length}
+                note={[
+                  visible.length === 0 ? (needle ? `Nothing matches "${query.trim()}".` : "Nothing matches these filters; widen Backing, Issuer or Capacity.") : "",
+                  hiddenChosen > 0 ? `${hiddenChosen} chosen ${hiddenChosen === 1 ? "is" : "are"} outside the filters and left out of the plan.` : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined}
+                groups={[
+                  {
+                    name: "backing",
+                    label: "Backing",
+                    value: backing,
+                    onChange: setBacking,
+                    options: [
+                      { value: "any", label: "Any" },
+                      { value: "Entitlement", label: "Entitlement" },
+                      { value: "Certificate", label: "Certificate" },
+                    ],
+                  },
+                  {
+                    name: "issuer",
+                    label: "Issuer",
+                    value: issuer,
+                    onChange: setIssuer,
+                    options: [{ value: "any", label: "Any" }, ...issuers.map((name) => ({ value: name, label: shortIssuer(name) }))],
+                  },
+                  {
+                    name: "capacity",
+                    label: "Measured capacity",
+                    value: minCapacity,
+                    onChange: setMinCapacity,
+                    options: [
+                      { value: "0", label: "Any" },
+                      { value: "1000", label: "1,000 USDC or more" },
+                      { value: "10000", label: "10,000 USDC" },
+                    ],
+                  },
+                ]}
+              />
+            ) : null}
             {offered.length === 0 ? (
               <p className={styles.quiet}>No instrument is eligible under this policy at the measured reference size.</p>
             ) : (
               <ul className={styles.lots}>
-                {offered.map((lot) => (
+                {visible.map((lot) => (
                   <li key={lot.mint} className={styles.lot}>
                     <div className={styles.lotRegister}>
                       <label className={styles.lotChoice}>
@@ -392,7 +458,7 @@ export function AllocationFlow({
                             )
                           }
                         />
-                        <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="list" />
+                        <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="header" />
                         <span>
                           <b>{lot.symbol}</b>
                           <small>{lot.issuer}</small>
@@ -401,6 +467,7 @@ export function AllocationFlow({
                       </label>
                       <div className={styles.lotMarks}>
                         <Grade name={lot.grade} />
+                        <span className={styles.markDivider} aria-hidden="true" />
                         <Stamp kind={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
                       </div>
                     </div>

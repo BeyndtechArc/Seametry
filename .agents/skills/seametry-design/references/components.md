@@ -59,8 +59,8 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 ### Grade
 **Answers:** what legal claim do I actually hold?
 **Anatomy:** one word (Entitlement, Certificate, Interest, Ungraded) with a definition on focus.
-**Identity:** plain text held between two short rules. It has no badge fill because grade is a classification, not a status.
-**Rules:** no colour, no ranking, no metal metaphors.
+**Identity:** a badge of the Stamp's family (square corners, 3px double `line.strong`, micro semibold) led by a glyph that names the legal shape: Entitlement a bank, Certificate a certificate, Interest a pie slice, Ungraded a question mark. It sits on the Stamp's line, to its left, a short vertical hairline between them, so backing and verdict read in one glance and the glyph tells the backings apart before the word is read (Storm, 7 October 2026).
+**Rules:** neutral, never green: green says touchable and a grade is not. No ranking, no metal metaphors. Every grade wears the same frame; only glyph and word differ.
 
 ### Lot mark
 **Answers:** which instrument is this, at a glance?
@@ -203,6 +203,12 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Identity:** a `radius.sheet` plate with the single top highlight rule and tonal elevation; no shadow, blur or glow.
 **States:** closed; open. The request's own states live in its Step register.
 **Rules:** for watching a request (founding, signing, confirming), never for a task the user edits; that is the Modal sheet. Closing does not cancel the request, and the opening surface offers a way back. Native focus and Escape contract; focus returns to the opening control.
+
+### Filter bar
+**Answers:** which of these rows do I want in front of me?
+**Anatomy:** one row: a search field with a search glyph, and a filter glyph beside it carrying the number of filters on. The glyph opens a panel of labelled groups of mutually exclusive options (native radios, one row of quiet segments per group). Below the row, a count line, "Showing n of m".
+**States:** default (empty search, every group on its widest option), searching, filtered (the glyph shows its count), empty (the count line says nothing matches and what to widen).
+**Rules:** search and filters narrow the view, never the record: rows they hide are counted. Where rows are choices in a plan, search only moves the view and a chosen row stays in the plan; a filter states a preference, so a chosen row it hides leaves the plan and the count line says how many did. No colour on the selected option; it reads by weight and a rule (Storm, 7 October 2026: search first, filters behind a glyph, never three open rows).
 
 ### Changelog entry
 **Anatomy:** relative date, title, one sentence, link. Dates are real.

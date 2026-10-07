@@ -228,12 +228,85 @@ export function InfoNote({ label, children }: { label: string; children: ReactNo
   );
 }
 
+export type FilterGroup = {
+  name: string;
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (value: string) => void;
+};
+
+/**
+ * components.md, Filter bar. Each group's first option is its widest, so a
+ * group is "on" when it holds any other. `note` says what the narrowing did
+ * to a plan, when rows are choices in one.
+ */
+export function FilterBar({
+  searchLabel,
+  query,
+  onQuery,
+  groups,
+  shown,
+  total,
+  note,
+}: {
+  searchLabel: string;
+  query: string;
+  onQuery: (query: string) => void;
+  groups: FilterGroup[];
+  shown: number;
+  total: number;
+  note?: string;
+}) {
+  const on = groups.filter((group) => group.value !== group.options[0]?.value).length;
+  return (
+    <div className={styles.filterBar}>
+      <div className={styles.filterRow}>
+        <label className={styles.searchField}>
+          <Icon name="search" width={18} height={18} />
+          <input type="search" value={query} placeholder={searchLabel} aria-label={searchLabel} autoComplete="off" onChange={(event) => onQuery(event.target.value)} />
+        </label>
+        <details className={styles.filterMenu}>
+          <summary aria-label={on > 0 ? `Filters, ${on} on` : "Filters"} title="Filters">
+            <Icon name="filter" width={20} height={20} />
+            {on > 0 ? <b aria-hidden="true">{on}</b> : null}
+          </summary>
+          <div className={styles.filterPanel}>
+            {groups.map((group) => (
+              <fieldset key={group.name} className={styles.filterGroup}>
+                <legend>{group.label}</legend>
+                <div>
+                  {group.options.map((option) => (
+                    <label key={option.value} className={styles.filterOption}>
+                      <input type="radio" name={group.name} value={option.value} checked={group.value === option.value} onChange={() => group.onChange(option.value)} />
+                      <span>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ))}
+          </div>
+        </details>
+      </div>
+      <p className={styles.filterCount} aria-live="polite">
+        Showing {shown} of {total}.{note ? ` ${note}` : ""}
+      </p>
+    </div>
+  );
+}
+
+const gradeGlyphs: Record<GradeName, IconName> = {
+  Entitlement: "entitlement",
+  Certificate: "certificate",
+  Interest: "interest",
+  Ungraded: "ungraded",
+};
+
 export function Grade({ name }: { name: GradeName }) {
   return (
     <span className={styles.grade} tabIndex={0} title={gradeDefinitions[name]} aria-label={`${name}. ${gradeDefinitions[name]}`}>
-      <span aria-hidden="true" />
+      <Icon name={gradeGlyphs[name]} width={14} height={14} />
       <b>{name}</b>
-      <span aria-hidden="true" />
     </span>
   );
 }

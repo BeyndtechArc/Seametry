@@ -187,6 +187,36 @@ test("each lot shows its own issuer's grade, so two issuers of one stock never r
   await expect(xstocks.getByText("Certificate", { exact: true })).toBeVisible();
 });
 
+test("search moves the view, filters shape the plan, and both count what they hide", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/app/allocation");
+  const main = page.getByRole("main");
+  const constituents = main.getByRole("complementary", { name: "Order sheet" }).locator("dd").nth(1);
+  const rows = main.locator("[aria-labelledby=lots-heading] > ul > li");
+  const offered = admissions.instruments.filter(isAdmitted);
+  const entitled = offered.filter((lot) => lot.instrument.grade === "entitlement").length;
+  await expect(main.getByText(`Showing ${offered.length} of ${offered.length}.`, { exact: true })).toBeVisible();
+
+  // Search narrows the rows but every chosen lot stays in the plan.
+  await main.getByLabel("Search by symbol or issuer").fill("spcx");
+  await expect(rows).toHaveCount(2);
+  await expect(constituents).toHaveText(String(offered.length));
+  await main.getByLabel("Search by symbol or issuer").fill("");
+
+  // A filter is a preference: chosen lots outside it leave the plan, counted.
+  await main.getByLabel("Filters").click();
+  await page.getByRole("radio", { name: "Entitlement" }).check();
+  const hidden = offered.length - entitled;
+  await expect(main.getByText(`Showing ${entitled} of ${offered.length}. ${hidden} chosen are outside the filters and left out of the plan.`, { exact: true })).toBeVisible();
+  await expect(rows).toHaveCount(entitled);
+  await expect(constituents).toHaveText(String(entitled));
+  await expect(main.getByLabel("Filters, 1 on")).toBeVisible();
+
+  // components.md, Grade: it sits on the stamp's line, so backing and verdict read together.
+  const [grade, stamp] = [await rows.first().getByText("Entitlement", { exact: true }).boundingBox(), await rows.first().getByText("Warn", { exact: true }).boundingBox()];
+  expect(Math.abs(grade!.y + grade!.height / 2 - (stamp!.y + stamp!.height / 2))).toBeLessThan(4);
+});
+
 test("a mirrored SVG logo is drawn on its row and served under the script policy", async ({ page, request }) => {
   const path = "/instruments/SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb.svg";
   const served = await request.get(path);
