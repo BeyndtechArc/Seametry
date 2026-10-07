@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ConditionReport, ContinueAction, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, StepTrack, Stamp, type GradeName } from "@seametry/ui";
+import { ConditionReport, ContinueAction, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, StepBar, StepTrack, Stamp, type GradeName } from "@seametry/ui";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import { logoFor } from "@/lib/instrument-logos";
+import { shortIssuer } from "@/lib/issuers";
 import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
 import styles from "./allocation.module.css";
 
@@ -24,11 +25,6 @@ export type OfferedLot = {
 };
 
 export type RefusedLot = { symbol: string; fact: string };
-
-/** "Backed Finance (xStocks)" reads as xStocks, "Backpack Securities" as Backpack: the name a buyer knows the product by. */
-function shortIssuer(name: string): string {
-  return /\(([^)]+)\)/.exec(name)?.[1] ?? name.split(" ")[0];
-}
 
 type Phase = "idle" | "preparing" | "prepared" | "signing" | "sending" | "settled" | "failed";
 
@@ -566,25 +562,23 @@ export function AllocationFlow({
         </aside>
       </div>
 
-      <div className={styles.stepBar}>
-        {step === 0 ? (
-          <span />
-        ) : (
-          <QuietAction disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
-            Back
-          </QuietAction>
-        )}
-        <span className={styles.stepPlan} aria-live="polite">
-          {planLine}
-        </span>
-        {step === 0 ? (
-          <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
-            Set amount
-          </ContinueAction>
-        ) : (
-          <span />
-        )}
-      </div>
+      <StepBar
+        plan={planLine}
+        back={
+          step === 1 ? (
+            <QuietAction disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
+              Back
+            </QuietAction>
+          ) : undefined
+        }
+        next={
+          step === 0 ? (
+            <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
+              Set amount
+            </ContinueAction>
+          ) : undefined
+        }
+      />
     </div>
   );
 }

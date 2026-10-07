@@ -337,28 +337,6 @@
   padding-top: var(--sm-space-2);
 }
 
-/* Pinned to the bottom of the view so the next move is always in reach,
-   however long the step's list runs. */
-.stepBar {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--sm-space-4);
-  padding: var(--sm-space-2) var(--sm-space-3);
-  border-top: 0.5px solid var(--sm-line-highlight);
-  background: var(--sm-surface-raised);
-}
-
-.stepPlan {
-  min-width: 0;
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
 /* Beside the steps on a wide screen; inside the Buy step on a narrow one. */
 .orderInline {
   display: none;
@@ -378,34 +356,6 @@
     padding: var(--sm-space-6);
     border-top: 0.5px solid var(--sm-line-highlight);
     background: var(--sm-surface-raised);
-  }
-}
-
-/* Too narrow for the plan between two buttons: it takes its own line above. */
-@media (max-width: 560px) {
-  .stepBar {
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: var(--sm-space-2) var(--sm-space-3);
-    padding: var(--sm-space-2);
-  }
-
-  .stepPlan {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    text-align: left;
-  }
-
-  .stepBar > :last-child {
-    justify-self: end;
-  }
-
-  /* A bar button's label on one line: its usual side padding wrapped it. */
-  .stepBar button {
-    white-space: nowrap;
-  }
-
-  .stepBar button > span:first-child {
-    padding: 0 var(--sm-space-4);
   }
 }
 

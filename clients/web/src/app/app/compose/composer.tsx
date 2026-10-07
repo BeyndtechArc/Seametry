@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Field, LotMark, MarkLine, QuietAction, Rule, type GradeName } from "@seametry/ui";
+import { ContinueAction, Field, FilterBar, LotMark, MarkLine, QuietAction, Rule, StepBar, StepTrack, type GradeName } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
 import { logoFor } from "@/lib/instrument-logos";
+import { shortIssuer } from "@/lib/issuers";
 import { MAX_CONSTITUENTS, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { USDC_SCALE, draftFormula, identityProblem, unitsToAtoms, type QuotedLeg, type Weighting } from "@/lib/compose/formula";
 import { FoundingPanel } from "./founding";
@@ -65,7 +66,11 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
   // of the page, and fifteen admitted instruments already exceed what one
   // Alloy can hold.
   const [selected, setSelected] = useState<string[]>([]);
-  const full = selected.length >= MAX_CONSTITUENTS;
+  const [step, setStep] = useState(0);
+  const [query, setQuery] = useState("");
+  const [backing, setBacking] = useState("any");
+  const [issuer, setIssuer] = useState("any");
+  const issuers = [...new Set(candidates.map((candidate) => candidate.issuer))].sort();
   const [method, setMethod] = useState<Weighting["method"]>("value");
   const [valueTyped, setValueTyped] = useState("100");
   const [unitsTyped, setUnitsTyped] = useState("0.1");
@@ -73,7 +78,14 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
   const [symbol, setSymbol] = useState("");
   const [refresh, setRefresh] = useState(0);
 
-  const chosen = candidates.filter((candidate) => selected.includes(candidate.mint));
+  // As in Allocation: filters state a preference and shape the Formula, a
+  // chosen instrument they hide leaving it, counted; search only moves the view.
+  const preferred = candidates.filter((candidate) => (backing === "any" || candidate.grade === backing) && (issuer === "any" || candidate.issuer === issuer));
+  const needle = query.trim().toLowerCase();
+  const visible = needle === "" ? preferred : preferred.filter((candidate) => candidate.symbol.toLowerCase().includes(needle) || candidate.issuer.toLowerCase().includes(needle));
+  const chosen = preferred.filter((candidate) => selected.includes(candidate.mint));
+  const hiddenChosen = selected.length - chosen.length;
+  const full = chosen.length >= MAX_CONSTITUENTS;
   const quoting = useQuotes(unquoted ? [] : chosen.map((candidate) => candidate.mint), refresh);
   const reading: QuoteReading | undefined = unquoted && chosen.length > 0 ? { state: "unavailable", reason: unquoted } : quoting;
 
@@ -122,16 +134,59 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
         )
       : undefined;
 
+  const ready = "Ready to found on the devnet Hall.";
+  const missing =
+    chosen.length === 0
+      ? "Choose at least one constituent."
+      : !reading || reading.state === "reading"
+        ? "Reading mainnet quotes."
+        : reading.state === "unavailable"
+          ? "Quotes unavailable; the Formula cannot be priced."
+          : draft && "refused" in draft
+            ? draft.refused
+            : identity
+              ? name || symbol
+                ? identity
+                : "Name and symbol needed."
+              : ready;
+
   return (
-    <div className={styles.compose}>
+    <>
+    <StepTrack label="Compose steps" steps={["Choose", "Found"]} current={step} onStep={setStep} />
+    <div className={styles.compose} data-step={step === 0 ? "choose" : "found"}>
       <div className={styles.inputs}>
-        <section aria-labelledby="constituents-label">
-          <span className={styles.label} id="constituents-label">01 / Constituents</span>
-          <p className={full ? styles.problem : styles.note}>
-            {selected.length} of at most {MAX_CONSTITUENTS} chosen{full ? ". An Alloy holds no more legs than this; remove one to choose another." : "."}
-          </p>
+        {step === 0 ? (
+        <section aria-label="Choose the constituents">
+          <FilterBar
+            searchLabel="Search by symbol or issuer"
+            query={query}
+            onQuery={setQuery}
+            shown={visible.length}
+            total={candidates.length}
+            note={hiddenChosen > 0 ? `${hiddenChosen} chosen ${hiddenChosen === 1 ? "is" : "are"} outside the filters and left out of the Formula.` : undefined}
+            groups={[
+              {
+                name: "backing",
+                label: "Backing",
+                value: backing,
+                onChange: setBacking,
+                options: [
+                  { value: "any", label: "Any" },
+                  { value: "Entitlement", label: "Entitlement" },
+                  { value: "Certificate", label: "Certificate" },
+                ],
+              },
+              {
+                name: "issuer",
+                label: "Issuer",
+                value: issuer,
+                onChange: setIssuer,
+                options: [{ value: "any", label: "Any" }, ...issuers.map((issuerName) => ({ value: issuerName, label: shortIssuer(issuerName) }))],
+              },
+            ]}
+          />
           <ul className={styles.candidates}>
-            {candidates.map((candidate) => (
+            {visible.map((candidate) => (
               <li key={candidate.mint} data-refused={!candidate.admitted || undefined}>
                 <label>
                   <input
@@ -157,10 +212,10 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
             ))}
           </ul>
         </section>
-
-        <section aria-labelledby="weighting-heading">
-          <span className={styles.label}>02 / Weighting</span>
-          <h2 id="weighting-heading">Fix the quantities</h2>
+        ) : (
+        <>
+        <section aria-label="Weighting">
+          <span className={styles.label}>Weighting</span>
           <div className={styles.methods} role="radiogroup" aria-label="Weighting">
             <label data-chosen={method === "value" || undefined}>
               <input type="radio" name="method" checked={method === "value"} onChange={() => setMethod("value")} />
@@ -184,13 +239,8 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
           )}
           <p className={styles.note}>A Formula is fixed at founding and never rebalances, so these weights hold only at the quote and drift as prices move.</p>
         </section>
-      </div>
-
-      <aside className={styles.sheet} aria-labelledby="draft-heading" data-testid="formula-draft">
-        {/* First in the panel that stays in view, so the name and symbol a
-            founding needs are asked for before anyone scrolls looking for them. */}
-        <section className={styles.identityBlock} aria-labelledby="identity-label">
-          <span className={styles.label} id="identity-label">03 / Identity</span>
+        <section aria-label="Identity">
+          <span className={styles.label}>Identity</span>
           <div className={styles.identity}>
             <Field id="alloy-name" label="Name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Alloy name" />
             <Field id="alloy-symbol" label="Symbol" value={symbol} onChange={(event) => setSymbol(event.target.value.toUpperCase())} placeholder="SYMBOL" />
@@ -199,6 +249,11 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
             {identity && (name || symbol) ? identity : "Written into the share mint at founding and never changeable after it."}
           </p>
         </section>
+        </>
+        )}
+      </div>
+
+      <aside className={styles.sheet} aria-labelledby="draft-heading" data-testid="formula-draft">
         <span className={styles.label}>Draft</span>
         <h2 id="draft-heading">One share holds</h2>
         {!reading ? (
@@ -271,5 +326,25 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
         ) : null}
       </aside>
     </div>
+
+    <StepBar
+      plan={step === 0 ? `${chosen.length} of at most ${MAX_CONSTITUENTS} chosen${full ? ". An Alloy holds no more legs than this; remove one to choose another." : "."}` : missing}
+      problem={step === 0 ? full : missing !== ready}
+      back={
+        step === 1 ? (
+          <QuietAction type="button" onClick={() => setStep(0)}>
+            Back
+          </QuietAction>
+        ) : undefined
+      }
+      next={
+        step === 0 ? (
+          <ContinueAction disabled={chosen.length === 0} title={chosen.length === 0 ? "Choose at least one constituent." : undefined} onClick={() => setStep(1)}>
+            Set the Formula
+          </ContinueAction>
+        ) : undefined
+      }
+    />
+    </>
   );
 }

@@ -122,6 +122,7 @@ test("Compose offers founding once the draft is priced and named, and holds the 
   await page.goto("/app/compose");
   const main = page.getByRole("main");
   for (const symbol of ["NFLXx", "AAPLx"]) await main.getByRole("checkbox", { name: new RegExp(symbol) }).check();
+  await main.getByRole("button", { name: "Set the Formula" }).click();
   await main.getByLabel("Name", { exact: true }).fill("Stoic Crew");
   await main.getByLabel("Symbol", { exact: true }).fill("STOIC");
   const founding = main.getByTestId("founding");
@@ -189,6 +190,7 @@ test("pressing Found opens the founding's steps, and a stop says what did not ha
 
   const main = page.getByRole("main");
   for (const symbol of ["NFLXx", "AAPLx"]) await main.getByRole("checkbox", { name: new RegExp(symbol) }).check();
+  await main.getByRole("button", { name: "Set the Formula" }).click();
   await main.getByLabel("Name", { exact: true }).fill("Stoic Crew");
   await main.getByLabel("Symbol", { exact: true }).fill("STOIC");
   await main.getByTestId("founding").getByRole("button", { name: "Found on devnet" }).click({ timeout: QUOTED });
@@ -260,6 +262,7 @@ test("Compose names an unpriceable constituent, then drafts the Formula and its 
   await expect(sheet.getByText(/^Jupiter quote, mainnet, 100 USDC per constituent, observed \d+s ago\./)).toBeVisible();
   await expect(sheet.locator("pre")).toHaveCount(0);
 
+  await main.getByRole("button", { name: "Set the Formula" }).click();
   await main.getByLabel("Name", { exact: true }).fill("Technology Five");
   await main.getByLabel("Symbol", { exact: true }).fill("tfiv");
   await expect(main.getByLabel("Symbol", { exact: true })).toHaveValue("TFIV");

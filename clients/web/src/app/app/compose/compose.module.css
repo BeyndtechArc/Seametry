@@ -153,13 +153,6 @@
   gap: var(--sm-space-5);
 }
 
-.identityBlock {
-  display: grid;
-  gap: var(--sm-space-4);
-  padding-bottom: var(--sm-space-6);
-  border-bottom: 0.5px solid var(--sm-line-strong);
-}
-
 .sheet {
   display: grid;
   align-content: start;
@@ -284,6 +277,14 @@
   .methods label + label {
     border-top: 0;
     border-left: 0.5px solid var(--sm-line-rule);
+  }
+}
+
+/* Below the side-by-side width the draft would sit after the whole list,
+   where nobody reaches it; it waits for the Found step instead. */
+@media (max-width: 1099px) {
+  .compose[data-step="choose"] .sheet {
+    display: none;
   }
 }
 

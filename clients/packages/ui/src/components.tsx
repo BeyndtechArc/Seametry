@@ -433,6 +433,22 @@ export function StepTrack({ steps, current, onStep, label }: { steps: string[]; 
   );
 }
 
+/**
+ * components.md, Step track: the bar pinned below a step. `plan` is one line;
+ * `problem` marks it as what the next move is waiting for.
+ */
+export function StepBar({ back, plan, problem = false, next }: { back?: ReactNode; plan: ReactNode; problem?: boolean; next?: ReactNode }) {
+  return (
+    <div className={styles.stepBar}>
+      {back ?? <span />}
+      <span className={styles.stepPlan} aria-live="polite" data-problem={problem || undefined}>
+        {plan}
+      </span>
+      {next ?? <span />}
+    </div>
+  );
+}
+
 export function QuietAction({ children, icon, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode; icon?: IconName }) {
   return (
     <button {...buttonProps} className={classes(styles.quietAction, buttonProps.className)}>
