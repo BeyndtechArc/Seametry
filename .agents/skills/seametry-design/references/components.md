@@ -88,7 +88,7 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 **Identity:** short registration rules protrude from both horizontal edges. Its lack of a surrounding tray distinguishes navigation from the Key's custody-changing keyway.
 **States:** default, pressed, keyboard focus, unavailable with its reason adjacent.
 **Data:** a real route that resolves.
-**Rules:** verb plus object. Navigation only. Never submits, signs, approves or changes custody.
+**Rules:** verb plus object. Navigation only. Never submits, signs, approves or changes custody. Moving forward a step inside one page is navigation too, so a Step track's Continue is a Route action rendered as a button.
 
 ### Quiet link
 **Answers:** which secondary destination can I inspect without leaving the current decision context?
@@ -203,6 +203,12 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Identity:** a `radius.sheet` plate with the single top highlight rule and tonal elevation; no shadow, blur or glow.
 **States:** closed; open. The request's own states live in its Step register.
 **Rules:** for watching a request (founding, signing, confirming), never for a task the user edits; that is the Modal sheet. Closing does not cancel the request, and the opening surface offers a way back. Native focus and Escape contract; focus returns to the opening control.
+
+### Step track
+**Answers:** where am I in this flow, and what is left?
+**Anatomy:** the flow's steps in order, numbered, one line; the current step by weight and a rule beneath, finished steps as quiet links back, later steps in `text.tertiary` and inert. Below the step's content, a step bar pinned to the bottom of the view: Back (Quiet action), one line summarising the plan so far, and Continue (Route action as a button).
+**States:** each step current, finished or ahead; Continue unavailable with its reason in the bar; Back unavailable once anything irreversible has started, with that reason.
+**Rules:** one question per step; the plan survives moving between steps. Never skips a step that has something to decide. Used for consumer flows (Allocation; the mobile app); a deliberate, desktop sponsor tool such as Compose stays on one page (Storm, 7 October 2026).
 
 ### Mark line
 **Answers:** what backs this row, and what was decided about it, in one glance?

@@ -393,6 +393,46 @@ export function TextAction({
   );
 }
 
+/** components.md, Route action: a step forward inside one page is navigation, so it wears the Route action as a button. */
+export function ContinueAction({ children, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
+  return (
+    <button {...buttonProps} className={classes(styles.routeAction, styles.continueAction, buttonProps.className)}>
+      <span className={styles.actionLabel}>{children}</span>
+      <span className={styles.actionIcon}><Icon name="next" /></span>
+    </button>
+  );
+}
+
+/**
+ * components.md, Step track. A finished step is a way back; a later one is
+ * inert, because reaching it means answering the steps before it.
+ */
+export function StepTrack({ steps, current, onStep, label }: { steps: string[]; current: number; onStep: (index: number) => void; label: string }) {
+  return (
+    <ol className={styles.stepTrack} aria-label={label}>
+      {steps.map((step, index) => {
+        const name = (
+          <>
+            <b aria-hidden="true">{index + 1}</b>
+            {step}
+          </>
+        );
+        return (
+          <li key={step} data-state={index < current ? "done" : index === current ? "current" : "ahead"} aria-current={index === current ? "step" : undefined}>
+            {index < current ? (
+              <button type="button" onClick={() => onStep(index)}>
+                {name}
+              </button>
+            ) : (
+              <span>{name}</span>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 export function QuietAction({ children, icon, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode; icon?: IconName }) {
   return (
     <button {...buttonProps} className={classes(styles.quietAction, buttonProps.className)}>

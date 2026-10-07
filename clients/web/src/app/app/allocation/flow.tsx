@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ConditionReport, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, Rule, Stamp, type GradeName } from "@seametry/ui";
-import { ModalSheet } from "@seametry/ui/modal-sheet";
+import { ConditionReport, ContinueAction, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, StepTrack, Stamp, type GradeName } from "@seametry/ui";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import { logoFor } from "@/lib/instrument-logos";
@@ -179,11 +178,12 @@ export function AllocationFlow({
   unavailable?: string;
 }) {
   const { publicKey, connected, signTransaction } = useWallet();
-  const [selected, setSelected] = useState<string[]>(offered.map((lot) => lot.mint));
+  // Nothing starts chosen: choosing is the first step's whole question.
+  const [selected, setSelected] = useState<string[]>([]);
+  const [step, setStep] = useState(0);
   const [typed, setTyped] = useState("");
   const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
   const [now, setNow] = useState(() => Date.now());
-  const [orderOpen, setOrderOpen] = useState(false);
 
   const [query, setQuery] = useState("");
   const [backing, setBacking] = useState("any");
@@ -244,6 +244,7 @@ export function AllocationFlow({
   const startOver = () => {
     setProgress({ plan: "", changes: {} });
     setTyped("");
+    setStep(0);
   };
 
   const prepare = useCallback(
@@ -352,6 +353,18 @@ export function AllocationFlow({
     />
   );
 
+  const steps = ["Choose", "Amount", "Review"];
+  const continueReason =
+    step === 0
+      ? chosen.length === 0
+        ? "Choose at least one constituent."
+        : undefined
+      : step === 1
+        ? (amountProblem ?? (legs.length === 0 ? "Enter the USDC to spend." : undefined))
+        : undefined;
+  const backReason = started ? "Purchases have started. Start a new allocation to change the plan." : undefined;
+  const planLine = [chosen.length === 0 ? "Nothing chosen" : `${chosen.length} chosen`, parsed && "atoms" in parsed ? total : ""].filter(Boolean).join(", ");
+
   return (
     <div className={styles.flow}>
       {unavailable ? (
@@ -360,199 +373,196 @@ export function AllocationFlow({
         </p>
       ) : null}
 
+      <StepTrack label="Allocation steps" steps={steps} current={step} onStep={(index) => !started && setStep(index)} />
+
       <div className={styles.workspace}>
         <div className={styles.builder}>
-          <section className={styles.section} aria-labelledby="amount-heading">
-            <Rule />
-            <h2 id="amount-heading">Set the basket amount</h2>
-            <p className={styles.quiet}>Set one total. Seametry divides it evenly across the constituents you keep in the plan.</p>
-            <Field
-              id="allocation-usdc"
-              label="USDC to spend"
-              inputMode="decimal"
-              autoComplete="off"
-              placeholder="250"
-              value={typed}
-              disabled={started}
-              invalid={Boolean(amountProblem)}
-              message={
-                amountProblem ??
-                (legs.length > 0
-                  ? describeSplit(legs, USDC_SCALE, "USDC")
-                  : chosen.length === 0
-                    ? "Select at least one constituent."
-                    : undefined)
-              }
-              onChange={(event) => setTyped(event.target.value)}
-            />
-          </section>
-
-          <section className={styles.section} aria-labelledby="lots-heading">
-            <Rule />
-            <h2 id="lots-heading">Choose the constituents</h2>
-            {offered.length > 0 ? (
-              <FilterBar
-                searchLabel="Search by symbol or issuer"
-                query={query}
-                onQuery={setQuery}
-                shown={visible.length}
-                total={offered.length}
-                note={[
-                  visible.length === 0 ? (needle ? `Nothing matches "${query.trim()}".` : "Nothing matches these filters; widen Backing, Issuer or Capacity.") : "",
-                  hiddenChosen > 0 ? `${hiddenChosen} chosen ${hiddenChosen === 1 ? "is" : "are"} outside the filters and left out of the plan.` : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ") || undefined}
-                groups={[
-                  {
-                    name: "backing",
-                    label: "Backing",
-                    value: backing,
-                    onChange: setBacking,
-                    options: [
-                      { value: "any", label: "Any" },
-                      { value: "Entitlement", label: "Entitlement" },
-                      { value: "Certificate", label: "Certificate" },
-                    ],
-                  },
-                  {
-                    name: "issuer",
-                    label: "Issuer",
-                    value: issuer,
-                    onChange: setIssuer,
-                    options: [{ value: "any", label: "Any" }, ...issuers.map((name) => ({ value: name, label: shortIssuer(name) }))],
-                  },
-                  {
-                    name: "capacity",
-                    label: "Measured capacity",
-                    value: minCapacity,
-                    onChange: setMinCapacity,
-                    options: [
-                      { value: "0", label: "Any" },
-                      { value: "1000", label: "1,000 USDC or more" },
-                      { value: "10000", label: "10,000 USDC" },
-                    ],
-                  },
-                ]}
-              />
-            ) : null}
-            {offered.length === 0 ? (
-              <p className={styles.quiet}>No instrument is eligible under this policy at the measured reference size.</p>
-            ) : (
-              <ul className={styles.lots}>
-                {visible.map((lot) => (
-                  <li key={lot.mint} className={styles.lot}>
-                    <div className={styles.lotRegister}>
-                      <label className={styles.lotChoice}>
-                        <input
-                          type="checkbox"
-                          disabled={started}
-                          checked={selected.includes(lot.mint)}
-                          onChange={(event) =>
-                            setSelected((current) =>
-                              event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
-                            )
-                          }
-                        />
-                        <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="header" />
-                        <span>
+          {step === 0 ? (
+              <section className={styles.section} aria-label="Choose the constituents">
+                {offered.length > 0 ? (
+                  <FilterBar
+                    searchLabel="Search by symbol or issuer"
+                    query={query}
+                    onQuery={setQuery}
+                    shown={visible.length}
+                    total={offered.length}
+                    note={[
+                      visible.length === 0 ? (needle ? `Nothing matches "${query.trim()}".` : "Nothing matches these filters; widen Backing, Issuer or Capacity.") : "",
+                      hiddenChosen > 0 ? `${hiddenChosen} chosen ${hiddenChosen === 1 ? "is" : "are"} outside the filters and left out of the plan.` : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || undefined}
+                    groups={[
+                      {
+                        name: "backing",
+                        label: "Backing",
+                        value: backing,
+                        onChange: setBacking,
+                        options: [
+                          { value: "any", label: "Any" },
+                          { value: "Entitlement", label: "Entitlement" },
+                          { value: "Certificate", label: "Certificate" },
+                        ],
+                      },
+                      {
+                        name: "issuer",
+                        label: "Issuer",
+                        value: issuer,
+                        onChange: setIssuer,
+                        options: [{ value: "any", label: "Any" }, ...issuers.map((name) => ({ value: name, label: shortIssuer(name) }))],
+                      },
+                      {
+                        name: "capacity",
+                        label: "Measured capacity",
+                        value: minCapacity,
+                        onChange: setMinCapacity,
+                        options: [
+                          { value: "0", label: "Any" },
+                          { value: "1000", label: "1,000 USDC or more" },
+                          { value: "10000", label: "10,000 USDC" },
+                        ],
+                      },
+                    ]}
+                  />
+                ) : null}
+                {offered.length === 0 ? (
+                  <p className={styles.quiet}>No instrument is eligible under this policy at the measured reference size.</p>
+                ) : (
+                  <ul className={styles.lots}>
+                    {visible.map((lot) => (
+                      <li key={lot.mint} className={styles.lot}>
+                        <div className={styles.lotRegister}>
+                          <label className={styles.lotChoice}>
+                            <input
+                              type="checkbox"
+                              disabled={started}
+                              checked={selected.includes(lot.mint)}
+                              onChange={(event) =>
+                                setSelected((current) =>
+                                  event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
+                                )
+                              }
+                            />
+                            <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="header" />
+                            <span>
+                              <b>{lot.symbol}</b>
+                              <small>{lot.issuer}</small>
+                              <small>Measured capacity {formatAmount(BigInt(lot.capacityUsdc), 0)} USDC</small>
+                            </span>
+                          </label>
+                          <div className={styles.lotMarks}>
+                            <MarkLine grade={lot.grade} stamp={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
+                          </div>
+                        </div>
+                        <details className={styles.conditionDisclosure}>
+                          <summary>Read condition report</summary>
+                          <ConditionReport statements={lot.prerogatives} evidence={`Read at slot ${lot.slot}. ${lot.multiplier}`} />
+                        </details>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {refused.length > 0 ? (
+                  <details className={styles.refused}>
+                    <summary>
+                      {refused.length} captured {refused.length === 1 ? "instrument is" : "instruments are"} unavailable under this policy
+                    </summary>
+                    <ul>
+                      {refused.map((lot) => (
+                        <li key={lot.symbol}>
                           <b>{lot.symbol}</b>
-                          <small>{lot.issuer}</small>
-                          <small>Measured capacity {formatAmount(BigInt(lot.capacityUsdc), 0)} USDC</small>
-                        </span>
-                      </label>
-                      <div className={styles.lotMarks}>
-                        <MarkLine grade={lot.grade} stamp={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
-                      </div>
-                    </div>
-                    <details className={styles.conditionDisclosure}>
-                      <summary>Read condition report</summary>
-                      <ConditionReport statements={lot.prerogatives} evidence={`Read at slot ${lot.slot}. ${lot.multiplier}`} />
-                    </details>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {refused.length > 0 ? (
-              <details className={styles.refused}>
-                <summary>
-                  {refused.length} captured {refused.length === 1 ? "instrument is" : "instruments are"} unavailable under this policy
-                </summary>
-                <ul>
-                  {refused.map((lot) => (
-                    <li key={lot.symbol}>
-                      <b>{lot.symbol}</b>
-                      <Stamp kind="block" reason={lot.fact} />
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            ) : null}
-          </section>
+                          <Stamp kind="block" reason={lot.fact} />
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                ) : null}
+              </section>
+          ) : null}
 
-          {legs.length > 0 ? (
-            <section className={styles.section} aria-labelledby="legs-heading">
-              <Rule />
-              <h2 id="legs-heading">Review each purchase</h2>
-              <p className={styles.quiet}>Each purchase is quoted and simulated separately before it can be signed.</p>
-              <ol className={styles.legs}>
-                {legs.map((leg) => {
-                  const secondsLeft = leg.prepared ? secondsUntil(leg.prepared.expiresAt, now) : 0;
-                  return (
-                    <li key={leg.mint} className={styles.leg} data-phase={leg.phase}>
-                      <header>
-                        <b>
-                          {leg.symbol}, {formatAmount(leg.atoms, USDC_SCALE)} USDC
-                        </b>
-                        <span>{phaseLabel[leg.phase]}</span>
-                      </header>
-                      {leg.phase === "preparing" ? (
-                        <p className={styles.loading}>Loading quotes for {formatAmount(leg.atoms, USDC_SCALE)} USDC</p>
-                      ) : null}
-                      {leg.prepared && (leg.phase === "prepared" || leg.phase === "signing" || leg.phase === "sending") ? (
-                        <>
-                          <QuoteBlock
-                            floor={formatAmount(leg.prepared.floorAtoms, leg.prepared.outScale)}
-                            expected={formatAmount(leg.prepared.outAtoms, leg.prepared.outScale)}
-                            unit={leg.symbol}
-                            fees={[
-                              { label: `Seametry routing fee, ${formatAmount(BigInt(leg.prepared.routingFeeBps), 2)}%`, value: `${formatAmount(leg.prepared.routingFeeAtoms, USDC_SCALE)} USDC` },
-                              { label: "Priority fee set by the route", value: `${formatAmount(leg.prepared.priorityFeeLamports, 9)} SOL` },
-                              { label: "Venue fees", value: "Included in the expected output" },
-                            ]}
-                            route={`Jupiter, through ${leg.prepared.route.join(", ")}, quoted at slot ${leg.prepared.contextSlot}`}
-                            received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(leg.prepared.receivedAt)) / 1000))}s`, absolute: leg.prepared.receivedAt }}
-                            secondsLeft={secondsLeft}
-                          />
-                          <p className={styles.simulated}>
-                            Simulated on mainnet for this wallet:{" "}
-                            {leg.prepared.simulated.map((change) => signedChange(change.atoms, change.scale, change.unit)).join("; ")}.
-                          </p>
-                        </>
-                      ) : null}
-                      {leg.note ? <p className={styles.note}>{leg.note}</p> : null}
-                      {leg.signature ? (
-                        <a className={styles.signature} href={`https://explorer.solana.com/tx/${leg.signature}`} rel="noreferrer" target="_blank">
-                          {leg.signature}
-                        </a>
-                      ) : null}
-                      {leg.phase === "idle" || (leg.phase === "prepared" && secondsLeft === 0) ? (
-                        <QuietAction disabled={!connected || Boolean(unavailable)} onClick={() => void prepare(leg, chosen.map((lot) => lot.mint))}>
-                          {leg.phase === "idle" ? "Preview purchase" : "Refresh quote"}
-                        </QuietAction>
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ol>
-              {attempted.length > 0 ? (
-                <p className={styles.summary} role="status">
-                  {settledCount} of {legs.length} {legs.length === 1 ? "purchase" : "purchases"} settled.
-                  {attempted.length === legs.length && settledCount < legs.length ? " The rest were not bought; no USDC was spent on them." : ""}
-                </p>
-              ) : null}
-              {started && !inFlight ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
+          {step === 1 ? (
+            <section className={styles.section} aria-label="Set the basket amount">
+              <Field
+                id="allocation-usdc"
+                label="USDC to spend"
+                inputMode="decimal"
+                autoComplete="off"
+                placeholder="250"
+                value={typed}
+                disabled={started}
+                invalid={Boolean(amountProblem)}
+                message={amountProblem ?? (legs.length > 0 ? describeSplit(legs, USDC_SCALE, "USDC") : "Seametry divides one total evenly across what you chose.")}
+                onChange={(event) => setTyped(event.target.value)}
+              />
             </section>
+          ) : null}
+
+          {step === 2 && legs.length > 0 ? (
+            <>
+              {/* On a phone the order sheet is not beside the steps, so the
+                  step where signing happens carries it. */}
+              <div className={styles.orderInline}>{orderSummary}</div>
+              <section className={styles.section} aria-label="Review each purchase">
+                <p className={styles.quiet}>Each purchase is quoted and simulated separately before it can be signed.</p>
+                <ol className={styles.legs}>
+                  {legs.map((leg) => {
+                    const secondsLeft = leg.prepared ? secondsUntil(leg.prepared.expiresAt, now) : 0;
+                    return (
+                      <li key={leg.mint} className={styles.leg} data-phase={leg.phase}>
+                        <header>
+                          <b>
+                            {leg.symbol}, {formatAmount(leg.atoms, USDC_SCALE)} USDC
+                          </b>
+                          <span>{phaseLabel[leg.phase]}</span>
+                        </header>
+                        {leg.phase === "preparing" ? (
+                          <p className={styles.loading}>Loading quotes for {formatAmount(leg.atoms, USDC_SCALE)} USDC</p>
+                        ) : null}
+                        {leg.prepared && (leg.phase === "prepared" || leg.phase === "signing" || leg.phase === "sending") ? (
+                          <>
+                            <QuoteBlock
+                              floor={formatAmount(leg.prepared.floorAtoms, leg.prepared.outScale)}
+                              expected={formatAmount(leg.prepared.outAtoms, leg.prepared.outScale)}
+                              unit={leg.symbol}
+                              fees={[
+                                { label: `Seametry routing fee, ${formatAmount(BigInt(leg.prepared.routingFeeBps), 2)}%`, value: `${formatAmount(leg.prepared.routingFeeAtoms, USDC_SCALE)} USDC` },
+                                { label: "Priority fee set by the route", value: `${formatAmount(leg.prepared.priorityFeeLamports, 9)} SOL` },
+                                { label: "Venue fees", value: "Included in the expected output" },
+                              ]}
+                              route={`Jupiter, through ${leg.prepared.route.join(", ")}, quoted at slot ${leg.prepared.contextSlot}`}
+                              received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(leg.prepared.receivedAt)) / 1000))}s`, absolute: leg.prepared.receivedAt }}
+                              secondsLeft={secondsLeft}
+                            />
+                            <p className={styles.simulated}>
+                              Simulated on mainnet for this wallet:{" "}
+                              {leg.prepared.simulated.map((change) => signedChange(change.atoms, change.scale, change.unit)).join("; ")}.
+                            </p>
+                          </>
+                        ) : null}
+                        {leg.note ? <p className={styles.note}>{leg.note}</p> : null}
+                        {leg.signature ? (
+                          <a className={styles.signature} href={`https://explorer.solana.com/tx/${leg.signature}`} rel="noreferrer" target="_blank">
+                            {leg.signature}
+                          </a>
+                        ) : null}
+                        {leg.phase === "idle" || (leg.phase === "prepared" && secondsLeft === 0) ? (
+                          <QuietAction disabled={!connected || Boolean(unavailable)} onClick={() => void prepare(leg, chosen.map((lot) => lot.mint))}>
+                            {leg.phase === "idle" ? "Preview purchase" : "Refresh quote"}
+                          </QuietAction>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ol>
+                {attempted.length > 0 ? (
+                  <p className={styles.summary} role="status">
+                    {settledCount} of {legs.length} {legs.length === 1 ? "purchase" : "purchases"} settled.
+                    {attempted.length === legs.length && settledCount < legs.length ? " The rest were not bought; no USDC was spent on them." : ""}
+                  </p>
+                ) : null}
+                {started && !inFlight ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
+              </section>
+            </>
           ) : null}
         </div>
 
@@ -561,13 +571,25 @@ export function AllocationFlow({
         </aside>
       </div>
 
-      <div className={styles.mobileOrderTrigger}>
-        <QuietAction onClick={() => setOrderOpen(true)}>Review order sheet</QuietAction>
-        <span>{total}</span>
+      <div className={styles.stepBar}>
+        {step > 0 ? (
+          <QuietAction disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(step - 1)}>
+            Back
+          </QuietAction>
+        ) : (
+          <span />
+        )}
+        <span className={styles.stepPlan} aria-live="polite">
+          {step < 2 && continueReason && (step > 0 || chosen.length > 0) ? continueReason : planLine}
+        </span>
+        {step < 2 ? (
+          <ContinueAction disabled={Boolean(continueReason)} onClick={() => setStep(step + 1)}>
+            {step === 0 ? "Set amount" : "Review purchases"}
+          </ContinueAction>
+        ) : (
+          <span />
+        )}
       </div>
-      <ModalSheet open={orderOpen} onClose={() => setOrderOpen(false)} title="Order sheet" register="Allocation" closeLabel="Close order sheet">
-        {orderSummary}
-      </ModalSheet>
     </div>
   );
 }

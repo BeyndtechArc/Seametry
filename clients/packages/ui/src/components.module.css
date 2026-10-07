@@ -764,6 +764,74 @@
   text-decoration: none;
 }
 
+.continueAction {
+  cursor: pointer;
+}
+
+.continueAction:disabled {
+  color: var(--sm-text-tertiary);
+  background: var(--sm-surface-tray);
+  cursor: default;
+}
+
+.continueAction:disabled .actionIcon {
+  background: transparent;
+}
+
+.stepTrack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sm-space-2) var(--sm-space-6);
+  margin: 0;
+  padding: 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  list-style: none;
+}
+
+.stepTrack li > * {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+  min-height: var(--sm-size-target);
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--sm-text-tertiary);
+  background: none;
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-small);
+}
+
+.stepTrack li > * b {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--sm-space-6);
+  height: var(--sm-space-6);
+  border: 0.5px solid currentColor;
+  font-size: var(--sm-font-size-micro);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.stepTrack li[data-state="current"] > * {
+  border-bottom-color: var(--sm-text-primary);
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.stepTrack li[data-state="done"] > button {
+  color: var(--sm-text-secondary);
+  cursor: pointer;
+}
+
+.stepTrack li[data-state="done"] > button:hover {
+  color: var(--sm-text-primary);
+}
+
+.stepTrack button:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}
+
 .key:active,
 .routeAction:active {
   transform: translateY(var(--sm-space-1));

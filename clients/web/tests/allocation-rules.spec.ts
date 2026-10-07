@@ -180,7 +180,7 @@ test("the allocation catalogue exposes policy-issued capacity per offered lot", 
 
 test("each lot shows its own issuer's grade, so two issuers of one stock never read alike", async ({ page }) => {
   await page.goto("/app/allocation");
-  const lots = page.getByRole("main").locator("[aria-labelledby=lots-heading] ul > li");
+  const lots = page.getByRole("main").locator('[aria-label="Choose the constituents"] > ul > li');
   const backpack = lots.filter({ has: page.getByText("SPCX", { exact: true }) });
   const xstocks = lots.filter({ has: page.getByText("SPCXx", { exact: true }) });
   await expect(backpack.getByText("Backpack Securities", { exact: true })).toBeVisible();
@@ -194,10 +194,11 @@ test("search moves the view, filters shape the plan, and both count what they hi
   await page.goto("/app/allocation");
   const main = page.getByRole("main");
   const constituents = main.getByRole("complementary", { name: "Order sheet" }).locator("dd").nth(1);
-  const rows = main.locator("[aria-labelledby=lots-heading] > ul > li");
+  const rows = main.locator('[aria-label="Choose the constituents"] > ul > li');
   const offered = admissions.instruments.filter(isAdmitted);
   const entitled = offered.filter((lot) => lot.instrument.grade === "entitlement").length;
   await expect(main.getByText(`Showing ${offered.length} of ${offered.length}.`, { exact: true })).toBeVisible();
+  for (const box of await rows.locator("input[type=checkbox]").all()) await box.check();
 
   // Search narrows the rows but every chosen lot stays in the plan.
   await main.getByLabel("Search by symbol or issuer").fill("spcx");
@@ -227,7 +228,7 @@ test("a mirrored SVG logo is drawn on its row and served under the script policy
   // for anyone who opens the file directly rather than through an img.
   expect(served.headers()["content-security-policy"]).toContain("script-src 'self' 'nonce-");
   await page.goto("/app/allocation");
-  const row = page.getByRole("main").locator("[aria-labelledby=lots-heading] ul > li").filter({ has: page.getByText("SPCX", { exact: true }) });
+  const row = page.getByRole("main").locator('[aria-label="Choose the constituents"] > ul > li').filter({ has: page.getByText("SPCX", { exact: true }) });
   await expect(row.locator(`img[src="${path}"]`)).toBeVisible();
 });
 
@@ -333,6 +334,9 @@ test("the balance route names what it expected when a request is malformed", asy
 
 test("field placeholders are quieter than entered values in both modes", async ({ page }) => {
   await page.goto("/app/allocation");
+  const main = page.getByRole("main");
+  await main.locator('[aria-label="Choose the constituents"] > ul > li input[type=checkbox]').first().check();
+  await main.getByRole("button", { name: "Set amount" }).click();
   const input = page.getByLabel("USDC to spend");
   const read = () =>
     input.evaluate((node) => ({

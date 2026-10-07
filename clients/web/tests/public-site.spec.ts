@@ -18,7 +18,7 @@ test("saved to a home screen, the site opens on Allocation with icons at the siz
 test("on a phone, a stock's grade and stamp share one line and the page never scrolls sideways", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app/allocation");
-  const lot = page.getByRole("main").locator("[aria-labelledby=lots-heading] ul > li").first();
+  const lot = page.getByRole("main").locator('[aria-label="Choose the constituents"] > ul > li').first();
   const grade = lot.getByText(/^(Entitlement|Certificate|Interest|Ungraded)$/);
   const stamp = lot.getByText("Warn", { exact: true });
   await expect(stamp).toBeVisible();
@@ -136,57 +136,57 @@ test("the Allocation keeps its terms behind an info note, and the order sheet st
   await expect(terms).toBeVisible();
   // components.md, Info note: what the note says about cost is never only there.
   const sheet = main.getByRole("complementary", { name: "Order sheet" });
-  // Every lot starts selected, so the plan is at the widest tier.
-  await expect(sheet.getByText("Seametry routing fee, 0.10%", { exact: true })).toBeVisible();
+  // Nothing is chosen yet, so the plan sits at the single-constituent rate.
+  await expect(sheet.getByText("Seametry routing fee, 0.25%", { exact: true })).toBeVisible();
   await expect(sheet.getByText("Slippage tolerance", { exact: true })).toBeVisible();
   await expect(sheet.getByText("0.50% of each swap", { exact: true })).toBeVisible();
-  await expect(main.getByRole("heading", { level: 2, name: "Choose the constituents" })).toBeVisible();
-  await expect(main.getByRole("heading", { level: 2, name: "Set the basket amount" })).toBeVisible();
 });
 
-test("the Allocation keeps the plan beside the work and hides deployment plumbing", async ({ page }) => {
+test("the Allocation asks one question per step, the plan beside it, and hides deployment plumbing", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app/allocation");
-
-  const amount = page.getByRole("main").getByRole("heading", { level: 2, name: "Set the basket amount" });
-  const constituents = page.getByRole("main").getByRole("heading", { level: 2, name: "Choose the constituents" });
-  expect(
-    await amount.evaluate((amountHeading, constituentHeading) =>
-      Boolean(amountHeading.compareDocumentPosition(constituentHeading as Node) & Node.DOCUMENT_POSITION_FOLLOWING),
-      await constituents.elementHandle(),
-    ),
-  ).toBe(true);
+  const main = page.getByRole("main");
+  const steps = main.getByRole("list", { name: "Allocation steps" });
+  await expect(steps.locator("[aria-current=step]")).toHaveText("1Choose");
+  await expect(main.getByLabel("USDC to spend")).toHaveCount(0);
 
   const sheet = page.getByRole("complementary", { name: "Order sheet" });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Direct ownership", { exact: true })).toBeVisible();
-  await expect(sheet.getByText("One swap per constituent", { exact: true })).toBeVisible();
   await expect(page.getByText(/JUPITER_API_KEY|MAINNET_RPC_URL|ALLOCATION_APPROVAL_SECRET|ALLOCATION_BLOCKED_COUNTRIES|ALLOCATION_FEE_WALLET/)).toHaveCount(0);
 
-  // Every offered lot starts selected; keep two. 250 USDC over two lots is
-  // 125 each; a two-constituent plan pays 15 basis points, 0.1875 each,
-  // 0.375 in all. Down to one lot, the tier rises to 25 basis points.
-  const main = page.getByRole("main");
-  for (const lot of (await main.getByRole("checkbox").all()).slice(2)) await lot.uncheck();
+  // Continue waits for an answer, and says what it is waiting for.
+  const next = main.getByRole("button", { name: "Set amount" });
+  await expect(next).toBeDisabled();
+  await expect(main.getByText("Nothing chosen", { exact: true })).toBeVisible();
+
+  // Two lots, 250 USDC: 125 each; a two-constituent plan pays 15 basis
+  // points, 0.1875 each, 0.375 in all. Back to one lot, 25 basis points.
+  const lots = main.locator('[aria-label="Choose the constituents"] > ul > li input[type=checkbox]');
+  await lots.nth(0).check();
+  await lots.nth(1).check();
+  await next.click();
+  await expect(steps.locator("[aria-current=step]")).toHaveText("2Amount");
   await main.getByLabel("USDC to spend").fill("250");
   const fee = sheet.getByText("Seametry routing fee, 0.15%", { exact: true });
-  await expect(fee).toBeVisible();
   await expect(fee.locator("xpath=following-sibling::dd")).toHaveText("0.375000 USDC");
-  await main.getByRole("checkbox").nth(1).uncheck();
+  await steps.getByRole("button", { name: "Choose" }).click();
+  await lots.nth(1).uncheck();
   await expect(sheet.getByText("Seametry routing fee, 0.25%", { exact: true }).locator("xpath=following-sibling::dd")).toHaveText("0.625000 USDC");
 });
 
-test("the Allocation order sheet becomes an accessible mobile dialog", async ({ page }) => {
+test("on a phone, the Review step carries the order sheet where signing happens", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto("/app/allocation");
+  const main = page.getByRole("main");
 
   await expect(page.getByRole("complementary", { name: "Order sheet" })).toBeHidden();
-  await page.getByRole("button", { name: "Review order sheet" }).click();
-  const dialog = page.getByRole("dialog", { name: "Order sheet" });
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByText("Direct ownership", { exact: true })).toBeVisible();
-  await dialog.getByRole("button", { name: "Close order sheet" }).click();
-  await expect(dialog).toBeHidden();
+  await main.locator('[aria-label="Choose the constituents"] > ul > li input[type=checkbox]').first().check();
+  await main.getByRole("button", { name: "Set amount" }).click();
+  await main.getByLabel("USDC to spend").fill("10");
+  await main.getByRole("button", { name: "Review purchases" }).click();
+  await expect(main.getByText("Direct ownership", { exact: true }).filter({ visible: true })).toHaveCount(1);
+  await expect(main.getByRole("button", { name: "Approve and sign" }).filter({ visible: true })).toHaveCount(1);
 });
 
 test("the public rail carries reading pages and one way into the app", async ({ page }) => {

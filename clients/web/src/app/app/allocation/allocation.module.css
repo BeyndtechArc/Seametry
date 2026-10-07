@@ -337,7 +337,31 @@
   padding-top: var(--sm-space-2);
 }
 
-.mobileOrderTrigger {
+/* Pinned to the bottom of the view so the next move is always in reach,
+   however long the step's list runs. */
+.stepBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-3) var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  background: var(--sm-surface-raised);
+}
+
+.stepPlan {
+  min-width: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  font-variant-numeric: tabular-nums lining-nums;
+  text-align: center;
+}
+
+/* Beside the steps on a wide screen; inside the Review step on a narrow one. */
+.orderInline {
   display: none;
 }
 
@@ -350,21 +374,30 @@
     display: none;
   }
 
-  .mobileOrderTrigger {
-    position: sticky;
-    bottom: calc(var(--sm-space-13) - var(--sm-space-5));
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sm-space-4);
-    padding: var(--sm-space-3);
+  .orderInline {
+    display: block;
+    padding: var(--sm-space-6);
     border-top: 0.5px solid var(--sm-line-highlight);
-    color: var(--sm-text-primary);
     background: var(--sm-surface-raised);
-    clip-path: polygon(0 0, calc(100% - var(--sm-space-4)) 0, 100% var(--sm-space-4), 100% 100%, 0 100%);
-    font-size: var(--sm-font-size-small);
-    font-variant-numeric: tabular-nums lining-nums;
+  }
+}
+
+/* Too narrow for the plan between two buttons: it takes its own line above. */
+@media (max-width: 560px) {
+  .stepBar {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--sm-space-2) var(--sm-space-3);
+    padding: var(--sm-space-3);
+  }
+
+  .stepPlan {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: left;
+  }
+
+  .stepBar > :last-child {
+    justify-self: end;
   }
 }
 
