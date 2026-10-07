@@ -16,6 +16,21 @@ export const USDC_TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 export const SLIPPAGE_BPS = 50;
 
 /**
+ * Seametry's routing fee, 50 basis points of the USDC each leg spends, set
+ * by Storm on 7 October 2026. Jupiter takes it from the input in USDC and
+ * pays it to the fee wallet's USDC account (platformFeeBps and feeAccount,
+ * developers.jup.ag/docs/swap-api/add-fees-to-swap). It is a line on the
+ * order sheet and in every prepared leg; MOBILE.md section 11 forbids a
+ * fee anyone has to discover.
+ */
+export const ROUTING_FEE_BPS = 50;
+
+/** The routing fee on `inAtoms` of USDC, rounded down to whole atoms as Jupiter's integer arithmetic does. */
+export function routingFeeAtoms(inAtoms: bigint): bigint {
+  return (inAtoms * BigInt(ROUTING_FEE_BPS)) / 10_000n;
+}
+
+/**
  * How long a prepared leg may be signed and submitted. liquidity.DefaultTTL
  * is 15 seconds for quotes measured by a program; this path waits on a
  * person reading the simulated result and then their wallet's own prompt, so

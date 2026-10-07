@@ -126,7 +126,16 @@ test("the Allocation keeps the plan beside the work and hides deployment plumbin
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Direct ownership", { exact: true })).toBeVisible();
   await expect(sheet.getByText("One swap per constituent", { exact: true })).toBeVisible();
-  await expect(page.getByText(/JUPITER_API_KEY|MAINNET_RPC_URL|ALLOCATION_APPROVAL_SECRET|ALLOCATION_BLOCKED_COUNTRIES/)).toHaveCount(0);
+  await expect(page.getByText(/JUPITER_API_KEY|MAINNET_RPC_URL|ALLOCATION_APPROVAL_SECRET|ALLOCATION_BLOCKED_COUNTRIES|ALLOCATION_FEE_WALLET/)).toHaveCount(0);
+
+  // Every offered lot starts selected; keep two. 250 USDC over two lots is
+  // 125 each, and 50 basis points of each is 0.625, 1.25 in all.
+  const main = page.getByRole("main");
+  for (const lot of (await main.getByRole("checkbox").all()).slice(2)) await lot.uncheck();
+  await main.getByLabel("USDC to spend").fill("250");
+  const fee = sheet.getByText("Seametry routing fee, 0.50%", { exact: true });
+  await expect(fee).toBeVisible();
+  await expect(fee.locator("xpath=following-sibling::dd")).toHaveText("1.250000 USDC");
 });
 
 test("the Allocation order sheet becomes an accessible mobile dialog", async ({ page }) => {

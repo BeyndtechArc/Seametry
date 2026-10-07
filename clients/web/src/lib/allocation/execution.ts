@@ -5,7 +5,7 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { QUOTE_TTL_MS, SLIPPAGE_BPS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, unlistedProgram } from "./rules";
+import { QUOTE_TTL_MS, ROUTING_FEE_BPS, SLIPPAGE_BPS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 
@@ -38,6 +38,8 @@ export type PreparedLeg = {
   receivedAt: string;
   expiresAt: string;
   priorityFeeLamports: string;
+  /** USDC atoms the simulation moved into Seametry's fee account. */
+  routingFeeAtoms: string;
   simulated: BalanceChange[];
   transaction: string;
   approval: string;
@@ -62,11 +64,20 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     throw new Refusal(400, `${lot.instrument.symbol ?? mint} may spend at most ${lot.capacity_usdc} USDC under the captured capacity decision.`);
   }
 
+  const connection = new Connection(config.mainnetRpcUrl, "confirmed");
+  // The fee is paid into the fee wallet's USDC account; Jupiter will not open
+  // it, so a missing one is refused here, before any quote, as Seametry's to fix.
+  const feeAccount = getAssociatedTokenAddressSync(new PublicKey(USDC_MINT), new PublicKey(config.feeWallet), true, new PublicKey(USDC_TOKEN_PROGRAM));
+  if (!(await connection.getAccountInfo(feeAccount, "confirmed"))) {
+    throw new Refusal(503, `Seametry's routing fee account ${feeAccount.toBase58()} is not open on mainnet, so no leg can be prepared; Seametry has to open it.`);
+  }
+
   const query = new URLSearchParams({
     inputMint: USDC_MINT,
     outputMint: mint,
     amount: inAtoms.toString(),
     slippageBps: String(SLIPPAGE_BPS),
+    platformFeeBps: String(ROUTING_FEE_BPS),
   });
   const quote = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${query}`);
   const receivedAt = new Date();
@@ -74,7 +85,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
 
   const swap = await jupiter<{ swapTransaction: string; prioritizationFeeLamports?: number }>(config.jupiterApiKey, "/swap", {
     method: "POST",
-    body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true }),
+    body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58() }),
   });
   const transaction = VersionedTransaction.deserialize(Buffer.from(swap.swapTransaction, "base64"));
 
@@ -89,9 +100,10 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
 
   const usdcAccount = getAssociatedTokenAddressSync(new PublicKey(USDC_MINT), wallet, false, new PublicKey(USDC_TOKEN_PROGRAM));
   const lotAccount = getAssociatedTokenAddressSync(new PublicKey(mint), wallet, false, new PublicKey(lot.token_program));
-  const watched = [wallet, usdcAccount, lotAccount];
+  // The fee account is watched too: the fee shown is what simulation moves
+  // into it, not a figure computed beside the transaction.
+  const watched = [wallet, usdcAccount, lotAccount, feeAccount];
 
-  const connection = new Connection(config.mainnetRpcUrl, "confirmed");
   const before = await connection.getMultipleAccountsInfo(watched, "confirmed");
   const simulation = await connection.simulateTransaction(transaction, {
     sigVerify: false,
@@ -115,6 +127,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     { atoms: (tokenAmount(accountData(2)) - tokenAmount(before[2]?.data)).toString(), scale: lot.decimals, unit: lot.instrument.symbol ?? mint },
     { atoms: (lamportsAfter - lamportsBefore).toString(), scale: 9, unit: "SOL" },
   ];
+  const feeAtoms = tokenAmount(accountData(3)) - tokenAmount(before[3]?.data);
 
   const now = new Date();
   if (now > expiresAt) throw new Refusal(410, "This quote expired. Refresh to see current terms.");
@@ -146,6 +159,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     receivedAt: receivedAt.toISOString(),
     expiresAt: expiresAt.toISOString(),
     priorityFeeLamports: String(swap.prioritizationFeeLamports ?? 0),
+    routingFeeAtoms: feeAtoms.toString(),
     simulated,
     transaction: swap.swapTransaction,
     approval,

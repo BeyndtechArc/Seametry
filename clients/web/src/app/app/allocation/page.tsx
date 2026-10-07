@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { headers } from "next/headers";
 import { blockingFact, admissions, partitionAdmissions } from "@/lib/allocation/admissions";
 import { allocationConfig, requestCountry } from "@/lib/allocation/config";
-import { SLIPPAGE_BPS, countryGate } from "@/lib/allocation/rules";
+import { ROUTING_FEE_BPS, SLIPPAGE_BPS, countryGate } from "@/lib/allocation/rules";
 import { formatAmount } from "@/lib/amount";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import { PageHeader } from "../_shell/page-header";
@@ -68,7 +68,7 @@ export default async function AllocationPage() {
           sentence="Choose the constituents and spend USDC. Each token settles directly into your wallet; nothing is pooled and no basket token is issued."
         />
         <p className={styles.terms}>
-          <strong>One coordinated plan, one swap per constituent.</strong> No Seametry fee. Slippage {SLIPPAGE_BPS} basis points. Each constituent
+          <strong>One coordinated plan, one swap per constituent.</strong> Seametry routing fee {ROUTING_FEE_BPS} basis points of each swap, shown on the order sheet. Slippage {SLIPPAGE_BPS} basis points. Each constituent
           states its own measured capacity. A fresh quote and exact transaction simulation still run before every signature. You remain bound by
           each issuer&apos;s terms of eligibility.
         </p>

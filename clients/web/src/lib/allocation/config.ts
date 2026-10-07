@@ -5,6 +5,8 @@ export type AllocationConfig = {
   mainnetRpcUrl: string;
   approvalSecret: string;
   blockedCountries: string | undefined;
+  /** The wallet whose USDC account receives the routing fee. */
+  feeWallet: string;
 };
 
 /**
@@ -18,6 +20,9 @@ export function allocationConfig(): { config: AllocationConfig } | { missing: st
     JUPITER_API_KEY: process.env.JUPITER_API_KEY?.trim(),
     MAINNET_RPC_URL: process.env.MAINNET_RPC_URL?.trim(),
     ALLOCATION_APPROVAL_SECRET: process.env.ALLOCATION_APPROVAL_SECRET?.trim(),
+    // Required, not optional: an Allocation without its routing fee would be
+    // an unannounced free tier, so a missing fee wallet keeps it unavailable.
+    ALLOCATION_FEE_WALLET: process.env.ALLOCATION_FEE_WALLET?.trim(),
   };
   const missing = Object.entries(required).filter(([, value]) => !value).map(([name]) => name);
   if (missing.length > 0) return { missing };
@@ -27,6 +32,7 @@ export function allocationConfig(): { config: AllocationConfig } | { missing: st
       mainnetRpcUrl: required.MAINNET_RPC_URL!,
       approvalSecret: required.ALLOCATION_APPROVAL_SECRET!,
       blockedCountries: process.env.ALLOCATION_BLOCKED_COUNTRIES,
+      feeWallet: required.ALLOCATION_FEE_WALLET!,
     },
   };
 }

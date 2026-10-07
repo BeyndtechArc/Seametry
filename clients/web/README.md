@@ -123,7 +123,7 @@ the wallet sees anything, a mainnet simulation shown before signing, and an
 approval that refuses any transaction other than the one simulated.
 
 **Environment variables, server-only, never committed.** Until the first
-three are set the page says which are missing and nothing can be bought.
+four are set the page says which are missing and nothing can be bought.
 
 - `JUPITER_API_KEY`: the same key the Go liquidity client uses.
 - `MAINNET_RPC_URL`: a mainnet RPC that accepts `simulateTransaction` and
@@ -134,6 +134,10 @@ three are set the page says which are missing and nothing can be bought.
   `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
   It signs approvals; rotating it only invalidates legs prepared but not yet
   sent.
+- `ALLOCATION_FEE_WALLET`: the mainnet wallet that receives the routing fee
+  (`ROUTING_FEE_BPS`, 50 basis points, in `src/lib/allocation/rules.ts`),
+  paid in USDC into that wallet's USDC account. The account must already
+  be open; every leg is refused, naming it, while it is missing.
 - `ALLOCATION_BLOCKED_COUNTRIES`: comma separated ISO country codes, from
   each issuer's actual terms of eligibility. This is an operator compliance
   policy, not a value obtained from Vercel or an API, and the repository does

@@ -3,7 +3,7 @@ import { Keypair, PublicKey, TransactionInstruction, TransactionMessage, Version
 import { formatAmount, parseAmount, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
-import { countryGate, lotCapAtoms, unlistedProgram } from "../src/lib/allocation/rules";
+import { ROUTING_FEE_BPS, countryGate, lotCapAtoms, routingFeeAtoms, unlistedProgram } from "../src/lib/allocation/rules";
 import { registerTestWallet } from "./test-wallet";
 
 // Pure rules only: no build, no wallet, no network. The route handlers that
@@ -31,6 +31,14 @@ test("an even split sums to the total exactly, remainder to the first shares", (
   const parts = splitEvenly(1_000_000_001n, 7);
   expect(parts.reduce((sum, part) => sum + part, 0n)).toBe(1_000_000_001n);
   expect(splitEvenly(5n, 0)).toEqual([]);
+});
+
+test("the routing fee is 50 basis points of each leg, rounded down to whole USDC atoms", () => {
+  expect(ROUTING_FEE_BPS).toBe(50);
+  expect(routingFeeAtoms(125_000_000n)).toBe(625_000n);
+  // 199 atoms of USDC carry 0.995 atoms of fee, which no account can hold.
+  expect(routingFeeAtoms(199n)).toBe(0n);
+  expect(routingFeeAtoms(200n)).toBe(1n);
 });
 
 test("one lot cap converts its policy-issued capacity to exact atoms", () => {
