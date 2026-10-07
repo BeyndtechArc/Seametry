@@ -214,6 +214,20 @@ export function LotMark({ symbol, src, size = "row" }: { symbol: string; src?: s
   );
 }
 
+// A details element, not a hover tooltip: it opens on tap as well as click,
+// is reachable by keyboard and announced as expandable, and needs no script,
+// so it renders in server components under the strict script policy.
+export function InfoNote({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <details className={styles.infoNote}>
+      <summary aria-label={label} title={label}>
+        <Icon name="info" width={20} height={20} />
+      </summary>
+      <div className={styles.infoNotePanel}>{children}</div>
+    </details>
+  );
+}
+
 export function Grade({ name }: { name: GradeName }) {
   return (
     <span className={styles.grade} tabIndex={0} title={gradeDefinitions[name]} aria-label={`${name}. ${gradeDefinitions[name]}`}>

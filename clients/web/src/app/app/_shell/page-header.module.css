@@ -19,6 +19,14 @@
   font-size: var(--sm-font-size-small);
 }
 
+.titleRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-1);
+  min-width: 0;
+}
+
 .titleLine h1 {
   margin: 0;
   color: var(--sm-text-primary);

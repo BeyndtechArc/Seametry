@@ -126,6 +126,12 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 **Identity:** a short rule joins the outside label to the field edge. Focus turns that rule to provenance blue before it outlines the field.
 **States:** default, focus, filled, invalid (message states what to change), disabled.
 
+### Info note
+**Answers:** what does this page assume, for someone who wants to know before acting?
+**Anatomy:** an info glyph beside a title, as a disclosure; opening it shows a short note in a `surface.raised` panel below the glyph, top hairline, no shadow. At most three sentences.
+**States:** closed, open (tap, click or keyboard; the glyph stays the control that closes it).
+**Rules:** holds terms already stated where they act, never the only place they appear: a fee or slippage figure in the note is also a line on the order sheet. Never holds an action or a figure without its provenance. One per page header.
+
 ### Term
 **Answers:** what does this word mean?
 **Anatomy:** inline text with a dotted underline in `text.tertiary`; opens a definition from the glossary registry.
@@ -288,7 +294,7 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### Page header
 **Answers:** what is this page, and what does it act on?
-**Anatomy:** group label; title; one sentence at most; Network badge; optional quiet links.
+**Anatomy:** group label; title, with an optional Info note beside it; one sentence at most; Network badge; optional quiet links.
 **Rules:** one sentence, not a paragraph. Explanation belongs on the reading pages, linked, not repeated here.
 
 ### Network badge

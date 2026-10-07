@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { InfoNote } from "@seametry/ui";
 import styles from "./page-header.module.css";
 
 export type Network = "Mainnet" | "Devnet" | "Mainnet evidence";
@@ -12,12 +13,13 @@ export function NetworkBadge({ network }: { network: Network }) {
   );
 }
 
-/** components.md, Page header: group, title, one sentence at most, the network, and optional quiet links. */
+/** components.md, Page header: group, title with an optional Info note, one sentence at most, the network, and optional quiet links. */
 export function PageHeader({
   group,
   title,
   titleId,
   sentence,
+  info,
   network,
   children,
 }: {
@@ -25,6 +27,8 @@ export function PageHeader({
   title: string;
   titleId?: string;
   sentence?: string;
+  /** The page's terms, behind an Info note beside the title. */
+  info?: ReactNode;
   network: Network;
   children?: ReactNode;
 }) {
@@ -32,7 +36,10 @@ export function PageHeader({
     <header className={styles.pageHeader}>
       <div className={styles.titleLine}>
         <span>{group}</span>
-        <h1 id={titleId}>{title}</h1>
+        <div className={styles.titleRow}>
+          <h1 id={titleId}>{title}</h1>
+          {info ? <InfoNote label={`About ${title}`}>{info}</InfoNote> : null}
+        </div>
       </div>
       <NetworkBadge network={network} />
       {sentence ? <p>{sentence}</p> : null}

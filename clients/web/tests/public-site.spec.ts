@@ -123,14 +123,22 @@ test("the wallet state lives in the app's top bar, and connecting signs nothing"
   await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toBeVisible();
 });
 
-test("the Allocation explains direct ownership before introducing its execution terms", async ({ page }) => {
+test("the Allocation keeps its terms behind an info note, and the order sheet still states the fee and slippage", async ({ page }) => {
   await page.goto("/app/allocation");
 
   // Scoped to main: while the page streams, the loading boundary holds a
   // hidden copy of the same text outside it, and an unscoped lookup matches twice.
   const main = page.getByRole("main");
   await expect(main.getByRole("heading", { level: 1, name: "Build a basket" })).toBeVisible();
-  await expect(main.getByText("Each token settles directly into your wallet; nothing is pooled and no basket token is issued.", { exact: false })).toBeVisible();
+  const terms = main.getByText("You remain bound by each issuer's terms of eligibility.", { exact: true });
+  await expect(terms).toBeHidden();
+  await main.getByLabel("About Build a basket").click();
+  await expect(terms).toBeVisible();
+  // components.md, Info note: what the note says about cost is never only there.
+  const sheet = main.getByRole("complementary", { name: "Order sheet" });
+  await expect(sheet.getByText("Seametry routing fee, 0.50%", { exact: true })).toBeVisible();
+  await expect(sheet.getByText("Slippage tolerance", { exact: true })).toBeVisible();
+  await expect(sheet.getByText("0.50% of each swap", { exact: true })).toBeVisible();
   await expect(main.getByRole("heading", { level: 2, name: "Choose the constituents" })).toBeVisible();
   await expect(main.getByRole("heading", { level: 2, name: "Set the basket amount" })).toBeVisible();
 });

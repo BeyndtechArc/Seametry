@@ -66,13 +66,17 @@ export default async function AllocationPage() {
           group="Allocation"
           title="Build a basket"
           network="Mainnet"
-          sentence="Choose the constituents and spend USDC. Each token settles directly into your wallet; nothing is pooled and no basket token is issued."
+          info={
+            <>
+              <p>One swap per constituent, each settling to your wallet. Nothing is pooled and no basket token is issued.</p>
+              <p>
+                Seametry&apos;s routing fee is {ROUTING_FEE_BPS} basis points of each swap, with {SLIPPAGE_BPS} basis points of slippage
+                tolerance; both are lines on the order sheet. Every swap is freshly quoted and simulated before you sign.
+              </p>
+              <p>You remain bound by each issuer&apos;s terms of eligibility.</p>
+            </>
+          }
         />
-        <p className={styles.terms}>
-          <strong>One coordinated plan, one swap per constituent.</strong> Seametry routing fee {ROUTING_FEE_BPS} basis points of each swap, shown on the order sheet. Slippage {SLIPPAGE_BPS} basis points. Each constituent
-          states its own measured capacity. A fresh quote and exact transaction simulation still run before every signature. You remain bound by
-          each issuer&apos;s terms of eligibility.
-        </p>
         <AllocationFlow
           offered={offered}
           refused={refusedLots}

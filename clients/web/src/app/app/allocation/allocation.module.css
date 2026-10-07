@@ -19,17 +19,6 @@
   pointer-events: none;
 }
 
-.terms {
-  max-width: var(--sm-size-readable);
-  margin: 0;
-  padding: var(--sm-space-5);
-  border-top: 0.5px solid var(--sm-line-rule);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-text-tertiary);
-  background: var(--sm-surface-sheet);
-  font-size: var(--sm-font-size-small);
-}
-
 .flow,
 .builder,
 .section,

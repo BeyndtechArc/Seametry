@@ -385,6 +385,63 @@
   padding-right: 0;
 }
 
+/* Not positioned: the panel anchors to the title row that holds the note,
+   so it opens from the row's left edge instead of from a glyph that sits
+   near the right edge of a narrow screen. */
+.infoNote {
+  display: inline-block;
+}
+
+.infoNote summary {
+  display: inline-grid;
+  place-items: center;
+  width: var(--sm-size-target);
+  height: var(--sm-size-target);
+  color: var(--sm-text-tertiary);
+  list-style: none;
+  cursor: pointer;
+}
+
+.infoNote summary::-webkit-details-marker {
+  display: none;
+}
+
+.infoNote[open] summary,
+.infoNote summary:hover {
+  color: var(--sm-text-primary);
+}
+
+.infoNote summary:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: calc(var(--sm-space-1) * -1);
+}
+
+.infoNotePanel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 3;
+  width: min(calc(var(--sm-space-13) * 3), calc(100vw - var(--sm-space-8)));
+  padding: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  outline: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-secondary);
+  background: var(--sm-surface-raised);
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-regular);
+  line-height: 1.55;
+  letter-spacing: normal;
+}
+
+.infoNotePanel p {
+  margin: 0;
+}
+
+.infoNotePanel p + p {
+  margin-top: var(--sm-space-3);
+}
+
 .grade {
   display: inline-flex;
   align-items: center;

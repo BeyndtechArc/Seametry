@@ -1,5 +1,5 @@
 import type { SVGProps } from "react";
-import { ArrowUpRight, Bank, Basket, BookOpenText, Check, CircleNotch, Flask, Key, Moon, SealCheck, SquaresFour, Sun, Wallet, X } from "@phosphor-icons/react/ssr";
+import { ArrowUpRight, Bank, Basket, BookOpenText, Check, CircleNotch, Flask, Info, Key, Moon, SealCheck, SquaresFour, Sun, Wallet, X } from "@phosphor-icons/react/ssr";
 
 // Phosphor supplies the generic interface symbols (foundations.md section 9).
 // The ssr entry needs no React context, so the same Icon renders in server
@@ -14,6 +14,7 @@ const glyphs = {
   confirm: SealCheck,
   desk: SquaresFour,
   hall: Bank,
+  info: Info,
   key: Key,
   moon: Moon,
   read: BookOpenText,

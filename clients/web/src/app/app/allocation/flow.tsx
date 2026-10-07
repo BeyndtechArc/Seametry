@@ -8,7 +8,7 @@ import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import { logoFor } from "@/lib/instrument-logos";
-import { ROUTING_FEE_BPS, USDC_SCALE, lotCapAtoms, routingFeeAtoms } from "@/lib/allocation/rules";
+import { ROUTING_FEE_BPS, SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, routingFeeAtoms } from "@/lib/allocation/rules";
 import styles from "./allocation.module.css";
 
 export type OfferedLot = {
@@ -122,6 +122,10 @@ function OrderSummary({
         <div>
           <dt>Seametry routing fee, {formatAmount(BigInt(ROUTING_FEE_BPS), 2)}%</dt>
           <dd>{fee}</dd>
+        </div>
+        <div>
+          <dt>Slippage tolerance</dt>
+          <dd>{formatAmount(BigInt(SLIPPAGE_BPS), 2)}% of each swap</dd>
         </div>
       </dl>
       <section className={styles.orderSelection} aria-label="Selected plan">
