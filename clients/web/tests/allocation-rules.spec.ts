@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { formatAmount, parseAmount, splitEvenly } from "../src/lib/amount";
+import { describeSplit, formatAmount, parseAmount, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
 import { ROUTING_FEE_BPS, countryGate, lotCapAtoms, routingFeeAtoms, unlistedProgram } from "../src/lib/allocation/rules";
@@ -31,6 +31,17 @@ test("an even split sums to the total exactly, remainder to the first shares", (
   const parts = splitEvenly(1_000_000_001n, 7);
   expect(parts.reduce((sum, part) => sum + part, 0n)).toBe(1_000_000_001n);
   expect(splitEvenly(5n, 0)).toEqual([]);
+});
+
+test("a split reads as one line however many constituents share it, naming the remainder exactly", () => {
+  const legs = (total: bigint, symbols: string[]) => splitEvenly(total, symbols.length).map((atoms, i) => ({ symbol: symbols[i], atoms }));
+  const many = Array.from({ length: 23 }, (_, i) => `S${i}`);
+  // 1 USDC over 23 is 43,478 atoms each with 6 left over, the case that
+  // printed a 23-clause sentence on 7 October 2026.
+  expect(describeSplit(legs(1_000_000n, many), 6, "USDC")).toBe("0.043478 USDC to each of 23; the first 6 get 0.000001 USDC more, so the total is exact.");
+  expect(describeSplit(legs(9_000_000n, ["AMD", "BE", "MU"]), 6, "USDC")).toBe("3.000000 USDC to each of 3.");
+  expect(describeSplit(legs(10_000_001n, ["AMD", "BE", "MU"]), 6, "USDC")).toBe("3.333333 USDC to each of 3; AMD, BE get 0.000001 USDC more, so the total is exact.");
+  expect(describeSplit(legs(250_000_000n, ["AMD"]), 6, "USDC")).toBe("All 250.000000 USDC to AMD.");
 });
 
 test("the routing fee is 50 basis points of each leg, rounded down to whole USDC atoms", () => {

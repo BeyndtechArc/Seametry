@@ -13,12 +13,11 @@ export function NetworkBadge({ network }: { network: Network }) {
   );
 }
 
-/** components.md, Page header: group, title with an optional Info note, one sentence at most, the network, and optional quiet links. */
+/** components.md, Page header: group, title with an optional Info note, the network, and optional quiet links. */
 export function PageHeader({
   group,
   title,
   titleId,
-  sentence,
   info,
   network,
   children,
@@ -26,8 +25,7 @@ export function PageHeader({
   group: string;
   title: string;
   titleId?: string;
-  sentence?: string;
-  /** The page's terms, behind an Info note beside the title. */
+  /** What the page holds or assumes, behind an Info note beside the title. */
   info?: ReactNode;
   network: Network;
   children?: ReactNode;
@@ -42,7 +40,6 @@ export function PageHeader({
         </div>
       </div>
       <NetworkBadge network={network} />
-      {sentence ? <p>{sentence}</p> : null}
       {children ? <div className={styles.links}>{children}</div> : null}
     </header>
   );

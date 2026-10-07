@@ -31,7 +31,12 @@ export default async function ComposePage() {
         group="Hall"
         title="Compose a Formula"
         network="Mainnet evidence"
-        sentence="Draft what one share holds, from assayed instruments priced by live mainnet quotes. Nothing is founded here: founding is a separate step on the devnet Hall."
+        info={
+          <>
+            <p>Draft what one share holds, from assayed instruments priced by live mainnet quotes.</p>
+            <p>Nothing is founded here: founding is a separate step on the devnet Hall.</p>
+          </>
+        }
       />
       <Composer
         candidates={candidates}

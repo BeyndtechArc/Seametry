@@ -51,3 +51,20 @@ export function splitEvenly(total: bigint, parts: number): bigint[] {
   const remainder = Number(total % count);
   return Array.from({ length: parts }, (_, i) => base + (i < remainder ? 1n : 0n));
 }
+
+/**
+ * One line for a splitEvenly result, in list order. Naming every share made a
+ * 23-way split a paragraph; each share's exact amount is still stated where
+ * that purchase is reviewed. Exact: the remainder atoms are named, not rounded.
+ */
+export function describeSplit(shares: { symbol: string; atoms: bigint }[], scale: number, unit: string): string {
+  if (shares.length === 0) return "";
+  if (shares.length === 1) return `All ${formatAmount(shares[0].atoms, scale)} ${unit} to ${shares[0].symbol}.`;
+  const base = shares[shares.length - 1].atoms;
+  const larger = shares.filter((share) => share.atoms > base);
+  const each = `${formatAmount(base, scale)} ${unit} to each of ${shares.length}`;
+  if (larger.length === 0) return `${each}.`;
+  const one = formatAmount(1n, scale);
+  const who = larger.length <= 3 ? larger.map((share) => share.symbol).join(", ") : `the first ${larger.length}`;
+  return `${each}; ${who} ${larger.length === 1 ? "gets" : "get"} ${one} ${unit} more, so the total is exact.`;
+}

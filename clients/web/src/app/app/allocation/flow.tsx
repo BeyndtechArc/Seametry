@@ -5,7 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import { ConditionReport, Field, Grade, Key, LotMark, QuietAction, QuoteBlock, Rule, Stamp, type GradeName } from "@seametry/ui";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
-import { formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
+import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import { logoFor } from "@/lib/instrument-logos";
 import { ROUTING_FEE_BPS, SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, routingFeeAtoms } from "@/lib/allocation/rules";
@@ -355,7 +355,7 @@ export function AllocationFlow({
               message={
                 amountProblem ??
                 (legs.length > 0
-                  ? `Split evenly: ${legs.map((leg) => `${formatAmount(leg.atoms, USDC_SCALE)} USDC to ${leg.symbol}`).join("; ")}.`
+                  ? describeSplit(legs, USDC_SCALE, "USDC")
                   : chosen.length === 0
                     ? "Select at least one constituent."
                     : undefined)

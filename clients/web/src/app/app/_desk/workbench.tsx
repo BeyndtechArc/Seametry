@@ -122,7 +122,7 @@ export function InstrumentRegister() {
         group="Assay"
         title="Instruments"
         network="Mainnet evidence"
-        sentence="Every captured instrument with its grade, issuer powers and the slot it was read at."
+        info={<p>Every captured instrument with its grade, issuer powers and the slot it was read at.</p>}
       />
 
       {loading ? <LoadingRegister /> : null}

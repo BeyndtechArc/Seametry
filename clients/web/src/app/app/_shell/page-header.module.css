@@ -37,13 +37,6 @@
   overflow-wrap: anywhere;
 }
 
-.pageHeader p {
-  grid-column: 1 / -1;
-  max-width: var(--sm-size-readable);
-  margin: 0;
-  color: var(--sm-text-secondary);
-}
-
 .links {
   grid-column: 1 / -1;
   display: flex;

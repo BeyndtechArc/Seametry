@@ -19,7 +19,7 @@ export default async function HallDemoPage() {
         group="Hall"
         title="Demo"
         network="Devnet"
-        sentence="Strike, watch the issuer freeze one constituent, Melt anyway, and withdraw each leg, signed by your own wallet."
+        info={<p>Strike, watch the issuer freeze one constituent, Melt anyway, and withdraw each leg, signed by your own wallet.</p>}
       >
         <TextAction href="/app/alloys">Inspect live Alloys</TextAction>
         <TextAction href="/how-it-works">Read the Hall mechanism</TextAction>

@@ -294,8 +294,8 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### Page header
 **Answers:** what is this page, and what does it act on?
-**Anatomy:** group label; title, with an optional Info note beside it; one sentence at most; Network badge; optional quiet links.
-**Rules:** one sentence, not a paragraph. Explanation belongs on the reading pages, linked, not repeated here.
+**Anatomy:** group label; title, with an optional Info note beside it; Network badge; optional quiet links.
+**Rules:** no subtitle. The page's own components say what it is; what a reader may want first goes in the Info note, and explanation belongs on the reading pages, linked, not repeated here (Storm, 7 October 2026).
 
 ### Network badge
 **Answers:** which cluster does this page read or write?
