@@ -268,6 +268,11 @@
   object-fit: cover;
 }
 
+.lotMarkList {
+  width: var(--sm-space-9);
+  height: var(--sm-space-9);
+}
+
 .lotMarkHeader {
   width: var(--sm-space-10);
   height: var(--sm-space-10);

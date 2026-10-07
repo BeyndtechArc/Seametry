@@ -381,7 +381,7 @@ export function AllocationFlow({
                             )
                           }
                         />
-                        <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} />
+                        <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="list" />
                         <span>
                           <b>{lot.symbol}</b>
                           <small>{lot.issuer}</small>

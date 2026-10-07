@@ -199,8 +199,11 @@ export function Stamp({ kind, reason }: { kind: StampKind; reason: string }) {
 
 // A plain img, not next/image: this package is framework-free, and next/image
 // writes an inline style the site's CSP refuses.
-export function LotMark({ symbol, src, size = "row" }: { symbol: string; src?: string; size?: "row" | "header" }) {
-  const className = `${styles.lotMark} ${size === "header" ? styles.lotMarkHeader : ""}`;
+const lotMarkSizes = { row: "", list: styles.lotMarkList, header: styles.lotMarkHeader } as const;
+
+/** row beside a one-line symbol, list beside a symbol with a second line, header beside a title. */
+export function LotMark({ symbol, src, size = "row" }: { symbol: string; src?: string; size?: keyof typeof lotMarkSizes }) {
+  const className = `${styles.lotMark} ${lotMarkSizes[size]}`;
   if (src) {
     return <img className={className} src={src} alt="" width={40} height={40} data-testid="lot-mark" />;
   }

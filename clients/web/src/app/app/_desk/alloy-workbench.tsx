@@ -122,7 +122,7 @@ export function AlloyRegister() {
                       <Digest value={alloy.address} />
                     </div>
                   </div>
-                  <div className={styles.alloyRowCell}>
+                  <div className={`${styles.alloyRowCell} ${styles.alloyRowHolds}`}>
                     <small>Holds</small>
                     <span className={styles.lotStack}>
                       {alloy.legs.map((leg, index) => {
@@ -255,71 +255,86 @@ export function AlloyRecord({ address }: { address: string }) {
           </section>
 
           <details className={styles.recordDetails}>
-            <summary>Technical details: addresses, ledger and per-share terms</summary>
-            <dl className={styles.recordRegistry}>
-              <div><dt>Alloy account</dt><dd><Digest value={alloy.address} /></dd></div>
-              <div><dt>Sponsor</dt><dd><Digest value={alloy.sponsor} /></dd></div>
-              <div><dt>Share mint</dt><dd><Digest value={alloy.share_mint} /></dd></div>
-              <div><dt>Evidence</dt><dd>{meta.completeness}, observed {observedAge(meta.as_of)} ago</dd></div>
-            </dl>
-          <div className={styles.recordBody}>
-            <section className={styles.recordLedger} aria-labelledby="ledger-heading">
-              <header>
-                <span className={styles.recordLabel}>01 / Hall</span>
-                <h2 id="ledger-heading">Constituent ledger</h2>
-                <p>Balances from the Alloy account; delivery from each Hall-owned token account. {hallSource(meta)}, observed {observedAge(meta.as_of)} ago.</p>
-              </header>
-              <ol className={styles.legList}>
-                {alloy.legs.map((leg, index) => (
-                  <li key={leg.mint} data-held={leg.held_back || undefined}>
-                    <span className={styles.legIndex}>{String(index + 1).padStart(2, "0")}</span>
-                    <div className={styles.legMint}>
-                      <b>{legIdentity(alloy, leg.mint).symbol ?? `Leg ${String(index + 1).padStart(2, "0")}`}</b>
-                      <Digest value={leg.mint} />
-                    </div>
-                    <dl className={styles.legBalances}>
-                      <div><dt>Ledger</dt><dd>{formatAmount(leg.ledger.atoms, leg.ledger.scale)}</dd></div>
-                      <div><dt>Pending</dt><dd>{formatAmount(leg.pending.atoms, leg.pending.scale)}</dd></div>
-                      <div><dt>Unclaimed</dt><dd>{formatAmount(leg.unclaimed.atoms, leg.unclaimed.scale)}</dd></div>
-                    </dl>
-                    <div className={styles.legDelivery}>
-                      {leg.held_back ? (
-                        <>
-                          <Stamp kind="warn" reason="Held as a Claim" />
-                          <p>{leg.held_back_reason ?? "The issuer currently prevents this Hall account from delivering."}</p>
-                        </>
-                      ) : (
-                        <p>Delivering</p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
+            <summary>Technical details</summary>
+            <div className={styles.detailsBody}>
+              <dl className={styles.detailsAddresses}>
+                <div><dt>Alloy account</dt><dd><Digest value={alloy.address} /></dd></div>
+                <div><dt>Sponsor</dt><dd><Digest value={alloy.sponsor} /></dd></div>
+                <div><dt>Share mint</dt><dd><Digest value={alloy.share_mint} /></dd></div>
+                <div><dt>Evidence</dt><dd>{meta.completeness}, observed {observedAge(meta.as_of)} ago</dd></div>
+              </dl>
 
-            <aside className={styles.recordTerms} aria-labelledby="terms-heading">
-              <span className={styles.recordLabel}>02 / Terms</span>
-              <h2 id="terms-heading">{value.strike.data.shares === ONE_SHARE_ATOMS.toString() ? "Per share" : `Per ${formatAmount(value.strike.data.shares, SHARE_DECIMALS)} shares`}</h2>
-              <p>Integer arithmetic from the Gateway. Not a transaction plan. {hallSource(value.strike.meta)}, {value.strike.meta.completeness}.</p>
-              <table className={styles.termsLedger}>
-                <thead><tr><th>Leg</th><th>Strike takes</th><th>Melt returns</th><th>Hall keeps</th></tr></thead>
-                <tbody>
-                  {alloy.legs.map((leg, index) => {
-                    const strike = amountFor(value.strike.data, leg.mint);
-                    const melt = amountFor(value.melt.data, leg.mint);
-                    return (
-                      <tr key={leg.mint}>
-                        <th scope="row">{legIdentity(alloy, leg.mint).symbol ?? String(index + 1).padStart(2, "0")}</th>
-                        <td>{strike ? formatAmount(strike.amount.atoms, strike.amount.scale) : "No observation"}</td>
-                        <td>{melt ? formatAmount(melt.amount.atoms, melt.amount.scale) : "No observation"}</td>
-                        <td>{melt?.kept ? formatAmount(melt.kept.atoms, melt.kept.scale) : "No observation"}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </aside>
-          </div>
+              <section aria-labelledby="ledger-heading">
+                <h2 id="ledger-heading">Hall ledger</h2>
+                <p className={styles.detailsNote}>What the Hall holds for every share, from the Alloy account; delivery from each Hall-owned token account. {hallSource(meta)}, observed {observedAge(meta.as_of)} ago.</p>
+                <div className={styles.detailsScroll}>
+                  <table className={styles.detailsTable}>
+                    <thead><tr><th scope="col">Stock</th><th scope="col">Ledger</th><th scope="col">Pending</th><th scope="col">Unclaimed</th><th scope="col">Delivery</th></tr></thead>
+                    <tbody>
+                      {alloy.legs.map((leg, index) => {
+                        const lot = legIdentity(alloy, leg.mint);
+                        return (
+                          <tr key={leg.mint} data-held={leg.held_back || undefined}>
+                            <th scope="row">
+                              <span className={styles.detailsLot}>
+                                <LotMark symbol={lot.symbol ?? String(index + 1)} src={lot.logo} />
+                                <span>
+                                  <b>{lot.symbol ?? `Leg ${String(index + 1).padStart(2, "0")}`}</b>
+                                  <Digest value={leg.mint} />
+                                </span>
+                              </span>
+                            </th>
+                            <td>{formatAmount(leg.ledger.atoms, leg.ledger.scale)}</td>
+                            <td>{formatAmount(leg.pending.atoms, leg.pending.scale)}</td>
+                            <td>{formatAmount(leg.unclaimed.atoms, leg.unclaimed.scale)}</td>
+                            <td>
+                              {leg.held_back ? (
+                                <span className={styles.detailsHeld}>
+                                  <Stamp kind="warn" reason="Held as a Claim" />
+                                  <small>{leg.held_back_reason ?? "The issuer currently prevents this Hall account from delivering."}</small>
+                                </span>
+                              ) : (
+                                "Delivering"
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section aria-labelledby="terms-heading">
+                <h2 id="terms-heading">{value.strike.data.shares === ONE_SHARE_ATOMS.toString() ? "Per share" : `Per ${formatAmount(value.strike.data.shares, SHARE_DECIMALS)} shares`}</h2>
+                <p className={styles.detailsNote}>Integer arithmetic from the Gateway, not a transaction plan. {hallSource(value.strike.meta)}, {value.strike.meta.completeness}.</p>
+                <div className={styles.detailsScroll}>
+                  <table className={styles.detailsTable}>
+                    <thead><tr><th scope="col">Stock</th><th scope="col">Strike takes</th><th scope="col">Melt returns</th><th scope="col">Hall keeps</th></tr></thead>
+                    <tbody>
+                      {alloy.legs.map((leg, index) => {
+                        const lot = legIdentity(alloy, leg.mint);
+                        const strike = amountFor(value.strike.data, leg.mint);
+                        const melt = amountFor(value.melt.data, leg.mint);
+                        return (
+                          <tr key={leg.mint}>
+                            <th scope="row">
+                              <span className={styles.detailsLot}>
+                                <LotMark symbol={lot.symbol ?? String(index + 1)} src={lot.logo} />
+                                <b>{lot.symbol ?? `Leg ${String(index + 1).padStart(2, "0")}`}</b>
+                              </span>
+                            </th>
+                            <td>{strike ? formatAmount(strike.amount.atoms, strike.amount.scale) : "No observation"}</td>
+                            <td>{melt ? formatAmount(melt.amount.atoms, melt.amount.scale) : "No observation"}</td>
+                            <td>{melt?.kept ? formatAmount(melt.kept.atoms, melt.kept.scale) : "No observation"}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
           </details>
         </>
       ) : null}

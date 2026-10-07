@@ -136,8 +136,9 @@ test("the Terminal moves from the live Hall register into one Alloy record", asy
   // No metadata on the share mint and no founding record: titled by its id.
   await expect(page.getByRole("heading", { level: 1, name: "Alloy 1790627156984" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "One share holds" })).toBeVisible();
-  await expect(page.getByTestId("lot-mark")).toHaveCount(3);
-  await page.getByText("Technical details: addresses, ledger and per-share terms").click();
+  // One mark per leg in what a share holds, lettered: the fixture's legs have no record.
+  await expect(page.getByRole("region", { name: "One share holds" }).getByTestId("lot-mark")).toHaveCount(2);
+  await page.getByText("Technical details", { exact: true }).click();
   await expect(page.getByText("The issuer currently prevents this Hall account from delivering.")).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Per share" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", { name: "Alloys" })).toHaveAttribute("href", "/app/alloys");

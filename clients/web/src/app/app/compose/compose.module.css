@@ -66,7 +66,13 @@
   border-bottom: 0.5px solid var(--sm-line-rule);
 }
 
-.candidates label,
+.candidates label {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-4);
+  cursor: pointer;
+}
+
 .methods label {
   display: flex;
   align-items: flex-start;
@@ -80,10 +86,16 @@
 
 .candidates input,
 .methods input {
+  flex: none;
   width: var(--sm-space-5);
   height: var(--sm-space-5);
-  margin: var(--sm-space-1) 0 0;
+  margin: 0;
   accent-color: var(--sm-accent-touch);
+}
+
+/* The method options keep their top alignment beside a two-line note. */
+.methods input {
+  margin-top: var(--sm-space-1);
 }
 
 .candidates label span,

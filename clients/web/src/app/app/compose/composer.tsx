@@ -145,7 +145,7 @@ export function Composer({ candidates, policy, unquoted }: { candidates: Candida
                       setSelected((current) => (event.target.checked ? [...current, candidate.mint] : current.filter((mint) => mint !== candidate.mint)))
                     }
                   />
-                  <LotMark symbol={candidate.symbol} src={logoFor(candidate.mint)} />
+                  <LotMark symbol={candidate.symbol} src={logoFor(candidate.mint)} size="list" />
                   <span>
                     <b>{candidate.symbol}</b>
                     <small>{candidate.issuer}</small>
