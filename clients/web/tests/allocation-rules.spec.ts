@@ -291,9 +291,16 @@ test("the balance route names what it expected when a request is malformed", asy
 test("field placeholders are quieter than entered values in both modes", async ({ page }) => {
   await page.goto("/app/allocation");
   const input = page.getByLabel("USDC to spend");
-  const colours = await input.evaluate((node) => ({
-    value: getComputedStyle(node).color,
-    placeholder: getComputedStyle(node, "::placeholder").color,
-  }));
+  const read = () =>
+    input.evaluate((node) => ({
+      value: getComputedStyle(node).color,
+      placeholder: getComputedStyle(node, "::placeholder").color,
+    }));
+  // Read once styled: in CI on 7 October 2026 both colours came back empty
+  // while the page, now carrying 23 lots, was still being replaced by
+  // hydration, and two empty strings compared equal.
+  await expect.poll(async () => (await read()).value).not.toBe("");
+  const colours = await read();
+  expect(colours.placeholder).not.toBe("");
   expect(colours.placeholder).not.toBe(colours.value);
 });
