@@ -199,7 +199,7 @@ function CapturedAssay({ admission, grade }: { admission: Admission; grade: Grad
         <dl className={styles.assayFacts}>
           <div><dt>Issuer</dt><dd>{admission.issuer}</dd></div>
           <div><dt>Grade</dt><dd>{grade}</dd></div>
-          <div><dt>Capture</dt><dd><time dateTime={capturedAt}>{captureLabel(capturedAt)} UTC</time>, {relativeEvidenceAge(capturedAt)} old</dd></div>
+          <div><dt>Capture</dt><dd>{capturedAt ? <><time dateTime={capturedAt}>{captureLabel(capturedAt)} UTC</time>, {relativeEvidenceAge(capturedAt)} old</> : "Time unavailable in this record"}</dd></div>
           <div><dt>Solana slot</dt><dd>{instrument.capture.slot}</dd></div>
         </dl>
       </section>
