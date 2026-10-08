@@ -1,0 +1,12 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared/tokens": ["../packages/ui/src/generated/tokens.ts"],
+      "@shared/amount": ["../web/src/lib/amount.ts"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "../packages/ui/src/generated/tokens.ts", "../web/src/lib/amount.ts"]
+}
