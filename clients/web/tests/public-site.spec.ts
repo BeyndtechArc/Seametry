@@ -109,18 +109,18 @@ test("sign in states the unavailable identity boundary without collecting a wall
 test("the wallet state lives in the app's top bar, and connecting signs nothing", async ({ page }) => {
   await page.goto("/");
   // The public rail carries reading pages and one way into the app, never a wallet.
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toHaveCount(0);
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toHaveCount(0);
 
   await page.goto("/app");
   const bar = page.getByRole("banner");
-  const state = bar.locator("summary", { hasText: "Log in" });
+  const state = bar.locator("summary", { hasText: "Connect" });
   await expect(state).toBeVisible();
   await state.click();
   // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
-  await expect(bar.getByText("No wallet was detected in this browser. Open the site in a browser with a Solana wallet extension, or use your wallet's browser on a phone.", { exact: true })).toBeVisible();
+  await expect(bar.getByText("No Solana wallet is available in this browser. Open Seametry in a wallet app browser, or connect from a desktop browser with a wallet extension.", { exact: true })).toBeVisible();
 
   await page.goto("/app/allocation");
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toBeVisible();
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
 });
 
 test("the Allocation keeps its terms behind an info note, and the order sheet still states the fee and slippage", async ({ page }) => {
@@ -185,8 +185,8 @@ test("on a phone, the Buy step carries the order sheet where signing happens", a
   await main.getByRole("button", { name: "Set amount" }).click();
   await main.getByLabel("USDC to spend").fill("10");
   await expect(main.getByText("Direct ownership", { exact: true }).filter({ visible: true })).toHaveCount(1);
-  await expect(main.getByRole("button", { name: "Approve and sign" }).filter({ visible: true })).toHaveCount(1);
-  // The Key rides in the step bar, as Compose's Found does; the sheet only states the terms.
+  await expect(main.getByRole("button", { name: "Connect wallet" }).filter({ visible: true })).toHaveCount(1);
+  // The signing key appears only after a wallet connects and a purchase is previewed.
   await expect(main.getByTestId("order-sheet-inline").getByRole("button", { name: "Approve and sign" })).toHaveCount(0);
   await expect(main.getByTestId("order-sheet-inline")).toBeVisible();
 });
@@ -253,23 +253,21 @@ test("narrow shells give the mark room and disclose one complete navigation regi
 
   await page.goto("/app");
   await expect(page.getByRole("banner").getByText("Seametry", { exact: true })).toBeHidden();
-  await page.getByRole("button", { name: "Open product navigation" }).click();
-  const appMenu = page.getByRole("navigation", { name: "Mobile product" });
-  await expect(appMenu).toBeVisible();
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toBeVisible();
-  await expect(page.getByRole("banner").getByRole("button", { name: "Use dark mode" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Close product navigation" })).toHaveText("");
+  const appTabs = page.getByRole("navigation", { name: "Mobile product" });
+  await expect(appTabs.getByRole("link")).toHaveCount(5);
+  await expect(appTabs.getByRole("link", { name: "Build a basket" })).toHaveAttribute("href", "/app/allocation");
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
+  await expect(page.getByRole("banner").getByRole("button", { name: "Use light mode" })).toBeVisible();
   const appOrder = await page.evaluate(() => ({
-    wallet: document.querySelector<HTMLElement>("summary")?.getBoundingClientRect().left,
-    theme: document.querySelector<HTMLElement>("button[aria-label='Use dark mode']")?.getBoundingClientRect().left,
-    menu: document.querySelector<HTMLElement>("button[aria-label='Close product navigation']")?.getBoundingClientRect().left,
+    wallet: document.querySelector<HTMLElement>("#app-wallet")?.getBoundingClientRect().left,
+    theme: document.querySelector<HTMLElement>("[data-testid='app-header-theme'] button")?.getBoundingClientRect().left,
   }));
   expect(appOrder.wallet).toBeLessThan(appOrder.theme ?? 0);
-  expect(appOrder.theme).toBeLessThan(appOrder.menu ?? 0);
-  await expect(page.getByRole("navigation", { name: "Product sections" })).toHaveCount(0);
-  await expect(appMenu.getByRole("link", { name: "Overview" })).toBeVisible();
-  await expect(appMenu.getByRole("link", { name: "The Key" })).toBeVisible();
-
+  await page.locator("#app-wallet").click();
+  const panel = page.getByTestId("wallet-state").locator("div").first();
+  const bounds = await panel.evaluate((element) => element.getBoundingClientRect().toJSON());
+  expect(bounds.left).toBeGreaterThanOrEqual(0);
+  expect(bounds.right).toBeLessThanOrEqual(360);
   await page.goto("/");
   await expect(page.getByTestId("change-register").getByTestId("mechanism-plate")).toHaveCount(4);
   const mechanismGeometry = await page.getByTestId("open-ap-mechanism").evaluate((element) => {
@@ -374,11 +372,11 @@ test("the Open AP field keeps its inset and the app keeps its reading pages in t
   await expect(reading.getByRole("link")).toHaveText(["How it works", "The Key"]);
 });
 
-test("the app header logs in with a route action and keeps the mode control beside it", async ({ page }) => {
+test("the app header connects a wallet and keeps the mode control beside it", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app");
 
-  const login = page.getByTestId("app-header-actions").locator("summary", { hasText: "Log in" });
+  const login = page.getByTestId("app-header-actions").locator("summary", { hasText: "Connect" });
   await expect(login).toBeVisible();
   const treatment = await login.evaluate((summary) => {
     const probe = document.createElement("span");
@@ -394,7 +392,7 @@ test("the app header logs in with a route action and keeps the mode control besi
       theme: getComputedStyle(theme).backgroundColor === touch,
     };
   });
-  expect(treatment).toEqual({ login: true, evenLabel: true, theme: true });
+  expect(treatment).toEqual({ login: true, evenLabel: true, theme: false });
   await expect(login.locator(":scope > span").last().locator("svg")).toHaveCount(1);
   await expect(page.getByRole("banner").getByRole("navigation", { name: "Product" }).getByRole("link")).toHaveText([
     "Overview",
@@ -419,7 +417,6 @@ test("every app page names its network, and the top bar and mobile register shar
 
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto("/app/alloys/storm");
-  await page.getByRole("button", { name: "Open product navigation" }).click();
   const mobile = page.getByRole("navigation", { name: "Mobile product" });
   await expect(mobile.getByRole("link", { name: "Alloys" })).toHaveAttribute("aria-current", "page");
 });
@@ -437,8 +434,7 @@ test("the app shell marks only the current tab with an icon, and keeps one globa
 
   for (const path of ["/app/allocation", "/app/compose"]) {
     await page.goto(path);
-    await expect(page.getByRole("main").getByRole("button", { name: /Connect / })).toHaveCount(0);
-    await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toHaveCount(1);
+    await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toHaveCount(1);
   }
 });
 
@@ -508,7 +504,7 @@ test("links shared before the move still arrive", async ({ page }) => {
   }
 });
 
-test("light is the default, and a stored dark choice is honoured", async ({ browser }) => {
+test("public opens light, product opens dark, and a stored choice is honoured", async ({ browser }) => {
   const context = await browser.newContext({ colorScheme: "dark" });
   const page = await context.newPage();
   await page.goto("/");
@@ -516,9 +512,11 @@ test("light is the default, and a stored dark choice is honoured", async ({ brow
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(page.getByRole("button", { name: "Use dark mode" })).toBeVisible();
 
-  await page.getByRole("button", { name: "Use dark mode" }).click();
   await page.goto("/app");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.getByRole("button", { name: "Use light mode" }).click();
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await context.close();
 });
 
