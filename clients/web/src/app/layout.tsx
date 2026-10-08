@@ -6,8 +6,13 @@ import { sentient, switzer, fragmentMono } from "./fonts";
 
 // A shared link previews with the meta flyer. Crawlers need an absolute URL,
 // hence metadataBase; the flyer's 1.90:1 frame is the preview ratio already.
+// X caches a card's image by its URL for days and ignores Cache-Control, so a
+// redrawn flyer at the same address kept showing the old one there (Storm,
+// 8 October 2026). The version is the first 12 hex of the file's SHA-256;
+// tests/csp.spec.ts fails when the file changes and this does not.
+const FLYER_VERSION = "97d855ed81af";
 const flyer = {
-  url: "/Seametry%20meta%20flyer.png",
+  url: `/Seametry%20meta%20flyer.png?v=${FLYER_VERSION}`,
   width: 3720,
   height: 1956,
   alt: "Seametry. Open-AP ETFs on Solana: baskets that keep working when issuers freeze.",

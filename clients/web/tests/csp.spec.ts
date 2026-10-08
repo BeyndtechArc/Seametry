@@ -1,4 +1,7 @@
 import { test, expect } from "@playwright/test";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 // Every route this app serves. Phase 6 adds real pages; each one joins this
 // list, since a route the design skill ships without also joining this test
@@ -25,7 +28,11 @@ const routes = [
 test("a shared link previews with the meta flyer, served from this app", async ({ page, request }) => {
   await page.goto("/");
   const image = await page.locator('meta[property="og:image"]').getAttribute("content");
-  expect(image).toBe("https://www.seametry.xyz/Seametry%20meta%20flyer.png");
+  const file = readFileSync(join(__dirname, "..", "public", "Seametry meta flyer.png"));
+  const version = createHash("sha256").update(file).digest("hex").slice(0, 12);
+  expect(image, "redrawn flyer needs FLYER_VERSION in src/app/layout.tsx set to this hash, or X keeps the old card").toBe(
+    `https://www.seametry.xyz/Seametry%20meta%20flyer.png?v=${version}`,
+  );
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
   await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute("content", image!);
   const flyer = await request.get(new URL(image!).pathname);
