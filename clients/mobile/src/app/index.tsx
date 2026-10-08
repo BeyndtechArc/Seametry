@@ -129,6 +129,9 @@ export default function Allocation() {
 
   const signReason =
     offer.unavailable ?? (wallet.state === "unavailable" ? wallet.reason : wallet.state === "signed-out" ? "Sign in to preview and sign each purchase." : undefined);
+  const active = plan.find((leg) => leg.phase === "prepared" && leg.prepared && Date.parse(leg.prepared.expiresAt) > Date.now());
+  const inFlight = plan.find((leg) => leg.phase === "signing" || leg.phase === "sending");
+  const keyReason = signReason ?? (!active ? "Preview a purchase to see its terms first." : undefined);
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
@@ -218,20 +221,27 @@ export default function Allocation() {
               ) : null}
               {leg.phase === "idle" ? (
                 <QuietButton disabled={Boolean(signReason)} onPress={() => void preview(leg)}>Preview purchase</QuietButton>
-              ) : leg.phase === "prepared" || leg.phase === "signing" || leg.phase === "sending" ? (
-                <KeyButton disabled={Boolean(signReason)} busy={leg.phase === "prepared" ? undefined : phaseLabel[leg.phase]} onPress={() => void sign(leg)}>
-                  Approve and sign {leg.symbol}
-                </KeyButton>
               ) : null}
             </View>
           ))}
         </ScrollView>
       )}
 
+      {/* One Key per view (SKILL.md), in the bar with each step's next move:
+          it signs the next prepared purchase, and the line says what it waits for. */}
       <StepBar
-        plan={planLine}
+        plan={step === 1 && keyReason && !inFlight ? keyReason : planLine}
+        problem={step === 1 && Boolean(keyReason) && !inFlight}
         back={step === 1 ? <QuietButton disabled={started} onPress={() => setStep(0)}>Back</QuietButton> : undefined}
-        next={step === 0 ? <ContinueButton disabled={chosen.length === 0} onPress={() => setStep(1)}>Set amount</ContinueButton> : undefined}
+        next={
+          step === 0 ? (
+            <ContinueButton disabled={chosen.length === 0} onPress={() => setStep(1)}>Set amount</ContinueButton>
+          ) : (
+            <KeyButton disabled={Boolean(keyReason) && !inFlight} busy={inFlight ? phaseLabel[inFlight.phase] : undefined} onPress={() => active && void sign(active)}>
+              {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
+            </KeyButton>
+          )
+        }
       />
     </SafeAreaView>
   );

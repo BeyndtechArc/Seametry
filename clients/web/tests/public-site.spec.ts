@@ -186,6 +186,9 @@ test("on a phone, the Buy step carries the order sheet where signing happens", a
   await main.getByLabel("USDC to spend").fill("10");
   await expect(main.getByText("Direct ownership", { exact: true }).filter({ visible: true })).toHaveCount(1);
   await expect(main.getByRole("button", { name: "Approve and sign" }).filter({ visible: true })).toHaveCount(1);
+  // The Key rides in the step bar, as Compose's Found does; the sheet only states the terms.
+  await expect(main.getByTestId("order-sheet-inline").getByRole("button", { name: "Approve and sign" })).toHaveCount(0);
+  await expect(main.getByTestId("order-sheet-inline")).toBeVisible();
 });
 
 test("the public rail carries reading pages and one way into the app", async ({ page }) => {

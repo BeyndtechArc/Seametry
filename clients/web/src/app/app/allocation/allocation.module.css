@@ -258,8 +258,7 @@
 .orderIdentity p,
 .orderSelection p,
 .orderDestination p,
-.orderHandoff p,
-.orderReadiness {
+.orderHandoff p {
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
   line-height: 1.55;
@@ -326,15 +325,6 @@
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-small);
   overflow-wrap: anywhere;
-}
-
-.orderReadiness {
-  padding-left: var(--sm-space-4);
-  border-left: var(--sm-space-1) solid var(--sm-accent-provenance);
-}
-
-.orderKey {
-  padding-top: var(--sm-space-2);
 }
 
 /* Beside the steps on a wide screen; inside the Buy step on a narrow one. */

@@ -18,3 +18,6 @@ Assumptions: Storm, 7 October 2026: steps for Allocation everywhere so web and m
              a finished step; the bar's padding tightens.
              Revised again: Storm meant the amount and the purchase reviews as one step. Steps are Choose and Buy,
              the amount at the head of Buy with each purchase under it; the footer is plain Back, plan and Continue.
+             Revised on 8 October 2026: Approve and sign moves from the order sheet into the step bar on Buy, as
+             Found did on Compose; the bar's line names what the Key waits for. The mobile app had a Key on every
+             leg, against SKILL.md's one Key per view; it gets the same single Key in its bar.

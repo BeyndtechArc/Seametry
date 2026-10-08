@@ -70,20 +70,12 @@ function OrderSummary({
   fee,
   feeBps,
   wallet,
-  readiness,
-  inFlight,
-  active,
-  approveAndSign,
 }: {
   selectedSymbols: string[];
   total: string;
   fee: string;
   feeBps: number;
   wallet?: string;
-  readiness?: string;
-  inFlight?: Leg;
-  active?: Leg;
-  approveAndSign: () => void;
 }) {
   return (
     <div className={styles.orderSummary}>
@@ -134,18 +126,6 @@ function OrderSummary({
         <h3>Alloy handoff</h3>
         <p>When this wallet holds a Formula&apos;s exact quantities, Strike can deposit them for Alloy shares. Mainnet Hall is not active in this build.</p>
       </section>
-      <p className={styles.orderReadiness}>{readiness ?? "The next prepared purchase is ready for your approval."}</p>
-      <div className={styles.orderKey}>
-        <Key
-          busy={Boolean(inFlight)}
-          busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined}
-          disabled={Boolean(readiness) && !inFlight}
-          disabledReason={readiness}
-          onClick={approveAndSign}
-        >
-          {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
-        </Key>
-      </div>
     </div>
   );
 }
@@ -328,10 +308,6 @@ export function AllocationFlow({
       fee={fee}
       feeBps={feeBps}
       wallet={publicKey?.toBase58()}
-      readiness={keyDisabledReason}
-      inFlight={inFlight}
-      active={active}
-      approveAndSign={() => void approveAndSign()}
     />
   );
 
@@ -478,7 +454,7 @@ export function AllocationFlow({
             <>
               {/* On a phone the order sheet is not beside the steps, so the
                   step where signing happens carries it. */}
-              <div className={styles.orderInline}>{orderSummary}</div>
+              <div className={styles.orderInline} data-testid="order-sheet-inline">{orderSummary}</div>
               <section className={styles.section} aria-label="Review each purchase">
                 <p className={styles.quiet}>Each purchase is quoted and simulated separately before it can be signed.</p>
                 <ol className={styles.legs}>
@@ -549,7 +525,10 @@ export function AllocationFlow({
       </div>
 
       <StepBar
-        plan={planLine}
+        // On Buy the bar carries the Key, and its line says what the Key waits
+        // for, as Compose's bar does for Found.
+        plan={step === 1 && keyDisabledReason && !inFlight ? keyDisabledReason : planLine}
+        problem={step === 1 && Boolean(keyDisabledReason) && !inFlight}
         back={
           step === 1 ? (
             <QuietAction disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
@@ -562,7 +541,11 @@ export function AllocationFlow({
             <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
               Set amount
             </ContinueAction>
-          ) : undefined
+          ) : (
+            <Key busy={Boolean(inFlight)} busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined} disabled={Boolean(keyDisabledReason) && !inFlight} onClick={() => void approveAndSign()}>
+              {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
+            </Key>
+          )
         }
       />
     </div>
