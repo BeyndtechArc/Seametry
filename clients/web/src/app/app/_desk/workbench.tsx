@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Digest, LotMark, RouteAction, Rule, Stamp, TextAction } from "@seametry/ui";
+import { Digest, LotMark, RouteAction, Rule, Stamp, TextAction, type GradeName } from "@seametry/ui";
+import { Icon } from "@seametry/ui/icons";
+import type { Admission } from "@/lib/allocation/admissions";
+import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import type {
   InstrumentAssayResponse,
   InstrumentRegisterResponse,
@@ -176,18 +179,91 @@ export function InstrumentRegister() {
   );
 }
 
-export function InstrumentAssay({ mint }: { mint: string }) {
+function CapturedAssay({ admission, grade }: { admission: Admission; grade: GradeName }) {
+  const instrument = admission.instrument;
+  const decision = admission.capacity_decision;
+  const capturedAt = instrument.capture.captured_at;
+  const knownDecision = decision.decision === "ALLOW" || decision.decision === "WARN" || decision.decision === "BLOCK";
+
+  return (
+    <>
+      <section className={styles.assayHero}>
+        <div className={styles.assayIdentity}>
+          <span>Captured allocation record</span>
+          <h1 className={styles.lotIdentity}>
+            <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} size="header" />
+            {instrument.symbol ?? "Symbol unavailable"}
+          </h1>
+          <Digest value={instrument.mint} />
+        </div>
+        <dl className={styles.assayFacts}>
+          <div><dt>Issuer</dt><dd>{admission.issuer}</dd></div>
+          <div><dt>Grade</dt><dd>{grade}</dd></div>
+          <div><dt>Capture</dt><dd>{capturedAt ? <><time dateTime={capturedAt}>{captureLabel(capturedAt)} UTC</time>, {relativeEvidenceAge(capturedAt)} old</> : "Time unavailable in this record"}</dd></div>
+          <div><dt>Solana slot</dt><dd>{instrument.capture.slot}</dd></div>
+        </dl>
+      </section>
+
+      <section className={styles.assaySection}>
+        <header className={styles.sectionHeading}>
+          <span>01 / Policy</span>
+          <h2>Captured decision</h2>
+          <p>From the Allocation evidence under policy {decision.policy_version}. This is not a live Gateway assay. Preview a purchase for a fresh quote, policy check and simulation.</p>
+        </header>
+        <div className={styles.decisionPanel}>
+          <div>
+            {knownDecision ? <Stamp kind={decision.decision.toLowerCase() as "allow" | "warn" | "block"} reason="Decision from the captured Allocation inputs." /> : <span>{decision.decision}</span>}
+          </div>
+          <dl>
+            <div><dt>Policy</dt><dd>{decision.policy_version}</dd></div>
+            <div><dt>Input digest</dt><dd><Digest value={decision.input_digest} /></dd></div>
+          </dl>
+          <ul>
+            {decision.reasons.map((reason) => (
+              <li key={`${reason.code}-${reason.fact}`}>
+                <code>{reason.code}</code>
+                <p>{reason.fact}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className={styles.assaySection}>
+        <header className={styles.sectionHeading}>
+          <span>02 / Registry</span>
+          <h2>Issuer powers</h2>
+          <p>Decoded from the captured instrument at slot {instrument.capture.slot}. A newer issuer observation is not available from the Gateway.</p>
+        </header>
+        <ol className={styles.powerRegister}>
+          {instrument.prerogatives.map((prerogative, index) => (
+            <li key={`${index}-${prerogative.sentence}`}><span>{String(index + 1).padStart(2, "0")}</span><p>{prerogative.sentence}</p></li>
+          ))}
+        </ol>
+      </section>
+    </>
+  );
+}
+
+export function InstrumentAssay({ mint, admission, grade }: { mint: string; admission?: Admission; grade?: GradeName }) {
   const { value, problem, loading } = useTerminalResource<InstrumentAssayResponse>(
     `/api/terminal/instruments/${encodeURIComponent(mint)}`,
   );
   const instrument = value?.instrument.data;
   const decision = value?.admissibility.data;
+  const captured = problem?.status === 404 && admission && grade ? { admission, grade } : undefined;
 
   return (
     <>
-      <div className={styles.backLink}><TextAction href="/app/instruments">Return to instruments</TextAction></div>
+      <div className={styles.backLink}>
+        <Link className={styles.backLinkAction} href={captured ? "/app/allocation" : "/app/instruments"}>
+          <Icon name="back" />
+          <span>{captured ? "Back to allocation" : "Back to instruments"}</span>
+        </Link>
+      </div>
       {loading ? <LoadingRegister /> : null}
-      {problem ? <Boundary problem={problem} /> : null}
+      {problem && !captured ? <Boundary problem={problem} /> : null}
+      {captured ? <CapturedAssay admission={captured.admission} grade={captured.grade} /> : null}
       {value && instrument && decision ? (
         <>
           <section className={styles.assayHero}>
