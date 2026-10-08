@@ -56,5 +56,6 @@
 }
 
 .network[data-network="devnet"] {
-  color: var(--sm-accent-provenance);
+  color: var(--sm-text-primary);
+  border-color: var(--sm-accent-provenance);
 }

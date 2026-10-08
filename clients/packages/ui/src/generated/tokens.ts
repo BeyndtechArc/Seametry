@@ -2,35 +2,35 @@
 export const theme = {
   "dark": {
     "surface": {
-      "ground": "#0A0A0A",
-      "sheet": "#141414",
-      "raised": "#1C1C1C",
-      "tray": "#262626",
+      "ground": "#10140F",
+      "sheet": "#181D17",
+      "raised": "#20271F",
+      "tray": "#2B3229",
       "inverse": "#F5F5F3"
     },
     "text": {
-      "primary": "#F5F5F3",
-      "secondary": "#B4B4AF",
-      "tertiary": "#8A8A83",
-      "faint": "#5A5E4F",
+      "primary": "#E4E9E0",
+      "secondary": "#ABB6A8",
+      "tertiary": "#939F90",
+      "faint": "#5A6559",
       "onTouch": "#12140F",
-      "inverse": "#0A0A0A"
+      "inverse": "#10140F"
     },
     "line": {
-      "rule": "#242422",
-      "strong": "#3A3A36",
-      "highlight": "rgba(255,255,255,0.06)"
+      "rule": "#30382D",
+      "strong": "#495548",
+      "highlight": "rgba(236,246,232,0.06)"
     },
     "accent": {
       "touch": "#8DA32C",
       "touchPressed": "#7A8E23",
-      "provenance": "#8F8AFF",
+      "provenance": "#AAA8D0",
       "provenanceField": "#3A20D6",
-      "touchText": "#98AD39"
+      "touchText": "#A9BD69"
     },
     "feature": {
-      "ground": "#11140F",
-      "sheet": "#1B2017",
+      "ground": "#141A11",
+      "sheet": "#20281A",
       "raised": "#303724",
       "text": {
         "primary": "#E7E8DC",
@@ -40,29 +40,29 @@ export const theme = {
   },
   "light": {
     "surface": {
-      "ground": "#C9C8B7",
-      "sheet": "#D5D4C5",
-      "raised": "#E2E1D5",
-      "tray": "#B8B8A5",
-      "inverse": "#20231B"
+      "ground": "#E7E9DF",
+      "sheet": "#F2F3EA",
+      "raised": "#FAFBF5",
+      "tray": "#D4DACB",
+      "inverse": "#20251E"
     },
     "text": {
-      "primary": "#20231B",
-      "secondary": "#3E4136",
-      "tertiary": "#505347",
-      "faint": "#999A89",
+      "primary": "#242B22",
+      "secondary": "#3D493C",
+      "tertiary": "#51604F",
+      "faint": "#9AA596",
       "onTouch": "#16200B",
       "inverse": "#F5F5F3"
     },
     "line": {
-      "rule": "#B5B5A4",
-      "strong": "#969783",
+      "rule": "#CBD1C3",
+      "strong": "#A9B3A3",
       "highlight": "rgba(255,255,255,0.55)"
     },
     "accent": {
       "touch": "#8DA32C",
       "touchPressed": "#7A8E23",
-      "provenance": "#3520C0",
+      "provenance": "#554C9C",
       "provenanceField": "#3520C0",
       "touchText": "#43540B"
     },

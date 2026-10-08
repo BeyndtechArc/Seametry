@@ -395,7 +395,7 @@
 
 .stamp_ngd,
 .stamp_warn {
-  color: var(--sm-accent-provenance);
+  color: var(--sm-text-primary);
   border-color: var(--sm-accent-provenance);
 }
 
