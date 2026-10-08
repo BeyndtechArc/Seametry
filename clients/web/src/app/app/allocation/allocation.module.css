@@ -119,13 +119,8 @@
   background: var(--sm-surface-sheet);
 }
 
-/* Both columns are proportional. With the marks sized to their content, a
-   long stamp reason took the row and crushed the symbol into a sliver. */
-.lotRegister {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  align-items: stretch;
-  gap: var(--sm-space-4) var(--sm-space-7);
+.lot {
+  padding: var(--sm-space-3) var(--sm-space-4);
 }
 
 .lotChoice,
@@ -182,26 +177,10 @@
   font-size: var(--sm-font-size-small);
 }
 
-.lotMarks {
-  min-width: 0;
-}
-
-@media (max-width: 700px) {
-  .lotRegister {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .lotMarks {
-    padding-left: var(--sm-space-11);
-  }
-}
-
-.conditionDisclosure,
 .refused {
   min-width: 0;
 }
 
-.conditionDisclosure summary,
 .refused summary {
   width: fit-content;
   min-height: var(--sm-size-target);
@@ -212,7 +191,6 @@
   cursor: pointer;
 }
 
-.conditionDisclosure[open] summary,
 .refused[open] summary {
   color: var(--sm-text-primary);
 }
@@ -351,6 +329,34 @@
   overflow-wrap: anywhere;
 }
 
+.selectionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  background: var(--sm-surface-sheet);
+}
+
+.selectionCount {
+  display: inline-flex;
+  align-items: baseline;
+  flex: none;
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.selectionCount strong {
+  font-size: var(--sm-font-size-title-l);
+  font-weight: var(--sm-font-weight-semibold);
+}
+
+.selectionCount small {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
 /* Beside the steps on a wide screen; inside the Buy step on a narrow one. */
 .orderInline {
   display: none;
@@ -378,19 +384,11 @@
     opacity: 0.22;
   }
 
-  /* A phone shows fifteen or more stocks; stacked marks made each row taller
-     than the screen's width, so they share one line under the symbol. */
   .lots {
-    gap: var(--sm-space-4);
+    gap: var(--sm-space-2);
   }
 
   .lot {
-    gap: var(--sm-space-2);
-    padding: var(--sm-space-4);
-  }
-
-  .lotRegister {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--sm-space-2);
+    padding: var(--sm-space-2) var(--sm-space-3);
   }
 }

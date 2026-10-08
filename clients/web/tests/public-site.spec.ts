@@ -15,15 +15,20 @@ test("saved to a home screen, the site opens on Allocation with icons at the siz
   }
 });
 
-test("on a phone, a stock's grade and stamp share one line and the page never scrolls sideways", async ({ page }) => {
+test("on a phone, stock rows stay compact and the count sits beside the next action", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app/allocation");
-  const lot = page.getByRole("main").locator('[aria-label="Choose the constituents"] > ul > li').first();
-  const grade = lot.getByText(/^(Entitlement|Certificate|Interest|Ungraded)$/);
-  const stamp = lot.getByText("Warn", { exact: true });
-  await expect(stamp).toBeVisible();
-  const [gradeBox, stampBox] = [await grade.boundingBox(), await stamp.boundingBox()];
-  expect(Math.abs(gradeBox!.y + gradeBox!.height / 2 - (stampBox!.y + stampBox!.height / 2))).toBeLessThan(4);
+  const main = page.getByRole("main");
+  const lot = main.locator('[aria-label="Choose the constituents"] > ul > li').first();
+  await expect(lot.getByRole("checkbox")).toBeVisible();
+  await expect(lot.getByRole("link", { name: /Open .* assay/ })).toBeVisible();
+  await expect(lot.getByText("Warn", { exact: true })).toHaveCount(0);
+  const rowBox = await lot.boundingBox();
+  expect(rowBox!.height).toBeLessThan(112);
+  const count = main.locator("output");
+  const action = main.getByRole("button", { name: "Set amount" });
+  const [countBox, actionBox] = [await count.boundingBox(), await action.boundingBox()];
+  expect(Math.abs(countBox!.y + countBox!.height / 2 - (actionBox!.y + actionBox!.height / 2))).toBeLessThan(8);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });
 
@@ -154,10 +159,10 @@ test("the Allocation chooses in one step and buys in the next, the order sheet b
   await expect(sheet.getByText("Direct ownership", { exact: true })).toBeVisible();
   await expect(page.getByText(/JUPITER_API_KEY|MAINNET_RPC_URL|ALLOCATION_APPROVAL_SECRET|ALLOCATION_BLOCKED_COUNTRIES|ALLOCATION_FEE_WALLET/)).toHaveCount(0);
 
-  // Continue waits for a choice, and the bar says the plan so far.
+  // Continue waits for a choice, and the count reads selected over offered.
   const next = main.getByRole("button", { name: "Set amount" });
   await expect(next).toBeDisabled();
-  await expect(main.getByText("Nothing chosen", { exact: true })).toBeVisible();
+  await expect(main.locator("output")).toHaveText(/^0\/\d+$/);
 
   // Two lots, 250 USDC: 125 each; a two-constituent plan pays 15 basis
   // points, 0.1875 each, 0.375 in all. Down to one lot, 25 basis points.

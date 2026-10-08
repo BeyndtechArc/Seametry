@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ConditionReport, ContinueAction, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, StepBar, StepTrack, Stamp } from "@seametry/ui";
+import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, StepBar, StepTrack, Stamp } from "@seametry/ui";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
@@ -385,38 +385,28 @@ export function AllocationFlow({
                   <ul className={styles.lots}>
                     {visible.map((lot) => (
                       <li key={lot.mint} className={styles.lot}>
-                        <div className={styles.lotRegister}>
-                          <div className={styles.lotChoice}>
-                            <label className={styles.lotToggle}>
-                              <input
-                                type="checkbox"
-                                aria-label={`Add ${lot.symbol} to the basket`}
-                                disabled={started}
-                                checked={selected.includes(lot.mint)}
-                                onChange={(event) =>
-                                  setSelected((current) =>
-                                    event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
-                                  )
-                                }
-                              />
-                            </label>
-                            <Link className={styles.lotDetail} href={`/app/instruments/${encodeURIComponent(lot.mint)}`} aria-label={`Open ${lot.symbol} assay`}>
-                              <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="header" />
-                              <span>
-                                <b>{lot.symbol}</b>
-                                <small>{lot.issuer}</small>
-                                <small>Measured capacity {formatAmount(BigInt(lot.capacityUsdc), 0)} USDC</small>
-                              </span>
-                            </Link>
-                          </div>
-                          <div className={styles.lotMarks}>
-                            <MarkLine grade={lot.grade} stamp={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
-                          </div>
+                        <div className={styles.lotChoice}>
+                          <label className={styles.lotToggle}>
+                            <input
+                              type="checkbox"
+                              aria-label={`Add ${lot.symbol} to the basket`}
+                              disabled={started}
+                              checked={selected.includes(lot.mint)}
+                              onChange={(event) =>
+                                setSelected((current) =>
+                                  event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
+                                )
+                              }
+                            />
+                          </label>
+                          <Link className={styles.lotDetail} href={`/app/instruments/${encodeURIComponent(lot.mint)}`} aria-label={`Open ${lot.symbol} assay`}>
+                            <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="list" />
+                            <span>
+                              <b>{lot.symbol}</b>
+                              <small>{lot.issuer}</small>
+                            </span>
+                          </Link>
                         </div>
-                        <details className={styles.conditionDisclosure}>
-                          <summary>Read condition report</summary>
-                          <ConditionReport statements={lot.prerogatives} evidence={`Read at slot ${lot.slot}. ${lot.multiplier}`} />
-                        </details>
                       </li>
                     ))}
                   </ul>
@@ -530,34 +520,37 @@ export function AllocationFlow({
         </aside>
       </div>
 
-      <StepBar
-        // On Buy the bar carries the Key, and its line says what the Key waits
-        // for, as Compose's bar does for Found.
-        plan={planLine}
-        problem={false}
-        back={
-          step === 1 ? (
+      {step === 0 ? (
+        <div className={styles.selectionBar}>
+          <output className={styles.selectionCount} aria-label={`${chosen.length} of ${offered.length} selected`} aria-live="polite">
+            <strong>{chosen.length}</strong><small>/{offered.length}</small>
+          </output>
+          <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
+            Set amount
+          </ContinueAction>
+        </div>
+      ) : (
+        <StepBar
+          plan={planLine}
+          problem={false}
+          back={
             <QuietAction icon="back" disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
               Back
             </QuietAction>
-          ) : undefined
-        }
-        next={
-          step === 0 ? (
-            <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
-              Set amount
-            </ContinueAction>
-          ) : !connected ? (
-            <ContinueAction onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</ContinueAction>
-          ) : active || inFlight ? (
-            <Key busy={Boolean(inFlight)} busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined} disabled={Boolean(keyDisabledReason) && !inFlight} onClick={() => void approveAndSign()}>
-              {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
-            </Key>
-          ) : (
-            <span>Preview a purchase above</span>
-          )
-        }
-      />
+          }
+          next={
+            !connected ? (
+              <ContinueAction onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</ContinueAction>
+            ) : active || inFlight ? (
+              <Key busy={Boolean(inFlight)} busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined} disabled={Boolean(keyDisabledReason) && !inFlight} onClick={() => void approveAndSign()}>
+                {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
+              </Key>
+            ) : (
+              <span>Preview a purchase above</span>
+            )
+          }
+        />
+      )}
     </div>
   );
 }
