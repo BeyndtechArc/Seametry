@@ -78,6 +78,11 @@
   justify-items: start;
 }
 
+.boundaryCopy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .boundary h2 {
   font-size: var(--sm-font-size-title-l);
 }
@@ -317,6 +322,25 @@
 
 .backLink {
   margin-top: var(--sm-space-6);
+}
+
+.backLinkAction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+  min-height: var(--sm-size-target);
+  color: var(--sm-text-secondary);
+  text-decoration: none;
+}
+
+.backLinkAction svg {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+}
+
+.backLinkAction:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
 }
 
 .assayHero {
@@ -714,6 +738,8 @@
 
 .assayFacts dd,
 .decisionPanel dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: var(--sm-text-primary);
   font-size: var(--sm-font-size-small);
 }
