@@ -1,18 +1,19 @@
 import { PublicKey } from "@solana/web3.js";
 
-// Devnet only, always. This demo never touches mainnet: docs/prd/HALL.md
-// section 6, "devnet builds are upgradeable, and every surface says so."
+// Devnet only, always. The Hall never touches mainnet in this build:
+// docs/prd/HALL.md section 6, "devnet builds are upgradeable, and every
+// surface says so."
 export const DEVNET_RPC_ENDPOINT =
   process.env.NEXT_PUBLIC_HALL_DEMO_RPC ?? "https://api.devnet.solana.com";
 
-// The demo founds an Alloy on every run, so it stays on the first devnet
-// deployment, where the earlier test Alloys already live, and the register
-// on the new Hall (server/internal/basket HallDevnetProgramID) holds only
-// deliberately founded Alloys. idl.json carries the same address. Both
+// The first devnet deployment, where the retired clickable demo founded an
+// Alloy on every run. The proof scripts found and Strike there, so proving a
+// flow adds nothing to the register on the new Hall (server/internal/basket
+// HallDevnetProgramID), which holds only deliberately founded Alloys. Both
 // programs are built from the same source and differ only in the program id
 // compiled into them: rebuilding today's source with this id reproduces the
 // deployed binary byte for byte.
-export const DEMO_HALL_PROGRAM_ID = new PublicKey(
+export const SCRATCH_HALL_PROGRAM_ID = new PublicKey(
   "4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx"
 );
 

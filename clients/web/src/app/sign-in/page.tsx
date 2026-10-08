@@ -27,7 +27,7 @@ export default async function SignInPage() {
         <div className={styles.signInBoundary}>
           <Stamp kind="warn" reason="Signing in, for saved formulas and watchlists, is API step A6 and is not built." />
           <RouteAction href="/app/allocation">Open the Allocation</RouteAction>
-          <TextAction href="/app/hall">Run the Hall demonstration</TextAction>
+          <TextAction href="/app/alloys">Inspect live Alloys</TextAction>
         </div>
       </header>
 

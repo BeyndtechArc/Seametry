@@ -73,7 +73,7 @@ export default async function HowItWorksPage() {
       </section>
 
       <section className={styles.section}>
-        <RouteAction href="/app/hall">Inspect the mechanism</RouteAction>
+        <RouteAction href="/app/alloys">Inspect live Alloys</RouteAction>
       </section>
     </PublicShell>
   );

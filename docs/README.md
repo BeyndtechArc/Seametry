@@ -1,6 +1,6 @@
 # Documentation
 
-**Last substantive change:** 27 September 2026.
+**Last substantive change:** 8 October 2026.
 
 ---
 
@@ -168,8 +168,9 @@ aggregator responses, a generated Explorer, and CI.
   deployed to devnet at `GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE` (4
   October 2026), empty so that Alloys there are only ones founded on purpose.
   The first deployment, `4wmfRdQguyhGCvZe4FXHo7Kpx5aWbRBHPBbs8k6XRjDx`, holds
-  the 47 test Alloys the Hall cannot close and still serves the in-app demo;
-  both are built from the same source and differ only in the compiled-in
+  the 47 test Alloys the Hall cannot close and now serves only the proof
+  scripts as a scratch Hall, the in-app demo having been retired on 8 October
+  2026; both are built from the same source and differ only in the compiled-in
   program id. `chain/tools/devnet-demo` ran the eight scenarios on the first
   deployment, recorded with signatures in
   `shared/evidence/hall-demo/transcript-devnet.json` and shown on the

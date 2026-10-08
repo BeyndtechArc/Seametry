@@ -6,7 +6,7 @@ not own service boundaries (`SERVICE_CATALOG.md`), engineering rules
 (`ENGINEERING_STANDARD.md`), brand and voice (`BRAND_AND_WORLD.md`), or per
 surface requirements (`prd/`).
 
-**Last substantive change:** 30 September 2026.
+**Last substantive change:** 8 October 2026.
 
 ---
 
@@ -254,8 +254,10 @@ current. The Stocklana submission closed 25 September 2026; it shaped the phase 
 cut and nothing else.
 
 **The current cut, drafted 30 September 2026 and Storm's to confirm.** Phase 1
-as a public, clickable devnet release: the Hall demonstration at `/hall-demo`
-that any visitor completes from an empty wallet, and the Explorer. Alongside it,
+as a public, clickable devnet release: the Hall's register, where any visitor
+can Strike and Melt a founded Alloy and found one from Compose, with the issuer
+freeze run kept as a recorded demonstration (the clickable `/hall-demo` was
+retired on 8 October 2026), and the Explorer. Alongside it,
 the first slice of phase 2: a mainnet Allocation that buys admissible
 constituents into the holder's own wallet, one swap per leg, with no routing
 fee and a size cap at the policy's reference size, because depth is measured to

@@ -14,7 +14,10 @@ const nextConfig: NextConfig = {
   redirects() {
     return [
       { source: "/allocation", destination: "/app/allocation", permanent: false },
-      { source: "/hall-demo", destination: "/app/hall", permanent: false },
+      // The clickable Hall demo was retired on 8 October 2026; links to it
+      // land on the live register, where Strike and Melt run on real Alloys.
+      { source: "/hall-demo", destination: "/app/alloys", permanent: false },
+      { source: "/app/hall", destination: "/app/alloys", permanent: false },
       { source: "/terminal", destination: "/app/instruments", permanent: false },
       { source: "/terminal/instruments/:mint", destination: "/app/instruments/:mint", permanent: false },
       { source: "/terminal/alloys", destination: "/app/alloys", permanent: false },

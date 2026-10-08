@@ -17,8 +17,8 @@ export function proxy(request: NextRequest) {
     `style-src 'self' 'nonce-${nonce}'`,
     `font-src 'self'`,
     `img-src 'self' data:`,
-    // One named devnet RPC origin, for /hall-demo's direct @solana/web3.js
-    // Connection calls. Not a wallet-adapter requirement: a Wallet Standard
+    // One named devnet RPC origin, for the Alloy pages' and Compose's direct
+    // @solana/web3.js Connection calls. Not a wallet-adapter requirement: a Wallet Standard
     // extension talks to the page through an injected object, which CSP
     // never restricts. Devnet only, matching "never imply mainnet";
     // widening this to any Solana cluster, let alone any origin, would be

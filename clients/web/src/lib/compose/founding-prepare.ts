@@ -28,15 +28,14 @@ import { ONE_SHARE_ATOMS } from "../hall/constants";
 import { Refusal } from "../refusal";
 import { alloyPda, hallTokenAccount, lockedSharesPda, ownerTokenAccount, shareMintPda } from "../hall/pda";
 
-// Receives already-loaded Keypairs and reads no secret itself, like
-// lib/hall/found.ts; the route that calls it owns the keys.
+// Receives already-loaded Keypairs and reads no secret itself; the route
+// that calls it owns the keys.
 
 /**
- * The extension set of the demo's mock stocks (lib/hall/found.ts, from
- * HALL.md section 3's account of real xStocks), plus on-chain metadata so an
- * explorer names each stand-in. Like the demo, it omits DefaultAccountState
- * and TransferFeeConfig, and the Scaled UI multiplier, none of which Strike,
- * Melt or founding exercises.
+ * The extension set of real xStocks (HALL.md section 3), plus on-chain
+ * metadata so an explorer names each stand-in. It omits DefaultAccountState,
+ * TransferFeeConfig and the Scaled UI multiplier, none of which Strike, Melt
+ * or founding exercises.
  */
 const STAND_IN_EXTENSIONS = [
   ExtensionType.PermanentDelegate,

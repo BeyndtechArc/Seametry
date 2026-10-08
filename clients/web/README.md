@@ -53,22 +53,25 @@ Fetched, never committed, see `fonts/README.md`. `next/font/local` is proven
 to serve them byte for byte unmodified, matching the licence's ban on
 subsetting; see the same decision record above for how that was checked.
 
-## The Hall demo, `/hall-demo`
+## The devnet Hall: Compose, Strike and Melt
 
-A clickable devnet demonstration of `docs/prd/HALL.md` section 1's first
-guarantee: connect a wallet, strike shares in a freshly founded alloy, watch
-the mock issuer freeze one constituent, melt, withdraw each leg (the frozen
-one refused, the other delivered), watch the issuer release it, withdraw the
-rest. Devnet only; the page says so. Never mainnet.
+`/app/compose` founds Alloys on the register's devnet Hall, and each Alloy's
+page under `/app/alloys` Strikes and Melts them. Devnet only; every page says
+so. Never mainnet. The clickable demo that once lived at `/hall-demo` was
+retired on 8 October 2026 and its address now lands on `/app/alloys`; its
+recorded run stays as evidence in `shared/evidence/hall-demo/`, which the
+landing page and `/papers/the-exit` read.
 
 **Environment variables, server-only, never committed.** Their names and safe
-defaults are also listed in `.env.example`:
+defaults are also listed in `.env.example`; the names still carry the demo's
+prefix.
 
 - `HALL_DEMO_FUNDER_SECRET_KEY`: a JSON byte array (the same shape a Solana
   keypair file already is), the fee payer and rent payer for every
-  server-built transaction. Deliberately not the deployer key that holds the
-  Hall program's upgrade authority (`~/.config/solana/seametry-devnet-deployer.json`):
-  a public route handler signing with that key would put a much larger blast
+  server-built transaction, such as the stand-in mints a founding or a Strike
+  needs. Deliberately not the deployer key that holds the Hall program's
+  upgrade authority (`~/.config/solana/seametry-devnet-deployer.json`): a
+  public route handler signing with that key would put a much larger blast
   radius behind one leaked environment variable than a small, dedicated,
   bounded-balance key needs to carry. Generate one and fund it a little on
   devnet:
@@ -80,31 +83,20 @@ defaults are also listed in `.env.example`:
   ```
 - `HALL_DEMO_ISSUER_SEED`: any random string of at least 32 bytes (for
   example `openssl rand -base64 32`). `src/lib/hall/issuer.ts` derives the
-  mock issuer's signing key from this seed plus each alloy's id, so a
-  stateless serverless function can sign a later freeze or thaw for the same
-  alloy without a database. Changing this seed orphans every alloy founded
-  under the old one: their frozen legs can never be thawed again, since the
-  issuer key that could thaw them can no longer be derived.
+  stand-ins' mock issuer key from it, so a stateless serverless function can
+  sign for them later without a database. Changing it orphans every stand-in
+  minted under the old seed: no key could freeze or release them again.
 
 The IDL at `src/lib/hall/idl.json` is generated (`anchor idl build`, run in
 `chain/`), not hand written: `chain/target/` is gitignored, so it cannot be a
 build-time fetch the way the fonts above are. Regenerate it the same way if
 `chain/programs/hall`'s accounts or instructions change.
 
-**Proving it, beyond `tests/csp.spec.ts`** (which only proves the page loads
-under the real CSP with no violation): `scripts/hall-demo-devnet-proof.ts`
-drives the exact library code the browser runs (`src/lib/hall/*`, not a
-reimplementation) against real devnet, with a real holder keypair standing in
-for a connected wallet's signing. Needs a funded holder keypair
-(`~/.config/solana/seametry-devnet-demo-holder.json` by default, or pass a
-path) and the two env vars above:
-```bash
-npx tsx --env-file=.env.local scripts/hall-demo-devnet-proof.ts
-```
-This does not drive an actual browser click sequence through a wallet
-extension; `tests/csp.spec.ts` covers the page's own loading and headers
-separately. Together they cover the two things that can go wrong; neither
-alone would.
+**Proving it against devnet**: `scripts/register-founding-devnet-proof.ts` and
+`scripts/register-strike-melt-devnet-proof.ts` drive the same library code the
+routes run, with a fresh keypair standing in for the sponsor's or holder's
+wallet. They work on the scratch Hall by default, so proving a flow adds
+nothing to the register; pass `--hall register` to act on the register itself.
 
 ## The Allocation, `/allocation`
 

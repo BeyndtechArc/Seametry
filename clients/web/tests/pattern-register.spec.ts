@@ -80,7 +80,7 @@ test("the Pattern Register maps action emphasis to purpose", async ({ page }) =>
     await expect(register.getByRole("heading", { level: 3, name: action })).toBeVisible();
   }
 
-  await expect(register.getByRole("link", { name: "Inspect demonstration" })).toBeVisible();
+  await expect(register.getByRole("link", { name: "Inspect live Alloys" })).toBeVisible();
   await expect(register.getByRole("link", { name: "Compare evidence" })).toBeVisible();
   await expect(register.getByRole("link", { name: "Read contract" })).toBeVisible();
   await expect(register.getByRole("button", { name: "Approve and sign" })).toHaveCount(1);

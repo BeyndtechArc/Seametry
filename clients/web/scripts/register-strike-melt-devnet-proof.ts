@@ -5,7 +5,7 @@
  * unmodified, with a fresh Keypair signing where the holder's wallet would.
  * It prints each transaction's size, compute and the holder's SOL spent.
  *
- * Point it at an Alloy on the demo's Hall whose legs are register stand-ins
+ * Point it at an Alloy on the scratch Hall whose legs are register stand-ins
  * (one founded by register-founding-devnet-proof.ts), so proving the flow
  * adds no activity to the register.
  *
@@ -15,7 +15,7 @@
 import { createHmac } from "node:crypto";
 import { Connection, Keypair, PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
-import { DEMO_HALL_PROGRAM_ID, DEVNET_RPC_ENDPOINT, ONE_SHARE_ATOMS, REGISTER_HALL_PROGRAM_ID } from "../src/lib/hall/constants";
+import { SCRATCH_HALL_PROGRAM_ID, DEVNET_RPC_ENDPOINT, ONE_SHARE_ATOMS, REGISTER_HALL_PROGRAM_ID } from "../src/lib/hall/constants";
 import { hallProgram } from "../src/lib/hall/program";
 import { KeypairWallet } from "../src/lib/hall/keypair-wallet";
 import { prepareStrike } from "../src/lib/alloys/strike-prepare";
@@ -35,7 +35,7 @@ function standInIssuer(): Keypair {
 
 async function main() {
   const alloy = new PublicKey(process.argv[2] ?? "");
-  const hall = process.argv.includes("--hall") && process.argv[process.argv.indexOf("--hall") + 1] === "register" ? REGISTER_HALL_PROGRAM_ID : DEMO_HALL_PROGRAM_ID;
+  const hall = process.argv.includes("--hall") && process.argv[process.argv.indexOf("--hall") + 1] === "register" ? REGISTER_HALL_PROGRAM_ID : SCRATCH_HALL_PROGRAM_ID;
   const connection = new Connection(DEVNET_RPC_ENDPOINT, "confirmed");
   const holder = Keypair.generate();
   const program = hallProgram(new AnchorProvider(connection, new KeypairWallet(holder), { commitment: "confirmed" }), hall);

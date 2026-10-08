@@ -63,7 +63,7 @@ function AlloyBoundary({ problem }: { problem: TerminalProblem }) {
         <code>HTTP {problem.status}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/app/hall">Open the Hall demo</RouteAction>
+        <RouteAction href="/how-it-works">Read how the Hall works</RouteAction>
       </div>
     </section>
   );
@@ -77,11 +77,11 @@ function EmptyHall({ meta }: { meta: Meta }) {
         <h2>No Alloy founded yet</h2>
       </div>
       <div className={styles.boundaryCopy}>
-        <p>The {meta.cluster ?? "configured"} Hall answered with an empty register. It was redeployed empty, and the first Alloy is founded once its Formula, name and artwork are settled. The demo runs on the earlier deployment and adds nothing here.</p>
+        <p>The {meta.cluster ?? "configured"} Hall answered with an empty register. An Alloy is founded from Compose: choose its constituents, weight and name it, and sign as its sponsor.</p>
         <code>{meta.completeness}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/app/hall">Run the demo</RouteAction>
+        <RouteAction href="/app/compose">Compose a Formula</RouteAction>
       </div>
     </section>
   );

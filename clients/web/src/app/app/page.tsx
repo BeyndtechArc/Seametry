@@ -84,20 +84,8 @@ export default async function DeskPage() {
         <TextAction href="/app/allocation">Buy into your wallet</TextAction>
       </section>
 
-      <section className={styles.entry} aria-labelledby="hall-entry">
-        <span className={styles.index}>03 / Hall</span>
-        <div className={styles.entryBody}>
-          <header>
-            <h2 id="hall-entry">Demo</h2>
-            <NetworkBadge network="Devnet" />
-          </header>
-          <p>Strike, freeze one constituent, Melt anyway, withdraw each leg. Signed by your own wallet.</p>
-        </div>
-        <TextAction href="/app/hall">Run the demo</TextAction>
-      </section>
-
       <section className={styles.entry} aria-labelledby="assay-entry">
-        <span className={styles.index}>04 / Assay</span>
+        <span className={styles.index}>03 / Assay</span>
         <div className={styles.entryBody}>
           <header>
             <h2 id="assay-entry">Instruments</h2>

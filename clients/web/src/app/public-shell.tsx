@@ -58,7 +58,7 @@ export function PublicShell({
               { label: "How it works", href: "/how-it-works" },
               { label: "Open the app", href: "/app" },
               { label: "Allocation", href: "/app/allocation" },
-              { label: "Hall demonstration", href: "/app/hall" },
+              { label: "Alloys", href: "/app/alloys" },
             ],
           },
           {

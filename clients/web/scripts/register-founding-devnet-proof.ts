@@ -7,7 +7,7 @@
  * lamports the sponsor spent, the three things a six-leg founding could run
  * out of.
  *
- * It founds on the demo's Hall by default, so proving the flow adds nothing
+ * It founds on the scratch Hall by default, so proving the flow adds nothing
  * to the register; pass --hall register to found on the register's Hall.
  *
  * Run (from clients/web):
@@ -17,14 +17,14 @@
 import { createHmac } from "node:crypto";
 import { Connection, Keypair } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
-import { DEMO_HALL_PROGRAM_ID, DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID } from "../src/lib/hall/constants";
+import { SCRATCH_HALL_PROGRAM_ID, DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID } from "../src/lib/hall/constants";
 import { hallProgram } from "../src/lib/hall/program";
 import { KeypairWallet } from "../src/lib/hall/keypair-wallet";
 import { prepareFounding, type FoundingLeg } from "../src/lib/compose/founding-prepare";
 import { buildFoundingTransaction } from "../src/lib/compose/founding-transaction";
 
 // env.ts and issuer.ts carry `import "server-only"`, which throws outside
-// Next's bundler (see scripts/hall-demo-devnet-proof.ts); only the key
+// Next's bundler; only the key
 // loading is repeated here, with the same derivation label as standInIssuer.
 function funderKey(): Keypair {
   const raw = process.env.HALL_DEMO_FUNDER_SECRET_KEY;
@@ -51,7 +51,7 @@ const legs: FoundingLeg[] = [
 ];
 
 async function main() {
-  const hall = process.argv.includes("--hall") && process.argv[process.argv.indexOf("--hall") + 1] === "register" ? REGISTER_HALL_PROGRAM_ID : DEMO_HALL_PROGRAM_ID;
+  const hall = process.argv.includes("--hall") && process.argv[process.argv.indexOf("--hall") + 1] === "register" ? REGISTER_HALL_PROGRAM_ID : SCRATCH_HALL_PROGRAM_ID;
   const connection = new Connection(DEVNET_RPC_ENDPOINT, "confirmed");
   const sponsor = Keypair.generate();
   console.log("hall", hall.toBase58(), "sponsor", sponsor.publicKey.toBase58());

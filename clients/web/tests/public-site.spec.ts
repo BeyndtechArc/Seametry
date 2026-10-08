@@ -401,33 +401,15 @@ test("the app header logs in with a route action and keeps the mode control besi
     "Build a basket",
     "Alloys",
     "Compose",
-    "Demo",
     "Instruments",
   ]);
-});
-
-test("the Hall demonstration lives in the app, marked devnet", async ({ page }) => {
-  await page.goto("/app/hall");
-
-  await expect(page.getByRole("navigation", { name: "Product" }).getByRole("link", { name: "Demo" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { level: 1, name: "Demo" })).toBeVisible();
-  await expect(page.getByRole("main").getByText("Devnet", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/app/alloys");
-
-  // Before a wallet is connected the whole argument is readable as a script,
-  // and nothing in it can be pressed.
-  const script = page.getByRole("list", { name: "Demonstration steps" }).getByRole("listitem");
-  await expect(script.locator("h3")).toHaveText(["Found an Alloy", "Strike shares", "The issuer freezes constituent A", "Melt anyway", "Withdraw each leg", "The issuer releases constituent A"]);
-  await expect(script.getByText("Waiting", { exact: true })).toHaveCount(6);
-  for (const button of await script.getByRole("button").all()) await expect(button).toBeDisabled();
-  await expect(page.getByRole("heading", { level: 3, name: "Log in to begin" })).toBeVisible();
 });
 
 test("every app page names its network, and the top bar and mobile register share one route list", async ({ page }) => {
   for (const [path, network] of [
     ["/app", "Mainnet evidence"],
     ["/app/allocation", "Mainnet"],
-    ["/app/hall", "Devnet"],
+    ["/app/compose", "Mainnet evidence"],
     ["/app/alloys/storm", "Devnet"],
     ["/app/instruments", "Mainnet evidence"],
   ] as const) {
@@ -443,7 +425,7 @@ test("every app page names its network, and the top bar and mobile register shar
 });
 
 test("the app shell marks only the current tab with an icon, and keeps one global wallet control", async ({ page }) => {
-  await page.goto("/app/hall");
+  await page.goto("/app/compose");
 
   const product = page.getByRole("navigation", { name: "Product" });
   await expect(product.locator("svg")).toHaveCount(1);
@@ -453,7 +435,7 @@ test("the app shell marks only the current tab with an icon, and keeps one globa
   const reading = page.getByRole("navigation", { name: "Reading" });
   await expect(reading.locator("svg")).toHaveCount(2);
 
-  for (const path of ["/app/allocation", "/app/hall"]) {
+  for (const path of ["/app/allocation", "/app/compose"]) {
     await page.goto(path);
     await expect(page.getByRole("main").getByRole("button", { name: /Connect / })).toHaveCount(0);
     await expect(page.getByRole("banner").locator("summary", { hasText: "Log in" })).toHaveCount(1);
@@ -471,11 +453,10 @@ test("the desk cards let their content lead without decorative icons", async ({ 
 
 test("the desk reads as one numbered institutional folio", async ({ page }) => {
   await page.goto("/app");
-  await expect(page.getByTestId("desk-folio").locator("section").getByText(/^0[1-4] \/ /)).toHaveText([
+  await expect(page.getByTestId("desk-folio").locator("section").getByText(/^0[1-3] \/ /)).toHaveText([
     "01 / Alloy",
     "02 / Allocation",
-    "03 / Hall",
-    "04 / Assay",
+    "03 / Assay",
   ]);
   const lead = page.getByTestId("desk-folio").locator("section").first();
   await expect(lead.locator("svg [data-solid]")).toHaveCount(1);
@@ -497,13 +478,13 @@ test("secondary actions carry the ink cell, primary actions stay green", async (
   });
   const cellOf = (name: string) =>
     page.getByRole("link", { name }).locator(":scope > span").last().evaluate((cell) => getComputedStyle(cell).backgroundColor);
-  expect(await cellOf("Run the demo")).toBe(ink);
+  expect(await cellOf("Open the assay")).toBe(ink);
   expect(await cellOf("Open the register")).not.toBe(ink);
 });
 
 test("no page scrolls sideways on a 320px phone", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 780 });
-  for (const path of ["/", "/app", "/app/allocation", "/app/alloys", "/app/alloys/storm", "/app/hall", "/app/instruments", "/how-it-works", "/papers/the-exit", "/sign-in", "/the-key"]) {
+  for (const path of ["/", "/app", "/app/allocation", "/app/alloys", "/app/alloys/storm", "/app/instruments", "/how-it-works", "/papers/the-exit", "/sign-in", "/the-key"]) {
     await page.goto(path, { waitUntil: "networkidle" });
     // scrollWidth, not a visible scrollbar: the root hides horizontal overflow,
     // which stops a scrollbar but not a finger dragging the page sideways.
@@ -515,7 +496,9 @@ test("no page scrolls sideways on a 320px phone", async ({ page }) => {
 test("links shared before the move still arrive", async ({ page }) => {
   for (const [from, to] of [
     ["/allocation", "/app/allocation"],
-    ["/hall-demo", "/app/hall"],
+    // The clickable demo was retired; both its addresses land on the live register.
+    ["/hall-demo", "/app/alloys"],
+    ["/app/hall", "/app/alloys"],
     ["/terminal", "/app/instruments"],
     ["/terminal/alloys", "/app/alloys"],
     ["/terminal/alloys/storm", "/app/alloys/storm"],

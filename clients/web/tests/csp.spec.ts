@@ -13,7 +13,6 @@ const routes = [
   "/app/alloys/storm",
   "/app/alloys/6BD6PprLyhiLeXKTAiLRA2hyMwUqMzpQPzftabQuduQ",
   "/app/compose",
-  "/app/hall",
   "/app/instruments",
   "/app/instruments/XsTockMint111111111111111111111111111111111",
   "/how-it-works",

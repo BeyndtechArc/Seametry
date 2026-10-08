@@ -1,29 +1,5 @@
 import { expect, test } from "@playwright/test";
-import {
-  FOUNDINGS_PER_WINDOW,
-  FOUNDING_WINDOW_MS,
-  WindowThrottle,
-  HOLDER_FEE_ALLOWANCE_LAMPORTS,
-  HOLDER_SIGNED_TRANSACTIONS,
-  clientAddress,
-  holderTopUp,
-} from "../src/lib/hall/limits";
-
-const claimRent = 4_000_000n;
-const target = claimRent + HOLDER_SIGNED_TRANSACTIONS * HOLDER_FEE_ALLOWANCE_LAMPORTS;
-
-test("an empty wallet is topped up to exactly the claim rent plus the fee allowance", () => {
-  expect(holderTopUp(0n, claimRent)).toBe(target);
-});
-
-test("a partly funded wallet receives only the shortfall", () => {
-  expect(holderTopUp(target - 1n, claimRent)).toBe(1n);
-});
-
-test("a wallet already holding the target receives nothing", () => {
-  expect(holderTopUp(target, claimRent)).toBe(0n);
-  expect(holderTopUp(target + 1n, claimRent)).toBe(0n);
-});
+import { FOUNDINGS_PER_WINDOW, FOUNDING_WINDOW_MS, WindowThrottle, clientAddress } from "../src/lib/hall/limits";
 
 test("one address founds up to the limit, then waits out the rest of its window", () => {
   const throttle = new WindowThrottle();

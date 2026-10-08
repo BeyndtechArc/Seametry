@@ -1,39 +1,5 @@
-// Kept free of any Solana or Next import so tests/hall-demo-limits.spec.ts can
-// exercise it directly, without a build, a wallet or a devnet round trip.
-
-/**
- * chain/programs/hall/src/state.rs: `space = 8 + Claim::INIT_SPACE` on
- * redeem's `init_if_needed`, where Claim is alloy (32), owner (32), bump (1)
- * and MAX_CONSTITUENTS (12) ClaimEntry of units u64, index u128, epoch u64.
- * redeem makes the caller pay this rent, so a visitor's wallet must hold it.
- */
-export const CLAIM_ACCOUNT_SPACE = 8 + 32 + 32 + 1 + 12 * (8 + 16 + 8);
-
-/**
- * The transactions the connected wallet signs itself in flow.tsx: create,
- * redeem, and three withdraw attempts (leg A refused while frozen, leg B,
- * leg A again after the thaw). Everything else the funder signs.
- */
-export const HOLDER_SIGNED_TRANSACTIONS = 5n;
-
-/**
- * Per transaction, in lamports. The protocol's base fee is 5,000 per
- * signature; the rest is headroom for a priority fee some wallets add on
- * their own, which this page does not control. An assumption, not a
- * measurement: raise it if a devnet run shows a wallet asking for more.
- */
-export const HOLDER_FEE_ALLOWANCE_LAMPORTS = 100_000n;
-
-/**
- * Lamports to send a visitor so the whole flow can complete, or zero when
- * the wallet already holds enough. Tops up to the target, never beyond it,
- * so a wallet that returns for a second alloy costs the funder only what it
- * spent on the first.
- */
-export function holderTopUp(holderBalance: bigint, claimRent: bigint): bigint {
-  const target = claimRent + HOLDER_SIGNED_TRANSACTIONS * HOLDER_FEE_ALLOWANCE_LAMPORTS;
-  return holderBalance >= target ? 0n : target - holderBalance;
-}
+// Kept free of any Solana or Next import so tests/limits.spec.ts can exercise
+// it directly, without a build, a wallet or a devnet round trip.
 
 /**
  * Foundings allowed per client address per window. Founding spends the
