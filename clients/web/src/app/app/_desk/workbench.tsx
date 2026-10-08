@@ -154,7 +154,7 @@ export function InstrumentRegister() {
                   <tr key={instrument.mint}>
                     <td>
                       <Link className={styles.lotIdentity} href={`/app/instruments/${encodeURIComponent(instrument.mint)}`}>
-                        <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} />
+                        <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} size="header" />
                         <span>
                           <b>{instrument.symbol ?? "Symbol unavailable"}</b>
                           <Digest value={instrument.mint} />

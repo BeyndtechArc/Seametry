@@ -60,7 +60,7 @@
   gap: var(--sm-space-2);
   min-width: 0;
   min-height: var(--sm-size-target);
-  color: var(--sm-text-secondary);
+  color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
   text-align: center;
 }
@@ -76,6 +76,10 @@
 
 .mobileTabs .mobileCreate {
   gap: var(--sm-space-1);
+  color: var(--sm-text-secondary);
+}
+
+.mobileTabs .mobileCreate[aria-current="page"] {
   color: var(--sm-text-primary);
 }
 
