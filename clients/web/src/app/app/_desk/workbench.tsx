@@ -150,13 +150,13 @@ export function InstrumentRegister() {
                 {value.data.map((instrument) => (
                   <tr key={instrument.mint}>
                     <td>
-                      <span className={styles.lotIdentity}>
+                      <Link className={styles.lotIdentity} href={`/app/instruments/${encodeURIComponent(instrument.mint)}`}>
                         <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} />
                         <span>
                           <b>{instrument.symbol ?? "Symbol unavailable"}</b>
                           <Digest value={instrument.mint} />
                         </span>
-                      </span>
+                      </Link>
                     </td>
                     <td>{instrument.grade}</td>
                     <td>{instrument.prerogatives.length} recorded</td>

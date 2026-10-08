@@ -110,14 +110,14 @@ export function AlloyRegister() {
               const identity = alloyIdentity(alloy);
               return (
                 <li key={alloy.address} aria-label={identity.title}>
-                  <div className={styles.alloyRowIdentity}>
+                  <Link className={styles.alloyRowIdentity} href={`/app/alloys/${encodeURIComponent(alloy.address)}`}>
                     <AlloyArtwork alloy={alloy} identity={identity} className={styles.alloyArtworkRow} size={64} alt="" />
                     <div>
                       <b>{identity.title}</b>
                       {identity.symbol ? <span>{identity.symbol}</span> : null}
                       <Digest value={alloy.address} />
                     </div>
-                  </div>
+                  </Link>
                   <div className={`${styles.alloyRowCell} ${styles.alloyRowHolds}`}>
                     <small>Holds</small>
                     <span className={styles.lotStack}>

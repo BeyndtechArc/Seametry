@@ -883,13 +883,14 @@
 }
 
 .stepPlan[data-problem] {
-  color: var(--sm-accent-provenance);
+  color: var(--sm-text-primary);
 }
 
 /* Too narrow for the plan between two buttons: it takes its own line above,
    and a button's label stays on one line. */
 @media (max-width: 560px) {
   .stepBar {
+    position: static;
     grid-template-columns: auto minmax(0, 1fr);
     gap: var(--sm-space-2) var(--sm-space-3);
     padding: var(--sm-space-2);

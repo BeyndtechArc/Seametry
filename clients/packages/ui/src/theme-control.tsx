@@ -15,16 +15,16 @@ function storedTheme(): ThemeName | null {
 
 // Light is the default, by Storm's decision on 30 September 2026, whatever
 // the system preference; dark stays complete and a stored choice wins.
-const defaultTheme: ThemeName = "light";
+const publicTheme: ThemeName = "light";
 
-export function ThemeControl() {
+export function ThemeControl({ defaultTheme = publicTheme }: { defaultTheme?: ThemeName }) {
   const [theme, setTheme] = useState<ThemeName>(defaultTheme);
 
   useEffect(() => {
     const initialTheme = storedTheme() ?? defaultTheme;
     document.documentElement.dataset.theme = initialTheme;
     setTheme(initialTheme);
-  }, []);
+  }, [defaultTheme]);
 
   function selectTheme(nextTheme: ThemeName) {
     document.documentElement.dataset.theme = nextTheme;
