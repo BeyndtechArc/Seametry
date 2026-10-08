@@ -125,6 +125,10 @@ jobs:
         working-directory: clients/web
         run: npx eslint .
 
+      - name: Wallet proof
+        working-directory: clients/web
+        run: node --experimental-strip-types --test tests/wallet-link.node.test.mjs
+
       # Build before Typecheck, not after: Next writes route-checking types
       # (LayoutProps and friends) to .next/types/ only once a build has run,
       # and tsconfig.json's include only picks them up from there. Committed

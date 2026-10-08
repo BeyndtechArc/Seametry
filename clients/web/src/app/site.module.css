@@ -1086,6 +1086,31 @@
   gap: var(--sm-space-6);
 }
 
+.authProblem {
+  color: var(--sm-text-primary);
+  border-top: 0.5px solid var(--sm-line-strong);
+  padding-top: var(--sm-space-3);
+}
+
+.walletLinks,
+.walletLinks > div {
+  display: grid;
+  gap: var(--sm-space-3);
+  min-width: 0;
+}
+
+.walletLinks {
+  width: 100%;
+  border-top: 0.5px solid var(--sm-line-rule);
+  padding-top: var(--sm-space-4);
+}
+
+.walletLinks code {
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+  overflow-wrap: anywhere;
+}
+
 .signInBoundary {
   justify-items: start;
   padding: var(--sm-space-8);

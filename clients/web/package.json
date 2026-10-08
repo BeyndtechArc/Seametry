@@ -19,15 +19,19 @@
     "@solana/wallet-adapter-base": "0.9.28",
     "@solana/wallet-adapter-react": "0.15.40",
     "@solana/web3.js": "1.99.0",
+    "better-auth": "^1.7.7",
     "buffer": "6.0.3",
     "next": "16.3.6",
+    "pg": "^8.16.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "server-only": "0.0.1"
+    "server-only": "0.0.1",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
     "@types/node": "^20",
+    "@types/pg": "^8.15.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "adm-zip": "0.6.1",

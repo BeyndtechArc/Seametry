@@ -71,7 +71,7 @@ The deepest screen in the app, and the one no competitor has in full:
 ## 7. Screens
 
 ```
-Onboarding      wallet connect; no email, no KYC
+Onboarding      social account sign-in; explicit external wallet connection; no KYC
 Today           holdings value; alloys and allocations; carousel "Needs a look · n"
 Alloys          Good Delivery alloys by default; NGD visible, stamped
 Alloy           recipe, units per share, NAV with weakest evidence, constituents
