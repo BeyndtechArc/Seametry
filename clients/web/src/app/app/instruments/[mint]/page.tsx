@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { findAdmission } from "@/lib/allocation/admissions";
+import { findAdmission, gradeOf } from "@/lib/allocation/admissions";
 import { InstrumentAssay } from "../../_desk/workbench";
 
 export const metadata: Metadata = {
@@ -11,5 +11,6 @@ export const metadata: Metadata = {
 export default async function InstrumentPage({ params }: { params: Promise<{ mint: string }> }) {
   await connection();
   const { mint } = await params;
-  return <InstrumentAssay mint={mint} admission={findAdmission(mint)} />;
+  const admission = findAdmission(mint);
+  return <InstrumentAssay mint={mint} admission={admission} grade={admission ? gradeOf(admission) : undefined} />;
 }
