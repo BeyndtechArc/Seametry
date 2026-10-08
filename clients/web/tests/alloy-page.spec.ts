@@ -34,11 +34,11 @@ test("the Alloy surface exposes the recorded formula and missing market evidence
 test("the Alloy surface carries the page-wide colour mode control", async ({ page }) => {
   await page.goto("/app/alloys/storm");
 
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-  await page.getByRole("button", { name: "Use dark mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.getByRole("button", { name: "Use light mode" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await page.getByRole("button", { name: "Use dark mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
 
 test("an Alloy founded after the founding record still draws each leg's logo from the symbol its stand-in states", () => {

@@ -464,6 +464,7 @@ test("the desk reads as one numbered institutional folio", async ({ page }) => {
 
 test("secondary actions carry the ink cell, primary actions stay green", async ({ page }) => {
   await page.goto("/app");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   const ink = await page.evaluate(() => {
     const probe = document.createElement("span");
     probe.style.background = "var(--sm-surface-inverse)";

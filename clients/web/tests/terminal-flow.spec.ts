@@ -194,7 +194,7 @@ test("a Strike opens its steps and stops at the first with what did not happen",
   await page.route("https://api.devnet.solana.com/**", (route) => route.fulfill({ json: { jsonrpc: "2.0", id: 1, error: { code: -32000, message: "fixture" } } }));
   await registerTestWallet(page, { trusted: true });
   await page.goto(`/app/alloys/${alloyAddress}`);
-  await page.getByText("Log in", { exact: true }).click();
+  await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   const actions = page.getByRole("main").getByRole("region", { name: "Strike or Melt" });
   // The fixture's share mint is not a real address: the panel says so
