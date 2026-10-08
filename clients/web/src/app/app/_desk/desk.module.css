@@ -89,7 +89,7 @@
 
 .boundary code,
 .missingRegister code {
-  color: var(--sm-accent-provenance);
+  color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-micro);
 }

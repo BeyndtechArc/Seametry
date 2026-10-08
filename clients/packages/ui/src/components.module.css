@@ -164,7 +164,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sm-space-2);
-  color: var(--sm-accent-provenance);
+  color: var(--sm-text-secondary);
 }
 
 .unverified::before,
@@ -1072,7 +1072,7 @@
 }
 
 .fieldGroup[data-invalid] .fieldMessage {
-  color: var(--sm-accent-provenance);
+  color: var(--sm-text-secondary);
 }
 
 .evidenceRow {
