@@ -62,8 +62,9 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   align-items: stretch;
   gap: var(--sm-space-3) var(--sm-space-6);
-  padding: var(--sm-space-5) 0;
+  padding: var(--sm-space-5) var(--sm-space-4);
   border-bottom: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-sheet);
 }
 
 .candidates label {

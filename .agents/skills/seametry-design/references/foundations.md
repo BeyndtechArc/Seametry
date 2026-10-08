@@ -136,14 +136,14 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 | `text.tertiary` | Labels, ages, units. Lowest readable grey | Go lighter for anything read |
 | `text.faint` | Decorative marks only | Any text a user must read |
 | `accent.touch` | Keys, active tab, scrub line, focusable affordances | Status, success, decoration |
-| `accent.provenance` | Unverified values, stale markers, the verified path, NGD | Loss, error, decoration |
+| `accent.provenance` | Provenance outlines, stamps, focus rings and marks | Bare text, loss, error, decoration |
 | `accent.provenanceField` | Bars beside green, chart fills, chips | Any surface larger than a chip |
 | `line.highlight` | Top-edge hairline on raised surfaces | Anything else |
 | `surface.inverse`, `text.inverse` | The supporting ink: BLOCK stamps, the icon cell of secondary actions, index chips on plates, and compact utility wrappers. Black on the light certificate, bone on the dark touchstone | A primary action's fill, a panel, more than one ink block per control |
 
 **Ink.** Black supports green; it never competes with it (Storm, 4 October 2026). A primary action stays green with its pressed-green cell. A secondary action keeps its sheet label and takes an ink icon cell, so the two read as different jobs at a glance without a second hue. Ink is a neutral, not a hue, so it carries no meaning beyond weight.
 
-**Decisions.** ALLOW renders in `text.primary`. WARN renders in `accent.provenance`. BLOCK renders as an inverted stamp: `surface.inverse` fill, `text.inverse` type. No red anywhere in the system; the strongest signal is contrast, not hue.
+**Decisions.** ALLOW renders in `text.primary`. WARN uses `text.primary` inside a provenance outline. BLOCK renders as an inverted stamp: `surface.inverse` fill, `text.inverse` type. No red anywhere in the system; the strongest signal is contrast, not hue.
 
 **Gains and losses** carry no colour. Direction is the sign.
 
@@ -155,9 +155,9 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 
 ## 5a. Two grounds, not one
 
-An earlier draft tried to make the olive brand hue serve as the single default ground. It doesn't work cleanly: at roughly 3 percent luminance, olive leaves too little headroom before `text.tertiary` fails contrast on any elevated surface, which forces the whole hierarchy to compress. The resolve is two ground tracks rather than one compromise value, which is also the direct answer to "the olive shouldn't replace the current background, it should complement it."
+An earlier draft tried to make the olive brand hue serve as the single default ground. It left too little headroom for readable supporting text on elevated surfaces. The operational palette now uses a restrained green cast; the stronger olive track remains reserved for feature surfaces. Text contrast is checked against the sheet and tray as well as the ground.
 
-**`surface.*` (operational, default).** Neutral near-black. Used for every data-dense, decision-bearing screen: catalogue tables, order sheets, hallmark rows, the Assay matrix, Today, Lot, Claims. Full contrast headroom; `text.tertiary` and `accent.touchText` are unrestricted here.
+**`surface.*` (operational, default).** Pale mineral paper in light mode and a subdued green-black in dark mode. Use `surface.sheet` for list rows and reading areas, one tonal step above the page; reserve `surface.raised` for a selected row or order sheet. The green-black lets the cool light green of touchable actions stay visible. Used for every data-dense, decision-bearing screen: catalogue tables, order sheets, hallmark rows, the Assay matrix, Today, Lot, Claims. `text.tertiary` remains readable on all four operational surfaces.
 
 **`feature.*` (the olive track, reserved).** Used only on named feature surfaces: the Explorer landing hero, an alloy's ceremony panel (the Strike), a sponsor's profile header, marketing cards on the Catalogue's editorial rows. Never the app's default background. `feature.text.secondary` is restricted to `feature.ground` and `feature.sheet`; there is no `feature.text.tertiary` token, because the olive ground doesn't have the budget for a third readable step. If a feature surface needs a third level of emphasis, use weight or size, not a lower-contrast colour.
 

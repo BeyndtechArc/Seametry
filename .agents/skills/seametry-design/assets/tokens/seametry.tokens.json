@@ -2,21 +2,21 @@
   "$description": "Seametry design tokens. W3C Design Tokens Community Group format. Single source of truth: never hand-edit generated tokens.css or tokens.ts.",
   "theme": {
     "dark": {
-      "$description": "The touchstone. Default mode.",
+      "$description": "The touchstone. Subdued green-black operational surfaces.",
       "surface": {
         "$type": "color",
         "ground": {
-          "$value": "#0A0A0A",
-          "$description": "Default operational ground. Neutral, near-black, full contrast headroom. Data-dense screens live here."
+          "$value": "#10140F",
+          "$description": "Operational green-black ground, subdued so the cool touch green remains visible."
         },
         "sheet": {
-          "$value": "#141414"
+          "$value": "#181D17"
         },
         "raised": {
-          "$value": "#1C1C1C"
+          "$value": "#20271F"
         },
         "tray": {
-          "$value": "#262626"
+          "$value": "#2B3229"
         },
         "inverse": {
           "$value": "#F5F5F3"
@@ -25,19 +25,19 @@
       "text": {
         "$type": "color",
         "primary": {
-          "$value": "#F5F5F3",
-          "$description": "Operational primary text: bone-white, tuned for the neutral ground family."
+          "$value": "#E4E9E0",
+          "$description": "Soft chalk on green-black operational surfaces."
         },
         "secondary": {
-          "$value": "#B4B4AF",
-          "$description": "Tuned against sheet, its main surface: 5.6:1 there, 6.6:1 ground, 4.9:1 raised, 4.5:1 tray."
+          "$value": "#ABB6A8",
+          "$description": "Readable supporting text across ground, sheet, raised and tray."
         },
         "tertiary": {
-          "$value": "#8A8A83",
-          "$description": "5.7:1 on operational ground, 4.9:1 on raised. Full range restored now that feature surfaces carry their own, narrower rules."
+          "$value": "#939F90",
+          "$description": "Lowest readable text step, at least 4.5:1 even on tray."
         },
         "faint": {
-          "$value": "#5A5E4F",
+          "$value": "#5A6559",
           "$description": "Decorative only. Never for text a user must read."
         },
         "onTouch": {
@@ -45,19 +45,19 @@
           "$description": "Text on the touch fill. 6.5:1"
         },
         "inverse": {
-          "$value": "#0A0A0A"
+          "$value": "#10140F"
         }
       },
       "line": {
         "$type": "color",
         "rule": {
-          "$value": "#242422"
+          "$value": "#30382D"
         },
         "strong": {
-          "$value": "#3A3A36"
+          "$value": "#495548"
         },
         "highlight": {
-          "$value": "rgba(255,255,255,0.06)",
+          "$value": "rgba(236,246,232,0.06)",
           "$description": "Top-edge hairline on raised surfaces. The only light effect allowed."
         }
       },
@@ -71,8 +71,8 @@
           "$value": "#7A8E23"
         },
         "provenance": {
-          "$value": "#8F8AFF",
-          "$description": "Provenance in text and micro elements. 6.8:1 on ground"
+          "$value": "#AAA8D0",
+          "$description": "Muted provenance mark, outline and focus ring. Never bare text."
         },
         "provenanceField": {
           "$value": "#3A20D6",
@@ -80,18 +80,18 @@
         },
         "touchText": {
           "$type": "color",
-          "$value": "#98AD39",
-          "$description": "Small marks and links on operational surfaces. On feature (olive) surfaces, prefer text.primary with the touch icon; see foundations.md 5b."
+          "$value": "#A9BD69",
+          "$description": "Cool light green for links and small touchable marks on operational surfaces."
         }
       },
       "feature": {
         "$type": "color",
         "$description": "The olive track. Reserved for named feature surfaces (see foundations.md section 5b): hero sections, alloy ceremony panels, sponsor profile headers, the Explorer landing. Never the default app background.",
         "ground": {
-          "$value": "#11140F"
+          "$value": "#141A11"
         },
         "sheet": {
-          "$value": "#1B2017"
+          "$value": "#20281A"
         },
         "raised": {
           "$value": "#303724"
@@ -110,40 +110,40 @@
       }
     },
     "light": {
-      "$description": "The certificate paper.",
+      "$description": "The certificate paper. Pale ground and defined reading sheets.",
       "surface": {
         "$type": "color",
         "ground": {
-          "$value": "#C9C8B7",
-          "$description": "Mineral certificate stock. Dark primary text measures 9.43:1 and tertiary text measures 4.66:1 against it."
+          "$value": "#E7E9DF",
+          "$description": "Pale mineral paper behind operational content; reading areas sit on elevated sheets."
         },
         "sheet": {
-          "$value": "#D5D4C5"
+          "$value": "#F2F3EA"
         },
         "raised": {
-          "$value": "#E2E1D5"
+          "$value": "#FAFBF5"
         },
         "tray": {
-          "$value": "#B8B8A5"
+          "$value": "#D4DACB"
         },
         "inverse": {
-          "$value": "#20231B"
+          "$value": "#20251E"
         }
       },
       "text": {
         "$type": "color",
         "primary": {
-          "$value": "#20231B"
+          "$value": "#242B22"
         },
         "secondary": {
-          "$value": "#3E4136"
+          "$value": "#3D493C"
         },
         "tertiary": {
-          "$value": "#505347",
-          "$description": "4.66:1 on mineral certificate ground."
+          "$value": "#51604F",
+          "$description": "Lowest readable text step, at least 4.5:1 even on tray."
         },
         "faint": {
-          "$value": "#999A89",
+          "$value": "#9AA596",
           "$description": "Decorative only."
         },
         "onTouch": {
@@ -156,10 +156,10 @@
       "line": {
         "$type": "color",
         "rule": {
-          "$value": "#B5B5A4"
+          "$value": "#CBD1C3"
         },
         "strong": {
-          "$value": "#969783"
+          "$value": "#A9B3A3"
         },
         "highlight": {
           "$value": "rgba(255,255,255,0.55)"
@@ -175,7 +175,8 @@
           "$value": "#7A8E23"
         },
         "provenance": {
-          "$value": "#3520C0"
+          "$value": "#554C9C",
+          "$description": "Provenance mark, outline and focus ring on paper. Never bare text."
         },
         "provenanceField": {
           "$value": "#3520C0"
@@ -183,7 +184,7 @@
         "touchText": {
           "$type": "color",
           "$value": "#43540B",
-          "$description": "Deep olive for links and marks on mineral paper. Measures 4.95:1 on surface.ground."
+          "$description": "Deep olive for links on pale paper and elevated sheets."
         }
       },
       "feature": {
@@ -312,7 +313,6 @@
     }
   },
   "space": {
-    "$type": "dimension",
     "0": {
       "$value": "0px"
     },
@@ -354,7 +354,8 @@
     },
     "13": {
       "$value": "128px"
-    }
+    },
+    "$type": "dimension"
   },
   "radius": {
     "$type": "dimension",
@@ -463,7 +464,6 @@
     "$description": "Generated by scripts/generate-scale.mjs. Do not hand-edit. Raw perceptual material, 12 steps each (50 lightest to 900 darkest... wait see note).",
     "$note": "Steps run 50 (darkest, low-lightness end) to 900 (lightest) in this build; treat as raw material, not usage tokens.",
     "touch": {
-      "$type": "color",
       "50": {
         "$value": "#262E02"
       },
@@ -493,10 +493,10 @@
       },
       "900": {
         "$value": "#EEFEC0"
-      }
+      },
+      "$type": "color"
     },
     "provenance": {
-      "$type": "color",
       "50": {
         "$value": "#292753"
       },
@@ -526,10 +526,10 @@
       },
       "900": {
         "$value": "#F3F4FF"
-      }
+      },
+      "$type": "color"
     },
     "olive": {
-      "$type": "color",
       "50": {
         "$value": "#1A201A"
       },
@@ -559,7 +559,8 @@
       },
       "900": {
         "$value": "#E8ECE7"
-      }
+      },
+      "$type": "color"
     }
   }
 }
