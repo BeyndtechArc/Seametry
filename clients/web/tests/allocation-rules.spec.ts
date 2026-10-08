@@ -189,6 +189,21 @@ test("each lot shows its own issuer's grade, so two issuers of one stock never r
   await expect(xstocks.getByText("Certificate", { exact: true })).toBeVisible();
 });
 
+test("an allocation stock opens its captured assay when the live Gateway has no record", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.route("**/api/terminal/instruments/*", (route) =>
+    route.fulfill({ status: 404, json: { title: "Not found", detail: "No live instrument record.", status: 404 } }),
+  );
+  await page.goto("/app/allocation");
+  const stock = page.getByRole("main").getByRole("link", { name: "Open AMD assay" });
+  await stock.click();
+  await expect(page.getByRole("heading", { level: 1, name: "AMD" })).toBeVisible();
+  await expect(page.getByText("Captured allocation record", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Not found" })).toHaveCount(0);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(overflow).toBe(false);
+});
+
 test("search moves the view, filters shape the plan, and both count what they hide", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/app/allocation");
