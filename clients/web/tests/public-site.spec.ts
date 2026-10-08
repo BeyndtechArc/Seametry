@@ -100,12 +100,12 @@ test("the public narrative and Key pages keep their claims bounded", async ({ pa
   await expect(page.getByText("The melt always works. Delivery is each issuer's.", { exact: true })).toBeVisible();
 });
 
-test("sign in states the unavailable identity boundary without collecting a wallet", async ({ page }) => {
+test("sign in distinguishes an account from its wallet while setup is unavailable", async ({ page }) => {
   await page.goto("/sign-in");
 
-  await expect(page.getByRole("heading", { level: 1, name: "No account needed." })).toBeVisible();
-  await expect(page.getByText("Signing in, for saved formulas and watchlists, is API step A6 and is not built.", { exact: true })).toBeVisible();
-  // Nothing on the page can be pressed that does not work: the unbuilt sign-in has no control at all.
+  await expect(page.getByRole("heading", { level: 1, name: "Your account, your wallet." })).toBeVisible();
+  await expect(page.getByText("Account sign-in is unavailable while its database and provider are being configured.", { exact: true })).toBeVisible();
+  await expect(page.getByText("Each Allocation belongs to its signing address.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign message" })).toHaveCount(0);
   await expect(page.getByRole("main").locator("input")).toHaveCount(0);
   await expect(page.getByRole("main").getByRole("link", { name: "Open the Allocation" })).toHaveAttribute("href", "/app/allocation");
