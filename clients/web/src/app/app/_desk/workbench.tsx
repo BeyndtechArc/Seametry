@@ -245,25 +245,35 @@ function CapturedAssay({ admission, grade }: { admission: Admission; grade: Grad
   );
 }
 
-export function InstrumentAssay({ mint, admission, grade }: { mint: string; admission?: Admission; grade?: GradeName }) {
+export function InstrumentAssay({ mint, admission, grade, canAdd, from, selected }: { mint: string; admission?: Admission; grade?: GradeName; canAdd: boolean; from?: "compose" | "allocation"; selected: string }) {
   const { value, problem, loading } = useTerminalResource<InstrumentAssayResponse>(
     `/api/terminal/instruments/${encodeURIComponent(mint)}`,
   );
   const instrument = value?.instrument.data;
   const decision = value?.admissibility.data;
   const captured = problem?.status === 404 && admission && grade ? { admission, grade } : undefined;
+  const origin = from === "compose" ? "/app/compose" : from === "allocation" ? "/app/allocation" : "/app/instruments";
+  const returnPath = from ? `${origin}?selected=${encodeURIComponent(selected)}` : origin;
+  const destination = from === "compose" ? "/app/compose" : "/app/allocation";
+  const addPath = `${destination}?selected=${encodeURIComponent(selected)}&add=${encodeURIComponent(mint)}`;
 
   return (
     <>
       <div className={styles.backLink}>
-        <Link className={styles.backLinkAction} href={captured ? "/app/allocation" : "/app/instruments"}>
+        <Link className={styles.backLinkAction} href={returnPath}>
           <Icon name="back" />
-          <span>{captured ? "Back to allocation" : "Back to instruments"}</span>
+          <span>{from === "compose" ? "Back to Formula" : from === "allocation" ? "Back to Allocation" : "Back to instruments"}</span>
         </Link>
       </div>
       {loading ? <LoadingRegister /> : null}
       {problem && !captured ? <Boundary problem={problem} /> : null}
       {captured ? <CapturedAssay admission={captured.admission} grade={captured.grade} /> : null}
+      {captured && canAdd ? (
+        <div className={styles.assayActions}>
+          <RouteAction href={addPath}>{from === "compose" ? "Add to Formula" : "Add to basket"}</RouteAction>
+          {!from ? <TextAction href={`/app/compose?add=${encodeURIComponent(mint)}`}>Add to Formula</TextAction> : null}
+        </div>
+      ) : null}
       {value && instrument && decision ? (
         <>
           <section className={styles.assayHero}>
@@ -282,6 +292,13 @@ export function InstrumentAssay({ mint, admission, grade }: { mint: string; admi
               <div><dt>Completeness</dt><dd>{value.instrument.meta.completeness}</dd></div>
             </dl>
           </section>
+
+          {canAdd && decision.decision !== "BLOCK" ? (
+            <div className={styles.assayActions}>
+              <RouteAction href={addPath}>{from === "compose" ? "Add to Formula" : "Add to basket"}</RouteAction>
+              {!from ? <TextAction href={`/app/compose?add=${encodeURIComponent(mint)}`}>Add to Formula</TextAction> : null}
+            </div>
+          ) : null}
 
           <section className={styles.assaySection}>
             <header className={styles.sectionHeading}>

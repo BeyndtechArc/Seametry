@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ContinueAction, Field, FilterBar, LotMark, MarkLine, QuietAction, Rule, StepBar, StepTrack, type GradeName } from "@seametry/ui";
+import Link from "next/link";
+import { ContinueAction, Field, FilterBar, LotMark, QuietAction, Rule, StepBar, StepTrack, type GradeName } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
 import { logoFor } from "@/lib/instrument-logos";
 import { shortIssuer } from "@/lib/issuers";
@@ -61,11 +62,11 @@ function useQuotes(mints: string[], refresh: number): QuoteReading | undefined {
   return answer?.request === request ? answer.reading : { state: "reading" };
 }
 
-export function Composer({ candidates, unquoted }: { candidates: Candidate[]; unquoted?: string }) {
+export function Composer({ candidates, unquoted, initialSelected }: { candidates: Candidate[]; unquoted?: string; initialSelected: string[] }) {
   // Nothing is chosen at the start: choosing what a share holds is the point
   // of the page, and fifteen admitted instruments already exceed what one
   // Alloy can hold.
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(initialSelected);
   const [step, setStep] = useState(0);
   const [query, setQuery] = useState("");
   const [backing, setBacking] = useState("any");
@@ -191,26 +192,24 @@ export function Composer({ candidates, unquoted }: { candidates: Candidate[]; un
           <ul className={styles.candidates}>
             {visible.map((candidate) => (
               <li key={candidate.mint} data-refused={!candidate.admitted || undefined}>
-                <label>
+                <Link className={styles.candidateDetail} href={`/app/instruments/${encodeURIComponent(candidate.mint)}?from=compose&selected=${encodeURIComponent(selected.join(","))}`} aria-label={`Open ${candidate.symbol} assay`}>
+                  <LotMark symbol={candidate.symbol} src={logoFor(candidate.mint)} size="list" />
+                  <span>
+                    <b>{candidate.symbol}</b>
+                    <small>{candidate.issuer}</small>
+                  </span>
+                </Link>
+                <label className={styles.candidateToggle}>
                   <input
                     type="checkbox"
+                    aria-label={`Add ${candidate.symbol} to the Formula`}
                     disabled={!candidate.admitted || (full && !selected.includes(candidate.mint))}
                     checked={selected.includes(candidate.mint)}
                     onChange={(event) =>
                       setSelected((current) => (event.target.checked ? [...current, candidate.mint] : current.filter((mint) => mint !== candidate.mint)))
                     }
                   />
-                  <LotMark symbol={candidate.symbol} src={logoFor(candidate.mint)} size="list" />
-                  <span>
-                    <b>{candidate.symbol}</b>
-                    <small>{candidate.issuer}</small>
-                  </span>
                 </label>
-                <MarkLine
-                  grade={candidate.grade}
-                  stamp={!candidate.admitted ? "block" : candidate.decision === "ALLOW" ? "allow" : "warn"}
-                  reason={!candidate.admitted ? (candidate.fact ?? "Refused by the policy engine") : candidate.decision === "ALLOW" ? "Admitted" : "Admitted with a warning"}
-                />
               </li>
             ))}
           </ul>

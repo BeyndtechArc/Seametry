@@ -78,6 +78,14 @@
   justify-items: start;
 }
 
+.assayActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-4);
+  margin-top: var(--sm-space-6);
+}
+
 .boundaryCopy {
   min-width: 0;
   overflow-wrap: anywhere;
