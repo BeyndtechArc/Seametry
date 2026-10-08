@@ -178,15 +178,16 @@ test("the allocation catalogue exposes policy-issued capacity per offered lot", 
   expect(offered.every((lot) => lot.capacity_decision.input_digest.match(/^[0-9a-f]{64}$/))).toBe(true);
 });
 
-test("each lot shows its own issuer's grade, so two issuers of one stock never read alike", async ({ page }) => {
+test("each stock row names its issuer and opens its own detail", async ({ page }) => {
   await page.goto("/app/allocation");
   const lots = page.getByRole("main").locator('[aria-label="Choose the constituents"] > ul > li');
   const backpack = lots.filter({ has: page.getByText("SPCX", { exact: true }) });
   const xstocks = lots.filter({ has: page.getByText("SPCXx", { exact: true }) });
   await expect(backpack.getByText("Backpack Securities", { exact: true })).toBeVisible();
-  await expect(backpack.getByText("Entitlement", { exact: true })).toBeVisible();
+  await expect(backpack.getByRole("link", { name: "Open SPCX assay" })).toHaveAttribute("href", /\/app\/instruments\//);
   await expect(xstocks.getByText("Backed Finance (xStocks)", { exact: true })).toBeVisible();
-  await expect(xstocks.getByText("Certificate", { exact: true })).toBeVisible();
+  await expect(xstocks.getByRole("link", { name: "Open SPCXx assay" })).toHaveAttribute("href", /\/app\/instruments\//);
+  await expect(backpack.getByText("Warn", { exact: true })).toHaveCount(0);
 });
 
 test("an allocation stock opens its captured assay when the live Gateway has no record", async ({ page }) => {
@@ -230,9 +231,8 @@ test("search moves the view, filters shape the plan, and both count what they hi
   await expect(constituents).toHaveText(String(entitled));
   await expect(main.getByLabel("Filters, 1 on")).toBeVisible();
 
-  // components.md, Grade: it sits on the stamp's line, so backing and verdict read together.
-  const [grade, stamp] = [await rows.first().getByText("Entitlement", { exact: true }).boundingBox(), await rows.first().getByText("Warn", { exact: true }).boundingBox()];
-  expect(Math.abs(grade!.y + grade!.height / 2 - (stamp!.y + stamp!.height / 2))).toBeLessThan(4);
+  await expect(main.locator("output")).toHaveText(`${entitled}/${offered.length}`);
+  await expect(rows.first().getByText("Warn", { exact: true })).toHaveCount(0);
 });
 
 test("a mirrored SVG logo is drawn on its row and served under the script policy", async ({ page, request }) => {
