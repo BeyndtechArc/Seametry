@@ -44,7 +44,7 @@
 }
 
 .problem {
-  color: var(--sm-accent-provenance);
+  color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
   line-height: 1.55;
 }

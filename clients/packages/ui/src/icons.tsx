@@ -1,5 +1,5 @@
 import type { SVGProps } from "react";
-import { ArrowRight, ArrowUpRight, Bank, Basket, BookOpenText, Certificate, ChartPie, Check, CircleNotch, Flask, FunnelSimple, Info, Key, MagnifyingGlass, Moon, Question, SealCheck, SquaresFour, Sun, Wallet, X } from "@phosphor-icons/react/ssr";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Bank, Basket, BookOpenText, Certificate, ChartPie, Check, CircleNotch, Flask, FunnelSimple, Info, Key, MagnifyingGlass, Moon, Plus, Question, SealCheck, SquaresFour, Sun, Wallet, X } from "@phosphor-icons/react/ssr";
 
 // Phosphor supplies the generic interface symbols (foundations.md section 9).
 // The ssr entry needs no React context, so the same Icon renders in server
@@ -7,6 +7,7 @@ import { ArrowRight, ArrowUpRight, Bank, Basket, BookOpenText, Certificate, Char
 // which is the house 1.5px line at 24px.
 const glyphs = {
   "arrow-up-right": ArrowUpRight,
+  back: ArrowLeft,
   assay: Flask,
   buy: Basket,
   certificate: Certificate,
@@ -21,6 +22,7 @@ const glyphs = {
   interest: ChartPie,
   key: Key,
   moon: Moon,
+  plus: Plus,
   next: ArrowRight,
   read: BookOpenText,
   running: CircleNotch,

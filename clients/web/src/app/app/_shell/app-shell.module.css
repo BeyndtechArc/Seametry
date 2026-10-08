@@ -35,118 +35,71 @@
   grid-column: 3;
   display: flex;
   align-items: stretch;
-  gap: var(--sm-space-5);
+  gap: var(--sm-space-3);
 }
 
-.theme > button {
-  border: 0;
+.mobileTabs {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: end;
+  gap: var(--sm-space-1);
+  padding: var(--sm-space-3) var(--sm-space-3) calc(var(--sm-space-3) + env(safe-area-inset-bottom));
+  border-top: 0.5px solid var(--sm-line-strong);
+  background: var(--sm-surface-sheet);
+}
+
+.mobileTabs a {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--sm-space-2);
+  min-width: 0;
+  min-height: var(--sm-size-target);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-micro);
+  text-align: center;
+}
+
+.mobileTabs a[aria-current="page"] {
+  color: var(--sm-text-primary);
+}
+
+.mobileTabs svg {
+  width: var(--sm-space-6);
+  height: var(--sm-space-6);
+}
+
+.mobileTabs .mobileCreate {
+  gap: var(--sm-space-1);
+  color: var(--sm-text-primary);
+}
+
+.mobileCreate svg {
+  box-sizing: content-box;
+  padding: var(--sm-space-4);
   color: var(--sm-text-onTouch);
   background: var(--sm-accent-touch);
 }
 
-.menuControl {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--sm-size-target);
-  min-height: var(--sm-size-target);
-  padding: 0;
-  border: 0;
-  color: var(--sm-text-inverse);
-  background: var(--sm-surface-inverse);
-  font: inherit;
-}
-
-.menuControl svg {
-  width: var(--sm-space-6);
-  height: var(--sm-space-6);
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: square;
-}
-
-.mobileRegister {
-  position: relative;
-  grid-column: 1 / -1;
-  border-top: 0.5px solid var(--sm-line-strong);
-  overflow: hidden;
-}
-
-.mobileRegister::after {
-  content: "";
-  position: absolute;
-  right: calc(var(--sm-space-10) * -1);
-  bottom: calc(var(--sm-space-10) * -1);
-  width: calc(var(--sm-space-13) * 1.25);
-  height: calc(var(--sm-space-13) * 1.25);
-  background: var(--sm-text-faint);
-  -webkit-mask: url("/sponsor-mark.svg") center / contain no-repeat;
-  mask: url("/sponsor-mark.svg") center / contain no-repeat;
-  opacity: 0.08;
-  pointer-events: none;
-}
-
-.mobileRegister nav {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.mobileGroup {
-  display: grid;
-  grid-template-columns: var(--sm-space-11) minmax(0, 1fr);
-  align-content: start;
-  padding: var(--sm-space-3) 0;
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.mobileGroup small {
-  grid-column: 1;
-  grid-row: 1 / span 3;
-  padding: var(--sm-space-2) var(--sm-space-3);
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.mobileGroup a,
-.mobileReading a {
-  min-height: var(--sm-size-target);
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-s);
-  text-decoration: none;
-}
-
-.mobileGroup a {
-  grid-column: 2;
-}
-
-.mobileGroup a[aria-current="page"] {
-  color: var(--sm-accent-touchText);
-}
-
-.mobileReading {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding: var(--sm-space-4);
-  border-bottom: 0.5px solid var(--sm-line-rule);
+.mobileTabs a:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
 }
 
 .content {
   min-width: 0;
-  padding: var(--sm-space-6) var(--sm-space-5) var(--sm-space-10);
+  padding: var(--sm-space-6) var(--sm-space-5) calc(var(--sm-space-13) + env(safe-area-inset-bottom));
 }
 
 .statusBar {
   display: none;
 }
 
-.menuControl:focus-visible,
-.mobileRegister a:focus-visible,
 .productNav a:focus-visible,
 .statusBar a:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
@@ -203,8 +156,7 @@
     color: var(--sm-accent-touchText);
   }
 
-  .menuControl,
-  .mobileRegister {
+  .mobileTabs {
     display: none;
   }
 

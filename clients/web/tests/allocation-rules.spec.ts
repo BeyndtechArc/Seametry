@@ -243,9 +243,9 @@ test("the committed snapshot is the policy engine's, for every captured lot", ()
 
 test("the dashboard wallet disclosure opens below its header containment", async ({ page }) => {
   await page.goto("/app/allocation");
-  const trigger = page.getByText("Log in", { exact: true });
+  const trigger = page.getByText("Connect", { exact: true });
   await trigger.click();
-  const panel = page.getByText("No wallet was detected in this browser.", { exact: false });
+  const panel = page.getByText("No Solana wallet is available in this browser.", { exact: false });
   await expect(panel).toBeVisible();
   const triggerBox = await trigger.boundingBox();
   const panelBox = await panel.boundingBox();
@@ -260,7 +260,7 @@ test("a page loaded with a wallet installed hydrates without React redrawing it"
   await registerTestWallet(page, { trusted: false });
   await page.goto("/app/alloys");
   await expect(page.getByRole("heading", { level: 1, name: "Alloys" })).toBeVisible();
-  await page.getByText("Log in", { exact: true }).click();
+  await page.getByText("Connect", { exact: true }).click();
   await expect(page.getByRole("button", { name: "Connect Test wallet" })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -268,7 +268,7 @@ test("a page loaded with a wallet installed hydrates without React redrawing it"
 test("a wallet that already trusts the site shows as connected the moment it is chosen", async ({ page }) => {
   await registerTestWallet(page, { trusted: true });
   await page.goto("/app/allocation");
-  await page.getByText("Log in", { exact: true }).click();
+  await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
   await expect(page.getByTestId("wallet-account")).toBeVisible();
@@ -277,7 +277,7 @@ test("a wallet that already trusts the site shows as connected the moment it is 
 test("a detected Wallet Standard wallet connects from the dashboard header", async ({ page }) => {
   await registerTestWallet(page, { trusted: false });
   await page.goto("/app/allocation");
-  await page.getByText("Log in", { exact: true }).click();
+  await page.getByText("Connect", { exact: true }).click();
   const wallet = page.getByRole("button", { name: "Connect Test wallet" });
   await expect(wallet.locator("img")).toHaveCount(1);
   await wallet.click();

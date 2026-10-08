@@ -303,11 +303,11 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### App shell
 **Answers:** where am I in the product, on which network, with which wallet?
-**Anatomy:** no sidebar (Storm, 4 October 2026, after a trading terminal's layout). Wide layouts: one sticky Top bar holding the Brand mark, every product route as a text tab, Wallet state and the Mode control, above the page; a quiet Status bar below the page holds the two reading links. Narrow layouts: the enlarged mark, Wallet state, the green Mode control and an icon-only, accessibly labelled ink menu control, in that order. The menu opens a full-width ruled navigation register containing every product and reading route. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
+**Anatomy:** no sidebar. Wide layouts: one sticky Top bar holding the Brand mark, every product route as a text tab, Wallet state and the Mode control; a quiet Status bar holds reading links. Narrow layouts: the mark, Wallet state and Mode control remain in the top bar. Five labelled product tabs sit at the bottom; the central green plus opens Build a basket. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
 **Identity:** a terminal's top bar on the sheet surface, aligned to the content width so its edges meet the page. The current tab is a raised tone behind primary text, led by its group's icon in the action green (Desk, Buy, Hall, Assay), so the icon marks where you are rather than decorating every route; the House rail uses only the action-green label because its destinations share one line with no tab. The reading links in the Status bar keep their icons, which distinguish an exit from the operational routes.
 **States:** current route; narrow; wallet disconnected or connected; each page's network.
 **Data:** one route list that drives the top bar tabs and the narrow navigation register, so they cannot disagree.
-**Rules:** one route list. Every route resolves. The narrow menu is labelled, keyboard-operable and closes after navigation. The current route is named once, by its tab; a page header appears only when it adds network or decision context that the shell cannot carry.
+**Rules:** the mobile tabs reference the same route records as the wide bar. Every route resolves. The current route is named by its tab; a page header appears only when it adds network or decision context that the shell cannot carry. Reading links remain on the public pages and wide Status bar.
 
 ### Page header
 **Answers:** what is this page, and what does it act on?
@@ -321,9 +321,9 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### Wallet state
 **Answers:** is a wallet connected to this site, which one, and how do I change that?
-**Anatomy:** disconnected: "Log in", built as a Route action, opening a list of the wallets this browser offers, each "Connect <name>". Connected: the address truncated in the middle beside the wallet's own icon in an ink cell, opening an account panel: the wallet's icon, name and the Network badge of the page's cluster; the full address; the holdings ledger (SOL, and USDC on mainnet) with its source and age beneath; "Disconnect wallet".
+**Anatomy:** disconnected: "Connect", opening a list of wallets offered in this browser. Connected: the observed USDC balance on mainnet or SOL balance on devnet beside the wallet icon; the address is also shown on wide screens. The disclosure contains the full address and holdings ledger with source and age; "Disconnect wallet". Connection does not create an account session.
 **Identity:** disconnected, it is the green way into every product room, by Storm's decision of 4 October 2026: logging in is the shell's one call to action, as on a trading terminal. Connected, it turns quiet (sheet, ruled top and bottom, the address in the mono face) because the account is then a state of the room, not an invitation. It precedes the Mode control on every layout.
-**States:** disconnected; no wallet detected ("No wallet was detected in this browser. On a phone, open this site inside your wallet's own browser."); connecting ("Connecting"); connected; the disclosure open or closed, by keyboard as well as pointer.
+**States:** disconnected; no wallet detected (name the wallet app browser or desktop extension path); connecting; connected with balance reading, observed or unavailable; the disclosure open or closed by keyboard as well as pointer. On phones the panel is viewport-bound and scrolls.
 **Data:** the site-wide wallet session; the list of detected Wallet Standard wallets; `/api/wallet/balances`, read each time the panel opens, through the deployment's RPC so the browser's connect-src stays devnet only. Holdings are integer atoms with a scale. Reading names the network it reads; unavailable names the reason.
 **Rules:** never a Key: logging in moves no custody and signs nothing, and the panel says so by offering only "Connect <name>". Green only while disconnected. The full address is always one step away, never only the truncation.
 

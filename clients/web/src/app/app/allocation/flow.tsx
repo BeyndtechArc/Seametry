@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import { ConditionReport, ContinueAction, Field, FilterBar, Key, LotMark, MarkLine, QuietAction, QuoteBlock, StepBar, StepTrack, Stamp } from "@seametry/ui";
@@ -385,24 +386,29 @@ export function AllocationFlow({
                     {visible.map((lot) => (
                       <li key={lot.mint} className={styles.lot}>
                         <div className={styles.lotRegister}>
-                          <label className={styles.lotChoice}>
-                            <input
-                              type="checkbox"
-                              disabled={started}
-                              checked={selected.includes(lot.mint)}
-                              onChange={(event) =>
-                                setSelected((current) =>
-                                  event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
-                                )
-                              }
-                            />
-                            <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="header" />
-                            <span>
-                              <b>{lot.symbol}</b>
-                              <small>{lot.issuer}</small>
-                              <small>Measured capacity {formatAmount(BigInt(lot.capacityUsdc), 0)} USDC</small>
-                            </span>
-                          </label>
+                          <div className={styles.lotChoice}>
+                            <label className={styles.lotToggle}>
+                              <input
+                                type="checkbox"
+                                aria-label={`Add ${lot.symbol} to the basket`}
+                                disabled={started}
+                                checked={selected.includes(lot.mint)}
+                                onChange={(event) =>
+                                  setSelected((current) =>
+                                    event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
+                                  )
+                                }
+                              />
+                            </label>
+                            <Link className={styles.lotDetail} href={`/app/instruments/${encodeURIComponent(lot.mint)}`} aria-label={`Open ${lot.symbol} assay`}>
+                              <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="header" />
+                              <span>
+                                <b>{lot.symbol}</b>
+                                <small>{lot.issuer}</small>
+                                <small>Measured capacity {formatAmount(BigInt(lot.capacityUsdc), 0)} USDC</small>
+                              </span>
+                            </Link>
+                          </div>
                           <div className={styles.lotMarks}>
                             <MarkLine grade={lot.grade} stamp={lot.decision === "ALLOW" ? "allow" : "warn"} reason={lot.stampReason} />
                           </div>
@@ -527,11 +533,11 @@ export function AllocationFlow({
       <StepBar
         // On Buy the bar carries the Key, and its line says what the Key waits
         // for, as Compose's bar does for Found.
-        plan={step === 1 && keyDisabledReason && !inFlight ? keyDisabledReason : planLine}
-        problem={step === 1 && Boolean(keyDisabledReason) && !inFlight}
+        plan={planLine}
+        problem={false}
         back={
           step === 1 ? (
-            <QuietAction disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
+            <QuietAction icon="back" disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
               Back
             </QuietAction>
           ) : undefined
@@ -541,10 +547,14 @@ export function AllocationFlow({
             <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
               Set amount
             </ContinueAction>
-          ) : (
+          ) : !connected ? (
+            <ContinueAction onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</ContinueAction>
+          ) : active || inFlight ? (
             <Key busy={Boolean(inFlight)} busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined} disabled={Boolean(keyDisabledReason) && !inFlight} onClick={() => void approveAndSign()}>
               {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
             </Key>
+          ) : (
+            <span>Preview a purchase above</span>
           )
         }
       />

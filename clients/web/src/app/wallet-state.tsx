@@ -23,12 +23,12 @@ function middle(address: string) {
 type BalanceReading = { state: "reading" } | { state: "read"; balances: Balances } | { state: "unavailable"; reason: string };
 
 /**
- * Read each time the panel opens, so a figure is never older than the last
- * look at it. Every opening is its own request key; until that key has an
+ * Read on connection and each time the panel opens. Every refresh has its
+ * own request key; until that key has an
  * answer the panel is reading, so no state is set before the fetch returns.
  */
-function useBalances(owner: string | undefined, network: "devnet" | "mainnet", opening: number | undefined): BalanceReading | undefined {
-  const request = owner && opening !== undefined ? `${owner}|${network}|${opening}` : undefined;
+function useBalances(owner: string | undefined, network: "devnet" | "mainnet", refresh: number): BalanceReading | undefined {
+  const request = owner ? `${owner}|${network}|${refresh}` : undefined;
   const [answer, setAnswer] = useState<{ request: string; reading: BalanceReading }>();
   useEffect(() => {
     if (!request || !owner) return;
@@ -78,7 +78,7 @@ function Holdings({ reading, network }: { reading: BalanceReading | undefined; n
 /**
  * components.md, Wallet state. A native disclosure, so opening it by
  * keyboard and announcing it need no script of this component's own.
- * Logging in signs nothing and moves nothing, so it is never a Key.
+ * Connecting signs nothing and moves nothing, so it is never a Key.
  */
 export function WalletState() {
   const { publicKey, connected, connecting, wallets, wallet, select, connect, disconnect } = useWallet();
@@ -86,10 +86,12 @@ export function WalletState() {
   // A silent reconnect on reload may fail quietly; only a choice made here
   // earns an error message.
   const [chose, setChose] = useState(false);
-  const [opening, setOpening] = useState<number>();
+  const [refresh, setRefresh] = useState(0);
   const address = publicKey?.toBase58();
   const network = walletNetwork(usePathname());
-  const reading = useBalances(connected ? address : undefined, network, opening);
+  const reading = useBalances(connected ? address : undefined, network, refresh);
+  const visibleAsset = network === "mainnet" ? "USDC" : "SOL";
+  const visibleHolding = reading?.state === "read" ? reading.balances.holdings.find((holding) => holding.asset === visibleAsset) : undefined;
   const connectionError = chose && !connected ? failure : undefined;
   // The server sees no wallet, while a browser with one installed lists it on
   // its first render, so the two disagreed and React redrew the header (error
@@ -109,9 +111,9 @@ export function WalletState() {
   };
 
   return (
-    <details className={styles.walletState} onToggle={(event) => setOpening(event.currentTarget.open ? Date.now() : undefined)}>
-      <summary data-connected={connected || undefined}>
-        {connecting ? <span className={styles.walletLabel}>Connecting</span> : connected && address ? <span className={styles.walletLabel} aria-label={`Wallet ${address}`}>{middle(address)}</span> : <span className={styles.walletLabel}>Log in</span>}
+    <details className={styles.walletState} data-testid="wallet-state" onToggle={(event) => { if (event.currentTarget.open) setRefresh((value) => value + 1); }}>
+      <summary id="app-wallet" data-connected={connected || undefined} aria-label={connected && address ? `Wallet ${address}. ${visibleHolding ? `${formatAmount(visibleHolding.atoms, visibleHolding.scale)} ${visibleAsset}` : "Balance loading or unavailable"}` : "Connect wallet"}>
+        {connecting ? <span className={styles.walletLabel}>Connecting</span> : connected && address ? <><span className={styles.walletBalance}>{visibleHolding ? `${formatAmount(visibleHolding.atoms, visibleHolding.scale)} ${visibleAsset}` : "Wallet"}</span><span className={styles.walletLabel}>{middle(address)}</span></> : <span className={styles.walletLabel}>Connect</span>}
         <span className={styles.walletIcon} data-connected={connected || undefined}>
           {connected && wallet ? <Image src={wallet.adapter.icon} width={22} height={22} alt="" unoptimized /> : <Icon name="wallet" />}
         </span>
@@ -131,7 +133,7 @@ export function WalletState() {
         ) : !hydrated ? (
           <p>Looking for wallets in this browser.</p>
         ) : wallets.length === 0 ? (
-          <p>No wallet was detected in this browser. Open the site in a browser with a Solana wallet extension, or use your wallet&apos;s browser on a phone.</p>
+          <p>No Solana wallet is available in this browser. Open Seametry in a wallet app browser, or connect from a desktop browser with a wallet extension.</p>
         ) : (
           wallets.map((wallet) => (
             <button className={styles.walletChoice} type="button" key={wallet.adapter.name} disabled={connecting} onClick={() => choose(wallet.adapter.name)}>

@@ -28,3 +28,11 @@ export const readingRoutes = [
   { label: "How it works", href: "/how-it-works", icon: "read" as const },
   { label: "The Key", href: "/the-key", icon: "key" as const },
 ];
+
+export const mobileRoutes = [
+  { ...appGroups[0].routes[0], icon: "desk" as const },
+  { ...appGroups[3].routes[0], icon: "assay" as const },
+  { ...appGroups[1].routes[0], icon: "plus" as const, primary: true },
+  { ...appGroups[2].routes[0], icon: "hall" as const },
+  { ...appGroups[2].routes[1], icon: "buy" as const },
+];

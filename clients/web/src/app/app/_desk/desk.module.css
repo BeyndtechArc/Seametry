@@ -89,7 +89,7 @@
 
 .boundary code,
 .missingRegister code {
-  color: var(--sm-accent-provenance);
+  color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-micro);
 }
@@ -147,6 +147,7 @@
   min-width: var(--sm-space-12);
   padding: var(--sm-space-6) var(--sm-space-5);
   border-top: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-sheet);
   vertical-align: top;
 }
 
@@ -169,8 +170,9 @@
   grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.2fr) auto;
   align-items: center;
   gap: var(--sm-space-7);
-  padding: var(--sm-space-7) 0;
+  padding: var(--sm-space-7) var(--sm-space-5);
   border-bottom: 0.5px solid var(--sm-line-rule);
+  background: var(--sm-surface-sheet);
 }
 
 .alloyRowIdentity {
@@ -184,6 +186,17 @@
   display: grid;
   gap: var(--sm-space-2);
   min-width: 0;
+}
+
+.alloyRowIdentity:hover b,
+.lotIdentity:hover b {
+  color: var(--sm-accent-touchText);
+}
+
+.alloyRowIdentity:focus-visible,
+.lotIdentity:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
 }
 
 .alloyRowIdentity b {
