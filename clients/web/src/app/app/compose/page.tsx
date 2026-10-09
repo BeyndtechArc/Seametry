@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { admissions, blockingFact, gradeOf, isAdmitted } from "@/lib/allocation/admissions";
 import { quoteKey } from "@/lib/compose/quote-config";
+import { MAX_CONSTITUENTS } from "@/lib/hall/constants";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import { PageHeader } from "../_shell/page-header";
 import { Composer, type Candidate } from "./composer";
@@ -11,8 +12,9 @@ export const metadata: Metadata = {
   description: "Draft an Alloy's Formula from assayed instruments, priced by live mainnet quotes. Nothing is founded here.",
 };
 
-export default async function ComposePage() {
+export default async function ComposePage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string }> }) {
   await connection();
+  const { selected, add } = await searchParams;
   const key = quoteKey();
   const candidates: Candidate[] = admissions.instruments.map((admission) => ({
     mint: admission.instrument.mint,
@@ -45,6 +47,7 @@ export default async function ComposePage() {
       <Composer
         candidates={candidates}
         unquoted={"problem" in key ? key.problem : undefined}
+        initialSelected={candidates.filter((candidate) => candidate.admitted && ((selected?.split(",") ?? []).includes(candidate.mint) || add === candidate.mint)).slice(0, MAX_CONSTITUENTS).map((candidate) => candidate.mint)}
       />
     </>
   );

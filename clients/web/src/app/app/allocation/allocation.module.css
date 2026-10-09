@@ -133,6 +133,7 @@
 }
 
 .lotDetail {
+  flex: 1;
   min-height: var(--sm-size-target);
 }
 
@@ -153,13 +154,37 @@
   min-width: var(--sm-size-target);
   min-height: var(--sm-size-target);
   cursor: pointer;
+  margin-left: auto;
 }
 
 .lotChoice input {
-  width: var(--sm-space-5);
-  height: var(--sm-space-5);
+  display: grid;
+  place-items: center;
+  appearance: none;
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
   margin: 0;
-  accent-color: var(--sm-accent-touch);
+  border: 0;
+  background: var(--sm-surface-tray);
+  cursor: pointer;
+}
+
+.lotChoice input:checked {
+  background: var(--sm-accent-touch);
+}
+
+.lotChoice input:checked::after {
+  content: "";
+  width: var(--sm-space-2);
+  height: var(--sm-space-4);
+  border-right: 2px solid var(--sm-text-onTouch);
+  border-bottom: 2px solid var(--sm-text-onTouch);
+  transform: translateY(calc(var(--sm-space-1) * -0.5)) rotate(45deg);
+}
+
+.lotChoice input:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .lotChoice span {
@@ -385,10 +410,10 @@
   }
 
   .lots {
-    gap: var(--sm-space-2);
+    gap: var(--sm-space-4);
   }
 
   .lot {
-    padding: var(--sm-space-2) var(--sm-space-3);
+    padding: var(--sm-space-3) var(--sm-space-4);
   }
 }

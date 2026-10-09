@@ -135,14 +135,16 @@ export function AllocationFlow({
   offered,
   refused,
   unavailable,
+  initialSelected,
 }: {
   offered: OfferedLot[];
   refused: RefusedLot[];
   unavailable?: string;
+  initialSelected: string[];
 }) {
   const { publicKey, connected, signTransaction } = useWallet();
   // Nothing starts chosen: choosing is the first step's whole question.
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(initialSelected);
   const [step, setStep] = useState(0);
   const [typed, setTyped] = useState("");
   const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
@@ -386,6 +388,13 @@ export function AllocationFlow({
                     {visible.map((lot) => (
                       <li key={lot.mint} className={styles.lot}>
                         <div className={styles.lotChoice}>
+                          <Link className={styles.lotDetail} href={`/app/instruments/${encodeURIComponent(lot.mint)}?from=allocation&selected=${encodeURIComponent(selected.join(","))}`} aria-label={`Open ${lot.symbol} assay`}>
+                            <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="list" />
+                            <span>
+                              <b>{lot.symbol}</b>
+                              <small>{lot.issuer}</small>
+                            </span>
+                          </Link>
                           <label className={styles.lotToggle}>
                             <input
                               type="checkbox"
@@ -399,13 +408,6 @@ export function AllocationFlow({
                               }
                             />
                           </label>
-                          <Link className={styles.lotDetail} href={`/app/instruments/${encodeURIComponent(lot.mint)}`} aria-label={`Open ${lot.symbol} assay`}>
-                            <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="list" />
-                            <span>
-                              <b>{lot.symbol}</b>
-                              <small>{lot.issuer}</small>
-                            </span>
-                          </Link>
                         </div>
                       </li>
                     ))}
