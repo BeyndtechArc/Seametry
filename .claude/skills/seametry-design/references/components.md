@@ -210,6 +210,13 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **States:** each step current, finished or ahead; Continue unavailable with its reason in the bar; Back unavailable once anything irreversible has started, with that reason.
 **Rules:** one question per step; the plan survives moving between steps. Never skips a step that has something to decide. Used for every flow that builds something and then commits it: Allocation (Choose, then Buy with the amount and each purchase together), Compose (Choose, then Found with weighting, identity and the Found key), and the mobile app. A summary panel stays beside the steps on a wide screen and joins the commit step on a narrow one (Storm, 7 October 2026). The bar is StepBar in @seametry/ui, so every flow pins the same one.
 
+### Selection count
+**Answers:** how much of the permitted set have I chosen?
+**Anatomy:** current count in display type, followed by the total in small supporting type as `current/total`.
+**States:** zero, partial and full. The owning flow explains why its maximum exists.
+**Data:** non-negative current and total integers; an accessible label names what is selected.
+**Rules:** used inside every selection action bar. The visual and spoken count must come from the same values. It is never a market figure and carries no provenance colour.
+
 ### Mark line
 **Answers:** what backs this row, and what was decided about it, in one glance?
 **Anatomy:** Grade, a short vertical hairline, the Stamp's verdict, all on one line; the Stamp's reason on its own line beneath, spanning the column. The line spreads to the row's height, so the marks sit level with the row's title and the reason with its last line.
