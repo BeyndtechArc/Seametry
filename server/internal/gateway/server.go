@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway/api"
+	"github.com/BeyndtechArc/Seametry/server/internal/identity"
 	"github.com/BeyndtechArc/Seametry/server/internal/store"
 	"github.com/BeyndtechArc/Seametry/server/internal/store/observationdb"
 )
@@ -60,6 +61,21 @@ func (Server) GetStatus(ctx context.Context, request api.GetStatusRequestObject)
 			AsOf:         now,
 			Completeness: api.Complete,
 		},
+	}, nil
+}
+
+func (s Server) GetMe(ctx context.Context, request api.GetMeRequestObject) (api.GetMeResponseObject, error) {
+	subject, ok := identity.SubjectFromContext(ctx)
+	if !ok {
+		return api.GetMedefaultApplicationProblemPlusJSONResponse{
+			Body:       gatewayProblem(401, "Account token required", "GET /v1/me requires a short-lived token issued by the Seametry account authority"),
+			StatusCode: 401,
+		}, nil
+	}
+	now := s.Now().UTC()
+	return api.GetMe200JSONResponse{
+		Data: api.AccountSubject{Id: subject.AccountID},
+		Meta: api.Meta{AsOf: now, ServedAt: now, Completeness: api.Complete},
 	}, nil
 }
 

@@ -121,9 +121,13 @@ services:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
+      auth:
+        condition: service_healthy
     environment:
       PORT: "8080"
       SEAMETRY_DATABASE_URL: postgres://postgres:${SEAMETRY_POSTGRES_PASSWORD}@postgres:5432/seametry?sslmode=disable
+      SEAMETRY_AUTH_ORIGIN: ${BETTER_AUTH_URL:-https://seametry.xyz}
+      SEAMETRY_AUTH_JWKS_URL: http://auth:3005/api/auth/jwks
       SEAMETRY_OBJECT_STORE_DIR: /var/lib/seametry/objects
       SEAMETRY_HALL_DEVNET_RPC_URL: ${SEAMETRY_HALL_DEVNET_RPC_URL:-https://api.devnet.solana.com}
       HELIUS_RPC_URL: ${HELIUS_RPC_URL:-}

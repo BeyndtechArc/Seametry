@@ -45,6 +45,8 @@ tags:
     description: Gateway. Seametry's own freshness, held to the standard it holds sources to.
   - name: stream
     description: Gateway. Live change over server-sent events.
+  - name: account
+    description: Identity. The signed-in account subject accepted by the Go core.
 
 paths:
   # --- instruments -----------------------------------------------------
@@ -607,7 +609,36 @@ paths:
         default:
           $ref: '#/components/responses/Problem'
 
+  # --- account --------------------------------------------------------------
+  /me:
+    get:
+      operationId: getMe
+      tags: [account]
+      summary: The opaque account subject accepted by the Go core.
+      security:
+        - accountToken: []
+      responses:
+        "200":
+          description: The authenticated account boundary.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AccountSubject'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
 components:
+  securitySchemes:
+    accountToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   parameters:
     Mint:
       name: mint
@@ -664,6 +695,13 @@ components:
             $ref: '#/components/schemas/Problem'
 
   schemas:
+    AccountSubject:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+          description: The opaque Better Auth account subject. No profile field is carried in the service token.
     # --- common ------------------------------------------------------------
     Amount:
       type: object

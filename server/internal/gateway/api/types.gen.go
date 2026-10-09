@@ -349,6 +349,12 @@ func (e GetInstrumentDepthParamsDirection) Valid() bool {
 	}
 }
 
+// AccountSubject defines model for AccountSubject.
+type AccountSubject struct {
+	// Id The opaque Better Auth account subject. No profile field is carried in the service token.
+	Id string `json:"id"`
+}
+
 // Alloy An alloy read from chain (chain/programs/hall/src/state.rs::Alloy).
 type Alloy struct {
 	Address string       `json:"address"`

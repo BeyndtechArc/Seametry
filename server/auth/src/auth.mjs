@@ -2,6 +2,7 @@ import { dash } from "@better-auth/infra";
 import { betterAuth } from "better-auth";
 import { jwt } from "better-auth/plugins";
 import pg from "pg";
+import { serviceTokenPayload } from "./service-token.mjs";
 
 const { Pool } = pg;
 
@@ -48,5 +49,8 @@ export const auth = betterAuth({
     max: 30,
     customRules: { "/sign-in/social": { window: 60, max: 5 } },
   },
-  plugins: [dash({ apiKey: process.env.BETTER_AUTH_API_KEY }), jwt()],
+  plugins: [
+    dash({ apiKey: process.env.BETTER_AUTH_API_KEY }),
+    jwt({ jwt: { definePayload: serviceTokenPayload } }),
+  ],
 });

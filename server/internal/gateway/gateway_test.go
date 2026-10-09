@@ -50,6 +50,26 @@ func TestStatusAnswersInTheEnvelope(t *testing.T) {
 	}
 }
 
+func TestAccountBoundaryRefusesABrowserSuppliedIdentity(t *testing.T) {
+	srv := newTestServer(t)
+	request, err := http.NewRequest(http.MethodGet, srv.URL+"/v1/me", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Header.Set("X-Account-ID", "account-from-the-browser")
+	response, err := srv.Client().Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("GET /v1/me with a browser account header = %d, want 401", response.StatusCode)
+	}
+	if contentType := response.Header.Get("Content-Type"); contentType != "application/problem+json" {
+		t.Fatalf("Content-Type = %q, want application/problem+json", contentType)
+	}
+}
+
 // TestEveryOtherOperationAnswers501NamingAStep is docs/prd/API.md section 12
 // step A1's own text: "Every generated operation with no handler yet answers
 // 501, naming the step that builds it, never an empty 200." Six operations
@@ -150,5 +170,8 @@ func TestCORSAllowsAnyOriginWithNoCredentials(t *testing.T) {
 	}
 	if resp.Header.Get("Access-Control-Allow-Credentials") != "" {
 		t.Error("Access-Control-Allow-Credentials is set; public reads must not claim credentialed access")
+	}
+	if got := resp.Header.Get("Access-Control-Allow-Headers"); !strings.Contains(got, "Authorization") {
+		t.Errorf("Access-Control-Allow-Headers = %q, want Authorization for short-lived account tokens", got)
 	}
 }

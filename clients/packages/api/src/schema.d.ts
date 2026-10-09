@@ -353,10 +353,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The opaque account subject accepted by the Go core. */
+        get: operations["getMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AccountSubject: {
+            /** @description The opaque Better Auth account subject. No profile field is carried in the service token. */
+            id: string;
+        };
         /** @description Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3). */
         Amount: {
             /**
@@ -1314,6 +1335,30 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["StatusReport"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The authenticated account boundary. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AccountSubject"];
                         meta: components["schemas"]["Meta"];
                     };
                 };

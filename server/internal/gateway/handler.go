@@ -11,7 +11,7 @@ import (
 // binding and encoding failures (docs/prd/API.md section 4.4; the generated
 // default writes plain text, which this replaces), and CORS, into the one
 // handler server/cmd/seametry serves at /v1.
-func NewHandler(si api.StrictServerInterface) http.Handler {
+func NewHandler(si api.StrictServerInterface, middleware ...func(http.Handler) http.Handler) http.Handler {
 	strict := api.NewStrictHandlerWithOptions(si, nil, api.StrictHTTPServerOptions{
 		RequestErrorHandlerFunc:  writeProblem(http.StatusBadRequest, "The request"),
 		ResponseErrorHandlerFunc: writeProblem(http.StatusInternalServerError, "The server"),
@@ -25,7 +25,11 @@ func NewHandler(si api.StrictServerInterface) http.Handler {
 		BaseURL:          "/v1",
 		ErrorHandlerFunc: writeProblem(http.StatusBadRequest, "The request"),
 	})
-	return CORS(mux)
+	var handler http.Handler = mux
+	for index := len(middleware) - 1; index >= 0; index-- {
+		handler = middleware[index](handler)
+	}
+	return CORS(handler)
 }
 
 // writeProblem returns a handler-error function that writes err.Error() into

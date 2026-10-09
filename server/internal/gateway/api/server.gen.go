@@ -64,6 +64,9 @@ type ServerInterface interface {
 	// GetInstrumentDepth Depth at size as a curve, with each quote's age and expiry. Selling reports unavailable until it is measured (docs/prd/API.md 5.1).
 	// (GET /instruments/{mint}/depth)
 	GetInstrumentDepth(w http.ResponseWriter, r *http.Request, mint Mint, params GetInstrumentDepthParams)
+	// GetMe The opaque account subject accepted by the Go core.
+	// (GET /me)
+	GetMe(w http.ResponseWriter, r *http.Request)
 	// GetPolicy A policy document, as data (server/internal/policy.Document).
 	// (GET /policies/{version})
 	GetPolicy(w http.ResponseWriter, r *http.Request, version PolicyVersion)
@@ -616,6 +619,20 @@ func (siw *ServerInterfaceWrapper) GetInstrumentDepth(w http.ResponseWriter, r *
 	handler.ServeHTTP(w, r)
 }
 
+// GetMe operation middleware
+func (siw *ServerInterfaceWrapper) GetMe(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetMe(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetPolicy operation middleware
 func (siw *ServerInterfaceWrapper) GetPolicy(w http.ResponseWriter, r *http.Request) {
 
@@ -877,6 +894,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/batches/{root}", wrapper.GetBatch)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/anchor-keys", wrapper.ListAnchorKeys)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/status", wrapper.GetStatus)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me", wrapper.GetMe)
 
 	return m
 }
@@ -1553,6 +1571,49 @@ func (response GetInstrumentDepthdefaultApplicationProblemPlusJSONResponse) Visi
 	return err
 }
 
+type GetMeRequestObject struct {
+}
+
+type GetMeResponseObject interface {
+	VisitGetMeResponse(w http.ResponseWriter) error
+}
+
+type GetMe200JSONResponse struct {
+	Data AccountSubject `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetMe200JSONResponse) VisitGetMeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMedefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetMedefaultApplicationProblemPlusJSONResponse) VisitGetMeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetPolicyRequestObject struct {
 	Version PolicyVersion `json:"version"`
 }
@@ -1843,6 +1904,9 @@ type StrictServerInterface interface {
 	// GetInstrumentDepth Depth at size as a curve, with each quote's age and expiry. Selling reports unavailable until it is measured (docs/prd/API.md 5.1).
 	// (GET /instruments/{mint}/depth)
 	GetInstrumentDepth(ctx context.Context, request GetInstrumentDepthRequestObject) (GetInstrumentDepthResponseObject, error)
+	// GetMe The opaque account subject accepted by the Go core.
+	// (GET /me)
+	GetMe(ctx context.Context, request GetMeRequestObject) (GetMeResponseObject, error)
 	// GetPolicy A policy document, as data (server/internal/policy.Document).
 	// (GET /policies/{version})
 	GetPolicy(ctx context.Context, request GetPolicyRequestObject) (GetPolicyResponseObject, error)
@@ -2290,6 +2354,30 @@ func (sh *strictHandler) GetInstrumentDepth(w http.ResponseWriter, r *http.Reque
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetInstrumentDepthResponseObject); ok {
 		if err := validResponse.VisitGetInstrumentDepthResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetMe operation middleware
+func (sh *strictHandler) GetMe(w http.ResponseWriter, r *http.Request) {
+	var request GetMeRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetMe(ctx, request.(GetMeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetMe")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetMeResponseObject); ok {
+		if err := validResponse.VisitGetMeResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

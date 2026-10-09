@@ -35,6 +35,7 @@ import (
 
 	"github.com/BeyndtechArc/Seametry/server/internal/basket"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
+	"github.com/BeyndtechArc/Seametry/server/internal/identity"
 	"github.com/BeyndtechArc/Seametry/server/internal/receipt"
 	"github.com/BeyndtechArc/Seametry/server/internal/solana"
 	"github.com/BeyndtechArc/Seametry/server/internal/store"
@@ -131,7 +132,17 @@ func serve() error {
 	gwServer := gateway.NewServer(observationdb.New(pool), store.NewDirObjectStore(objectDir)).
 		WithHall(hall, basket.HallDevnetProgramID, "devnet").
 		WithReceipts(receipt.NewLedger(pool))
-	handler := gateway.NewHandler(gwServer)
+	authOrigin := strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_ORIGIN"))
+	if authOrigin == "" {
+		return errors.New("SEAMETRY_AUTH_ORIGIN is not set; serve needs the Better Auth issuer to verify account subjects")
+	}
+	verifier, err := identity.NewVerifier(authOrigin, strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_JWKS_URL")), nil)
+	if err != nil {
+		return fmt.Errorf("configuring the account subject verifier: %w", err)
+	}
+	handler := gateway.NewHandler(gwServer, func(next http.Handler) http.Handler {
+		return verifier.Middleware(next, time.Now)
+	})
 	srv := &http.Server{
 		Addr:              ":" + p,
 		Handler:           handler,
