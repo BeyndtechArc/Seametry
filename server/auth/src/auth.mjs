@@ -20,7 +20,7 @@ for (const name of required) {
 
 export const pool = new Pool({ connectionString: process.env.AUTH_DATABASE_URL });
 
-export const trustedOrigins = (process.env.SEAMETRY_APP_ORIGINS ?? "https://seametry.xyz,http://localhost:3000")
+export const trustedOrigins = (process.env.SEAMETRY_APP_ORIGINS ?? "https://www.seametry.xyz,https://seametry.xyz,http://localhost:3000")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);

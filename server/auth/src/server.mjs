@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
 import { auth, pool, trustedOrigins } from "./auth.mjs";
+import { isBetterAuthPath } from "./routes.mjs";
 import { canonicalAddress, validWalletSignature, walletChallenge } from "./wallet-link.mjs";
 
 const port = Number(process.env.PORT ?? 3005);
@@ -141,7 +142,7 @@ const server = createServer(async (incoming, outgoing) => {
     const request = await toWebRequest(incoming);
     const path = new URL(request.url).pathname;
     let response;
-    if (path.startsWith("/api/auth/")) response = await auth.handler(request);
+    if (isBetterAuthPath(path)) response = await auth.handler(request);
     else if (path === "/api/account/wallets") response = await wallets(request);
     else if (path === "/api/account/wallets/challenge") response = await challenge(request);
     else if (path === "/healthz") response = json({ status: "ok" });
