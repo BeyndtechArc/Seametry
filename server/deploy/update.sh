@@ -20,6 +20,9 @@ compose() {
 
 compose config --quiet
 compose up -d --build --remove-orphans
+# Bind-mounted configuration contents are not part of Compose's service hash.
+# Recreate the edge so a changed Caddyfile is always loaded from this checkout.
+compose up -d --force-recreate caddy
 compose ps
 
 origin=$(sed -n 's/^SEAMETRY_API_ORIGIN=//p' server/deploy/.env | tr -d '\r' | tail -n 1)

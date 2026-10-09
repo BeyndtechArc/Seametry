@@ -55,7 +55,7 @@ func TestCaddyRoutesAccountsToTheDedicatedAuthority(t *testing.T) {
 		t.Fatalf("read deploy/Caddyfile: %v", err)
 	}
 	caddyfile := string(contents)
-	for _, route := range []string{"handle /api/auth/*", "handle /api/account/*", "reverse_proxy auth:3005"} {
+	for _, route := range []string{"path /api/auth /api/auth/*", "path /api/account /api/account/*", "reverse_proxy auth:3005"} {
 		if !strings.Contains(caddyfile, route) {
 			t.Errorf("deploy/Caddyfile does not contain %q", route)
 		}
@@ -91,6 +91,7 @@ func TestUpdateScriptOwnsTheRepeatableOracleDeploymentSequence(t *testing.T) {
 		"docker compose --env-file server/deploy/.env -f server/deploy/compose.yaml",
 		"compose config --quiet",
 		"compose up -d --build --remove-orphans",
+		"compose up -d --force-recreate caddy",
 		"/v1/status",
 	} {
 		if !strings.Contains(script, command) {

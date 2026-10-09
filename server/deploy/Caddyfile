@@ -8,11 +8,13 @@
 		X-Frame-Options "DENY"
 	}
 
-	handle /api/auth/* {
+	@auth path /api/auth /api/auth/*
+	handle @auth {
 		reverse_proxy auth:3005
 	}
 
-	handle /api/account/* {
+	@account path /api/account /api/account/*
+	handle @account {
 		reverse_proxy auth:3005
 	}
 
