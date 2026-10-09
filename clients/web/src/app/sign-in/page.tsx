@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { RouteAction, Stamp, TextAction } from "@seametry/ui";
+import { TextAction } from "@seametry/ui";
+import { authConfigured } from "@/lib/auth";
 import { PublicShell, SectionHeading } from "../public-shell";
+import { SignInControl } from "./sign-in-control";
 import styles from "../site.module.css";
 
 export const metadata: Metadata = {
   title: "Sign in | Seametry",
-  description: "No account is needed. Connect a wallet to use the Hall demonstration and the Allocation.",
+  description: "Open a Seametry account or continue with an external wallet.",
 };
 
 export default async function SignInPage() {
@@ -17,34 +19,32 @@ export default async function SignInPage() {
         <div className={styles.accessThreshold} aria-hidden="true"><span /><span /></div>
         <div>
           <span>Access</span>
-          <h1>No account needed.</h1>
+          <h1>Your account, your wallet.</h1>
           <p>
-            Open the app and connect a wallet from its top bar. That is enough to run the Hall demonstration on devnet and to
-            buy an Allocation on mainnet. Connecting signs nothing: every transaction is shown to you before your wallet asks
-            you to sign it.
+            An account keeps your sign-in across devices. Your external wallet still controls its address and approves each
+            transaction. You can browse the catalogue without an account.
           </p>
         </div>
         <div className={styles.signInBoundary}>
-          <Stamp kind="warn" reason="Signing in, for saved formulas and watchlists, is API step A6 and is not built." />
-          <RouteAction href="/app/allocation">Open the Allocation</RouteAction>
+          <SignInControl configured={authConfigured()} />
           <TextAction href="/app/alloys">Inspect live Alloys</TextAction>
         </div>
       </header>
 
       <section className={styles.section}>
-        <SectionHeading index="01" title="What signing in will add" question="What will the wallet sign, and what will the Office retain?" />
+        <SectionHeading index="01" title="Account and wallet" question="What does each connection authorize?" />
         <div className={styles.accessGrid}>
           <article className={styles.accessStep}>
-            <b>Request a challenge.</b>
-            <p>The Office issues a single-use message naming the domain, wallet address, URI, issue time and expiry.</p>
+            <b>Sign in to your account.</b>
+            <p>Google confirms an account identity and the site opens a revocable session. This does not connect a wallet.</p>
           </article>
           <article className={styles.accessStep}>
-            <b>Sign the message.</b>
-            <p>The wallet signs the challenge. It does not sign a transaction or transfer an asset.</p>
+            <b>Connect an external wallet.</b>
+            <p>The address and its network are shown before any trade. Only the wallet can approve a transaction.</p>
           </article>
           <article className={styles.accessStep}>
-            <b>Open a session.</b>
-            <p>The Office checks the signature, domain, nonce and times before it opens a session.</p>
+            <b>Keep owners separate.</b>
+            <p>Each Allocation belongs to its signing address. An account does not combine the holdings of different wallets.</p>
           </article>
           <article className={styles.accessStep}>
             <b>Keep public evidence public.</b>
@@ -54,12 +54,12 @@ export default async function SignInPage() {
       </section>
 
       <section className={styles.section}>
-        <SectionHeading index="02" title="Data boundary" question="What personal data exists on this page now?" />
+        <SectionHeading index="02" title="Data boundary" question="What does the account retain?" />
         <div className={styles.boundary}>
           <p>
-            This page asks for nothing and opens no session. The site keeps two things, only in this browser: the colour mode you
-            chose, and the name of the wallet you last connected, so a returning visit reconnects it. The privacy notice and
-            deletion path join the first functional sign-in release.
+            If you sign in, the account service stores the identifier, name and email returned by Google, a session record, and
+            the sign-in provider record. You can sign out or request account deletion above after signing in. Public on-chain
+            transactions remain on-chain after deletion. No wallet key or seed phrase is requested.
           </p>
         </div>
       </section>

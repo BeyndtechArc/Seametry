@@ -158,6 +158,12 @@ The receipt endpoints are shaped so the verification ritual needs nothing else: 
 
 ### 5.2 Signed-in reads and writes
 
+The `/v1/auth/*` rows below are still unimplemented contract placeholders
+from the wallet-only A6 plan. They must be replaced in the OpenAPI source and
+generated types before the Go Gateway accepts account credentials. The web
+account service begins at `/api/auth/*` and `/api/account/wallets*`; it is
+disabled until its database, migration and OAuth credentials are provisioned.
+
 | Method and path | Does | Owner | Phase |
 |---|---|---|---|
 | `POST /v1/auth/challenge` | Returns a sign-in message with a single-use nonce for a wallet address (section 7) | Identity | 2 |
@@ -198,23 +204,25 @@ Live change reaches clients over server-sent events.
 
 ## 7. Identity, sessions and keys
 
-**Sign-in is by wallet, following Sign In With Solana (CAIP-122), the standard Phantom documents.** No email and no password, matching `MOBILE.md`'s onboarding.
+**An account and a wallet have different jobs.** Better Auth opens the account by social sign-in, beginning with Google, and owns its sessions. The web account service stores that identity in its own Postgres database. The Go Gateway will verify its short-lived, signed service token before serving account data. A wallet connection does not create an account.
 
-1. The client asks for a challenge for an address. The server returns a message naming the domain, the address, a statement, the URI, a nonce, the issue time and an expiry of five minutes.
-2. The wallet signs it. The client sends the message and the Ed25519 signature.
-3. The server checks the signature against the address, the domain against its own, the nonce against its store (single use, deleted on first check), and the times. Then it opens a session.
+Linking a Solana address requires a separate proof:
 
-Signing in proves control of an address. It grants a view of that address's data and moves nothing (`SERVICE_CATALOG.md` section 3.9).
+1. An authenticated account requests a single-use challenge for the address. The account service stores its account ID, address, origin, message and expiry for five minutes.
+2. The external wallet signs the message, not a transaction. The client returns the signature and challenge ID.
+3. The account service consumes the challenge, checks its expiry and the Ed25519 signature against the address, and enforces one account per linked address.
+
+An account may link several addresses. Every saved Allocation, purchase attempt and private receipt lookup names one owner address and network. Switching wallets changes the view; a combined portfolio must label each address. A saved template can be copied to another address as a new plan, but an executed Allocation cannot be reassigned by changing the account link. A transaction still needs its owning wallet's approval. Linking grants no custody (`SERVICE_CATALOG.md` section 3.9).
 
 | | Web | Mobile | Integrators |
 |---|---|---|---|
-| Credential | Session cookie: `HttpOnly`, `Secure`, `SameSite=Lax`, scoped to the API's parent domain | Bearer session token in the platform's secure storage | API key as a bearer token |
-| Stored as | A random session id, hashed | A random token, hashed | A random 32 byte secret, stored only as its SHA-256; a short prefix is kept for display |
-| Lifetime | 30 days idle, revocable | 30 days idle, revocable | Until revoked |
+| Credential | Better Auth session cookie: `HttpOnly`, `Secure`, `SameSite=Lax` | Native account session in platform secure storage; app integration remains to be built | API key as a bearer token |
+| Stored as | Better Auth's revocable account session | The native integration's revocable account session | A random 32 byte secret, stored only as its SHA-256; a short prefix is kept for display |
+| Lifetime | Configured Better Auth session duration, revocable | Configured session duration, revocable | Until revoked |
 
 **CORS.** Public reads allow any origin without credentials. Credentialed requests are allowed only from the web client's own origin.
 
-**What this stores about a person.** A wallet address linked to an account is personal data. From the first signed-in release there is a privacy notice, the deletion endpoint in section 5.2, and a statement of what is kept after deletion (receipts, detached) and why.
+**What this stores about a person.** Social account identifier, provider name, email, name, sessions and linked wallet addresses are personal data. The sign-in surface describes those fields and offers account deletion. Deletion removes wallet links with the account. Public on-chain history remains on chain; public receipts remain independently verifiable. Dormant-account retention and native-app session handling require a stated policy before the signed-in release.
 
 ## 8. Entitlements, limits and metering
 
@@ -247,7 +255,7 @@ One database, one schema per service, each service connecting as a role granted 
 | `execution` | Intents, approvals and their digests, simulations, submissions, confirmations |
 | `receipt` | Receipts, the serial allocator, batches, proofs, anchors |
 | `alert` | Subscriptions, rules, delivery attempts |
-| `identity` | Accounts, linked wallets, sign-in nonces, sessions, API keys, plans, usage |
+| `identity` | Go-owned API keys, plans, entitlements and usage; the account service owns its users, wallet links and sessions in a separate database |
 | `gateway` | Stored idempotent responses |
 
 Every schema that emits events has its own `outbox` table, written in the same transaction as the change it describes (standard section 10). One dispatcher in the process reads them all and feeds the stream and Alert.
@@ -309,7 +317,7 @@ Each step ends the way every step in this repository does: the command and its o
 | **A5** | The Hall read from chain: alloys, strike cost, melt proceeds, held-back legs. The outbox dispatcher and `GET /v1/stream` | Strike cost and melt proceeds equal what the program took and credited in the devnet transcript. A duplicated event is applied once (standard section 9) | The Terminal's cost views for the deployed alloy, live updates |
 | **F1** | `POST /formulas/evaluate`: admissibility, required atoms (an exact `units_per_share * shares`, not `basket.RequiredIn`/`Out`, which round a ratio that a formula not yet struck does not have), stored depth and a live buy quote per leg, for a basket not yet on chain, at most 12 constituents | Over the limit is refused, naming the count. An exhausted quote budget answers `partial` with each unquoted leg named and no total | The Terminal's formula workbench, the reason TERMINAL.md names first |
 | **A4, partly built** | Receipts in Postgres: the serial allocator under a unique constraint, batches, proofs, anchoring the root as a devnet memo from a memo-only key. Receipt, batch and anchor-key endpoints. Built: the ledger and the three endpoints, and `seametry record-demo-batch`, which writes `shared/evidence/demo-batch` into a demonstration database only, never beside real receipts, since its bodies are invented and nothing in a served receipt says so. `seametry anchor` writes each sealed root to devnet as the memo `seametry-root-v1:<root>`, waits for finalized, and records it; its transaction bytes match `@solana/web3.js` exactly (`shared/spec/anchor`). Not yet done: a live anchor on devnet | The public-artifact scan finds no signature, wallet or exact amount. Verification passes with no credentials configured (standard section 12) | The verification ritual against real anchors |
-| **A6** | Identity: sign-in, sessions, watchlists, saved formulas, deletion, private receipt bodies | A reused nonce, a signature over another domain, and an expired message are each refused. Deletion leaves receipts intact and detached | Signed-in Terminal and mobile |
+| **A6** | Account token verification in the Go Gateway; address-scoped saved formulas, watchlists, deletion and private receipt bodies | A reused wallet challenge, a signature over another origin, and an expired message are each refused. Cross-wallet access is refused. Deletion leaves public receipts intact and detached | Signed-in Terminal and mobile |
 | **A7** | Execution on devnet: intents, approval digests, the program allowlist, simulation, submission, confirmation, receipts issued on settlement | Changing any bound input invalidates the approval. An unlisted program is refused before handoff. An expired quote is refused at submission (standard section 11) | Strike, melt and withdraw from the Terminal on devnet |
 | **A8** | Entitlements, limits and metering, API keys, and x402: the `402` challenge, verifying a payment against a facilitator using `github.com/x402-foundation/x402/go`, and granting the `pro` entitlement an `expires_at` on a subscription payment | A key past its limit gets `429` with `Retry-After`. A revoked key is refused. A request with no valid payment gets `402` with the price and asset named; a verified payment is served once and not replayable. Usage counts match calls made in the test | The metered API, and per-call access with no account |
 | **A9** | The remainder of deployment: edge caching, nightly backup and the restore job (D1 already covers the Dockerfile and the running instance) | The restore job passes in CI against the latest dump | Online, at no cost |

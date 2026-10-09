@@ -295,8 +295,12 @@ asserting the rest of the system is unchanged.
 
 **Purpose.** Who is asking, what they may see, and what it costs.
 
-**Owns.** Users and teams; linked public wallet addresses; sessions; API keys;
-plans; permissions; saved workspaces; watchlists; usage metering and quotas.
+**Owns.** The web account service owns users, social identities, linked public
+wallet addresses and sessions in its dedicated Better Auth database. The Go
+Identity and Entitlements module owns API keys, plans, permissions, usage
+metering and quotas. Saved formulas belong to Basket. The Go module consumes
+the account subject through a verified token contract, never by reading the
+account service's tables.
 
 **Wallet linking is identity evidence, not custody.** Proving control of an
 address grants a view of that address's data. It grants no ability to move
