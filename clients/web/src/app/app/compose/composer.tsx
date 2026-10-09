@@ -330,7 +330,7 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
     </div>
 
     <StepBar
-      plan={step === 0 ? `${chosen.length} of at most ${MAX_CONSTITUENTS} chosen${full ? ". An Alloy holds no more legs than this; remove one to choose another." : "."}` : missing}
+      plan={step === 0 ? `Formula: ${chosen.length}/${MAX_CONSTITUENTS} constituents.${full ? " Remove one to choose another." : ""}` : missing}
       problem={step === 0 ? full : missing !== ready}
       back={
         step === 1 ? (

@@ -511,7 +511,7 @@
   color: var(--sm-text-primary);
   background: transparent;
   font-family: var(--sm-font-family-ui);
-  font-size: var(--sm-font-size-body);
+  font-size: max(16px, var(--sm-font-size-body));
 }
 
 .searchField input::placeholder {
@@ -1063,7 +1063,7 @@
   color: var(--sm-text-primary);
   background: transparent;
   font-family: var(--sm-font-family-ui);
-  font-size: var(--sm-font-size-body);
+  font-size: max(16px, var(--sm-font-size-body));
   font-weight: var(--sm-font-weight-medium);
 }
 

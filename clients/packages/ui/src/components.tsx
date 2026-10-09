@@ -463,6 +463,9 @@ export function Field({
   label,
   message,
   invalid = false,
+  inputMode,
+  onChange,
+  pattern,
   ...inputProps
 }: InputHTMLAttributes<HTMLInputElement> & {
   id: string;
@@ -470,6 +473,7 @@ export function Field({
   message?: string;
   invalid?: boolean;
 }) {
+  const numericPattern = inputMode === "decimal" ? "[0-9]+([.][0-9]*)?" : inputMode === "numeric" ? "[0-9]+" : undefined;
   return (
     <label className={styles.fieldGroup} htmlFor={id} data-invalid={invalid || undefined}>
       <span className={styles.fieldLabel}>
@@ -477,7 +481,24 @@ export function Field({
         <span aria-hidden="true" />
       </span>
       <span className={styles.fieldShell}>
-        <input {...inputProps} id={id} aria-invalid={invalid || undefined} aria-describedby={message ? `${id}-message` : undefined} />
+        <input
+          {...inputProps}
+          id={id}
+          inputMode={inputMode}
+          pattern={pattern ?? numericPattern}
+          aria-invalid={invalid || undefined}
+          aria-describedby={message ? `${id}-message` : undefined}
+          onChange={(event) => {
+            const value = event.currentTarget.value;
+            const accepted =
+              inputMode === "decimal"
+                ? value === "" || /^\d+(?:\.\d*)?$/.test(value)
+                : inputMode === "numeric"
+                  ? value === "" || /^\d+$/.test(value)
+                  : true;
+            if (accepted) onChange?.(event);
+          }}
+        />
       </span>
       {message ? <span className={styles.fieldMessage} id={`${id}-message`}>{message}</span> : null}
     </label>

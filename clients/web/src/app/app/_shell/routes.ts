@@ -11,13 +11,13 @@ const within = (href: string) => (pathname: string) => pathname === href || path
 
 export const appGroups: AppGroup[] = [
   { group: "Desk", icon: "desk", routes: [{ label: "Overview", href: "/app", isActive: exactly("/app") }] },
-  { group: "Buy", icon: "buy", routes: [{ label: "Build a basket", href: "/app/allocation", isActive: within("/app/allocation") }] },
+  { group: "Buy", icon: "buy", routes: [{ label: "Buy an Allocation", href: "/app/allocation", isActive: within("/app/allocation") }] },
   {
     group: "Hall",
     icon: "hall",
     routes: [
       { label: "Alloys", href: "/app/alloys", isActive: within("/app/alloys") },
-      { label: "Compose", href: "/app/compose", isActive: within("/app/compose") },
+      { label: "Sponsor an Alloy", href: "/app/compose", isActive: within("/app/compose") },
     ],
   },
   { group: "Assay", icon: "assay", routes: [{ label: "Instruments", href: "/app/instruments", isActive: within("/app/instruments") }] },

@@ -1,12 +1,11 @@
+import { toNextJsHandler } from "better-auth/next-js";
 import { getAuth } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
-function handle(request: Request) {
-  const auth = getAuth();
-  if (!auth) return Response.json({ error: "Account sign-in is not configured." }, { status: 503 });
-  return auth.handler(request);
-}
+const auth = getAuth();
+const unavailable = () => Response.json({ error: "Account sign-in is not configured." }, { status: 503 });
 
-export const GET = handle;
-export const POST = handle;
+export const { GET, POST } = auth
+  ? toNextJsHandler(auth)
+  : { GET: unavailable, POST: unavailable };

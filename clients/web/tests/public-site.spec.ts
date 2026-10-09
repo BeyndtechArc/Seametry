@@ -111,6 +111,26 @@ test("sign in distinguishes an account from its wallet while setup is unavailabl
   await expect(page.getByRole("main").getByRole("link", { name: "Open the Allocation" })).toHaveAttribute("href", "/app/allocation");
 });
 
+test("the public site publishes the terms and privacy policy used for account consent", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.getByRole("contentinfo");
+  await expect(footer.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
+  await expect(footer.getByRole("link", { name: "Privacy policy" })).toHaveAttribute("href", "/privacy-policy");
+
+  await page.goto("/terms");
+  await expect(page.getByRole("heading", { level: 1, name: "Terms of service" })).toBeVisible();
+  await expect(page.getByText("Effective 9 October 2026", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Accounts return you to Seametry." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Wallets remain under their owners' control." })).toBeVisible();
+
+  await page.goto("/privacy-policy");
+  await expect(page.getByRole("heading", { level: 1, name: "Privacy policy" })).toBeVisible();
+  await expect(page.getByText("Effective 9 October 2026", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Google returns account identity data." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "A linked wallet remains public." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "You may delete your account." })).toBeVisible();
+});
+
 test("the wallet state lives in the app's top bar, and connecting signs nothing", async ({ page }) => {
   await page.goto("/");
   // The public rail carries reading pages and one way into the app, never a wallet.
@@ -134,10 +154,10 @@ test("the Allocation keeps its terms behind an info note, and the order sheet st
   // Scoped to main: while the page streams, the loading boundary holds a
   // hidden copy of the same text outside it, and an unscoped lookup matches twice.
   const main = page.getByRole("main");
-  await expect(main.getByRole("heading", { level: 1, name: "Build a basket" })).toBeVisible();
+  await expect(main.getByRole("heading", { level: 1, name: "Buy an Allocation" })).toBeVisible();
   const terms = main.getByText("You remain bound by each issuer's terms of eligibility.", { exact: true });
   await expect(terms).toBeHidden();
-  await main.getByLabel("About Build a basket").click();
+  await main.getByLabel("About Buy an Allocation").click();
   await expect(terms).toBeVisible();
   // components.md, Info note: what the note says about cost is never only there.
   const sheet = main.getByRole("complementary", { name: "Order sheet" });
@@ -157,6 +177,7 @@ test("the Allocation chooses in one step and buys in the next, the order sheet b
   const sheet = page.getByRole("complementary", { name: "Order sheet" });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Direct ownership", { exact: true })).toBeVisible();
+  await expect(sheet.locator("div").first()).toHaveCSS("position", "sticky");
   await expect(page.getByText(/JUPITER_API_KEY|MAINNET_RPC_URL|ALLOCATION_APPROVAL_SECRET|ALLOCATION_BLOCKED_COUNTRIES|ALLOCATION_FEE_WALLET/)).toHaveCount(0);
 
   // Continue waits for a choice, and the count reads selected over offered.
@@ -171,6 +192,8 @@ test("the Allocation chooses in one step and buys in the next, the order sheet b
   await lots.nth(1).check();
   await next.click();
   await expect(steps.locator("[aria-current=step]")).toHaveText("2Buy");
+  await main.getByLabel("USDC to spend").fill("letters");
+  await expect(main.getByLabel("USDC to spend")).toHaveValue("");
   await main.getByLabel("USDC to spend").fill("250");
   await expect(sheet.getByText("Seametry routing fee, 0.15%", { exact: true }).locator("xpath=following-sibling::dd")).toHaveText("0.375000 USDC");
   await expect(main.getByText("AMD, 125.000000 USDC", { exact: true })).toBeVisible();
@@ -260,7 +283,7 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   await expect(page.getByRole("banner").getByText("Seametry", { exact: true })).toBeHidden();
   const appTabs = page.getByRole("navigation", { name: "Mobile product" });
   await expect(appTabs.getByRole("link")).toHaveCount(5);
-  await expect(appTabs.getByRole("link", { name: "Build a basket" })).toHaveAttribute("href", "/app/allocation");
+  await expect(appTabs.getByRole("link", { name: "Buy an Allocation" })).toHaveAttribute("href", "/app/allocation");
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("button", { name: "Use light mode" })).toBeVisible();
   const appOrder = await page.evaluate(() => ({
@@ -401,9 +424,9 @@ test("the app header connects a wallet and keeps the mode control beside it", as
   await expect(login.locator(":scope > span").last().locator("svg")).toHaveCount(1);
   await expect(page.getByRole("banner").getByRole("navigation", { name: "Product" }).getByRole("link")).toHaveText([
     "Overview",
-    "Build a basket",
+    "Buy an Allocation",
     "Alloys",
-    "Compose",
+    "Sponsor an Alloy",
     "Instruments",
   ]);
 });
@@ -446,7 +469,7 @@ test("the app shell marks only the current tab with an icon, and keeps one globa
 test("the desk cards let their content lead without decorative icons", async ({ page }) => {
   await page.goto("/app");
 
-  for (const name of ["The Alloy register", "Build a basket", "Demo", "Instruments"]) {
+  for (const name of ["The Alloy register", "Buy an Allocation", "Demo", "Instruments"]) {
     const card = page.getByRole("heading", { level: 2, name }).locator("..");
     await expect(card.locator("svg")).toHaveCount(0);
   }

@@ -11,7 +11,7 @@ import { AllocationFlow } from "./flow";
 import styles from "./allocation.module.css";
 
 export const metadata: Metadata = {
-  title: "Build a basket | Seametry",
+  title: "Buy an Allocation | Seametry",
   description: "Plan and buy several admitted tokenized stocks directly into your own wallet, with every purchase shown before you sign.",
 };
 
@@ -25,7 +25,7 @@ export default async function AllocationPage({ searchParams }: { searchParams: P
     <div className={styles.page}>
         <PageHeader
           group="Allocation"
-          title="Build a basket"
+          title="Buy an Allocation"
           network="Mainnet"
           info={
             <>

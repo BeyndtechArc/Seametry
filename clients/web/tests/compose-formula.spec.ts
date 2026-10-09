@@ -59,7 +59,7 @@ test("Compose stops at the twelve legs an Alloy can hold", async ({ page }) => {
   await expect(admitted.first()).toBeVisible();
   expect(await admitted.count()).toBeGreaterThan(12);
   for (let i = 0; i < 12; i++) await admitted.nth(i).check();
-  await expect(main.getByText("12 of at most 12 chosen. An Alloy holds no more legs than this; remove one to choose another.", { exact: true })).toBeVisible();
+  await expect(main.getByText("Formula: 12/12 constituents. Remove one to choose another.", { exact: true })).toBeVisible();
   await expect(admitted.nth(12)).toBeDisabled();
   await admitted.nth(0).uncheck();
   await expect(admitted.nth(12)).toBeEnabled();
@@ -251,7 +251,7 @@ test("Compose names an unpriceable constituent, then drafts the Formula and its 
   await page.goto("/app/compose");
   const main = page.getByRole("main");
   const sheet = main.getByTestId("formula-draft");
-  await expect(main.getByText("0 of at most 12 chosen.", { exact: true })).toBeVisible();
+  await expect(main.getByText("Formula: 0/12 constituents.", { exact: true })).toBeVisible();
   await expect(sheet.getByText("Choose at least one constituent.", { exact: true })).toBeVisible();
   for (const symbol of ["NFLXx", "AAPLx", "TQQQx"]) await main.getByRole("checkbox", { name: new RegExp(symbol) }).check();
   await expect(sheet.getByRole("status")).toHaveText("TQQQx has no quote. No mainnet route buys it with USDC right now.", { timeout: QUOTED });

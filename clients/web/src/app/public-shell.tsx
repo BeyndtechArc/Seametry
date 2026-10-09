@@ -78,7 +78,11 @@ export function PublicShell({
           },
           {
             title: "Access",
-            links: [{ label: "Sign in", href: "/sign-in" }],
+            links: [
+              { label: "Sign in", href: "/sign-in" },
+              { label: "Terms", href: "/terms" },
+              { label: "Privacy policy", href: "/privacy-policy" },
+            ],
           },
         ]}
         note="Seametry is operated by Beyndtech Arc from Port Harcourt. Public evidence requires no account."

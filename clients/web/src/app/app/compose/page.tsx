@@ -8,8 +8,8 @@ import { PageHeader } from "../_shell/page-header";
 import { Composer, type Candidate } from "./composer";
 
 export const metadata: Metadata = {
-  title: "Compose a Formula | Seametry",
-  description: "Draft an Alloy's Formula from assayed instruments, priced by live mainnet quotes. Nothing is founded here.",
+  title: "Sponsor an Alloy | Seametry",
+  description: "Set an Alloy's fixed Formula from assayed instruments, name it and found it as its sponsor.",
 };
 
 export default async function ComposePage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string }> }) {
@@ -31,12 +31,12 @@ export default async function ComposePage({ searchParams }: { searchParams: Prom
     <>
       <PageHeader
         group="Hall"
-        title="Compose a Formula"
+        title="Sponsor an Alloy"
         network="Mainnet evidence"
         info={
           <>
-            <p>Draft what one share holds, from assayed instruments priced by live mainnet quotes.</p>
-            <p>Nothing is founded here: founding is a separate step on the devnet Hall.</p>
+            <p>A sponsor sets what one share holds, names the Alloy and signs its founding on the devnet Hall.</p>
+            <p>Composing is the draft. Founding fixes that Formula on-chain; it cannot be edited or rebalanced afterward.</p>
             <p>
               Only instruments captured and assayed by the policy engine can enter a Formula ({admissions.policy_version}, captured {relativeEvidenceAge(admissions.as_of)} ago). To
               add another stock, capture it first.

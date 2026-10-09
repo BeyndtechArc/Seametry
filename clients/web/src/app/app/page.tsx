@@ -67,7 +67,7 @@ export default async function DeskPage() {
         <span className={styles.index}>02 / Allocation</span>
         <div className={styles.entryBody}>
           <header>
-            <h2 id="allocation-entry">Build a basket</h2>
+            <h2 id="allocation-entry">Buy an Allocation</h2>
             <NetworkBadge network="Mainnet" />
           </header>
           <p>Allocation means direct ownership: each constituent settles into your wallet, with no pooled share between you and the assets.</p>

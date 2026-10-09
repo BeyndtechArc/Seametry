@@ -164,12 +164,13 @@
   width: var(--sm-space-7);
   height: var(--sm-space-7);
   margin: 0;
-  border: 0;
+  border: 0.5px solid var(--sm-line-strong);
   background: var(--sm-surface-tray);
   cursor: pointer;
 }
 
 .lotChoice input:checked {
+  border-color: var(--sm-accent-touch);
   background: var(--sm-accent-touch);
 }
 
@@ -248,7 +249,7 @@
 
 .orderRailInner {
   position: sticky;
-  top: var(--sm-space-8);
+  top: calc(var(--sm-size-target) + var(--sm-space-9));
   padding: var(--sm-space-7);
   border-top: 0.5px solid var(--sm-line-highlight);
   color: var(--sm-text-secondary);
@@ -387,7 +388,7 @@
   display: none;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1099px) {
   .workspace {
     grid-template-columns: minmax(0, 1fr);
   }

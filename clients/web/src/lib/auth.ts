@@ -1,3 +1,4 @@
+import { dash } from "@better-auth/infra";
 import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { jwt } from "better-auth/plugins";
@@ -9,6 +10,7 @@ export function authConfigured() {
   return Boolean(
     process.env.AUTH_DATABASE_URL &&
     process.env.BETTER_AUTH_SECRET &&
+    process.env.BETTER_AUTH_API_KEY &&
     process.env.GOOGLE_CLIENT_ID &&
     process.env.GOOGLE_CLIENT_SECRET,
   );
@@ -41,7 +43,11 @@ function createAuth() {
       max: 30,
       customRules: { "/sign-in/social": { window: 60, max: 5 } },
     },
-    plugins: [jwt(), nextCookies()],
+    plugins: [
+      dash({ apiKey: process.env.BETTER_AUTH_API_KEY! }),
+      jwt(),
+      nextCookies(),
+    ],
   });
 }
 

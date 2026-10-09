@@ -81,7 +81,7 @@ function EmptyHall({ meta }: { meta: Meta }) {
         <code>{meta.completeness}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/app/compose">Compose a Formula</RouteAction>
+        <RouteAction href="/app/compose">Sponsor an Alloy</RouteAction>
       </div>
     </section>
   );

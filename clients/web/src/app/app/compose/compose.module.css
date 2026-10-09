@@ -113,12 +113,13 @@
   width: var(--sm-space-7);
   height: var(--sm-space-7);
   margin: 0;
-  border: 0;
+  border: 0.5px solid var(--sm-line-strong);
   background: var(--sm-surface-tray);
   cursor: pointer;
 }
 
 .candidateToggle input:checked {
+  border-color: var(--sm-accent-touch);
   background: var(--sm-accent-touch);
 }
 
