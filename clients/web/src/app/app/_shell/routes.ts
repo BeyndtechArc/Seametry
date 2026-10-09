@@ -17,7 +17,7 @@ export const appGroups: AppGroup[] = [
     icon: "hall",
     routes: [
       { label: "Alloys", href: "/app/alloys", isActive: within("/app/alloys") },
-      { label: "Sponsor an Alloy", href: "/app/compose", isActive: within("/app/compose") },
+      { label: "Sponsor", href: "/app/compose", isActive: within("/app/compose") },
     ],
   },
   { group: "Assay", icon: "assay", routes: [{ label: "Instruments", href: "/app/instruments", isActive: within("/app/instruments") }] },

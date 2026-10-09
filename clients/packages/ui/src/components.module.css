@@ -876,6 +876,9 @@
 }
 
 .stepPlan {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sm-space-3);
   min-width: 0;
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
@@ -884,6 +887,25 @@
 
 .stepPlan[data-problem] {
   color: var(--sm-text-primary);
+}
+
+.selectionCount {
+  display: inline-flex;
+  align-items: baseline;
+  flex: none;
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.selectionCount strong {
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-l);
+  font-weight: var(--sm-font-weight-semibold);
+}
+
+.selectionCount small {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
 }
 
 /* Too narrow for the plan between two buttons: it takes its own line above,

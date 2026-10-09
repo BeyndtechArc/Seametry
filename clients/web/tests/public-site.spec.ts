@@ -177,13 +177,14 @@ test("the Allocation chooses in one step and buys in the next, the order sheet b
   const sheet = page.getByRole("complementary", { name: "Order sheet" });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Direct ownership", { exact: true })).toBeVisible();
-  await expect(sheet.locator("div").first()).toHaveCSS("position", "sticky");
+  await expect(sheet).toHaveCSS("position", "sticky");
   await expect(page.getByText(/JUPITER_API_KEY|MAINNET_RPC_URL|ALLOCATION_APPROVAL_SECRET|ALLOCATION_BLOCKED_COUNTRIES|ALLOCATION_FEE_WALLET/)).toHaveCount(0);
 
   // Continue waits for a choice, and the count reads selected over offered.
   const next = main.getByRole("button", { name: "Set amount" });
   await expect(next).toBeDisabled();
   await expect(main.locator("output")).toHaveText(/^0\/\d+$/);
+  await expect(main.getByTestId("selection-action-bar")).toHaveCSS("position", "sticky");
 
   // Two lots, 250 USDC: 125 each; a two-constituent plan pays 15 basis
   // points, 0.1875 each, 0.375 in all. Down to one lot, 25 basis points.
@@ -426,7 +427,7 @@ test("the app header connects a wallet and keeps the mode control beside it", as
     "Overview",
     "Buy an Allocation",
     "Alloys",
-    "Sponsor an Alloy",
+    "Sponsor",
     "Instruments",
   ]);
 });

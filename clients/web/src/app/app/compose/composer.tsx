@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ContinueAction, Field, FilterBar, LotMark, QuietAction, Rule, StepBar, StepTrack, type GradeName } from "@seametry/ui";
+import { ContinueAction, Field, FilterBar, LotMark, QuietAction, Rule, SelectionCount, StepBar, StepTrack, type GradeName } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
 import { logoFor } from "@/lib/instrument-logos";
 import { shortIssuer } from "@/lib/issuers";
@@ -330,7 +330,7 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
     </div>
 
     <StepBar
-      plan={step === 0 ? `Formula: ${chosen.length}/${MAX_CONSTITUENTS} constituents.${full ? " Remove one to choose another." : ""}` : missing}
+      plan={step === 0 ? <><SelectionCount current={chosen.length} total={MAX_CONSTITUENTS} noun="constituents selected" />{full ? <span>Remove one to choose another.</span> : null}</> : missing}
       problem={step === 0 ? full : missing !== ready}
       back={
         step === 1 ? (

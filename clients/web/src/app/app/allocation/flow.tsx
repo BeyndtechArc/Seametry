@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, StepBar, StepTrack, Stamp } from "@seametry/ui";
+import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepTrack, Stamp } from "@seametry/ui";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
@@ -523,10 +523,8 @@ export function AllocationFlow({
       </div>
 
       {step === 0 ? (
-        <div className={styles.selectionBar}>
-          <output className={styles.selectionCount} aria-label={`${chosen.length} of ${offered.length} selected`} aria-live="polite">
-            <strong>{chosen.length}</strong><small>/{offered.length}</small>
-          </output>
+        <div className={styles.selectionBar} data-testid="selection-action-bar">
+          <SelectionCount current={chosen.length} total={offered.length} />
           <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
             Set amount
           </ContinueAction>

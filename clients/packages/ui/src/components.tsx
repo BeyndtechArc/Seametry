@@ -449,6 +449,14 @@ export function StepBar({ back, plan, problem = false, next }: { back?: ReactNod
   );
 }
 
+export function SelectionCount({ current, total, noun = "selected" }: { current: number; total: number; noun?: string }) {
+  return (
+    <output className={styles.selectionCount} aria-label={`${current} of ${total} ${noun}`} aria-live="polite">
+      <strong>{current}</strong><small>/{total}</small>
+    </output>
+  );
+}
+
 export function QuietAction({ children, icon, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode; icon?: IconName }) {
   return (
     <button {...buttonProps} className={classes(styles.quietAction, buttonProps.className)}>
