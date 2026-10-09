@@ -35,6 +35,31 @@ func TestComposeKeepsStatePrivateAndGivesTheServerItsRuntime(t *testing.T) {
 	if strings.Contains(compose, "POSTGRES_PASSWORD: postgres") {
 		t.Error("deploy/compose.yaml still carries the sample Postgres password")
 	}
+	for _, value := range []string{
+		"auth-database:",
+		"auth-migrate:",
+		"AUTH_DATABASE_URL:",
+		"SEAMETRY_AUTH_POSTGRES_PASSWORD:",
+		"BETTER_AUTH_SECRET:",
+		"GOOGLE_CLIENT_SECRET:",
+	} {
+		if !strings.Contains(compose, value) {
+			t.Errorf("deploy/compose.yaml does not contain auth boundary %q", value)
+		}
+	}
+}
+
+func TestCaddyRoutesAccountsToTheDedicatedAuthority(t *testing.T) {
+	contents, err := os.ReadFile("deploy/Caddyfile")
+	if err != nil {
+		t.Fatalf("read deploy/Caddyfile: %v", err)
+	}
+	caddyfile := string(contents)
+	for _, route := range []string{"handle /api/auth/*", "handle /api/account/*", "reverse_proxy auth:3005"} {
+		if !strings.Contains(caddyfile, route) {
+			t.Errorf("deploy/Caddyfile does not contain %q", route)
+		}
+	}
 }
 
 func TestDeploymentImageCarriesThePublishedDemoInputs(t *testing.T) {

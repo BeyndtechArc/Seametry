@@ -5,7 +5,7 @@ inter service contracts, deployment topology, and the criteria under which a
 module becomes a separately deployed service. It does not own product scope
 (`PRODUCT_ARCHITECTURE.md`) or engineering rules (`ENGINEERING_STANDARD.md`).
 
-**Last substantive change:** 27 September 2026.
+**Last substantive change:** 9 October 2026.
 
 ---
 
@@ -310,6 +310,14 @@ anything.
 
 **Failure.** Degrades to public entitlements only. Public surfaces stay up.
 
+**Deployment.** The account authority is a small Node process beside the Go
+Gateway on the Oracle host. It owns a dedicated `seametry_auth` database and
+login in the private PostgreSQL container. Caddy routes `/api/auth/*` and
+`/api/account/*` to it. The Vercel application forwards those same first-party
+paths without making an authentication decision, so browser cookies remain on
+the web origin and PostgreSQL remains unpublished. Better Auth schema changes
+and Seametry wallet-link migrations complete before the account process starts.
+
 ### 3.10 Gateway
 
 **Purpose.** The read and write edge. The Terminal must not make eight
@@ -365,22 +373,24 @@ rather than tested against it afterward.
 
 ## 4. Deployment topology
 
-**One process.** `server/cmd/seametry` runs every service in section 3, with
-background work on internal schedulers. The boundaries in section 3 are
-enforced by package structure and tests, not by network hops, which is what
-makes splitting later a configuration change rather than a rewrite.
+**One core process and one account process.** `server/cmd/seametry` runs every
+Go service in section 3, with background work on internal schedulers. The
+Better Auth account authority is a separate Node process because its library,
+session and plugin boundary is already distinct from the Go core. Vercel
+forwards first-party account paths to that process and owns no auth logic.
 
-**One database.** One Postgres database holds every service's tables, one
-schema per service. Each service connects as a role granted only its own
-schema, so rule 1 in section 2 is enforced by the database rather than by
-review alone.
+**One PostgreSQL instance.** The Go core uses the `seametry` database. The
+account authority uses `seametry_auth` through a restricted role. Neither
+database port is published by Docker. The account authority is the only
+process allowed to read its users, sessions and linked wallets; Go later
+consumes a signed subject contract rather than those tables.
 
 **Where it runs.** The process and Postgres ship as one Docker Compose file,
 so the host is a deployment choice and not a design one.
 
 | Piece | Host | Cost |
 |---|---|---|
-| Process and Postgres | Fly.io, on Storm's legacy plan allowance, until an Oracle Cloud Always Free account can be opened | 0, within that allowance |
+| Go core, account authority and PostgreSQL | Oracle Cloud compute | The provisioned VM |
 | Raw payloads, backups, cold history | Cloudflare R2 | 0 up to 10 GB-month |
 | Web client: the Terminal and the business pages, `clients/web` | Vercel | 0 on Hobby, pre-revenue; Pro at the first paid feature |
 | The Explorer: its own static site, not part of `clients/web` | Cloudflare Pages | 0, unlimited sites and bandwidth |

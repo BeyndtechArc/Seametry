@@ -32,4 +32,5 @@ case "$origin" in
 esac
 
 curl --fail --silent --show-error "$origin/v1/status"
+curl --fail --silent --show-error "$origin/api/auth/ok"
 printf '\nDeployed %s\n' "$(git rev-parse --short HEAD)"

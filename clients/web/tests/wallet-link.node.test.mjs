@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { Keypair } from "@solana/web3.js";
 import nacl from "tweetnacl";
-import { canonicalAddress, validWalletSignature, walletChallenge } from "../src/lib/wallet-link.ts";
+import { canonicalAddress, validWalletSignature, walletChallenge } from "../../../server/auth/src/wallet-link.mjs";
 
 test("wallet linking binds an account, address, origin and expiry to the signature", () => {
   const owner = Keypair.generate();

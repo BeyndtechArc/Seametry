@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { TextAction } from "@seametry/ui";
-import { authConfigured } from "@/lib/auth";
+import { accountServiceConfigured } from "@/lib/auth-proxy";
 import { PublicShell, SectionHeading } from "../public-shell";
 import { SignInControl } from "./sign-in-control";
 import styles from "../site.module.css";
@@ -26,7 +26,7 @@ export default async function SignInPage() {
           </p>
         </div>
         <div className={styles.signInBoundary}>
-          <SignInControl configured={authConfigured()} />
+          <SignInControl configured={accountServiceConfigured()} />
           <TextAction href="/app/alloys">Inspect live Alloys</TextAction>
         </div>
       </header>

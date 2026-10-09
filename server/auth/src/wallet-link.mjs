@@ -2,7 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { PublicKey } from "@solana/web3.js";
 import nacl from "tweetnacl";
 
-export function canonicalAddress(input: unknown) {
+export function canonicalAddress(input) {
   if (typeof input !== "string" || input.length > 44) return undefined;
   try {
     return new PublicKey(input).toBase58();
@@ -11,7 +11,7 @@ export function canonicalAddress(input: unknown) {
   }
 }
 
-export function walletChallenge(accountId: string, address: string, origin: string, now = new Date()) {
+export function walletChallenge(accountId, address, origin, now = new Date()) {
   const id = randomUUID();
   const expires = new Date(now.getTime() + 5 * 60 * 1000);
   const nonce = randomBytes(24).toString("base64url");
@@ -28,7 +28,7 @@ export function walletChallenge(accountId: string, address: string, origin: stri
   return { id, message, expiresAt: expires.toISOString() };
 }
 
-export function validWalletSignature(message: string, address: string, encoded: unknown) {
+export function validWalletSignature(message, address, encoded) {
   if (typeof encoded !== "string" || !/^[A-Za-z0-9+/]{86}==?$/.test(encoded)) return false;
   const signature = Buffer.from(encoded, "base64");
   if (signature.length !== 64) return false;

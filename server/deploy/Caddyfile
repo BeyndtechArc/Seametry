@@ -8,7 +8,17 @@
 		X-Frame-Options "DENY"
 	}
 
-	reverse_proxy seametry:8080
+	handle /api/auth/* {
+		reverse_proxy auth:3005
+	}
+
+	handle /api/account/* {
+		reverse_proxy auth:3005
+	}
+
+	handle {
+		reverse_proxy seametry:8080
+	}
 
 	log {
 		output stdout

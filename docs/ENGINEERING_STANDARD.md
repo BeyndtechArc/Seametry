@@ -339,8 +339,10 @@ pgx and sqlc; server sent events; OpenTelemetry.
 | ClickHouse | Observation density or replay genuinely hurts Postgres, measured |
 | An ORM | Never. Financial queries stay visible, which is why sqlc is used |
 
-Node exists as a build tool for the frontends. It does not run the backend and
-it does not hold financial state.
+Node builds the frontends and runs the isolated Better Auth account authority.
+That process owns identity records, sessions and linked public wallet addresses
+in its dedicated database. It does not hold financial state. Go remains the
+authority for every market, policy, execution, receipt and entitlement value.
 
 ## 16. Language boundary and style
 

@@ -11,7 +11,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@better-auth/infra": "^0.4.15",
     "@coral-xyz/anchor": "0.32.1",
     "@seametry/api-types": "0.0.0",
     "@seametry/ui": "0.0.0",
@@ -23,7 +22,6 @@
     "better-auth": "^1.7.7",
     "buffer": "6.0.3",
     "next": "16.3.6",
-    "pg": "^8.16.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "0.0.1",

@@ -44,7 +44,11 @@ These follow from the engineering standard and apply to every endpoint.
 
 **Drift check.** CI regenerates the Go server code and the TypeScript types from the contract and fails on any diff (standard section 17). A hand written TypeScript type describing a server shape is a defect (standard section 2).
 
-**Internal Protobuf is not written yet.** While there is one process, services call each other through Go interfaces in process (`SERVICE_CATALOG.md` section 2, rule 1). `contracts/proto/` is created at the first process split, which is Execution.
+**Internal Protobuf is not written yet.** The Go services call each other
+through interfaces in one process (`SERVICE_CATALOG.md` section 2, rule 1).
+The account authority is already a separate HTTP boundary because Better Auth
+owns that protocol. `contracts/proto/` is created when a Go service first
+splits from the core process, which is expected to be Execution.
 
 ## 4. The response model
 
@@ -160,9 +164,11 @@ The receipt endpoints are shaped so the verification ritual needs nothing else: 
 
 The `/v1/auth/*` rows below are still unimplemented contract placeholders
 from the wallet-only A6 plan. They must be replaced in the OpenAPI source and
-generated types before the Go Gateway accepts account credentials. The web
-account service begins at `/api/auth/*` and `/api/account/wallets*`; it is
-disabled until its database, migration and OAuth credentials are provisioned.
+generated types before the Go Gateway accepts account credentials. The account
+authority runs on the Oracle host at `/api/auth/*` and
+`/api/account/wallets*`. Vercel forwards those paths so the browser keeps a
+first-party session. The authority remains unavailable until its dedicated
+database, migrations and OAuth credentials are provisioned.
 
 | Method and path | Does | Owner | Phase |
 |---|---|---|---|

@@ -1,6 +1,6 @@
-# One process and one Postgres database, as owned by docs/SERVICE_CATALOG.md
-# section 4. Postgres and the Go process stay on Docker's private network.
-# Caddy is the only public edge and obtains TLS for SEAMETRY_API_ORIGIN.
+# The Go core, account authority and PostgreSQL stay on Docker's private
+# network. Caddy is the only public edge and obtains TLS for
+# SEAMETRY_API_ORIGIN.
 
 name: seametry
 
@@ -21,6 +21,55 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  auth-database:
+    image: postgres:18
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPASSWORD: ${SEAMETRY_POSTGRES_PASSWORD:?set SEAMETRY_POSTGRES_PASSWORD in server/deploy/.env}
+      SEAMETRY_AUTH_POSTGRES_PASSWORD: ${SEAMETRY_AUTH_POSTGRES_PASSWORD:?set SEAMETRY_AUTH_POSTGRES_PASSWORD in server/deploy/.env}
+    volumes:
+      - ./init-auth-db.sh:/usr/local/bin/init-auth-db.sh:ro
+    entrypoint: ["/bin/sh", "/usr/local/bin/init-auth-db.sh"]
+
+  auth-migrate:
+    build:
+      context: ../..
+      dockerfile: server/deploy/Auth.Dockerfile
+    depends_on:
+      auth-database:
+        condition: service_completed_successfully
+    environment: &auth-environment
+      AUTH_DATABASE_URL: postgres://seametry_auth:${SEAMETRY_AUTH_POSTGRES_PASSWORD}@postgres:5432/seametry_auth?sslmode=disable
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in server/deploy/.env}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-https://seametry.xyz}
+      BETTER_AUTH_API_KEY: ${BETTER_AUTH_API_KEY:?set BETTER_AUTH_API_KEY in server/deploy/.env}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?set GOOGLE_CLIENT_ID in server/deploy/.env}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?set GOOGLE_CLIENT_SECRET in server/deploy/.env}
+      SEAMETRY_APP_ORIGINS: ${SEAMETRY_APP_ORIGINS:-https://seametry.xyz,http://localhost:3000}
+    command: ["node", "src/migrate.mjs"]
+
+  auth:
+    build:
+      context: ../..
+      dockerfile: server/deploy/Auth.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      auth-migrate:
+        condition: service_completed_successfully
+    environment:
+      <<: *auth-environment
+      PORT: "3005"
+    expose:
+      - "3005"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3005/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   migrate:
     build:
@@ -89,6 +138,7 @@ services:
     restart: unless-stopped
     depends_on:
       - seametry
+      - auth
     environment:
       SEAMETRY_API_ORIGIN: ${SEAMETRY_API_ORIGIN:-http://localhost}
     ports:

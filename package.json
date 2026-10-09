@@ -9,7 +9,8 @@
   },
   "workspaces": [
     "clients/web",
-    "clients/packages/*"
+    "clients/packages/*",
+    "server/auth"
   ],
   "scripts": {
     "spec": "node shared/tools/spec/generate.mjs",
