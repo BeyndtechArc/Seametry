@@ -12,7 +12,10 @@ function authOrigin() {
 }
 
 export function accountServiceConfigured() {
-  return Boolean(process.env.SEAMETRY_AUTH_ORIGIN ?? process.env.SEAMETRY_API_URL);
+  // The Gateway and the account authority are separate services. A reachable
+  // Gateway does not prove that sign-in is configured, and treating its URL as
+  // that proof makes the client call auth routes that may not exist there.
+  return Boolean(process.env.SEAMETRY_AUTH_ORIGIN);
 }
 
 /**

@@ -496,7 +496,7 @@ export function Field({
           pattern={pattern ?? numericPattern}
           aria-invalid={invalid || undefined}
           aria-describedby={message ? `${id}-message` : undefined}
-          onChange={(event) => {
+          onChange={onChange ? (event) => {
             const value = event.currentTarget.value;
             const accepted =
               inputMode === "decimal"
@@ -504,8 +504,8 @@ export function Field({
                 : inputMode === "numeric"
                   ? value === "" || /^\d+$/.test(value)
                   : true;
-            if (accepted) onChange?.(event);
-          }}
+            if (accepted) onChange(event);
+          } : undefined}
         />
       </span>
       {message ? <span className={styles.fieldMessage} id={`${id}-message`}>{message}</span> : null}
