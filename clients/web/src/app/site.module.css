@@ -242,6 +242,24 @@
   outline-offset: var(--sm-space-1);
 }
 
+.phoneWalletHandoff {
+  display: grid;
+  gap: var(--sm-space-2);
+  border-top: 0.5px solid var(--sm-line-rule);
+  padding-top: var(--sm-space-3);
+}
+
+.phoneWalletHandoff .walletChoice {
+  display: flex;
+  padding: 0 var(--sm-space-4);
+  text-decoration: none;
+}
+
+.phoneWalletHandoff p {
+  margin: 0;
+  color: var(--sm-text-tertiary);
+}
+
 .walletBrand {
   justify-self: center;
   width: var(--sm-space-7);

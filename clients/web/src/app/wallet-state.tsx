@@ -20,6 +20,11 @@ function middle(address: string) {
   return `${address.slice(0, 4)}…${address.slice(-4)}`;
 }
 
+function phantomBrowseLink(pageUrl: string) {
+  const page = new URL(pageUrl);
+  return `https://phantom.com/ul/browse/${encodeURIComponent(page.href)}?ref=${encodeURIComponent(page.origin)}`;
+}
+
 type BalanceReading = { state: "reading" } | { state: "read"; balances: Balances } | { state: "unavailable"; reason: string };
 
 /**
@@ -88,7 +93,8 @@ export function WalletState() {
   const [chose, setChose] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const address = publicKey?.toBase58();
-  const network = walletNetwork(usePathname());
+  const pathname = usePathname();
+  const network = walletNetwork(pathname);
   const reading = useBalances(connected ? address : undefined, network, refresh);
   const visibleAsset = network === "mainnet" ? "USDC" : "SOL";
   const visibleHolding = reading?.state === "read" ? reading.balances.holdings.find((holding) => holding.asset === visibleAsset) : undefined;
@@ -98,6 +104,8 @@ export function WalletState() {
   // number 418) for every visitor with a wallet. The list waits until after the
   // page has hydrated; false on the server and during hydration, true after.
   const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
+  const phone = hydrated && /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
+  const handoff = phone ? phantomBrowseLink(window.location.href) : undefined;
 
   const choose = (name: WalletName) => {
     clear();
@@ -133,7 +141,7 @@ export function WalletState() {
         ) : !hydrated ? (
           <p>Looking for wallets in this browser.</p>
         ) : wallets.length === 0 ? (
-          <p>No Solana wallet is available in this browser. Open Seametry in a wallet app browser, or connect from a desktop browser with a wallet extension.</p>
+          <p>No signing wallet is available in this browser. On a phone, open this page in Phantom to connect and review each action.</p>
         ) : (
           wallets.map((wallet) => (
             <button className={styles.walletChoice} type="button" key={wallet.adapter.name} disabled={connecting} onClick={() => choose(wallet.adapter.name)}>
@@ -142,6 +150,12 @@ export function WalletState() {
             </button>
           ))
         )}
+        {!connected && handoff ? (
+          <div className={styles.phoneWalletHandoff}>
+            <a className={styles.walletChoice} href={handoff}>{pathname === "/app/allocation" ? "Open Allocation in Phantom" : "Open this page in Phantom"}</a>
+            <p>{pathname === "/app/allocation" ? "The plan travels with this link. Quotes and signatures do not." : "Review the action in Phantom before signing."}</p>
+          </div>
+        ) : null}
         {connectionError ? <p role="alert">Connection was not completed: {connectionError}</p> : null}
       </div>
     </details>

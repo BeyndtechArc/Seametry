@@ -260,7 +260,7 @@ test("the dashboard wallet disclosure opens below its header containment", async
   await page.goto("/app/allocation");
   const trigger = page.getByText("Connect", { exact: true });
   await trigger.click();
-  const panel = page.getByText("No Solana wallet is available in this browser.", { exact: false });
+  const panel = page.getByText("No signing wallet is available in this browser.", { exact: false });
   await expect(panel).toBeVisible();
   const triggerBox = await trigger.boundingBox();
   const panelBox = await panel.boundingBox();

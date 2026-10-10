@@ -15,9 +15,9 @@ export const metadata: Metadata = {
   description: "Plan and buy several admitted tokenized stocks directly into your own wallet, with every purchase shown before you sign.",
 };
 
-export default async function AllocationPage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string }> }) {
+export default async function AllocationPage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string; amount?: string }> }) {
   await connection();
-  const { selected, add } = await searchParams;
+  const { selected, add, amount } = await searchParams;
   const unavailable = purchasesUnavailable(await headers());
   const { offered, refused: refusedLots } = allocationOffer();
 
@@ -48,6 +48,7 @@ export default async function AllocationPage({ searchParams }: { searchParams: P
           refused={refusedLots}
           unavailable={unavailable}
           initialSelected={offered.filter((lot) => (selected?.split(",") ?? []).includes(lot.mint) || add === lot.mint).map((lot) => lot.mint)}
+          initialAmount={amount ?? ""}
         />
     </div>
   );

@@ -142,7 +142,7 @@ test("the wallet state lives in the app's top bar, and connecting signs nothing"
   await expect(state).toBeVisible();
   await state.click();
   // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
-  await expect(bar.getByText("No Solana wallet is available in this browser. Open Seametry in a wallet app browser, or connect from a desktop browser with a wallet extension.", { exact: true })).toBeVisible();
+  await expect(bar.getByText("No signing wallet is available in this browser. On a phone, open this page in Phantom to connect and review each action.", { exact: true })).toBeVisible();
 
   await page.goto("/app/allocation");
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();

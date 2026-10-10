@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
@@ -136,17 +136,21 @@ export function AllocationFlow({
   refused,
   unavailable,
   initialSelected,
+  initialAmount,
 }: {
   offered: OfferedLot[];
   refused: RefusedLot[];
   unavailable?: string;
   initialSelected: string[];
+  initialAmount: string;
 }) {
   const { publicKey, connected, signTransaction } = useWallet();
+  const walletAddress = publicKey?.toBase58();
+  const currentWallet = useRef(walletAddress);
   // Nothing starts chosen: choosing is the first step's whole question.
   const [selected, setSelected] = useState<string[]>(initialSelected);
-  const [step, setStep] = useState(0);
-  const [typed, setTyped] = useState("");
+  const [step, setStep] = useState(initialAmount && initialSelected.length > 0 ? 1 : 0);
+  const [typed, setTyped] = useState(initialAmount);
   const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
   const [now, setNow] = useState(() => Date.now());
 
@@ -181,13 +185,34 @@ export function AllocationFlow({
   // The plan is derived from the inputs on every render. Progress is kept as
   // each leg's changes, and only while it belongs to the same plan; the
   // inputs lock once a leg has started, so progress never lands on another.
-  const plan = `${typed}|${chosen.map((lot) => lot.mint).join(",")}`;
+  const plan = `${walletAddress ?? "no-wallet"}|${typed}|${chosen.map((lot) => lot.mint).join(",")}`;
   const changes = progress.plan === plan ? progress.changes : {};
   const legs: Leg[] =
     amountProblem || split.length === 0
       ? []
       : chosen.map((lot, i) => ({ mint: lot.mint, symbol: lot.symbol, atoms: split[i], phase: "idle", ...changes[lot.mint] }));
   const started = legs.some((leg) => leg.phase !== "idle" || leg.note);
+
+  useEffect(() => {
+    currentWallet.current = walletAddress;
+    // Clearing on the next microtask avoids a render-time state update while
+    // invalidating any prepared transaction left by the previous wallet.
+    queueMicrotask(() => setProgress({ plan: "", changes: {} }));
+  }, [walletAddress]);
+
+  // A wallet browser has a separate storage partition from Safari or Chrome.
+  // Only unsigned plan inputs travel in the URL. A quote or approval must be
+  // freshly prepared after the receiving wallet connects.
+  useEffect(() => {
+    if (started) return;
+    const url = new URL(window.location.href);
+    if (selected.length) url.searchParams.set("selected", selected.join(","));
+    else url.searchParams.delete("selected");
+    if (typed.trim()) url.searchParams.set("amount", typed.trim());
+    else url.searchParams.delete("amount");
+    url.searchParams.delete("add");
+    window.history.replaceState(window.history.state, "", url);
+  }, [selected, typed, started]);
 
   const anyPrepared = legs.some((leg) => leg.phase === "prepared");
   useEffect(() => {
@@ -264,6 +289,7 @@ export function AllocationFlow({
   const approveAndSign = async () => {
     const leg = active;
     if (!leg?.prepared || !signTransaction) return;
+    const signingWallet = walletAddress;
     update(leg.mint, { phase: "signing", note: undefined });
     let signed: VersionedTransaction;
     try {
@@ -272,6 +298,7 @@ export function AllocationFlow({
       update(leg.mint, { phase: "prepared", note: `Not signed: ${reasonFrom(error)}` });
       return;
     }
+    if (currentWallet.current !== signingWallet) return;
     update(leg.mint, { phase: "sending" });
     try {
       const { signature } = await postJson<{ signature: string }>("/api/allocation/submit", {
