@@ -402,7 +402,7 @@ test("a confirmed purchase shows a settled state and transaction link", async ({
 test("the amount step names and enforces the funding floor before wallet signing", async ({ page }) => {
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx");
   await page.goto(`/app/allocation?selected=${aapl!.instrument.mint}&amount=0.5`);
-  await expect(page.getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Set the basket amount" }).getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toBeVisible();
   await expect(page.getByRole("main").getByText("0.01 SOL", { exact: false }).first()).toBeVisible();
   await page.getByLabel("USDC to spend").fill("1");
   await expect(page.getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toHaveCount(0);
