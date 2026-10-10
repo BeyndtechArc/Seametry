@@ -140,10 +140,11 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 | `accent.provenanceField` | Bars beside green, chart fills, chips | Any surface larger than a chip |
 | `line.highlight` | Top-edge hairline on raised surfaces | Anything else |
 | `surface.inverse`, `text.inverse` | The supporting ink: BLOCK stamps, the icon cell of secondary actions, index chips on plates, and compact utility wrappers. Black on the light certificate, bone on the dark touchstone | A primary action's fill, a panel, more than one ink block per control |
+| `status.success`, `status.warning`, `status.error` | Purchase outcome icons only, with the outcome stated in text | Market movement, evidence grade, whole-panel fill |
 
 **Ink.** Black supports green; it never competes with it (Storm, 4 October 2026). A primary action stays green with its pressed-green cell. A secondary action keeps its sheet label and takes an ink icon cell, so the two read as different jobs at a glance without a second hue. Ink is a neutral, not a hue, so it carries no meaning beyond weight.
 
-**Decisions.** ALLOW renders in `text.primary`. WARN uses `text.primary` inside a provenance outline. BLOCK renders as an inverted stamp: `surface.inverse` fill, `text.inverse` type. No red anywhere in the system; the strongest signal is contrast, not hue.
+**Decisions.** ALLOW renders in `text.primary`. WARN uses `text.primary` inside a provenance outline. BLOCK renders as an inverted stamp: `surface.inverse` fill, `text.inverse` type. Semantic error colour is reserved for the small purchase outcome mark, never a decision, value or panel.
 
 **Gains and losses** carry no colour. Direction is the sign.
 

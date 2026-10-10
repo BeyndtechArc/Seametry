@@ -28,6 +28,11 @@ export const theme = {
       "provenanceField": "#3A20D6",
       "touchText": "#A9BD69"
     },
+    "status": {
+      "success": "#8FCBA4",
+      "warning": "#E3C178",
+      "error": "#DEA098"
+    },
     "feature": {
       "ground": "#141A11",
       "sheet": "#20281A",
@@ -65,6 +70,11 @@ export const theme = {
       "provenance": "#554C9C",
       "provenanceField": "#3520C0",
       "touchText": "#43540B"
+    },
+    "status": {
+      "success": "#2E6947",
+      "warning": "#7B5915",
+      "error": "#A3433A"
     },
     "feature": {
       "ground": "#B8C56A",

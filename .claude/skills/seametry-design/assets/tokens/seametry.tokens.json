@@ -84,6 +84,13 @@
           "$description": "Cool light green for links and small touchable marks on operational surfaces."
         }
       },
+      "status": {
+        "$type": "color",
+        "$description": "Reserved for purchase outcome icons. Meaning is repeated in text.",
+        "success": { "$value": "#8FCBA4" },
+        "warning": { "$value": "#E3C178" },
+        "error": { "$value": "#DEA098" }
+      },
       "feature": {
         "$type": "color",
         "$description": "The olive track. Reserved for named feature surfaces (see foundations.md section 5b): hero sections, alloy ceremony panels, sponsor profile headers, the Explorer landing. Never the default app background.",
@@ -186,6 +193,13 @@
           "$value": "#43540B",
           "$description": "Deep olive for links on pale paper and elevated sheets."
         }
+      },
+      "status": {
+        "$type": "color",
+        "$description": "Reserved for purchase outcome icons. Meaning is repeated in text.",
+        "success": { "$value": "#2E6947" },
+        "warning": { "$value": "#7B5915" },
+        "error": { "$value": "#A3433A" }
       },
       "feature": {
         "$type": "color",

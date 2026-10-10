@@ -204,6 +204,13 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **States:** closed; open. The request's own states live in its Step register.
 **Rules:** for watching a request (founding, signing, confirming), never for a task the user edits; that is the Modal sheet. Closing does not cancel the request, and the opening surface offers a way back. Native focus and Escape contract; focus returns to the opening control.
 
+### Purchase outcome
+**Answers:** was this constituent purchase sent, settled, or stopped before any funds moved?
+**Anatomy:** one status icon, one literal outcome title, one short account of funds and next action, optional technical detail, and a transaction link only when a signature exists. It replaces the running Step register inside the same Process dialog when the request ends.
+**States:** settled uses the success mark; not sent uses the error mark; uncertain broadcast uses the warning mark; pending confirmation stays in the running Step register. Icon colours use the scoped semantic status tokens and never carry meaning alone.
+**Data:** caller-owned outcome, refusal and signature. The component never infers settlement from a wallet signature alone.
+**Rules:** no retry for a wallet that changed the checked message, or when broadcast status is uncertain. A retry is offered only after a refusal known to have happened before broadcast. The same fact appears on the purchase row after the dialog closes.
+
 ### Step track
 **Answers:** where am I in this flow, and what is left?
 **Anatomy:** the flow's steps in order on one trace: each a numbered square mark, joined to the next by a dashed line that turns solid once the step behind it is finished, like a circuit run. The current mark is inverted, finished steps are quiet links back, later steps sit in `text.tertiary` and inert. Below the step's content, a step bar pinned to the bottom of the view: Back (Quiet action), one line summarising the plan so far, and Continue (Route action as a button).

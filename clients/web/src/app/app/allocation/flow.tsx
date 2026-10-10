@@ -6,6 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepTrack, Stamp, StepRegister, type RegisterStep } from "@seametry/ui";
 import { ProcessDialog } from "@seametry/ui/modal-sheet";
+import { Icon } from "@seametry/ui/icons";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
@@ -26,10 +27,12 @@ type Leg = {
   note?: string;
   retryable?: boolean;
   uncertain?: boolean;
+  walletBlocked?: boolean;
 };
 
 type PurchaseStage = "prepare" | "sign" | "confirm";
-type PurchaseRun = { mint: string; symbol: string; stage: PurchaseStage; state: "running" | "stopped" | "settled"; problem?: { plain: string; technical?: string }; retryable?: boolean; signature?: string };
+type PurchaseOutcome = "unsent" | "blocked" | "uncertain" | "failed";
+type PurchaseRun = { mint: string; symbol: string; stage: PurchaseStage; state: "running" | "stopped" | "settled"; outcome?: PurchaseOutcome; problem?: { plain: string; technical?: string }; retryable?: boolean; signature?: string };
 
 class ApiError extends Error {
   constructor(message: string, readonly status: number, readonly code?: string, readonly sent?: boolean) { super(message); }
@@ -172,10 +175,6 @@ function OrderSummary({
         <h3>Receiving wallet</h3>
         {wallet ? <code>{wallet}</code> : <p>Connect the receiving wallet from the header. Connecting buys nothing.</p>}
       </section>
-      <section className={styles.orderHandoff} aria-label="Alloy handoff">
-        <h3>Alloy handoff</h3>
-        <p>When this wallet holds a Formula&apos;s exact quantities, Strike can deposit them for Alloy shares. Mainnet Hall is not active in this build.</p>
-      </section>
     </div>
   );
 }
@@ -193,7 +192,7 @@ export function AllocationFlow({
   initialSelected: string[];
   initialAmount: string;
 }) {
-  const { publicKey, connected, signTransaction } = useWallet();
+  const { publicKey, connected, signTransaction, disconnect } = useWallet();
   const walletAddress = publicKey?.toBase58();
   const currentWallet = useRef(walletAddress);
   // Nothing starts chosen: choosing is the first step's whole question.
@@ -302,7 +301,7 @@ export function AllocationFlow({
           }
           if (status.state === "failed") {
             update(mint, { phase: "failed", note: "Mainnet rejected this purchase. Review the transaction before trying again.", retryable: false });
-            setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "stopped", stage: "confirm", problem: { plain: "Mainnet rejected this purchase. The network fee may have been charged.", technical: status.detail } } : current);
+            setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "stopped", stage: "confirm", outcome: "failed", problem: { plain: "Mainnet rejected this purchase. The network fee may have been charged.", technical: status.detail } } : current);
             return;
           }
         } catch {
@@ -310,14 +309,15 @@ export function AllocationFlow({
         }
       }
       update(mint, { note: "No confirmation within a minute. The signature below shows where it stands." });
-      setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "stopped", stage: "confirm", problem: { plain: "Confirmation has not arrived. Check the transaction signature before taking another action." } } : current);
+      setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "stopped", stage: "confirm", outcome: "uncertain", problem: { plain: "Confirmation has not arrived. Check the transaction signature before taking another action." } } : current);
     },
     [update],
   );
 
   // A submission error may arrive after broadcast. Never retry that leg from
   // the same plan without checking its on-chain state first.
-  const nextLeg = legs.find((leg) => leg.phase === "idle" || (leg.phase === "failed" && leg.retryable));
+  const walletBlocked = legs.some((leg) => leg.walletBlocked);
+  const nextLeg = walletBlocked ? undefined : legs.find((leg) => leg.phase === "idle" || (leg.phase === "failed" && leg.retryable));
   const inFlight = legs.find((leg) => leg.phase === "preparing" || leg.phase === "signing" || leg.phase === "sending");
   const buying = useRef(false);
 
@@ -328,7 +328,7 @@ export function AllocationFlow({
     setPurchaseOpen(true);
     setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "prepare", state: "running" });
     const signingWallet = walletAddress;
-    update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined, signature: undefined, retryable: false, uncertain: false });
+    update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined, signature: undefined, retryable: false, uncertain: false, walletBlocked: false });
     let prepared: PreparedLeg;
     try {
       // The plan's size sets the server-charged fee tier. A failed simulation
@@ -341,7 +341,7 @@ export function AllocationFlow({
       });
     } catch (error) {
       update(leg.mint, { phase: "idle", note: reasonFrom(error) });
-      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "prepare", state: "stopped", retryable: true, problem: { plain: "The quote or mainnet check did not pass. Nothing was sent. Try a fresh quote.", technical: reasonFrom(error) } });
+      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "prepare", state: "stopped", outcome: "unsent", retryable: true, problem: { plain: "The quote or mainnet check did not pass. Nothing was sent. A new quote can be requested.", technical: reasonFrom(error) } });
       buying.current = false;
       return;
     }
@@ -361,8 +361,8 @@ export function AllocationFlow({
       if (change) throw new ApiError(change, 409, "SIGNED_MESSAGE_CHANGED", false);
     } catch (error) {
       const changed = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED";
-      update(leg.mint, { phase: "failed", prepared: undefined, retryable: true, note: changed ? "Your wallet changed the prepared transaction. Nothing was sent. Prepare it again." : "The wallet did not sign this purchase. Nothing was sent." });
-      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "sign", state: "stopped", retryable: true, problem: { plain: changed ? "Your wallet changed the prepared transaction. Seametry did not send it or spend USDC. Retry with a fresh quote." : "The wallet did not sign this purchase. Nothing was sent or spent.", technical: reasonFrom(error) } });
+      update(leg.mint, { phase: "failed", prepared: undefined, retryable: !changed, walletBlocked: changed, note: changed ? "Not sent. This wallet returned a different transaction. No USDC was spent." : "Not signed. Nothing was sent." });
+      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "sign", state: "stopped", outcome: changed ? "blocked" : "unsent", retryable: !changed, problem: { plain: changed ? "This wallet returned different transaction instructions from the purchase Seametry checked. Nothing was sent. No USDC was spent. Use another wallet to continue this plan." : "The wallet did not sign this purchase. Nothing was sent or spent.", technical: reasonFrom(error) } });
       buying.current = false;
       return;
     }
@@ -381,8 +381,8 @@ export function AllocationFlow({
       void watch(leg.mint, signature);
     } catch (error) {
       const changed = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED" && error.sent === false;
-      update(leg.mint, { phase: "failed", retryable: changed, uncertain: !changed, note: changed ? "Your wallet returned a different transaction. Nothing was sent. Prepare it again." : "Submission could not be verified. Check this wallet's activity before buying again." });
-      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "confirm", state: "stopped", retryable: changed, problem: { plain: changed ? "The signed transaction differed from the approved purchase. Seametry did not send it or spend USDC. Retry with a fresh quote." : "Seametry could not verify whether this purchase reached mainnet. Check your wallet activity before trying again.", technical: reasonFrom(error) } });
+      update(leg.mint, { phase: "failed", retryable: false, walletBlocked: changed, uncertain: !changed, note: changed ? "Not sent. This wallet returned a different transaction. No USDC was spent." : "Submission could not be verified. Check this wallet's activity before buying again." });
+      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "confirm", state: "stopped", outcome: changed ? "blocked" : "uncertain", problem: { plain: changed ? "This wallet returned a different transaction from the purchase Seametry checked. Nothing was sent. No USDC was spent. Use another wallet to continue this plan." : "Seametry could not verify whether this purchase reached mainnet. Check your wallet activity before trying again.", technical: reasonFrom(error) } });
     }
     buying.current = false;
   };
@@ -395,6 +395,8 @@ export function AllocationFlow({
         ? "This wallet does not offer transaction signing."
         : inFlight
           ? `${phaseLabel[inFlight.phase]} ${inFlight.symbol}.`
+          : walletBlocked
+            ? "This wallet changed the prepared transaction. Connect another wallet to continue this plan."
           : !nextLeg
             ? "No unbought purchase can be safely retried from this plan."
             : undefined;
@@ -429,13 +431,22 @@ export function AllocationFlow({
       <ProcessDialog
         open={purchaseOpen}
         onClose={() => setPurchaseOpen(false)}
-        title={purchaseRun?.state === "settled" ? `${purchaseRun.symbol} settled` : purchaseRun?.state === "stopped" ? `${purchaseRun.symbol} needs attention` : `Buying ${purchaseRun?.symbol ?? "constituent"}`}
+        title={purchaseRun?.symbol ? `${purchaseRun.symbol} purchase` : "Purchase"}
         register="Mainnet"
         closeLabel="Close purchase status"
-        footer={purchaseRun?.state === "stopped" && purchaseRun.retryable ? <QuietAction type="button" onClick={() => void buy()}>Retry {purchaseRun.symbol}</QuietAction> : undefined}
+        footer={purchaseRun?.state === "stopped" && purchaseRun.retryable ? <QuietAction type="button" onClick={() => void buy()}>Prepare {purchaseRun.symbol} again</QuietAction> : purchaseRun?.outcome === "blocked" ? <QuietAction type="button" onClick={() => { setPurchaseOpen(false); void disconnect(); }}>Disconnect wallet</QuietAction> : undefined}
       >
-        <StepRegister label={`Purchase ${purchaseRun?.symbol ?? "constituent"}`} steps={purchaseSteps(purchaseRun)} />
-        {purchaseRun?.state === "settled" && purchaseRun.signature ? <a className={styles.signature} href={`https://explorer.solana.com/tx/${purchaseRun.signature}`} rel="noreferrer" target="_blank">View settled transaction</a> : null}
+        {purchaseRun?.state === "running" ? <StepRegister label={`Purchase ${purchaseRun.symbol}`} steps={purchaseSteps(purchaseRun)} /> : purchaseRun ? (
+          <section className={styles.purchaseOutcome} data-kind={purchaseRun.state === "settled" ? "success" : purchaseRun.outcome === "unsent" || purchaseRun.outcome === "uncertain" ? "warning" : "error"} role={purchaseRun.state === "settled" ? "status" : "alert"}>
+            <span className={styles.outcomeMark}><Icon name={purchaseRun.state === "settled" ? "check" : purchaseRun.outcome === "unsent" || purchaseRun.outcome === "uncertain" ? "info" : "close"} /></span>
+            <div className={styles.outcomeBody}>
+              <h3>{purchaseRun.state === "settled" ? "Purchase settled" : purchaseRun.outcome === "blocked" ? "Purchase not sent" : purchaseRun.outcome === "uncertain" ? "Check wallet activity" : purchaseRun.outcome === "failed" ? "Purchase failed on mainnet" : "Purchase not prepared"}</h3>
+              <p>{purchaseRun.state === "settled" ? "Mainnet confirmed this transaction." : purchaseRun.problem?.plain}</p>
+              {purchaseRun.problem?.technical ? <details><summary>Technical detail</summary><pre>{purchaseRun.problem.technical}</pre></details> : null}
+              {purchaseRun.signature ? <a className={styles.signature} href={`https://explorer.solana.com/tx/${purchaseRun.signature}`} rel="noreferrer" target="_blank">View transaction</a> : null}
+            </div>
+          </section>
+        ) : null}
       </ProcessDialog>
       {unavailable ? (
         <p className={styles.unavailable} role="note">
@@ -572,7 +583,7 @@ export function AllocationFlow({
                   step where signing happens carries it. */}
               <div className={styles.orderInline} data-testid="order-sheet-inline">{orderSummary}</div>
               <section className={styles.section} aria-label="Buy each constituent">
-                <p className={styles.quiet}>Each purchase is checked on mainnet before your wallet asks you to sign.</p>
+                <p className={styles.quiet}>Each constituent is a separate mainnet swap. Your wallet asks you to approve each purchase.</p>
                 <ol className={styles.legs}>
                   {legs.map((leg) => {
                     const secondsLeft = leg.prepared ? secondsUntil(leg.prepared.expiresAt, now) : 0;
@@ -582,7 +593,7 @@ export function AllocationFlow({
                           <b>
                             {leg.symbol}, {formatAmount(leg.atoms, USDC_SCALE)} USDC
                           </b>
-                          <span>{leg.phase === "failed" && leg.retryable ? "Retry available" : leg.uncertain ? "Check wallet" : phaseLabel[leg.phase]}</span>
+                          <span>{leg.walletBlocked ? "Not sent" : leg.phase === "failed" && leg.retryable ? "Prepare again" : leg.uncertain ? "Check wallet" : phaseLabel[leg.phase]}</span>
                         </header>
                         {leg.phase === "preparing" ? (
                           <p className={styles.loading}>Loading quotes for {formatAmount(leg.atoms, USDC_SCALE)} USDC</p>
@@ -621,10 +632,10 @@ export function AllocationFlow({
                 {attempted.length > 0 ? (
                   <p className={styles.summary} role={uncertainCount ? "alert" : "status"}>
                     {settledCount} of {legs.length} {legs.length === 1 ? "purchase" : "purchases"} settled.
-                    {uncertainCount ? ` ${uncertainCount} ${uncertainCount === 1 ? "submission needs" : "submissions need"} a wallet activity check.` : attempted.length === legs.length && settledCount < legs.length ? " The remaining purchases were not sent or did not settle." : ""}
+                    {walletBlocked ? " This wallet could not sign this purchase. The remaining purchases are paused." : uncertainCount ? ` ${uncertainCount} ${uncertainCount === 1 ? "submission needs" : "submissions need"} a wallet activity check.` : attempted.length === legs.length && settledCount < legs.length ? " The remaining purchases were not sent or did not settle." : ""}
                   </p>
                 ) : null}
-                {started && !inFlight ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
+                {started && !inFlight && !walletBlocked ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
               </section>
             </>
           ) : null}
@@ -654,9 +665,11 @@ export function AllocationFlow({
           next={
             !connected ? (
               <ContinueAction onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</ContinueAction>
+            ) : walletBlocked ? (
+              <span>Purchase paused</span>
             ) : nextLeg || inFlight ? (
               <Key busy={Boolean(inFlight)} busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined} disabled={Boolean(keyDisabledReason) && !inFlight} onClick={() => void buy()}>
-                {nextLeg ? `${nextLeg.phase === "failed" ? "Retry" : "Buy"} ${nextLeg.symbol}` : "Buying"}
+                {nextLeg ? `${nextLeg.phase === "failed" ? "Prepare" : "Buy"} ${nextLeg.symbol}` : "Buying"}
               </Key>
             ) : (
               <span>{uncertainCount ? "Check wallet activity" : settledCount === legs.length ? "Purchases settled" : "Review purchase status"}</span>

@@ -336,16 +336,17 @@ test("one Buy tap prepares the next leg and never asks a wallet to sign a refuse
   await expect(page.getByRole("button", { name: "Buy AAPLx" })).toBeEnabled();
 });
 
-test("a changed signed purchase is explained and can be prepared again without resetting the plan", async ({ page }) => {
+test("a changed signed purchase stops the plan without offering the same-wallet retry", async ({ page }) => {
   await registerTestWallet(page, { trusted: true });
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
+  const nvda = admissions.instruments.find((lot) => lot.instrument.symbol === "NVDAx")!;
   const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
   const transaction = new VersionedTransaction(new TransactionMessage({
     payerKey: wallet,
     recentBlockhash: Keypair.generate().publicKey.toBase58(),
     instructions: [],
   }).compileToV0Message());
-  await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
+  await page.goto(`/app/allocation?selected=${aapl.instrument.mint},${nvda.instrument.mint}&amount=2`);
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   let prepares = 0;
@@ -366,10 +367,13 @@ test("a changed signed purchase is explained and can be prepared again without r
   }));
   await page.getByRole("button", { name: "Buy AAPLx" }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByRole("dialog").getByText(/did not send it or spend USDC/i)).toBeVisible();
-  await expect(page.getByRole("dialog").getByRole("button", { name: "Retry AAPLx" })).toBeEnabled();
-  await page.getByRole("dialog").getByRole("button", { name: "Retry AAPLx" }).click();
-  await expect.poll(() => prepares).toBe(2);
+  await expect(page.getByRole("dialog").locator('[data-kind="error"]')).toBeVisible();
+  await expect(page.getByRole("dialog").getByText(/No USDC was spent/i)).toBeVisible();
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Retry AAPLx" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Close purchase status" }).click();
+  await expect(page.getByRole("button", { name: "Buy NVDAx" })).toHaveCount(0);
+  await expect(page.getByText(/wallet could not sign this purchase/i)).toBeVisible();
+  expect(prepares).toBe(1);
 });
 
 test("a confirmed purchase shows a settled state and transaction link", async ({ page }) => {
@@ -389,8 +393,9 @@ test("a confirmed purchase shows a settled state and transaction link", async ({
   await page.route("**/api/allocation/submit", (route) => route.fulfill({ json: { signature: "test-signature" } }));
   await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed" } }));
   await page.getByRole("button", { name: "Buy AAPLx" }).click();
-  await expect(page.getByRole("dialog").getByRole("heading", { name: "AAPLx settled" })).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByRole("dialog").getByRole("link", { name: "View settled transaction" })).toHaveAttribute("href", /test-signature/);
+  await expect(page.getByRole("dialog").getByRole("heading", { name: "Purchase settled" })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("dialog").locator('[data-kind="success"]')).toBeVisible();
+  await expect(page.getByRole("dialog").getByRole("link", { name: "View transaction" })).toHaveAttribute("href", /test-signature/);
   await expect(page.getByText("1 of 1 purchase settled.")).toBeVisible();
 });
 

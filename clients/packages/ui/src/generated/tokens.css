@@ -109,6 +109,9 @@
   --sm-accent-provenance: #AAA8D0;
   --sm-accent-provenanceField: #3A20D6;
   --sm-accent-touchText: #A9BD69;
+  --sm-status-success: #8FCBA4;
+  --sm-status-warning: #E3C178;
+  --sm-status-error: #DEA098;
   --sm-feature-ground: #141A11;
   --sm-feature-sheet: #20281A;
   --sm-feature-raised: #303724;
@@ -137,6 +140,9 @@
     --sm-accent-provenance: #554C9C;
     --sm-accent-provenanceField: #3520C0;
     --sm-accent-touchText: #43540B;
+    --sm-status-success: #2E6947;
+    --sm-status-warning: #7B5915;
+    --sm-status-error: #A3433A;
     --sm-feature-ground: #B8C56A;
     --sm-feature-sheet: #C5D17C;
     --sm-feature-raised: #D3DC94;
@@ -165,6 +171,9 @@
   --sm-accent-provenance: #554C9C;
   --sm-accent-provenanceField: #3520C0;
   --sm-accent-touchText: #43540B;
+  --sm-status-success: #2E6947;
+  --sm-status-warning: #7B5915;
+  --sm-status-error: #A3433A;
   --sm-feature-ground: #B8C56A;
   --sm-feature-sheet: #C5D17C;
   --sm-feature-raised: #D3DC94;
@@ -192,6 +201,9 @@
   --sm-accent-provenance: #AAA8D0;
   --sm-accent-provenanceField: #3A20D6;
   --sm-accent-touchText: #A9BD69;
+  --sm-status-success: #8FCBA4;
+  --sm-status-warning: #E3C178;
+  --sm-status-error: #DEA098;
   --sm-feature-ground: #141A11;
   --sm-feature-sheet: #20281A;
   --sm-feature-raised: #303724;
@@ -219,6 +231,9 @@
   --sm-accent-provenance: #554C9C;
   --sm-accent-provenanceField: #3520C0;
   --sm-accent-touchText: #43540B;
+  --sm-status-success: #2E6947;
+  --sm-status-warning: #7B5915;
+  --sm-status-error: #A3433A;
   --sm-feature-ground: #B8C56A;
   --sm-feature-sheet: #C5D17C;
   --sm-feature-raised: #D3DC94;
@@ -246,6 +261,9 @@
   --sm-accent-provenance: #AAA8D0;
   --sm-accent-provenanceField: #3A20D6;
   --sm-accent-touchText: #A9BD69;
+  --sm-status-success: #8FCBA4;
+  --sm-status-warning: #E3C178;
+  --sm-status-error: #DEA098;
   --sm-feature-ground: #141A11;
   --sm-feature-sheet: #20281A;
   --sm-feature-raised: #303724;
