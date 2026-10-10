@@ -13,7 +13,7 @@ import { shortIssuer } from "@/lib/issuers";
 import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
 import styles from "./allocation.module.css";
 
-type Phase = "idle" | "preparing" | "prepared" | "signing" | "sending" | "settled" | "failed";
+type Phase = "idle" | "preparing" | "signing" | "sending" | "settled" | "failed";
 
 type Leg = {
   mint: string;
@@ -68,9 +68,8 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 }
 
 const phaseLabel: Record<Phase, string> = {
-  idle: "Not previewed",
+  idle: "Not bought",
   preparing: "Preparing",
-  prepared: "Ready to sign",
   signing: "Signing",
   sending: "Sending",
   settled: "Settled",
@@ -221,7 +220,7 @@ export function AllocationFlow({
     keepUnsignedPlanInUrl(chosenMints ? chosenMints.split(",") : [], typed);
   }, [chosenMints, typed, started]);
 
-  const anyPrepared = legs.some((leg) => leg.phase === "prepared");
+  const anyPrepared = legs.some((leg) => leg.phase === "signing" || leg.phase === "sending");
   useEffect(() => {
     if (!anyPrepared) return;
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -244,28 +243,6 @@ export function AllocationFlow({
     keepUnsignedPlanInUrl(chosen.map((lot) => lot.mint), "");
     setStep(0);
   };
-
-  const prepare = useCallback(
-    // planMints travels with each leg because the plan's size sets the fee
-    // tier, and the server charges it, not this page.
-    async (leg: Leg, planMints: string[]) => {
-      if (!publicKey) return;
-      update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined });
-      try {
-        const prepared = await postJson<PreparedLeg>("/api/allocation/prepare", {
-          wallet: publicKey.toBase58(),
-          mint: leg.mint,
-          usdcAtoms: leg.atoms.toString(),
-          planMints,
-        });
-        setNow(Date.now());
-        update(leg.mint, { phase: "prepared", prepared });
-      } catch (error) {
-        update(leg.mint, { phase: "idle", note: reasonFrom(error) });
-      }
-    },
-    [publicKey, update],
-  );
 
   const watch = useCallback(
     async (mint: string, signature: string) => {
@@ -291,33 +268,62 @@ export function AllocationFlow({
     [update],
   );
 
-  const active = legs.find((leg) => leg.phase === "prepared" && leg.prepared && secondsUntil(leg.prepared.expiresAt, now) > 0);
-  const inFlight = legs.find((leg) => leg.phase === "signing" || leg.phase === "sending");
+  // A submission error may arrive after broadcast. Never retry that leg from
+  // the same plan without checking its on-chain state first.
+  const nextLeg = legs.find((leg) => leg.phase === "idle");
+  const inFlight = legs.find((leg) => leg.phase === "preparing" || leg.phase === "signing" || leg.phase === "sending");
+  const buying = useRef(false);
 
-  const approveAndSign = async () => {
-    const leg = active;
-    if (!leg?.prepared || !signTransaction) return;
+  const buy = async () => {
+    const leg = nextLeg;
+    if (!leg || !publicKey || !signTransaction || inFlight || buying.current) return;
+    buying.current = true;
     const signingWallet = walletAddress;
-    update(leg.mint, { phase: "signing", note: undefined });
-    let signed: VersionedTransaction;
+    update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined, signature: undefined });
+    let prepared: PreparedLeg;
     try {
-      signed = await signTransaction(VersionedTransaction.deserialize(fromBase64(leg.prepared.transaction)));
+      // The plan's size sets the server-charged fee tier. A failed simulation
+      // never reaches the wallet prompt.
+      prepared = await postJson<PreparedLeg>("/api/allocation/prepare", {
+        wallet: signingWallet,
+        mint: leg.mint,
+        usdcAtoms: leg.atoms.toString(),
+        planMints: chosen.map((lot) => lot.mint),
+      });
     } catch (error) {
-      update(leg.mint, { phase: "prepared", note: `Not signed: ${reasonFrom(error)}` });
+      update(leg.mint, { phase: "idle", note: reasonFrom(error) });
+      buying.current = false;
       return;
     }
-    if (currentWallet.current !== signingWallet) return;
+    if (currentWallet.current !== signingWallet) {
+      buying.current = false;
+      return;
+    }
+    update(leg.mint, { phase: "signing", prepared });
+    let signed: VersionedTransaction;
+    try {
+      signed = await signTransaction(VersionedTransaction.deserialize(fromBase64(prepared.transaction)));
+    } catch (error) {
+      update(leg.mint, { phase: "idle", prepared: undefined, note: `Not signed: ${reasonFrom(error)}` });
+      buying.current = false;
+      return;
+    }
+    if (currentWallet.current !== signingWallet) {
+      buying.current = false;
+      return;
+    }
     update(leg.mint, { phase: "sending" });
     try {
       const { signature } = await postJson<{ signature: string }>("/api/allocation/submit", {
         transaction: toBase64(signed.serialize()),
-        approval: leg.prepared.approval,
+        approval: prepared.approval,
       });
       update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
       void watch(leg.mint, signature);
     } catch (error) {
-      update(leg.mint, { phase: "failed", note: `${reasonFrom(error)} No USDC was spent on this purchase.` });
+      update(leg.mint, { phase: "failed", note: reasonFrom(error) });
     }
+    buying.current = false;
   };
 
   const keyDisabledReason = unavailable
@@ -328,8 +334,8 @@ export function AllocationFlow({
         ? "This wallet does not offer transaction signing."
         : inFlight
           ? `${phaseLabel[inFlight.phase]} ${inFlight.symbol}.`
-          : !active
-            ? "Preview a purchase to see its terms first."
+          : !nextLeg
+            ? "Every chosen constituent has been bought."
             : undefined;
 
   const attempted = legs.filter((leg) => leg.phase === "settled" || leg.phase === "failed");
@@ -491,8 +497,8 @@ export function AllocationFlow({
               {/* On a phone the order sheet is not beside the steps, so the
                   step where signing happens carries it. */}
               <div className={styles.orderInline} data-testid="order-sheet-inline">{orderSummary}</div>
-              <section className={styles.section} aria-label="Review each purchase">
-                <p className={styles.quiet}>Each purchase is quoted and simulated separately before it can be signed.</p>
+              <section className={styles.section} aria-label="Buy each constituent">
+                <p className={styles.quiet}>Each purchase is checked on mainnet before your wallet asks you to sign.</p>
                 <ol className={styles.legs}>
                   {legs.map((leg) => {
                     const secondsLeft = leg.prepared ? secondsUntil(leg.prepared.expiresAt, now) : 0;
@@ -507,7 +513,7 @@ export function AllocationFlow({
                         {leg.phase === "preparing" ? (
                           <p className={styles.loading}>Loading quotes for {formatAmount(leg.atoms, USDC_SCALE)} USDC</p>
                         ) : null}
-                        {leg.prepared && (leg.phase === "prepared" || leg.phase === "signing" || leg.phase === "sending") ? (
+                        {leg.prepared && (leg.phase === "signing" || leg.phase === "sending") ? (
                           <>
                             <QuoteBlock
                               floor={formatAmount(leg.prepared.floorAtoms, leg.prepared.outScale)}
@@ -533,11 +539,6 @@ export function AllocationFlow({
                           <a className={styles.signature} href={`https://explorer.solana.com/tx/${leg.signature}`} rel="noreferrer" target="_blank">
                             {leg.signature}
                           </a>
-                        ) : null}
-                        {leg.phase === "idle" || (leg.phase === "prepared" && secondsLeft === 0) ? (
-                          <QuietAction disabled={!connected || Boolean(unavailable)} onClick={() => void prepare(leg, chosen.map((lot) => lot.mint))}>
-                            {leg.phase === "idle" ? "Preview purchase" : "Refresh quote"}
-                          </QuietAction>
                         ) : null}
                       </li>
                     );
@@ -579,12 +580,12 @@ export function AllocationFlow({
           next={
             !connected ? (
               <ContinueAction onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</ContinueAction>
-            ) : active || inFlight ? (
-              <Key busy={Boolean(inFlight)} busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined} disabled={Boolean(keyDisabledReason) && !inFlight} onClick={() => void approveAndSign()}>
-                {active ? `Approve and sign ${active.symbol}` : "Approve and sign"}
+            ) : nextLeg || inFlight ? (
+              <Key busy={Boolean(inFlight)} busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined} disabled={Boolean(keyDisabledReason) && !inFlight} onClick={() => void buy()}>
+                {nextLeg ? `Buy ${nextLeg.symbol}` : "Buying"}
               </Key>
             ) : (
-              <span>Preview a purchase above</span>
+              <span>Purchases complete</span>
             )
           }
         />

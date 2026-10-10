@@ -16,6 +16,18 @@ export const USDC_TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
  */
 export const SLIPPAGE_BPS = 50;
 
+/** Jupiter V2 is required when a fee-bearing route buys a Token-2022 lot. */
+export function quoteParams(mint: string, inAtoms: bigint, feeBps: number): URLSearchParams {
+  return new URLSearchParams({
+    inputMint: USDC_MINT,
+    outputMint: mint,
+    amount: inAtoms.toString(),
+    slippageBps: String(SLIPPAGE_BPS),
+    platformFeeBps: String(feeBps),
+    instructionVersion: "V2",
+  });
+}
+
 /**
  * Seametry's routing fee in basis points of the USDC each leg spends, by how
  * many constituents the plan buys, set by Storm on 7 October 2026: capped at

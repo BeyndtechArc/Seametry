@@ -3,7 +3,7 @@ import { Keypair, PublicKey, TransactionInstruction, TransactionMessage, Version
 import { describeSplit, formatAmount, formatBalance, parseAmount, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
-import { countryGate, feeSchedule, lotCapAtoms, routingFeeAtoms, routingFeeBps, unlistedProgram } from "../src/lib/allocation/rules";
+import { countryGate, feeSchedule, lotCapAtoms, quoteParams, routingFeeAtoms, routingFeeBps, unlistedProgram } from "../src/lib/allocation/rules";
 import { registerTestWallet } from "./test-wallet";
 
 // Pure rules only: no build, no wallet, no network. The route handlers that
@@ -63,6 +63,13 @@ test("the routing fee is capped at 25 basis points and falls as the basket grows
 
 test("one lot cap converts its policy-issued capacity to exact atoms", () => {
   expect(lotCapAtoms(1000)).toBe(1_000_000_000n);
+});
+
+test("fee-bearing quotes request Jupiter V2 instructions for Token-2022 constituents", () => {
+  const params = quoteParams("AAPLxMint", 1_000_000n, 15);
+  expect(params.get("instructionVersion")).toBe("V2");
+  expect(params.get("amount")).toBe("1000000");
+  expect(params.get("platformFeeBps")).toBe("15");
 });
 
 function swapLike(programIds: string[]): VersionedTransaction {
@@ -294,6 +301,33 @@ test("a wallet that already trusts the site shows as connected the moment it is 
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
   await expect(page.getByTestId("wallet-account")).toBeVisible();
+});
+
+test("one Buy tap prepares the next leg and never asks a wallet to sign a refused simulation", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true });
+  const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx");
+  expect(aapl).toBeDefined();
+  await page.goto(`/app/allocation?selected=${aapl!.instrument.mint}&amount=1`);
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
+  let prepares = 0;
+  let submits = 0;
+  await page.route("**/api/allocation/prepare", (route) => {
+    prepares += 1;
+    return route.fulfill({ status: 422, json: { error: "The route could not be simulated." } });
+  });
+  await page.route("**/api/allocation/submit", (route) => {
+    submits += 1;
+    return route.fulfill({ status: 500, json: { error: "Unexpected submission." } });
+  });
+  await expect(page.getByRole("button", { name: "Buy AAPLx" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Preview purchase" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Buy AAPLx" }).click();
+  await expect(page.getByText("The route could not be simulated.")).toBeVisible();
+  expect(prepares).toBe(1);
+  expect(submits).toBe(0);
+  await expect(page.getByRole("button", { name: "Buy AAPLx" })).toBeEnabled();
 });
 
 test("a detected Wallet Standard wallet connects from the dashboard header", async ({ page }) => {

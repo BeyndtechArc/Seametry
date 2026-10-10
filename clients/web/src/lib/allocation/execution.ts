@@ -6,7 +6,7 @@ import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { QUOTE_TTL_MS, SLIPPAGE_BPS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, routingFeeBps, unlistedProgram } from "./rules";
+import { QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 
@@ -136,13 +136,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     throw new Refusal(503, `Seametry's routing fee account ${feeAccount.toBase58()} is not open on mainnet, so no leg can be prepared; Seametry has to open it.`);
   }
 
-  const query = new URLSearchParams({
-    inputMint: USDC_MINT,
-    outputMint: mint,
-    amount: inAtoms.toString(),
-    slippageBps: String(SLIPPAGE_BPS),
-    platformFeeBps: String(feeBps),
-  });
+  const query = quoteParams(mint, inAtoms, feeBps);
   const quote = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${query}`);
   const receivedAt = new Date();
   const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
