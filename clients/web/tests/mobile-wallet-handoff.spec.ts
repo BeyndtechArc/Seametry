@@ -18,6 +18,8 @@ for (const device of [
   await expect(handoff).toBeVisible();
   const solflare = page.getByRole("link", { name: "Open Allocation in Solflare" });
   await expect(solflare).toBeVisible();
+  await expect(handoff.locator("svg")).toHaveCount(1);
+  await expect(solflare.locator("svg")).toHaveCount(1);
   const solflareHref = await solflare.getAttribute("href");
   expect(solflareHref).toContain("https://solflare.com/ul/v1/browse/");
   expect(new URL(solflareHref!).searchParams.get("ref")).toBe(page.url().split("/app/")[0]);
