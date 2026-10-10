@@ -43,7 +43,7 @@ export async function registerTestWallet(page: Page, { trusted }: { trusted: boo
         "solana:signTransaction": {
           version: "1.0.0",
           supportedTransactionVersions: ["legacy", 0],
-          signTransaction: async (...inputs: unknown[]) => inputs,
+          signTransaction: async (...inputs: { transaction: Uint8Array }[]) => inputs.map((input) => ({ signedTransaction: input.transaction })),
         },
       },
     };

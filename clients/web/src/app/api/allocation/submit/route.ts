@@ -26,7 +26,10 @@ export async function POST(request: NextRequest) {
   try {
     return NextResponse.json({ signature: await submitLeg(configured.config, body.transaction, body.approval) });
   } catch (error) {
-    if (error instanceof Refusal) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof Refusal) {
+      const changed = error.status === 409 && error.message.startsWith("The transaction was changed after it was approved");
+      return NextResponse.json({ error: error.message, ...(changed ? { code: "SIGNED_MESSAGE_CHANGED", sent: false } : {}) }, { status: error.status });
+    }
     return NextResponse.json({ error: error instanceof Error ? error.message : "Sending the leg failed." }, { status: 500 });
   }
 }
