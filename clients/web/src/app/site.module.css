@@ -250,24 +250,13 @@
 }
 
 .phoneWalletHandoff .walletChoice {
+  display: flex;
+  padding: var(--sm-space-3) var(--sm-space-4);
   text-decoration: none;
 }
 
-.walletHandoffIcon {
-  display: grid;
-  place-items: center;
-  align-self: stretch;
-  color: var(--sm-text-inverse);
-  background: var(--sm-surface-inverse);
-}
-
-.walletHandoffIcon svg {
-  width: var(--sm-space-5);
-  height: var(--sm-space-5);
-}
-
 .phoneWalletHandoff p {
-  margin: 0;
+  margin: var(--sm-space-2) 0 0;
   color: var(--sm-text-tertiary);
 }
 

@@ -166,8 +166,8 @@ export function WalletState() {
         )}
         {!connected && handoff ? (
           <div className={styles.phoneWalletHandoff}>
-            <a className={styles.walletChoice} href={handoff.phantom}><span className={styles.walletHandoffIcon} aria-hidden="true"><Icon name="wallet" /></span><span>{pathname === "/app/allocation" ? "Open Allocation in Phantom" : "Open this page in Phantom"}</span></a>
-            <a className={styles.walletChoice} href={handoff.solflare}><span className={styles.walletHandoffIcon} aria-hidden="true"><Icon name="wallet" /></span><span>{pathname === "/app/allocation" ? "Open Allocation in Solflare" : "Open this page in Solflare"}</span></a>
+            <a className={styles.walletChoice} href={handoff.phantom}>{pathname === "/app/allocation" ? "Open Allocation in Phantom" : "Open this page in Phantom"}</a>
+            <a className={styles.walletChoice} href={handoff.solflare}>{pathname === "/app/allocation" ? "Open Allocation in Solflare" : "Open this page in Solflare"}</a>
             <p>{pathname === "/app/allocation" ? "The plan travels with either link. Quotes and signatures do not." : "Review the action in your wallet before signing."}</p>
           </div>
         ) : null}
