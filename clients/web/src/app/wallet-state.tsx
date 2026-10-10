@@ -15,6 +15,14 @@ import { NetworkBadge } from "./app/_shell/page-header";
 import styles from "./site.module.css";
 
 const noSubscription = () => () => {};
+const subscribeToPlanUrl = (changed: () => void) => {
+  window.addEventListener("seametry:plan-url", changed);
+  window.addEventListener("popstate", changed);
+  return () => {
+    window.removeEventListener("seametry:plan-url", changed);
+    window.removeEventListener("popstate", changed);
+  };
+};
 
 function middle(address: string) {
   return `${address.slice(0, 4)}…${address.slice(-4)}`;
@@ -104,8 +112,9 @@ export function WalletState() {
   // number 418) for every visitor with a wallet. The list waits until after the
   // page has hydrated; false on the server and during hydration, true after.
   const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
+  const pageUrl = useSyncExternalStore(subscribeToPlanUrl, () => window.location.href, () => "");
   const phone = hydrated && /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
-  const handoff = phone ? phantomBrowseLink(window.location.href) : undefined;
+  const handoff = phone && pageUrl ? phantomBrowseLink(pageUrl) : undefined;
 
   const choose = (name: WalletName) => {
     clear();

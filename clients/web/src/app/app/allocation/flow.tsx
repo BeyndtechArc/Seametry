@@ -35,6 +35,18 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(text);
 }
 
+function keepUnsignedPlanInUrl(mints: string[], amount: string) {
+  const url = new URL(window.location.href);
+  if (mints.length) url.searchParams.set("selected", mints.join(","));
+  else url.searchParams.delete("selected");
+  if (amount.trim()) url.searchParams.set("amount", amount.trim());
+  else url.searchParams.delete("amount");
+  url.searchParams.delete("add");
+  if (url.href === window.location.href) return;
+  window.history.replaceState(window.history.state, "", url);
+  window.dispatchEvent(new Event("seametry:plan-url"));
+}
+
 function secondsUntil(iso: string, now: number) {
   return Math.max(0, Math.ceil((Date.parse(iso) - now) / 1000));
 }
@@ -170,6 +182,7 @@ export function AllocationFlow({
   const needle = query.trim().toLowerCase();
   const visible = needle === "" ? preferred : preferred.filter((lot) => lot.symbol.toLowerCase().includes(needle) || lot.issuer.toLowerCase().includes(needle));
   const chosen = preferred.filter((lot) => selected.includes(lot.mint));
+  const chosenMints = chosen.map((lot) => lot.mint).join(",");
   const hiddenChosen = offered.filter((lot) => selected.includes(lot.mint)).length - chosen.length;
   const split = parsed && "atoms" in parsed ? splitEvenly(parsed.atoms, chosen.length) : [];
   const overCapacity = split.findIndex((atoms, index) => atoms > lotCapAtoms(chosen[index]?.capacityUsdc ?? 0));
@@ -205,14 +218,8 @@ export function AllocationFlow({
   // freshly prepared after the receiving wallet connects.
   useEffect(() => {
     if (started) return;
-    const url = new URL(window.location.href);
-    if (selected.length) url.searchParams.set("selected", selected.join(","));
-    else url.searchParams.delete("selected");
-    if (typed.trim()) url.searchParams.set("amount", typed.trim());
-    else url.searchParams.delete("amount");
-    url.searchParams.delete("add");
-    window.history.replaceState(window.history.state, "", url);
-  }, [selected, typed, started]);
+    keepUnsignedPlanInUrl(chosenMints ? chosenMints.split(",") : [], typed);
+  }, [chosenMints, typed, started]);
 
   const anyPrepared = legs.some((leg) => leg.phase === "prepared");
   useEffect(() => {
@@ -234,6 +241,7 @@ export function AllocationFlow({
   const startOver = () => {
     setProgress({ plan: "", changes: {} });
     setTyped("");
+    keepUnsignedPlanInUrl(chosen.map((lot) => lot.mint), "");
     setStep(0);
   };
 
@@ -428,11 +436,11 @@ export function AllocationFlow({
                               aria-label={`Add ${lot.symbol} to the basket`}
                               disabled={started}
                               checked={selected.includes(lot.mint)}
-                              onChange={(event) =>
-                                setSelected((current) =>
-                                  event.target.checked ? [...current, lot.mint] : current.filter((mint) => mint !== lot.mint),
-                                )
-                              }
+                              onChange={(event) => {
+                                const next = event.target.checked ? [...selected, lot.mint] : selected.filter((mint) => mint !== lot.mint);
+                                setSelected(next);
+                                keepUnsignedPlanInUrl(preferred.filter((entry) => next.includes(entry.mint)).map((entry) => entry.mint), typed);
+                              }}
                             />
                           </label>
                         </div>
@@ -470,7 +478,10 @@ export function AllocationFlow({
                 disabled={started}
                 invalid={Boolean(amountProblem)}
                 message={amountProblem ?? (legs.length > 0 ? describeSplit(legs, USDC_SCALE, "USDC") : "Seametry divides one total evenly across what you chose.")}
-                onChange={(event) => setTyped(event.target.value)}
+                onChange={(event) => {
+                  setTyped(event.target.value);
+                  keepUnsignedPlanInUrl(chosen.map((lot) => lot.mint), event.target.value);
+                }}
               />
             </section>
           ) : null}
