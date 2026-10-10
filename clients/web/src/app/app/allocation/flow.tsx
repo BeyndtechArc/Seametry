@@ -362,7 +362,7 @@ export function AllocationFlow({
     } catch (error) {
       const changed = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED";
       update(leg.mint, { phase: "failed", prepared: undefined, retryable: !changed, walletBlocked: changed, note: changed ? "Not sent. This wallet returned a different transaction. No USDC was spent." : "Not signed. Nothing was sent." });
-      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "sign", state: "stopped", outcome: changed ? "blocked" : "unsent", retryable: !changed, problem: { plain: changed ? "This wallet returned different transaction instructions from the purchase Seametry checked. Nothing was sent. No USDC was spent. Use another wallet to continue this plan." : "The wallet did not sign this purchase. Nothing was sent or spent.", technical: reasonFrom(error) } });
+      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "sign", state: "stopped", outcome: changed ? "blocked" : "unsent", retryable: !changed, problem: { plain: changed ? "This wallet returned a different transaction from the purchase Seametry checked. Nothing was sent. No USDC was spent. Use another wallet to continue this plan." : "The wallet did not sign this purchase. Nothing was sent or spent.", technical: reasonFrom(error) } });
       buying.current = false;
       return;
     }
@@ -440,7 +440,7 @@ export function AllocationFlow({
           <section className={styles.purchaseOutcome} data-kind={purchaseRun.state === "settled" ? "success" : purchaseRun.outcome === "unsent" || purchaseRun.outcome === "uncertain" ? "warning" : "error"} role={purchaseRun.state === "settled" ? "status" : "alert"}>
             <span className={styles.outcomeMark}><Icon name={purchaseRun.state === "settled" ? "check" : purchaseRun.outcome === "unsent" || purchaseRun.outcome === "uncertain" ? "info" : "close"} /></span>
             <div className={styles.outcomeBody}>
-              <h3>{purchaseRun.state === "settled" ? "Purchase settled" : purchaseRun.outcome === "blocked" ? "Purchase not sent" : purchaseRun.outcome === "uncertain" ? "Check wallet activity" : purchaseRun.outcome === "failed" ? "Purchase failed on mainnet" : "Purchase not prepared"}</h3>
+              <h3>{purchaseRun.state === "settled" ? "Purchase settled" : purchaseRun.outcome === "blocked" ? "Purchase not sent" : purchaseRun.outcome === "uncertain" ? "Check wallet activity" : purchaseRun.outcome === "failed" ? "Purchase failed on mainnet" : purchaseRun.stage === "sign" ? "Purchase not signed" : "Purchase not prepared"}</h3>
               <p>{purchaseRun.state === "settled" ? "Mainnet confirmed this transaction." : purchaseRun.problem?.plain}</p>
               {purchaseRun.problem?.technical ? <details><summary>Technical detail</summary><pre>{purchaseRun.problem.technical}</pre></details> : null}
               {purchaseRun.signature ? <a className={styles.signature} href={`https://explorer.solana.com/tx/${purchaseRun.signature}`} rel="noreferrer" target="_blank">View transaction</a> : null}
