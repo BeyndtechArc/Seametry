@@ -10,6 +10,13 @@ export const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 export const USDC_SCALE = 6;
 export const USDC_TOKEN_PROGRAM = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 
+/** Platform floor for a single swap. Routes may require more at quote time. */
+export const MIN_LEG_USDC_ATOMS = 1_000_000n;
+
+export function minimumPlanAtoms(constituents: number): bigint {
+  return BigInt(constituents) * MIN_LEG_USDC_ATOMS;
+}
+
 /**
  * 50 basis points, the slippage every captured depth quote was requested at.
  * An assumption stated on the page, not a policy value yet.

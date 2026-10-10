@@ -10,7 +10,7 @@ import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
 import { logoFor } from "@/lib/instrument-logos";
 import { shortIssuer } from "@/lib/issuers";
-import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
+import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, minimumPlanAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
 import styles from "./allocation.module.css";
 
 type Phase = "idle" | "preparing" | "signing" | "sending" | "settled" | "failed";
@@ -106,6 +106,10 @@ function OrderSummary({
           <dd>{selectedSymbols.length || "None selected"}</dd>
         </div>
         <div>
+          <dt>Minimum spend</dt>
+          <dd>{selectedSymbols.length ? `${formatAmount(minimumPlanAtoms(selectedSymbols.length), USDC_SCALE)} USDC` : "1 USDC per constituent"}</dd>
+        </div>
+        <div>
           <dt>Execution</dt>
           <dd>One swap per constituent</dd>
         </div>
@@ -118,6 +122,7 @@ function OrderSummary({
           <dd>{formatAmount(BigInt(SLIPPAGE_BPS), 2)}% of each swap</dd>
         </div>
       </dl>
+      <p className={styles.quiet}>Keep 0.01 SOL in this wallet as a demo reserve for network fees and new token accounts. The exact SOL cost is checked when you buy; a live route may need more than the USDC minimum.</p>
       <section className={styles.orderSelection} aria-label="Selected plan">
         <h3>Selected plan</h3>
         {selectedSymbols.length > 0 ? (
@@ -188,6 +193,8 @@ export function AllocationFlow({
   const amountProblem =
     parsed && "refused" in parsed
       ? parsed.refused
+      : parsed && "atoms" in parsed && chosen.length > 0 && parsed.atoms < minimumPlanAtoms(chosen.length)
+        ? `Spend at least ${formatAmount(minimumPlanAtoms(chosen.length), USDC_SCALE)} USDC for ${chosen.length} ${chosen.length === 1 ? "constituent" : "constituents"}. The minimum is 1 USDC each.`
       : overCapacity >= 0
         ? `${chosen[overCapacity].symbol} may take at most ${formatAmount(BigInt(chosen[overCapacity].capacityUsdc), 0)} USDC under this captured capacity decision.`
         : split.some((atoms) => atoms === 0n) && split.length > 0
@@ -376,6 +383,7 @@ export function AllocationFlow({
         <div className={styles.builder}>
           {step === 0 ? (
               <section className={styles.section} aria-label="Choose the constituents">
+                <p className={styles.quiet}>Allow at least 1 USDC per constituent, plus SOL for network fees. A live route may need more.</p>
                 {offered.length > 0 ? (
                   <FilterBar
                     searchLabel="Search by symbol or issuer"

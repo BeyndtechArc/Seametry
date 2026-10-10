@@ -6,7 +6,7 @@ import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, unlistedProgram } from "./rules";
+import { MIN_LEG_USDC_ATOMS, QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 
@@ -71,7 +71,7 @@ async function refuseUnfunded(
   const held = BigInt(walletAccount?.lamports ?? 0);
   if (held < needed) {
     const opening = rent > 0n ? `${formatAmount(rent, 9)} SOL to open its ${symbol} account, returned if that account is closed, and ` : "";
-    throw new Refusal(402, `This wallet holds ${formatAmount(held, 9)} SOL; buying ${symbol} needs ${opening}${formatAmount(needed - rent, 9)} SOL in network fees. Add SOL to the wallet and preview again.`);
+    throw new Refusal(402, `This wallet holds ${formatAmount(held, 9)} SOL; buying ${symbol} needs ${opening}${formatAmount(needed - rent, 9)} SOL in network fees. Add SOL to the wallet and buy again.`);
   }
 }
 
@@ -123,7 +123,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     throw new Refusal(400, `"${walletText}" is not a Solana address.`);
   }
   const cap = lotCapAtoms(lot.capacity_usdc);
-  if (inAtoms <= 0n) throw new Refusal(400, "A leg must spend more than zero USDC.");
+  if (inAtoms < MIN_LEG_USDC_ATOMS) throw new Refusal(400, "Each constituent needs at least 1 USDC. A live route may require more.");
   if (inAtoms > cap) {
     throw new Refusal(400, `${lot.instrument.symbol ?? mint} may spend at most ${lot.capacity_usdc} USDC under the captured capacity decision.`);
   }

@@ -3,7 +3,7 @@ import { Keypair, PublicKey, TransactionInstruction, TransactionMessage, Version
 import { describeSplit, formatAmount, formatBalance, parseAmount, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
-import { countryGate, feeSchedule, lotCapAtoms, quoteParams, routingFeeAtoms, routingFeeBps, unlistedProgram } from "../src/lib/allocation/rules";
+import { countryGate, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, unlistedProgram } from "../src/lib/allocation/rules";
 import { registerTestWallet } from "./test-wallet";
 
 // Pure rules only: no build, no wallet, no network. The route handlers that
@@ -63,6 +63,12 @@ test("the routing fee is capped at 25 basis points and falls as the basket grows
 
 test("one lot cap converts its policy-issued capacity to exact atoms", () => {
   expect(lotCapAtoms(1000)).toBe(1_000_000_000n);
+});
+
+test("one USDC per constituent is the exact minimum shown before a buy", () => {
+  expect(minimumPlanAtoms(1)).toBe(1_000_000n);
+  expect(minimumPlanAtoms(2)).toBe(2_000_000n);
+  expect(minimumPlanAtoms(12)).toBe(12_000_000n);
 });
 
 test("fee-bearing quotes request Jupiter V2 instructions for Token-2022 constituents", () => {
@@ -328,6 +334,16 @@ test("one Buy tap prepares the next leg and never asks a wallet to sign a refuse
   expect(prepares).toBe(1);
   expect(submits).toBe(0);
   await expect(page.getByRole("button", { name: "Buy AAPLx" })).toBeEnabled();
+});
+
+test("the amount step names and enforces the funding floor before wallet signing", async ({ page }) => {
+  const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx");
+  await page.goto(`/app/allocation?selected=${aapl!.instrument.mint}&amount=0.5`);
+  await expect(page.getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toBeVisible();
+  await expect(page.getByRole("main").getByText("0.01 SOL", { exact: false }).first()).toBeVisible();
+  await page.getByLabel("USDC to spend").fill("1");
+  await expect(page.getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toHaveCount(0);
+  await expect(page.getByText("AAPLx, 1.000000 USDC")).toBeVisible();
 });
 
 test("a detected Wallet Standard wallet connects from the dashboard header", async ({ page }) => {
