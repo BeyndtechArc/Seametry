@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { describeSplit, formatAmount, parseAmount, splitEvenly } from "../src/lib/amount";
+import { describeSplit, formatAmount, formatBalance, parseAmount, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
 import { countryGate, feeSchedule, lotCapAtoms, routingFeeAtoms, routingFeeBps, unlistedProgram } from "../src/lib/allocation/rules";
@@ -23,6 +23,13 @@ test("amounts format with separators, every digit of the scale, and a true minus
   expect(formatAmount("5", 6)).toBe("0.000005");
   expect(formatAmount(-2500000n, 6)).toBe("−2.500000");
   expect(formatAmount("1000", 0)).toBe("1,000");
+});
+
+test("the wallet header drops only insignificant zeroes", () => {
+  expect(formatBalance("0", 9)).toBe("0");
+  expect(formatBalance("1234000000", 9)).toBe("1.234");
+  expect(formatBalance("1", 9)).toBe("0.000000001");
+  expect(formatBalance("123456789000000", 6)).toBe("123,456,789");
 });
 
 test("an even split sums to the total exactly, remainder to the first shares", () => {

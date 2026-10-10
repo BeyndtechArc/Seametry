@@ -48,7 +48,7 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: end;
   gap: var(--sm-space-1);
-  padding: var(--sm-space-3) var(--sm-space-3) calc(var(--sm-space-3) + env(safe-area-inset-bottom));
+  padding: var(--sm-space-3) var(--sm-space-3) calc(var(--sm-space-5) + env(safe-area-inset-bottom));
   border-top: 0.5px solid var(--sm-line-strong);
   background: var(--sm-surface-sheet);
 }

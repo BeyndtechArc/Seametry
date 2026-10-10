@@ -142,7 +142,7 @@ test("the wallet state lives in the app's top bar, and connecting signs nothing"
   await expect(state).toBeVisible();
   await state.click();
   // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
-  await expect(bar.getByText("No signing wallet is available in this browser. On a phone, open this page in Phantom to connect and review each action.", { exact: true })).toBeVisible();
+  await expect(bar.getByText("No signing wallet is available in this browser. On a phone, open this page in Phantom or Solflare to connect and review each action.", { exact: true })).toBeVisible();
 
   await page.goto("/app/allocation");
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
@@ -436,7 +436,7 @@ test("every app page names its network, and the top bar and mobile register shar
   for (const [path, network] of [
     ["/app", "Mainnet evidence"],
     ["/app/allocation", "Mainnet"],
-    ["/app/compose", "Mainnet evidence"],
+    ["/app/compose", "Devnet"],
     ["/app/alloys/storm", "Devnet"],
     ["/app/instruments", "Mainnet evidence"],
   ] as const) {

@@ -8,7 +8,7 @@ import { PageHeader } from "../_shell/page-header";
 import { Composer, type Candidate } from "./composer";
 
 export const metadata: Metadata = {
-  title: "Sponsor an Alloy | Seametry",
+  title: "Sponsor | Seametry",
   description: "Set an Alloy's fixed Formula from assayed instruments, name it and found it as its sponsor.",
 };
 
@@ -31,8 +31,8 @@ export default async function ComposePage({ searchParams }: { searchParams: Prom
     <>
       <PageHeader
         group="Hall"
-        title="Sponsor an Alloy"
-        network="Mainnet evidence"
+        title="Sponsor"
+        network="Devnet"
         info={
           <>
             <p>A sponsor sets what one share holds, names the Alloy and signs its founding on the devnet Hall.</p>

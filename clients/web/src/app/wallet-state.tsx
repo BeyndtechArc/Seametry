@@ -7,7 +7,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import type { WalletName } from "@solana/wallet-adapter-base";
 import { QuietAction } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
-import { formatAmount } from "@/lib/amount";
+import { formatAmount, formatBalance } from "@/lib/amount";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import type { Balances } from "@/lib/wallet/balances";
 import { useWalletFailure, walletNetwork } from "@/lib/wallet-provider";
@@ -28,9 +28,10 @@ function middle(address: string) {
   return `${address.slice(0, 4)}…${address.slice(-4)}`;
 }
 
-function phantomBrowseLink(pageUrl: string) {
+function walletBrowseLink(pageUrl: string, wallet: "phantom" | "solflare") {
   const page = new URL(pageUrl);
-  return `https://phantom.com/ul/browse/${encodeURIComponent(page.href)}?ref=${encodeURIComponent(page.origin)}`;
+  const base = wallet === "phantom" ? "https://phantom.com/ul/browse/" : "https://solflare.com/ul/v1/browse/";
+  return `${base}${encodeURIComponent(page.href)}?ref=${encodeURIComponent(page.origin)}`;
 }
 
 type BalanceReading = { state: "reading" } | { state: "read"; balances: Balances } | { state: "unavailable"; reason: string };
@@ -114,7 +115,11 @@ export function WalletState() {
   const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
   const pageUrl = useSyncExternalStore(subscribeToPlanUrl, () => window.location.href, () => "");
   const phone = hydrated && /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
-  const handoff = phone && pageUrl ? phantomBrowseLink(pageUrl) : undefined;
+  const handoff = phone && pageUrl ? {
+    phantom: walletBrowseLink(pageUrl, "phantom"),
+    solflare: walletBrowseLink(pageUrl, "solflare"),
+  } : undefined;
+  const displayedBalance = visibleHolding ? `${formatBalance(visibleHolding.atoms, visibleHolding.scale)} ${visibleAsset}` : undefined;
 
   const choose = (name: WalletName) => {
     clear();
@@ -129,8 +134,8 @@ export function WalletState() {
 
   return (
     <details className={styles.walletState} data-testid="wallet-state" onToggle={(event) => { if (event.currentTarget.open) setRefresh((value) => value + 1); }}>
-      <summary id="app-wallet" data-connected={connected || undefined} aria-label={connected && address ? `Wallet ${address}. ${visibleHolding ? `${formatAmount(visibleHolding.atoms, visibleHolding.scale)} ${visibleAsset}` : "Balance loading or unavailable"}` : "Connect wallet"}>
-        {connecting ? <span className={styles.walletLabel}>Connecting</span> : connected && address ? <><span className={styles.walletBalance}>{visibleHolding ? `${formatAmount(visibleHolding.atoms, visibleHolding.scale)} ${visibleAsset}` : "Wallet"}</span><span className={styles.walletLabel}>{middle(address)}</span></> : <span className={styles.walletLabel}>Connect</span>}
+      <summary id="app-wallet" data-connected={connected || undefined} aria-label={connected && address ? `Wallet ${address}. ${displayedBalance ?? "Balance loading or unavailable"}` : "Connect wallet"}>
+        {connecting ? <span className={styles.walletLabel}>Connecting</span> : connected && address ? <><span className={styles.walletBalance}>{displayedBalance ?? "Wallet"}</span><span className={styles.walletLabel}>{middle(address)}</span></> : <span className={styles.walletLabel}>Connect</span>}
         <span className={styles.walletIcon} data-connected={connected || undefined}>
           {connected && wallet ? <Image src={wallet.adapter.icon} width={22} height={22} alt="" unoptimized /> : <Icon name="wallet" />}
         </span>
@@ -150,7 +155,7 @@ export function WalletState() {
         ) : !hydrated ? (
           <p>Looking for wallets in this browser.</p>
         ) : wallets.length === 0 ? (
-          <p>No signing wallet is available in this browser. On a phone, open this page in Phantom to connect and review each action.</p>
+          <p>No signing wallet is available in this browser. On a phone, open this page in Phantom or Solflare to connect and review each action.</p>
         ) : (
           wallets.map((wallet) => (
             <button className={styles.walletChoice} type="button" key={wallet.adapter.name} disabled={connecting} onClick={() => choose(wallet.adapter.name)}>
@@ -161,8 +166,9 @@ export function WalletState() {
         )}
         {!connected && handoff ? (
           <div className={styles.phoneWalletHandoff}>
-            <a className={styles.walletChoice} href={handoff}>{pathname === "/app/allocation" ? "Open Allocation in Phantom" : "Open this page in Phantom"}</a>
-            <p>{pathname === "/app/allocation" ? "The plan travels with this link. Quotes and signatures do not." : "Review the action in Phantom before signing."}</p>
+            <a className={styles.walletChoice} href={handoff.phantom}>{pathname === "/app/allocation" ? "Open Allocation in Phantom" : "Open this page in Phantom"}</a>
+            <a className={styles.walletChoice} href={handoff.solflare}>{pathname === "/app/allocation" ? "Open Allocation in Solflare" : "Open this page in Solflare"}</a>
+            <p>{pathname === "/app/allocation" ? "The plan travels with either link. Quotes and signatures do not." : "Review the action in your wallet before signing."}</p>
           </div>
         ) : null}
         {connectionError ? <p role="alert">Connection was not completed: {connectionError}</p> : null}

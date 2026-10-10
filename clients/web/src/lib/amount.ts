@@ -20,6 +20,11 @@ export function formatAmount(atoms: string | bigint, scale: number): string {
   return `${sign}${groupedInteger(padded.slice(0, split))}.${padded.slice(split)}`;
 }
 
+/** Compact an exact balance without rounding away a spendable atom. */
+export function formatBalance(atoms: string | bigint, scale: number): string {
+  return formatAmount(atoms, scale).replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
+}
+
 export type ParsedAmount = { atoms: bigint } | { refused: string };
 
 /**
