@@ -81,19 +81,26 @@ export async function saveRouteObservations(observations: RouteObservation[]): P
   if (results.some((entry) => entry.error)) throw new Error("Route observation storage rejected one or more records.");
 }
 
-/** Avoid duplicate daily samples if Vercel retries a cron invocation. */
+/**
+ * At most one collector runs concurrently. A completed day is separately
+ * recorded; an incomplete run can be retried after the lock expires rather
+ * than losing the entire day's observations to a transient storage failure.
+ */
 export async function claimDailyObservationRun(day: string): Promise<boolean> {
-  const config = credentials();
-  if (!config) throw new Error("Persistent route observation storage is not configured.");
-  const response = await fetch(config.url, {
-    method: "POST",
-    headers: { authorization: "Bearer " + config.token, "content-type": "application/json" },
-    body: JSON.stringify(["SET", "seametry:route-run:v1:" + day, "active", "EX", 86_400, "NX"]),
-    signal: AbortSignal.timeout(12_000),
-    cache: "no-store",
-  });
-  if (!response.ok) throw new Error("Route observation lock is unavailable.");
-  const body = await response.json() as RedisReply;
-  if (body.error) throw new Error("Route observation lock failed.");
-  return body.result === "OK";
+  const completion = "seametry:route-completed:v1:" + day;
+  const lock = "seametry:route-running:v1:" + day;
+  const results = await pipeline([
+    ["GET", completion],
+    ["SET", lock, "active", "EX", 3600, "NX"],
+  ]);
+  if (results.some((entry) => entry.error)) throw new Error("Route observation lock failed.");
+  return results[0].result === null && results[1].result === "OK";
+}
+
+export async function completeDailyObservationRun(day: string): Promise<void> {
+  const results = await pipeline([
+    ["SET", "seametry:route-completed:v1:" + day, "recorded", "EX", 172800],
+    ["DEL", "seametry:route-running:v1:" + day],
+  ]);
+  if (results.some((entry) => entry.error)) throw new Error("Route observation completion could not be recorded.");
 }
