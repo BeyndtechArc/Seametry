@@ -13,5 +13,11 @@
         "service": "web"
       }
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/market/observe",
+      "schedule": "20 0 * * *"
+    }
   ]
 }
