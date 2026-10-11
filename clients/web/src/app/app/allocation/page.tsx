@@ -51,7 +51,7 @@ export default async function AllocationPage({ searchParams }: { searchParams: P
             </>
           }
         />
-        <IndexCatalog indexes={allocationIndexes} availableSymbols={offered.map((lot) => lot.symbol)} activeId={activeIndex?.id} />
+        <IndexCatalog indexes={allocationIndexes} offered={offered} activeId={activeIndex?.id} />
         <AllocationFlow
           offered={offered}
           refused={refusedLots}
