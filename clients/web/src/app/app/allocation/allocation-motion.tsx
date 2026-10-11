@@ -1,78 +1,80 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import styles from "./allocation.module.css";
 
 export type AllocationMotionState = "idle" | "preflight" | "approval" | "settling" | "partial" | "success" | "failure";
 
-const buyLabels: Record<AllocationMotionState, string> = {
-  idle: "Ready to assemble",
-  preflight: "Assaying every route",
-  approval: "Waiting for one allocation decision",
+export type SettlementLeg = {
+  symbol: string;
+  phase: "idle" | "preparing" | "signing" | "sending" | "settled" | "failed";
+};
+
+const captions: Record<AllocationMotionState, string> = {
+  idle: "Awaiting your decision",
+  preflight: "Checking the quoted routes for every constituent.",
+  approval: "Prepared routes are waiting for wallet signatures.",
+  settling: "Signed swaps are being submitted and confirmed independently.",
+  partial: "Some constituents settled. Others did not, and remain visible below.",
+  success: "Every recorded constituent purchase settled.",
+  failure: "Purchases were stopped or refused. Check the individual leg records.",
+};
+
+const names: Record<AllocationMotionState, string> = {
+  idle: "Ready",
+  preflight: "Checking routes",
+  approval: "Awaiting signature",
   settling: "Settling constituent legs",
-  partial: "Partially settled",
+  partial: "Partial settlement",
   success: "Allocation assembled",
-  failure: "Nothing unsafe was sent",
+  failure: "Purchase stopped",
 };
 
-const sellLabels: Record<AllocationMotionState, string> = {
-  idle: "Ready to unwind",
-  preflight: "Quoting every exit",
-  approval: "Waiting for one exit decision",
-  settling: "Settling sale legs",
-  partial: "Partially exited",
-  success: "Allocation sold",
-  failure: "Nothing unsafe was sent",
+const phaseNames: Record<SettlementLeg["phase"], string> = {
+  idle: "Waiting",
+  preparing: "Checking",
+  signing: "Approval",
+  sending: "Confirming",
+  settled: "Settled",
+  failed: "Stopped",
 };
 
+/**
+ * The transaction register visualizes ACTUAL constituents and their reported
+ * phases. No decorative orbit, invented nodes or automatic loading page.
+ * The moving rule is only shown while real wallet/network work is ongoing.
+ */
 export function AllocationMotion({
   state,
   total,
   settled,
-  mode = "buy",
+  legs,
 }: {
   state: AllocationMotionState;
   total: number;
   settled: number;
-  mode?: "buy" | "sell";
+  legs: SettlementLeg[];
 }) {
-  const count = Math.max(3, Math.min(total || 6, 8));
-  const nodes = Array.from({ length: count });
   return (
-    <figure className={styles.allocationMotion} data-state={state} aria-live="polite">
-      <div className={styles.motionStage} aria-hidden="true">
-        <div className={styles.motionCore}><i /><b>{settled}/{total || count}</b></div>
-        {nodes.map((_, index) => {
-          const angle = (Math.PI * 2 * index) / count - Math.PI / 2;
-          const x = 50 + Math.cos(angle) * 39;
-          const y = 50 + Math.sin(angle) * 35;
-          const isSettled = index < settled;
-          const style = {
-            left: x + "%",
-            top: y + "%",
-            "--sm-motion-i": index,
-          } as CSSProperties;
+    <figure className={styles.settlementDiagram} data-state={state} aria-label="Constituent settlement overview">
+      <div className={styles.settlementDiagramHead} aria-live="polite">
+        <strong>{names[state]}</strong>
+        <span>{settled} / {total} settled</span>
+      </div>
+      <ol className={styles.settlementTrack} aria-label="Individual purchase legs">
+        {legs.map((leg, index) => {
+          const displayedPhase = state === "preflight" && leg.phase === "idle" ? "preparing"
+            : state === "approval" && leg.phase === "idle" ? "signing"
+            : leg.phase;
           return (
-            <span key={index} className={styles.motionNode} data-settled={isSettled || undefined} style={style}>
-              <i />
-            </span>
+            <li key={leg.symbol + "-" + index} data-phase={displayedPhase}>
+              <span className={styles.settlementLine} aria-hidden="true"><i /></span>
+              <b>{leg.symbol}</b>
+              <small>{phaseNames[displayedPhase]}</small>
+            </li>
           );
         })}
-        <span className={styles.motionOrbit} />
-        <span className={styles.motionOrbitInner} />
-      </div>
-      <figcaption>
-        <strong>{(mode === "sell" ? sellLabels : buyLabels)[state]}</strong>
-        <span>
-          {state === "partial"
-            ? "Settled legs stay in the wallet; blocked or refused legs remain explicit."
-            : state === "failure"
-              ? "The plan stopped at its safety boundary. Review the failed leg before trying again."
-              : mode === "sell"
-                ? "One exit decision, while every underlying sale remains independently observable."
-                : "One allocation decision, with each constituent still independently observable."}
-        </span>
-      </figcaption>
+      </ol>
+      <figcaption>{captions[state]}</figcaption>
     </figure>
   );
 }
