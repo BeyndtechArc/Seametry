@@ -74,7 +74,7 @@ export function BasketSparkline({ id, compact = false }: { id: string; compact?:
       </svg>
       <figcaption>
         <b>{drawing.change >= 0 ? "+" : ""}{drawing.change.toFixed(1)}%</b>
-        <span>{series.source} · price-only</span>
+        <span>{series.source} · last {new Date(series.points[series.points.length - 1].time * 1000).toUTCString().slice(5, 16)}</span>
       </figcaption>
     </figure>
   );
