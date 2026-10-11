@@ -8,12 +8,13 @@ import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock
 import { ProcessDialog, ProcessOutcome } from "@seametry/ui/modal-sheet";
 import { Icon } from "@seametry/ui/icons";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
-import { recordLocalTrade } from "@/lib/allocation/activity";
+import { patchLocalTrade, recordLocalTrade } from "@/lib/allocation/activity";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
 import { logoFor } from "@/lib/instrument-logos";
 import { shortIssuer } from "@/lib/issuers";
 import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, minimumPlanAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
+import { AllocationMotion, type AllocationMotionState } from "./allocation-motion";
 import styles from "./allocation.module.css";
 
 type Phase = "idle" | "preparing" | "signing" | "sending" | "settled" | "failed";
@@ -185,14 +186,18 @@ export function AllocationFlow({
   unavailable,
   initialSelected,
   initialAmount,
+  allocationName,
+  allocationTemplateId,
 }: {
   offered: OfferedLot[];
   refused: RefusedLot[];
   unavailable?: string;
   initialSelected: string[];
   initialAmount: string;
+  allocationName: string;
+  allocationTemplateId?: string;
 }) {
-  const { publicKey, connected, signTransaction, disconnect } = useWallet();
+  const { publicKey, connected, signTransaction, signAllTransactions, disconnect } = useWallet();
   const walletAddress = publicKey?.toBase58();
   const currentWallet = useRef(walletAddress);
   // Nothing starts chosen: choosing is the first step's whole question.
@@ -203,6 +208,8 @@ export function AllocationFlow({
   const [purchaseRun, setPurchaseRun] = useState<PurchaseRun>();
   const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [batchPhase, setBatchPhase] = useState<"idle" | "preflight" | "approval" | "settling">("idle");
+  const allocationId = useRef<string>();
 
   const [query, setQuery] = useState("");
   const [backing, setBacking] = useState("any");
@@ -282,6 +289,8 @@ export function AllocationFlow({
     setPurchaseOpen(false);
     setPurchaseRun(undefined);
     setProgress({ plan: "", changes: {} });
+    setBatchPhase("idle");
+    allocationId.current = undefined;
     setTyped("");
     keepUnsignedPlanInUrl(chosen.map((lot) => lot.mint), "");
     setStep(0);
@@ -292,10 +301,18 @@ export function AllocationFlow({
       for (let attempt = 0; attempt < 30; attempt += 1) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         try {
-          const response = await fetch(`/api/allocation/status?signature=${signature}`);
-          const status = (await response.json()) as { state?: string; detail?: string; error?: string };
+          const query = new URLSearchParams({ signature, ...(walletAddress ? { wallet: walletAddress } : {}), mint });
+          const response = await fetch(`/api/allocation/status?${query.toString()}`);
+          const status = (await response.json()) as { state?: string; detail?: string; error?: string; tokenDeltaAtoms?: string; tokenDeltaScale?: number };
           if (status.state === "confirmed" || status.state === "finalized") {
             update(mint, { phase: "settled", note: `Settled, ${status.state} on mainnet.` });
+            if (walletAddress) {
+              patchLocalTrade(walletAddress, signature, {
+                settled: true,
+                ...(status.tokenDeltaAtoms && !status.tokenDeltaAtoms.startsWith("-") ? { settledAtoms: status.tokenDeltaAtoms } : {}),
+                ...(status.tokenDeltaScale !== undefined ? { settledScale: status.tokenDeltaScale } : {}),
+              });
+            }
             setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "settled", stage: "confirm", signature } : current);
             return;
           }
@@ -311,7 +328,7 @@ export function AllocationFlow({
       update(mint, { note: "No confirmation within a minute. The signature below shows where it stands." });
       setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "stopped", stage: "confirm", outcome: "uncertain", problem: { plain: "Confirmation has not arrived. Check the transaction signature before taking another action." } } : current);
     },
-    [update],
+    [update, walletAddress],
   );
 
   // A submission error may arrive after broadcast. Never retry that leg from
@@ -388,11 +405,130 @@ export function AllocationFlow({
     buying.current = false;
   };
 
+  const buyAll = async () => {
+    const pending = legs.filter((leg) => leg.phase === "idle" || (leg.phase === "failed" && leg.retryable));
+    if (!pending.length || !publicKey || (!signAllTransactions && !signTransaction) || inFlight || buying.current) return;
+    buying.current = true;
+    const signingWallet = walletAddress;
+    if (!signingWallet) {
+      buying.current = false;
+      return;
+    }
+    const runId = allocationId.current ?? window.crypto.randomUUID();
+    allocationId.current = runId;
+    setBatchPhase("preflight");
+    pending.forEach((leg) => update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined, signature: undefined, retryable: false, uncertain: false, walletBlocked: false }));
+
+    const preparedResults = await Promise.all(pending.map(async (leg) => {
+      try {
+        const prepared = await postJson<PreparedLeg>("/api/allocation/prepare", {
+          wallet: signingWallet,
+          mint: leg.mint,
+          usdcAtoms: leg.atoms.toString(),
+          planMints: chosen.map((lot) => lot.mint),
+        });
+        update(leg.mint, { phase: "signing", prepared });
+        return { leg, prepared };
+      } catch (error) {
+        update(leg.mint, { phase: "failed", note: reasonFrom(error), retryable: true });
+        return { leg, error };
+      }
+    }));
+
+    const ready = preparedResults.filter((result): result is { leg: Leg; prepared: PreparedLeg } => "prepared" in result);
+    if (ready.length !== pending.length) {
+      setBatchPhase("idle");
+      buying.current = false;
+      return;
+    }
+    if (currentWallet.current !== signingWallet) {
+      setBatchPhase("idle");
+      buying.current = false;
+      return;
+    }
+
+    setBatchPhase("approval");
+    const originals = ready.map(({ prepared }) => VersionedTransaction.deserialize(fromBase64(prepared.transaction)));
+    const beforeSigning = originals.map((transaction) => ({
+      message: transaction.message.serialize().slice(),
+      blockhash: transaction.message.recentBlockhash,
+    }));
+
+    let signed: VersionedTransaction[];
+    try {
+      if (signAllTransactions) {
+        signed = await signAllTransactions(originals);
+      } else if (signTransaction) {
+        signed = [];
+        for (const transaction of originals) signed.push(await signTransaction(transaction));
+      } else {
+        throw new Error("This wallet does not offer transaction signing.");
+      }
+      const changed = signed.findIndex((transaction, index) => changedMessage(beforeSigning[index].message, beforeSigning[index].blockhash, transaction));
+      if (changed >= 0) throw new ApiError("The wallet changed one of the transactions Seametry checked.", 409, "SIGNED_MESSAGE_CHANGED", false);
+    } catch (error) {
+      const blocked = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED";
+      ready.forEach(({ leg }) => update(leg.mint, {
+        phase: "failed",
+        prepared: undefined,
+        retryable: !blocked,
+        walletBlocked: blocked,
+        note: blocked ? "Not sent. The wallet changed a checked transaction." : "The allocation was not signed. Nothing was sent.",
+      }));
+      setBatchPhase("idle");
+      buying.current = false;
+      return;
+    }
+
+    if (currentWallet.current !== signingWallet) {
+      setBatchPhase("idle");
+      buying.current = false;
+      return;
+    }
+
+    setBatchPhase("settling");
+    ready.forEach(({ leg, prepared }) => update(leg.mint, { phase: "sending", prepared }));
+
+    await Promise.all(ready.map(async ({ leg, prepared }, index) => {
+      try {
+        const { signature } = await postJson<{ signature: string }>("/api/allocation/submit", {
+          transaction: toBase64(signed[index].serialize()),
+          approval: prepared.approval,
+        });
+        recordLocalTrade({
+          signature,
+          wallet: signingWallet,
+          mint: leg.mint,
+          symbol: leg.symbol,
+          direction: "buy",
+          inputAtoms: leg.atoms.toString(),
+          inputScale: USDC_SCALE,
+          submittedAt: new Date().toISOString(),
+          allocationId: runId,
+          allocationName,
+          allocationTemplateId,
+        });
+        update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
+        void watch(leg.mint, signature);
+      } catch (error) {
+        const changed = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED" && error.sent === false;
+        update(leg.mint, {
+          phase: "failed",
+          retryable: false,
+          walletBlocked: changed,
+          uncertain: !changed,
+          note: changed ? "Not sent. The signed transaction no longer matched the approved plan." : "Submission could not be verified. Check wallet activity before another attempt.",
+        });
+      }
+    }));
+    buying.current = false;
+  };
+
   const keyDisabledReason = unavailable
     ? unavailable
     : !connected
       ? "Connect a wallet first."
-      : !signTransaction
+      : !signTransaction && !signAllTransactions
         ? "This wallet does not offer transaction signing."
         : inFlight
           ? `${phaseLabel[inFlight.phase]} ${inFlight.symbol}.`
@@ -405,6 +541,15 @@ export function AllocationFlow({
   const attempted = legs.filter((leg) => leg.phase === "settled" || leg.phase === "failed");
   const settledCount = legs.filter((leg) => leg.phase === "settled").length;
   const uncertainCount = legs.filter((leg) => leg.uncertain).length;
+  const failedCount = legs.filter((leg) => leg.phase === "failed").length;
+  const motionState: AllocationMotionState =
+    batchPhase === "preflight" ? "preflight" :
+    batchPhase === "approval" ? "approval" :
+    legs.some((leg) => leg.phase === "sending") ? "settling" :
+    legs.length > 0 && settledCount === legs.length ? "success" :
+    settledCount > 0 && failedCount > 0 ? "partial" :
+    failedCount > 0 && settledCount === 0 ? "failure" :
+    "idle";
   const total = parsed && "atoms" in parsed ? `${formatAmount(parsed.atoms, USDC_SCALE)} USDC` : "Not set";
   // Per leg, as Jupiter rounds each swap's fee, then summed; the prepared leg
   // later shows the exact fee its simulation moved.
@@ -582,8 +727,9 @@ export function AllocationFlow({
               {/* On a phone the order sheet is not beside the steps, so the
                   step where signing happens carries it. */}
               <div className={styles.orderInline} data-testid="order-sheet-inline">{orderSummary}</div>
-              <section className={styles.section} aria-label="Buy each constituent">
-                <p className={styles.quiet}>Each constituent is a separate mainnet swap. Your wallet asks you to approve each purchase.</p>
+              <section className={styles.section} aria-label="Buy allocation">
+                <AllocationMotion state={motionState} total={legs.length} settled={settledCount} />
+                <p className={styles.quiet}>One allocation decision, independently simulated legs. Wallets with batch signing can approve the set together; other wallets may still show more than one signature prompt.</p>
                 <ol className={styles.legs}>
                   {legs.map((leg) => {
                     const secondsLeft = leg.prepared ? secondsUntil(leg.prepared.expiresAt, now) : 0;
@@ -669,8 +815,13 @@ export function AllocationFlow({
             ) : walletBlocked ? (
               <span>Purchase paused</span>
             ) : nextLeg || inFlight ? (
-              <Key busy={Boolean(inFlight)} busyLabel={inFlight ? phaseLabel[inFlight.phase] : undefined} disabled={Boolean(keyDisabledReason) && !inFlight} onClick={() => void buy()}>
-                {nextLeg ? `${nextLeg.phase === "failed" ? "Prepare" : "Buy"} ${nextLeg.symbol}` : "Buying"}
+              <Key
+                busy={Boolean(inFlight) || batchPhase !== "idle"}
+                busyLabel={batchPhase === "preflight" ? "Checking every leg" : batchPhase === "approval" ? "Waiting for wallet" : inFlight ? "Settling allocation" : undefined}
+                disabled={Boolean(keyDisabledReason) && !inFlight}
+                onClick={() => void buyAll()}
+              >
+                Buy allocation
               </Key>
             ) : (
               <span>{uncertainCount ? "Check wallet activity" : settledCount === legs.length ? "Purchases settled" : "Review purchase status"}</span>
