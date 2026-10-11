@@ -68,6 +68,12 @@ func TestPlainSVGKeepsDrawingAndRefusesEverythingElse(t *testing.T) {
 	if refusal := plainSVG([]byte(plainLogo)); refusal != "" {
 		t.Fatalf("a plain logo was refused: %s", refusal)
 	}
+	// Backpack's INTC artwork declares an unused xmlns:x; the declaration
+	// itself is not a resource request and must not suppress its logo.
+	unusedNamespace := `<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/xlink"><path d="M0 0h18v18H0z" fill="#fff"/></svg>`
+	if refusal := plainSVG([]byte(unusedNamespace)); refusal != "" {
+		t.Fatalf("plain SVG with unused xmlns:x declaration was refused: %s", refusal)
+	}
 	refused := map[string]string{
 		"script":              `<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>`,
 		"event handler":       `<svg xmlns="http://www.w3.org/2000/svg" onload="alert(1)"></svg>`,
@@ -76,6 +82,7 @@ func TestPlainSVGKeepsDrawingAndRefusesEverythingElse(t *testing.T) {
 		"external fill":       `<svg xmlns="http://www.w3.org/2000/svg"><path fill="url(https://example.com/x#a)"/></svg>`,
 		"one inside, one out": `<svg xmlns="http://www.w3.org/2000/svg"><path fill="url(#a) url(https://example.com/x)"/></svg>`,
 		"xlink reference":     `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="https://example.com/x"/></svg>`,
+		"x namespaced attr":   `<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/xlink"><path d="M0 0" x:href="https://example.com/evil"/></svg>`,
 		"doctype entity":      `<!DOCTYPE svg [<!ENTITY x "y">]><svg xmlns="http://www.w3.org/2000/svg"></svg>`,
 		"illustrator extra":   `<svg xmlns="http://www.w3.org/2000/svg"><metadata/></svg>`,
 		"html root":           `<html><svg xmlns="http://www.w3.org/2000/svg"></svg></html>`,
