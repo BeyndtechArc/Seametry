@@ -298,6 +298,13 @@ Amount, plan, Quote block, path, approval Key, expiry. Occludes the page behind;
 ### Melt panel
 Constituent rows, each deliverable or held as a Claim with its reason. Held rows stay still.
 
+### Alloy quantity terms
+**Answers:** for the entered share amount, which exact constituent quantities will Strike take or Melt return?
+**Anatomy:** per-leg symbol and exact quantity beside the share field, with source, observation age and evidence state underneath. Melt marks a held leg as a Claim, not delivered stock.
+**States:** empty input, reading, current terms, stale input (old terms hidden), unavailable and error with the refusal stated.
+**Data:** Gateway `strike-cost` or `melt-proceeds` for exact integer share atoms, `CostRow.legs`, and envelope `Meta`.
+**Rules:** quantity-only. Never label these a USD price or an executable USDC quote. Terms must match the current field before signing; every number keeps provenance.
+
 ### Proof strip
 **Answers:** what can I verify about this institution right now?
 Only verifiable facts, each a link: hallmarks sealed, last seal (relative), program ID, the Key or "Key still in hand", source code, status. Replaces the logo marquee and vanity counters.

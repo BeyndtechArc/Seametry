@@ -9,12 +9,13 @@ import type { IconName } from "@seametry/ui/icons";
 import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { buildDelivery, buildMelt, buildStrike, readClaim, type ClaimLeg } from "@/lib/alloys/hall-transactions";
 import { formatAmount, parseAmount } from "@/lib/amount";
+import { legIdentity } from "@/lib/alloys/records";
 import { DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { ownerTokenAccount } from "@/lib/hall/pda";
 import { hallProgram } from "@/lib/hall/program";
 import { awaitLanding } from "@/lib/landing";
 import { DELIVERY, MELT, STRIKE, requestProblem, type RequestStage, type RequestSubject, type StageProblem } from "@/lib/request-problem";
-import type { Alloy } from "@/lib/terminal-contract";
+import type { Alloy, CostRow, Envelope } from "@/lib/terminal-contract";
 import styles from "./desk.module.css";
 
 /** A step names the request it belongs to, so a stop is worded for that request. */
@@ -31,6 +32,55 @@ type Run = {
 const PREPARE: Step = { title: "Prepare the stand-ins", glyph: "hall", note: "Minting the devnet stand-ins this Strike takes into your wallet", subject: STRIKE };
 const signStep = (subject: RequestSubject): Step => ({ title: `Sign the ${subject.noun} in your wallet`, glyph: "wallet", note: `Approve the ${subject.noun} in your wallet`, subject });
 const confirmStep = (subject: RequestSubject): Step => ({ title: `Confirm the ${subject.noun} on devnet`, glyph: "confirm", note: "Waiting for devnet", subject });
+
+function QuantityTerms({ alloy, atoms, side, onReady }: { alloy: Alloy; atoms?: bigint; side: "strike" | "melt"; onReady: (shares?: string) => void }) {
+  const [answer, setAnswer] = useState<{ shares: string; terms: Envelope<CostRow>; receivedAt: number }>();
+  const [problem, setProblem] = useState<{ shares: string; detail: string }>();
+  const key = atoms && atoms > 0n ? atoms.toString() : undefined;
+
+  useEffect(() => {
+    if (!key) return;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/terminal/alloys/${encodeURIComponent(alloy.address)}/terms?side=${side}&shares=${key}`, { signal: controller.signal });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.detail ?? "The Gateway did not provide terms.");
+        if (!controller.signal.aborted) {
+          setAnswer({ shares: key, terms: body as Envelope<CostRow>, receivedAt: Date.now() });
+          setProblem(undefined);
+          onReady(key);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setProblem({ shares: key, detail: error instanceof Error ? error.message : "The Gateway did not provide terms." });
+          onReady(undefined);
+        }
+      }
+    }, 200);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [alloy.address, key, side, onReady]);
+
+  if (!key) return <p>Enter a share amount to read the constituent quantities.</p>;
+  if (problem?.shares === key) return <p role="alert">{problem.detail}</p>;
+  if (answer?.shares !== key) return <p>Reading {side === "strike" ? "deposit" : "return"} quantities from the Hall.</p>;
+  const { data, meta } = answer.terms;
+  const age = Number.isFinite(Date.parse(meta.as_of)) ? Math.max(0, Math.floor((answer.receivedAt - Date.parse(meta.as_of)) / 1000)) : undefined;
+  return (
+    <div className={styles.quantityTerms}>
+      <p>{side === "strike" ? "You deposit" : "You receive or claim"}</p>
+      <ul aria-label={`${side === "strike" ? "Strike" : "Melt"} quantities`}>
+        {data.legs.map((leg) => {
+          const identity = legIdentity(alloy, leg.stock);
+          const held = side === "melt" && alloy.legs.some((candidate) => candidate.mint === leg.stock && candidate.held_back);
+          return <li key={leg.stock}><span>{identity.symbol ?? leg.stock}</span><span>{formatAmount(leg.amount.atoms, leg.amount.scale)}{held ? " held as Claim" : ""}</span></li>;
+        })}
+      </ul>
+      <small>Solana {meta.cluster ?? "network unavailable"} via Gateway; observed {age === undefined ? "at an unavailable time" : `${age}s ago`}; evidence {meta.completeness}.</small>
+      <small>No USD price is set by the Hall. These are token quantities, not a USDC purchase quote.</small>
+    </div>
+  );
+}
 
 function registerSteps(run: Run): RegisterStep[] {
   return run.steps.map((step, index) => {
@@ -66,6 +116,8 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
   const [meltTyped, setMeltTyped] = useState("1");
   const [run, setRun] = useState<Run>();
   const [open, setOpen] = useState(false);
+  const [strikeReady, setStrikeReady] = useState<string>();
+  const [meltReady, setMeltReady] = useState<string>();
 
   useEffect(() => {
     if (!publicKey || !program) return;
@@ -189,16 +241,18 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
       <div className={styles.actionCard}>
         <h3>Strike</h3>
         <p>Deposit the stocks one share holds and receive new shares. On devnet, Seametry first mints the stand-ins into your wallet.</p>
-        <Field id="strike-shares" label="Shares to Strike" inputMode="decimal" value={strikeTyped} onChange={(event) => setStrikeTyped(event.target.value)} message={"refused" in strikeAmount ? strikeAmount.refused : undefined} invalid={"refused" in strikeAmount} />
-        <Key type="button" disabled={Boolean(notConnected) || !("atoms" in strikeAmount) || strikeAmount.atoms === 0n} disabledReason={notConnected} busy={busy} busyLabel="Working" onClick={() => "atoms" in strikeAmount && void strike(strikeAmount.atoms)}>
+        <Field id="strike-shares" label="Shares to Strike" inputMode="decimal" value={strikeTyped} onChange={(event) => { setStrikeReady(undefined); setStrikeTyped(event.target.value); }} message={"refused" in strikeAmount ? strikeAmount.refused : undefined} invalid={"refused" in strikeAmount} />
+        <QuantityTerms alloy={alloy} atoms={"atoms" in strikeAmount ? strikeAmount.atoms : undefined} side="strike" onReady={setStrikeReady} />
+        <Key type="button" disabled={Boolean(notConnected) || !("atoms" in strikeAmount) || strikeAmount.atoms === 0n || ("atoms" in strikeAmount && strikeReady !== strikeAmount.atoms.toString())} disabledReason={notConnected ?? "Reading the current deposit quantities."} busy={busy} busyLabel="Working" onClick={() => "atoms" in strikeAmount && void strike(strikeAmount.atoms)}>
           Strike shares
         </Key>
       </div>
       <div className={styles.actionCard}>
         <h3>Melt</h3>
         <p>{shares !== undefined && connected ? `You hold ${formatAmount(shares, SHARE_DECIMALS)} shares. ` : ""}Return shares and take every stock back. A stock its issuer holds back stays in your Claim.</p>
-        <Field id="melt-shares" label="Shares to Melt" inputMode="decimal" value={meltTyped} onChange={(event) => setMeltTyped(event.target.value)} message={"refused" in meltAmount ? meltAmount.refused : undefined} invalid={"refused" in meltAmount} />
-        <Key type="button" disabled={Boolean(meltReason) || !("atoms" in meltAmount) || meltAmount.atoms === 0n} disabledReason={meltReason} busy={busy} busyLabel="Working" onClick={() => "atoms" in meltAmount && void melt(meltAmount.atoms)}>
+        <Field id="melt-shares" label="Shares to Melt" inputMode="decimal" value={meltTyped} onChange={(event) => { setMeltReady(undefined); setMeltTyped(event.target.value); }} message={"refused" in meltAmount ? meltAmount.refused : undefined} invalid={"refused" in meltAmount} />
+        <QuantityTerms alloy={alloy} atoms={"atoms" in meltAmount ? meltAmount.atoms : undefined} side="melt" onReady={setMeltReady} />
+        <Key type="button" disabled={Boolean(meltReason) || !("atoms" in meltAmount) || meltAmount.atoms === 0n || ("atoms" in meltAmount && meltReady !== meltAmount.atoms.toString())} disabledReason={meltReason ?? "Reading the current return quantities."} busy={busy} busyLabel="Working" onClick={() => "atoms" in meltAmount && void melt(meltAmount.atoms)}>
           Melt shares
         </Key>
         {deliverable.length > 0 ? (

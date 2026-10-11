@@ -186,6 +186,17 @@ test("Strike and Melt are held, with their reasons, until a wallet logs in", asy
   await expect(actions.getByRole("button", { name: "Strike shares" })).toBeDisabled();
   await expect(actions.getByRole("button", { name: "Melt shares" })).toBeDisabled();
   await expect(actions.getByText("Log in with a devnet wallet: it signs the Strike or Melt.").first()).toBeVisible();
+  await expect(actions.getByRole("list", { name: "Strike quantities" })).toContainText("5.000000");
+  await actions.getByRole("textbox", { name: "Shares to Strike" }).fill("2");
+  await expect(actions.getByRole("list", { name: "Strike quantities" })).toContainText("10.000000");
+  await expect(actions.getByRole("list", { name: "Strike quantities" })).toContainText("6.000000");
+  await expect(actions.getByText("Solana devnet via Gateway", { exact: false }).last()).toBeVisible();
+});
+
+test("Alloy terms reject an invalid share amount before reaching the Gateway", async ({ request }) => {
+  const response = await request.get(`/api/terminal/alloys/${alloyAddress}/terms?side=strike&shares=1.5`);
+  expect(response.status()).toBe(400);
+  expect((await response.json()).detail).toContain("integer share atoms");
 });
 
 test("a Strike opens its steps and stops at the first with what did not happen", async ({ page }) => {

@@ -124,7 +124,12 @@ const server = createServer((request, response) => {
     return;
   }
   if (path === `/v1/alloys/${alloyAddress}/strike-cost` || path === `/v1/alloys/${alloyAddress}/melt-proceeds`) {
-    writeJson(response, 200, { data: terms, meta: alloyMeta });
+    const shareAtoms = BigInt(new URL(request.url, "http://fixture").searchParams.get("shares") ?? "1000000");
+    const scaled = {
+      shares: shareAtoms.toString(),
+      legs: terms.legs.map((leg) => ({ ...leg, amount: { ...leg.amount, atoms: (BigInt(leg.amount.atoms) * shareAtoms / 1000000n).toString() } })),
+    };
+    writeJson(response, 200, { data: scaled, meta: alloyMeta });
     return;
   }
 
