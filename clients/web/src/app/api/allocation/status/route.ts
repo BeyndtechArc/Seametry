@@ -9,11 +9,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: `This deployment is not configured for Allocations: ${configured.missing.join(", ")} not set.` }, { status: 503 });
   }
   const signature = request.nextUrl.searchParams.get("signature");
+  const wallet = request.nextUrl.searchParams.get("wallet") ?? undefined;
+  const mint = request.nextUrl.searchParams.get("mint") ?? undefined;
   if (!signature || !/^[1-9A-HJ-NP-Za-km-z]{64,88}$/.test(signature)) {
     return NextResponse.json({ error: "Expected ?signature= a base58 transaction signature." }, { status: 400 });
   }
   try {
-    return NextResponse.json(await legStatus(configured.config, signature));
+    return NextResponse.json(await legStatus(configured.config, signature, wallet, mint));
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Reading the status failed." }, { status: 502 });
   }
