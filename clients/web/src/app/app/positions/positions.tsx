@@ -80,11 +80,15 @@ export function Positions() {
       const status = await responseJson<{ state: string; detail?: string; tokenDeltaAtoms?: string; tokenDeltaScale?: number }>(response);
       setStatuses((current) => ({ ...current, [entry.signature]: { signature: entry.signature, ...status } }));
       if (status.state === "confirmed" || status.state === "finalized") {
-        patchLocalTrade(entry.wallet, entry.signature, {
-          settled: true,
-          ...(entry.direction === "buy" && status.tokenDeltaAtoms && !status.tokenDeltaAtoms.startsWith("-") ? { settledAtoms: status.tokenDeltaAtoms } : {}),
-          ...(entry.direction === "buy" && status.tokenDeltaScale !== undefined ? { settledScale: status.tokenDeltaScale } : {}),
-        });
+        if (entry.direction === "sell") {
+          patchLocalTrade(entry.wallet, entry.signature, { settled: true });
+        } else if (status.tokenDeltaAtoms && !status.tokenDeltaAtoms.startsWith("-") && status.tokenDeltaScale !== undefined) {
+          patchLocalTrade(entry.wallet, entry.signature, {
+            settled: true,
+            settledAtoms: status.tokenDeltaAtoms,
+            settledScale: status.tokenDeltaScale,
+          });
+        }
         if (wallet === entry.wallet) {
           setActivity(readLocalTrades(wallet));
           setAllocations(readTrackedAllocations(wallet));
