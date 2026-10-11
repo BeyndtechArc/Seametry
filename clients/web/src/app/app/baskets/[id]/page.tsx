@@ -50,8 +50,9 @@ export default async function BasketDetailPage({ params }: { params: Promise<{ i
       </section>
 
       <section className={styles.detailSection} aria-labelledby="basket-observation">
-        <h2 id="basket-observation">Reference observation</h2>
-        {basket.researchOnly ? <p>No reference series is published for this research basket.</p> : <BasketSparkline id={basket.id} />}
+        <h2 id="basket-observation">Routed acquisition history</h2>
+        {basket.researchOnly ? <p>Research-only constituents have no executable basket history.</p> : <BasketSparkline id={basket.id} />}
+        <p>Each observation is a 25 USDC Jupiter buy quote per admitted constituent, normalized to the first complete date. It is not NAV, a realized portfolio return or a guaranteed fill.</p>
         <dl className={styles.detailFacts}>
           <div><dt>Admission</dt><dd>{basket.researchOnly ? "Research only" : admitted.length + "/" + basket.members.length + " admitted"}</dd></div>
           <div><dt>Issuers</dt><dd>{issuers.length ? issuers.join(" · ") : "No admitted issuer observation"}</dd></div>
