@@ -120,20 +120,27 @@ This creates a graduation path:
 
 The Allocation catalogue is therefore not a placeholder for the Hall. It is the demand-discovery layer that can tell Seametry which Formulae deserve scarce launch liquidity.
 
-## Reference market data for Allocations
+## Market observations for Allocations: no oracle dependency
 
-The Allocation UI may use an oracle or market-data provider for **reference** valuation and charts. It must keep that observation separate from execution.
+The Hall still never takes a price input. Allocation execution always uses
+fresh Jupiter quotes, mainnet simulation, current issuer admission and the
+holder's explicit signature.
 
-Current model:
+For historical Allocation charts, Seametry now samples a read-only fixed-size
+Jupiter USDC-to-token route once per day for currently admitted instruments.
+The Office preserves the quote's raw token quantity, context slot, route and
+observation time. It can draw a normalized basket quote index only when every
+constituent has observations for at least two common dates.
 
-- optional reference-data adapter: price-only charts and basket reference series; Pyth Pro is the current prototype source, not a vendor commitment;
-- Jupiter quotes: executable buy/sell terms at the user's actual size;
-- Hall: no oracle input to Strike or Melt;
-- future Alloy pool: independent secondary-market share price.
+This is a **routed acquisition price observation**, not an underlying stock
+reference price, NAV, share market price, executable sale value or a holder's
+realized return. It cannot guarantee a swap will land. It cannot replace a
+value-dependent oracle for lending or liquidation.
 
-Protocol-grade oracle access is intentionally deferred until a contract needs to make a value-dependent decision. Ordinary catalogue charts do not justify that cost by themselves. See `research/2026-10-11-allocation-reference-data.md`.
-
-A missing oracle observation removes the chart or reference valuation. It does not prevent quantity accounting, and it must never be silently replaced by a stale or partial basket value.
+Persistent history is optional until a free/low-cost observation store is
+configured; no fabricated history is rendered. Fee-bearing and permissioned
+equity-price data are deferred until there is a specific consumer, license
+and revenue or safety need.
 
 ## Why the Terminal exists
 
