@@ -145,8 +145,8 @@ export function IndexCatalog({
                   {index.members.map((member) => <b key={member.symbol} data-missing={!available.has(member.symbol) || undefined}>{member.symbol}</b>)}
                 </div>
                 <dl className={styles.indexEvidence}>
-                  <div><dt>Issuers</dt><dd>{issuers || "—"}</dd></div>
-                  <div><dt>Grades</dt><dd>{grades.length ? grades.join(" · ") : "—"}</dd></div>
+                  <div><dt>Issuers</dt><dd>{issuers || "Unavailable"}</dd></div>
+                  <div><dt>Grades</dt><dd>{grades.length ? grades.join(" · ") : "Unavailable"}</dd></div>
                   <div><dt>Measured capacity</dt><dd>{capacity ? capacity.toLocaleString() + " USDC min" : "Unavailable"}</dd></div>
                 </dl>
                 <div className={styles.indexCardFoot}>
