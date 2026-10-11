@@ -22,10 +22,13 @@ const filters: { key: FilterKey; label: string }[] = [
   { key: "private-markets", label: "Private / pre-IPO" },
 ];
 
-function providerLabel(lots: OfferedLot[]) {
-  const issuers = [...new Set(lots.map((lot) => lot.issuer))];
-  if (issuers.length === 0) return "Research";
-  if (issuers.length === 1) return issuers[0].includes("Backpack") ? "Backpack" : issuers[0].includes("xStocks") ? "xStocks" : issuers[0];
+function providerLabel(basket: AllocationIndex) {
+  if (basket.researchOnly) return "Mixed access models";
+  const backpack = basket.filters.includes("backpack");
+  const xstocks = basket.filters.includes("xstocks");
+  if (backpack && xstocks) return "Backpack + xStocks";
+  if (backpack) return "Backpack";
+  if (xstocks) return "xStocks";
   return "Mixed issuers";
 }
 
@@ -107,7 +110,7 @@ export function BasketRegister({ baskets, offered }: { baskets: readonly Allocat
                 <div className={styles.access}>
                   <small>Access</small>
                   <b>{basket.researchOnly ? "Research" : admitted.length + "/" + basket.members.length + " admitted"}</b>
-                  <span>{providerLabel(admitted)}</span>
+                  <span>{providerLabel(basket)}</span>
                   {!basket.researchOnly && capacity > 0 ? <span>{capacity.toLocaleString()} USDC measured capacity floor</span> : null}
                 </div>
 
