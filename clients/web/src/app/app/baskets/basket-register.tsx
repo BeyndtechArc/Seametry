@@ -66,6 +66,7 @@ export function BasketRegister({ baskets, offered }: { baskets: readonly Allocat
             <button
               type="button"
               className={styles.filterButton}
+              aria-label="Filters"
               aria-expanded={filtersOpen}
               aria-controls="basket-filters"
               onClick={() => setFiltersOpen((open) => !open)}
