@@ -6,9 +6,16 @@ import type { AllocationIndex } from "@/lib/allocation/indexes";
 import styles from "./allocation.module.css";
 
 type IndexSeries = {
+  available: true;
   points: { time: number; close: number }[];
   source: string;
   kind: string;
+};
+
+type UnavailableSeries = {
+  available: false;
+  source: string;
+  reason?: string;
 };
 
 function BasketIllustration({ kind }: { kind: AllocationIndex["illustration"] }) {
@@ -49,9 +56,16 @@ function Sparkline({ id }: { id: string }) {
     fetch("/api/market/index-history?id=" + encodeURIComponent(id), { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("unavailable");
-        return response.json() as Promise<IndexSeries>;
+        return response.json() as Promise<IndexSeries | UnavailableSeries>;
       })
-      .then((value) => { if (live) setSeries(value); })
+      .then((value) => {
+        if (!live) return;
+        if (!value.available) {
+          setUnavailable(true);
+          return;
+        }
+        setSeries(value);
+      })
       .catch(() => { if (live) setUnavailable(true); });
     return () => { live = false; };
   }, [id]);
