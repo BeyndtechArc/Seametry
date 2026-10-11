@@ -55,7 +55,7 @@ export function PublicShell({
           {
             title: "Product",
             links: [
-              { label: "How it works", href: "/how-it-works" },
+              { label: "How it works", href: "/how-it-works" },\n              { label: "Thesis", href: "/thesis" },
               { label: "Open the app", href: "/app" },
               { label: "Allocation", href: "/app/allocation" },
               { label: "Alloys", href: "/app/alloys" },
