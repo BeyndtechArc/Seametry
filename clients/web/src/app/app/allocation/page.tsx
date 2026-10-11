@@ -13,8 +13,8 @@ import { BasketSectionNav } from "../baskets/section-nav";
 import styles from "./allocation.module.css";
 
 export const metadata: Metadata = {
-  title: "Buy an Allocation | Seametry",
-  description: "Plan and buy several admitted tokenized stocks directly into your own wallet, with every purchase shown before you sign.",
+  title: "Build a basket | Seametry",
+  description: "Build a direct-wallet Allocation from admitted tokenized equities, with every constituent checked before you sign.",
 };
 
 export default async function AllocationPage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string; amount?: string; index?: string; basket?: string }> }) {
@@ -34,7 +34,7 @@ export default async function AllocationPage({ searchParams }: { searchParams: P
     <div className={styles.page}>
         <PageHeader
           group="Allocation"
-          title="Buy an Allocation"
+          title="Build a basket"
           network="Mainnet"
           info={
             <>
