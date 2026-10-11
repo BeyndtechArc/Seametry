@@ -106,6 +106,33 @@ Allocations are therefore useful as an adoption and execution bridge. They can g
 
 An Allocation is **not** a substitute for Alloy secondary liquidity. It is a direct constituent path.
 
+## Curated Allocations before Alloy liquidity
+
+While the Hall remains on devnet, mainnet Allocations can carry more of the product.
+
+Seametry may publish versioned, rules-based Allocation indexes grouped by industry. A purchase remains direct ownership: the application orchestrates independently simulated constituent swaps into the holder's wallet. A named index is only used when a published methodology defines membership, weighting, review and drift treatment.
+
+The first methodology uses equal weighting, current Good Delivery admission and public industry evidence. Existing holders are never silently rebalanced. A methodology change creates a new version and the holder decides whether to migrate.
+
+This creates a graduation path:
+
+`curated Allocation → observed demand and execution data → candidate Alloy → seeded share market → open Strike/Melt loop`
+
+The Allocation catalogue is therefore not a placeholder for the Hall. It is the demand-discovery layer that can tell Seametry which Formulae deserve scarce launch liquidity.
+
+## Reference market data for Allocations
+
+The Allocation UI may use an oracle or market-data provider for **reference** valuation and charts. It must keep that observation separate from execution.
+
+Current model:
+
+- Pyth Pro equity history: price-only reference charts and index series.
+- Jupiter quotes: executable buy/sell terms at the user's actual size.
+- Hall: no oracle input to Strike or Melt.
+- Future Alloy pool: independent secondary-market share price.
+
+A missing oracle observation removes the chart or reference valuation. It does not prevent quantity accounting, and it must never be silently replaced by a stale or partial basket value.
+
 ## Why the Terminal exists
 
 The Terminal makes the open AP function practical.
@@ -149,7 +176,7 @@ Potential future yield belongs in opt-in external strategy layers built around A
 The Hall is the invention.  
 Good Delivery is the potential standard.  
 The Terminal makes an open AP set economically usable.  
-Allocations are the early adoption and execution bridge.  
+Allocations are the discovery, execution and demand layer from which liquid Alloys can graduate.  
 Integrations and evidence history may become the distribution moat.
 
 ## Falsifiable questions
