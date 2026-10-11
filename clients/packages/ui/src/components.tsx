@@ -5,6 +5,7 @@ import type {
   ReactNode,
 } from "react";
 import { Icon, type IconName } from "./icons";
+import { LotMarkImage } from "./lot-mark-image";
 import styles from "./components.module.css";
 
 export type EvidenceState =
@@ -209,21 +210,11 @@ export function MarkLine({ grade, stamp, reason }: { grade: GradeName; stamp: St
   );
 }
 
-// A plain img, not next/image: this package is framework-free, and next/image
-// writes an inline style the site's CSP refuses.
-const lotMarkSizes = { row: "", list: styles.lotMarkList, header: styles.lotMarkHeader } as const;
-
-/** row beside a one-line symbol, list beside a symbol with a second line, header beside a title. */
-export function LotMark({ symbol, src, size = "row" }: { symbol: string; src?: string; size?: keyof typeof lotMarkSizes }) {
-  const className = `${styles.lotMark} ${lotMarkSizes[size]}`;
-  if (src) {
-    return <img className={className} src={src} alt="" width={40} height={40} data-testid="lot-mark" />;
-  }
-  return (
-    <span className={`${className} ${styles.lotMarkLettered}`} aria-hidden="true" data-testid="lot-mark">
-      {symbol.slice(0, 2)}
-    </span>
-  );
+// The mint-address-keyed captured image stays local to Seametry. A small
+// client-side image boundary draws the same letter tile if a mirrored file
+// refuses to load; it does not fetch third-party URLs on the visitor's device.
+export function LotMark({ symbol, src, size = "row" }: { symbol: string; src?: string; size?: "row" | "list" | "header" }) {
+  return <LotMarkImage symbol={symbol} src={src} size={size} />;
 }
 
 // A details element, not a hover tooltip: it opens on tap as well as click,
