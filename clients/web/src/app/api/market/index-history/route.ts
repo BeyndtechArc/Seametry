@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const histories = await Promise.all(tickers.map((ticker) => equityDailyHistory(ticker)));
+    const histories = await Promise.all(tickers.map((ticker) => equityDailyHistory(ticker, 30)));
     const points = equalWeightReference(histories);
     if (points.length < 2) return NextResponse.json({
       available: false,
