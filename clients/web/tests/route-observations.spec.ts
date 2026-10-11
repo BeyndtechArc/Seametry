@@ -82,15 +82,36 @@ test("an unsigned public request cannot initiate a sampling run", async ({ reque
   expect(await response.text()).not.toContain("recorded");
 });
 
-test("the Baskets list shows no fake chart when it lacks verified route history", async ({ page }) => {
+test("the catalogue is a compact single-link register; unavailable history stays on details", async ({ page }) => {
   await page.route("**/api/market/index-history?**", (route) =>
     route.fulfill({ status: 200, json: { available: false, source: "Jupiter quote history", reason: "No complete observations yet." } }),
   );
   await page.goto("/app/baskets");
   await expect(page.getByRole("heading", { level: 1, name: "Baskets" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Published baskets" })).toBeVisible();
-  await expect(page.getByText("No routed history yet").first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Prime Seven" })).toBeVisible();
+  const register = page.getByRole("list", { name: "Published basket register" });
+  await expect(register.locator("li")).toHaveCount(10);
+  const prime = register.getByRole("link", { name: "Prime Seven" });
+  await expect(prime).toHaveAttribute("href", "/app/baskets/prime-seven");
+  await expect(prime.getByText("Megacap technology")).toBeVisible();
+  await expect(register.getByText("Open basket")).toHaveCount(0);
+  await expect(register.getByText("No routed history yet")).toHaveCount(0);
+  await prime.click();
+  await expect(page.getByRole("heading", { level: 1, name: "Prime Seven" })).toBeVisible();
+  await expect(page.getByText("No routed history yet")).toBeVisible();
+});
+
+test("published baskets stay on their details page for checkout, without repeating constituent selection", async ({ page }) => {
+  await page.goto("/app/baskets/prime-seven");
+  await expect(page.getByRole("link", { name: "Build this basket" })).toHaveCount(0);
+  await page.getByRole("link", { name: "Buy basket" }).click();
+  const order = page.getByRole("region", { name: "Buy Prime Seven" });
+  await expect(order.getByLabel("USDC to spend")).toBeVisible();
+  await expect(order.getByRole("heading", { name: "Buy Prime Seven" })).toBeVisible();
+  await expect(order.getByRole("list", { name: "Allocation steps" })).toHaveCount(0);
+  await expect(order.getByRole("region", { name: "Choose the constituents" })).toHaveCount(0);
+  await expect(order.getByText("Ready to assemble")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Build a different basket" })).toHaveAttribute("href", "/app/baskets/build");
 });
 
 test("on mobile the overflow navigation and filter categories stay behind controls", async ({ page }) => {
