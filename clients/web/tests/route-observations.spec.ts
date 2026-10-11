@@ -89,7 +89,7 @@ test("the Baskets list shows no fake chart when it lacks verified route history"
   await page.goto("/app/baskets");
   await expect(page.getByRole("heading", { level: 1, name: "Baskets" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Published baskets" })).toBeVisible();
-  await expect(page.getByText("No reference observation").first()).toBeVisible();
+  await expect(page.getByText("No routed history yet").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Prime Seven" })).toBeVisible();
 });
 
