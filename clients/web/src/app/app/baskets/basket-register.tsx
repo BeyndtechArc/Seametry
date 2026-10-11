@@ -137,7 +137,7 @@ export function BasketRegister({ baskets, offered }: { baskets: readonly Allocat
                 </div>
 
                 <div className={styles.reference}>
-                  <small>Reference · 30d</small>
+                  <small>Routed quotes · 30d</small>
                   {basket.researchOnly ? <span className={styles.researchState}>Not admitted</span> : <BasketSparkline id={basket.id} compact />}
                 </div>
 
@@ -156,7 +156,7 @@ export function BasketRegister({ baskets, offered }: { baskets: readonly Allocat
           })}
         </ol>
       )}
-      <p className={styles.registerNote}>Reference charts are informational. Execution uses fresh constituent quotes at the amount you choose.</p>
+      <p className={styles.registerNote}>Observations are historical indicative Jupiter quotes, not guaranteed fills or an oracle NAV. Your order receives fresh route simulation.</p>
     </section>
   );
 }
