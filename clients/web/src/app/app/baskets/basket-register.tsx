@@ -17,7 +17,7 @@ const filters: { key: FilterKey; label: string }[] = [
   { key: "space-frontier", label: "Space & frontier" },
   { key: "backpack", label: "Backpack" },
   { key: "xstocks", label: "xStocks" },
-  { key: "private-markets", label: "Private markets" },
+  { key: "private-markets", label: "Private / pre-IPO" },
 ];
 
 function providerLabel(lots: OfferedLot[]) {
