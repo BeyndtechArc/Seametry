@@ -25,26 +25,35 @@
   min-width: 0;
 }
 
-.tradeTabs,
 .amountShortcuts {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sm-space-2);
 }
 
-.tradeTabs { border-bottom: 0.5px solid var(--sm-line-rule); }
+.tradeTabs {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(var(--sm-space-11), 1fr));
+  justify-self: start;
+  gap: var(--sm-space-1);
+  padding: var(--sm-space-1);
+  background: var(--sm-surface-tray);
+}
+
 .tradeTabs button {
   min-width: var(--sm-space-11);
   min-height: var(--sm-size-target);
   border: 0;
-  border-bottom: 2px solid transparent;
   color: var(--sm-text-secondary);
-  background: transparent;
+  background: var(--sm-surface-sheet);
   font: inherit;
   cursor: pointer;
 }
-.tradeTabs button[aria-selected="true"] { border-bottom-color: var(--sm-accent-touch); color: var(--sm-text-primary); }
-.tradeTabs button:focus-visible { outline: 2px solid var(--sm-accent-provenance); }
+.tradeTabs button[aria-selected="true"] {
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
+}
+.tradeTabs button:focus-visible { outline: 2px solid var(--sm-accent-provenance); outline-offset: var(--sm-space-1); }
 .sheetLink {
   display: inline-flex;
   align-items: center;
