@@ -5,7 +5,7 @@ import styles from "./allocation.module.css";
 
 export type AllocationMotionState = "idle" | "preflight" | "approval" | "settling" | "partial" | "success" | "failure";
 
-const labels: Record<AllocationMotionState, string> = {
+const buyLabels: Record<AllocationMotionState, string> = {
   idle: "Ready to assemble",
   preflight: "Assaying every route",
   approval: "Waiting for one allocation decision",
@@ -15,14 +15,26 @@ const labels: Record<AllocationMotionState, string> = {
   failure: "Nothing unsafe was sent",
 };
 
+const sellLabels: Record<AllocationMotionState, string> = {
+  idle: "Ready to unwind",
+  preflight: "Quoting every exit",
+  approval: "Waiting for one exit decision",
+  settling: "Settling sale legs",
+  partial: "Partially exited",
+  success: "Allocation sold",
+  failure: "Nothing unsafe was sent",
+};
+
 export function AllocationMotion({
   state,
   total,
   settled,
+  mode = "buy",
 }: {
   state: AllocationMotionState;
   total: number;
   settled: number;
+  mode?: "buy" | "sell";
 }) {
   const count = Math.max(3, Math.min(total || 6, 8));
   const nodes = Array.from({ length: count });
@@ -50,13 +62,15 @@ export function AllocationMotion({
         <span className={styles.motionOrbitInner} />
       </div>
       <figcaption>
-        <strong>{labels[state]}</strong>
+        <strong>{(mode === "sell" ? sellLabels : buyLabels)[state]}</strong>
         <span>
           {state === "partial"
             ? "Settled legs stay in the wallet; blocked or refused legs remain explicit."
             : state === "failure"
               ? "The plan stopped at its safety boundary. Review the failed leg before trying again."
-              : "One allocation decision, with each constituent still independently observable."}
+              : mode === "sell"
+                ? "One exit decision, while every underlying sale remains independently observable."
+                : "One allocation decision, with each constituent still independently observable."}
         </span>
       </figcaption>
     </figure>
