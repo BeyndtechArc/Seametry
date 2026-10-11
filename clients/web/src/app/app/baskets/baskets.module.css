@@ -40,8 +40,7 @@
 .filterButton:focus-visible,
 .filterMenu button:focus-visible,
 .search input:focus-visible,
-.openBasket:focus-visible,
-.basketIdentity:focus-visible {
+.basketRow:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: var(--sm-space-2);
 }
@@ -251,35 +250,37 @@
 }
 
 .basketRows > li {
-  display: grid;
-  grid-template-columns: minmax(0, 2.25fr) minmax(0, 1.65fr) minmax(calc(var(--sm-space-13) * 1.35), 0.9fr) minmax(0, 1.1fr) auto;
-  align-items: center;
-  gap: var(--sm-space-6);
   min-width: 0;
-  padding: var(--sm-space-6) var(--sm-space-4);
   border-bottom: 0.5px solid var(--sm-line-rule);
-  background: var(--sm-surface-sheet);
 }
 
-.basketRows > li[data-research] {
-  border-left: 2px dashed var(--sm-line-strong);
-}
-
-.basketIdentity {
+.basketRow {
   display: grid;
-  grid-template-columns: var(--sm-space-10) minmax(0, 1fr);
-  align-items: start;
-  gap: var(--sm-space-4);
-  min-width: 0;
+  grid-template-columns: var(--sm-space-11) minmax(0, 1fr) auto minmax(var(--sm-space-13), auto) var(--sm-size-target);
+  align-items: center;
+  gap: var(--sm-space-5);
+  min-height: calc(var(--sm-size-target) + var(--sm-space-5));
+  padding: var(--sm-space-3) var(--sm-space-4);
   color: inherit;
+  background: var(--sm-surface-sheet);
   text-decoration: none;
+}
+
+.basketRow:hover,
+.basketRow:focus-visible {
+  background: var(--sm-surface-raised);
+}
+
+.basketRow:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: -2px;
 }
 
 .basketAvatar {
   display: grid;
   place-items: center;
-  width: var(--sm-space-10);
-  height: var(--sm-space-10);
+  width: var(--sm-space-11);
+  height: var(--sm-space-11);
   color: var(--sm-accent-touchText);
   background: var(--sm-surface-ground);
 }
@@ -289,79 +290,58 @@
   height: 100%;
 }
 
-.basketIdentity > span:last-child,
-.composition,
-.reference,
-.access {
+.basketRowIdentity {
   display: grid;
-  gap: var(--sm-space-2);
+  align-content: center;
+  gap: var(--sm-space-1);
   min-width: 0;
 }
 
-.basketIdentity b {
+.basketRowIdentity b,
+.basketRowIdentity small {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.basketRowIdentity b {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title);
   font-weight: var(--sm-font-weight-regular);
 }
 
-.basketIdentity small,
-.composition small,
-.reference small,
-.access small {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.basketIdentity p,
-.composition > span:last-child,
-.access span {
-  margin: 0;
+.basketRowIdentity small,
+.basketRowMembers,
+.basketRowStatus {
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
-  line-height: 1.45;
 }
 
-.composition > span:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
+.basketRowMembers,
+.basketRowStatus {
+  font-variant-numeric: tabular-nums lining-nums;
   white-space: nowrap;
 }
 
-.lotStack {
-  display: inline-flex;
-  justify-self: start;
-  padding: var(--sm-space-1) var(--sm-space-2);
+.basketRowStatus {
+  text-align: right;
+}
+
+.basketRowArrow {
+  display: grid;
+  place-items: center;
+  justify-self: end;
+  width: var(--sm-size-target);
+  height: var(--sm-size-target);
+  border: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-accent-touchText);
   background: var(--sm-surface-tray);
 }
 
-.lotStack > * {
-  width: var(--sm-space-7);
-  height: var(--sm-space-7);
-  border-radius: 50%;
-  outline: 2px solid var(--sm-surface-tray);
-}
-
-.lotStack > * + * {
-  margin-left: calc(var(--sm-space-3) * -1);
-}
-
-.access b,
-.researchState {
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.openBasket {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--sm-size-target);
-  color: var(--sm-accent-touchText);
-  font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-medium);
-  text-decoration: none;
-  white-space: nowrap;
+.basketRowArrow svg {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
 }
 
 .basketSpark {
@@ -577,13 +557,10 @@
 }
 
 @media (max-width: 1050px) {
-  .basketRows > li {
-    grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.25fr) minmax(0, 1fr) auto;
+  .basketRow {
+    grid-template-columns: var(--sm-space-11) minmax(0, 1fr) auto var(--sm-size-target);
   }
-
-  .reference {
-    display: none;
-  }
+  .basketRowStatus { display: none; }
 }
 
 @media (max-width: 760px) {
@@ -592,21 +569,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .basketRows > li {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: var(--sm-space-4);
+  .basketRow {
+    grid-template-columns: var(--sm-space-11) minmax(0, 1fr) var(--sm-size-target);
+    gap: var(--sm-space-3);
+    padding: var(--sm-space-3) var(--sm-space-2);
   }
-
-  .basketIdentity,
-  .composition,
-  .access {
-    grid-column: 1 / -1;
-  }
-
-  .openBasket {
-    grid-column: 1 / -1;
-    justify-self: start;
-  }
+  .basketRowMembers { display: none; }
 
   .detailFacts {
     grid-template-columns: minmax(0, 1fr);
