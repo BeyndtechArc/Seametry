@@ -81,9 +81,12 @@ code is the first thing that rots.
   deltas, so a confirmed curated purchase can be shown as one persistent
   portfolio and exited with Sell All without selling unrelated quantities of
   the same mint.
-- Optional Pyth Pro reference-history charts for curated Allocations. They are
-  informational only; executable Jupiter quotes still authorize trades and
-  the Hall remains price-blind.
+- An oracle-free, read-only Jupiter route sampler for admitted tokenized
+  equities. It records standardized 25-USDC acquisition quotes into optional
+  Redis REST storage, with an authenticated daily cron. Basket charts appear
+  only after at least two complete dates of observations. It is not reference
+  NAV; execution still requires freshly simulated terms and the Hall remains
+  price-blind.
 - Generated design tokens in `clients/packages/ui/src/generated`.
 
 **Does not exist:** a mainnet Hall or Alloy share pool; audited mainnet basket
@@ -91,12 +94,11 @@ issuance; server/database-backed portfolio persistence; the full professional
 Terminal NAV/share-price service; or the on-chain oracle observation adapter
 specified for the core policy layer.
 
-**Known gap:** the Go policy core still has no live oracle counterpart for
-missing or divergent reference prices. The web Allocation surface now has a
-separate optional Pyth Pro history adapter for charts, but that adapter is not
-transaction authority and does not satisfy the core's on-chain observation
-decision ([original decision](docs/decisions/2026-09-23-oracles-on-chain.md);
-[reference-data boundary](docs/decisions/2026-10-11-reference-market-data.md)).
+**Known gap:** the Go policy core still has no live signed reference-price
+observations for tokenized equities. The web Allocation route sampler is an
+independent quote-history product, not an oracle or a replacement for signed
+prices. Charts require configured storage and two complete days of samples.
+See [market-data decision](docs/decisions/2026-10-11-reference-market-data.md).
 
 The full gap list, including documentation gaps, is in
 [docs/README.md](docs/README.md) under Open items.
