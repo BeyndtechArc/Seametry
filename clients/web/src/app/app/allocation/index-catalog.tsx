@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { AllocationIndex } from "@/lib/allocation/indexes";
+import type { OfferedLot } from "@/lib/allocation/offer";
 import styles from "./allocation.module.css";
 
 type IndexSeries = {
@@ -105,14 +106,15 @@ function Sparkline({ id }: { id: string }) {
 
 export function IndexCatalog({
   indexes,
-  availableSymbols,
+  offered,
   activeId,
 }: {
   indexes: readonly AllocationIndex[];
-  availableSymbols: string[];
+  offered: OfferedLot[];
   activeId?: string;
 }) {
-  const available = new Set(availableSymbols);
+  const bySymbol = new Map(offered.map((lot) => [lot.symbol, lot]));
+  const available = new Set(offered.map((lot) => lot.symbol));
   return (
     <section className={styles.indexCatalog} aria-labelledby="allocation-indexes-title">
       <header className={styles.indexCatalogHead}>
@@ -124,8 +126,11 @@ export function IndexCatalog({
       </header>
       <div className={styles.indexCards}>
         {indexes.map((index) => {
-          const supported = index.members.filter((member) => available.has(member.symbol));
+          const supported = index.members.map((member) => bySymbol.get(member.symbol)).filter((lot): lot is OfferedLot => Boolean(lot));
           const complete = supported.length === index.members.length;
+          const issuers = new Set(supported.map((lot) => lot.issuer)).size;
+          const grades = [...new Set(supported.map((lot) => lot.grade))];
+          const capacity = supported.length ? Math.min(...supported.map((lot) => lot.capacityUsdc)) : 0;
           return (
             <article key={index.id} className={styles.indexCard} data-active={index.id === activeId || undefined}>
               <div className={styles.indexVisual}>
@@ -139,6 +144,11 @@ export function IndexCatalog({
                 <div className={styles.indexMembers} aria-label={index.name + " members"}>
                   {index.members.map((member) => <b key={member.symbol} data-missing={!available.has(member.symbol) || undefined}>{member.symbol}</b>)}
                 </div>
+                <dl className={styles.indexEvidence}>
+                  <div><dt>Issuers</dt><dd>{issuers || "—"}</dd></div>
+                  <div><dt>Grades</dt><dd>{grades.length ? grades.join(" · ") : "—"}</dd></div>
+                  <div><dt>Measured capacity</dt><dd>{capacity ? capacity.toLocaleString() + " USDC min" : "Unavailable"}</dd></div>
+                </dl>
                 <div className={styles.indexCardFoot}>
                   <small>{complete ? supported.length + "/" + index.members.length + " admitted now" : supported.length + "/" + index.members.length + " currently admitted"}</small>
                   {complete ? (
