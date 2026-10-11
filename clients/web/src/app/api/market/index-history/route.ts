@@ -10,8 +10,14 @@ export async function GET(request: NextRequest) {
   try {
     const histories = await Promise.all(index.members.map((member) => equityDailyHistory(member.oracleTicker)));
     const points = equalWeightReference(histories);
-    if (points.length < 2) return NextResponse.json({ error: "The complete reference series is unavailable." }, { status: 503 });
+    if (points.length < 2) return NextResponse.json({
+      available: false,
+      id: index.id,
+      source: "Pyth Pro",
+      reason: "The complete reference series is unavailable.",
+    });
     return NextResponse.json({
+      available: true,
       id: index.id,
       methodologyVersion: index.methodologyVersion,
       source: "Pyth Pro",
@@ -21,8 +27,10 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     return NextResponse.json({
-      error: error instanceof Error ? error.message : "Reference market data is unavailable.",
+      available: false,
+      id: index.id,
       source: "Pyth Pro",
-    }, { status: 503 });
+      reason: error instanceof Error ? error.message : "Reference market data is unavailable.",
+    });
   }
 }
