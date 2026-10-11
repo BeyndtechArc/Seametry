@@ -20,7 +20,7 @@ test("holdings names the exit route without presenting it as redemption", async 
   await expect(sheet.getByRole("tab", { name: "Sell" })).toHaveAttribute("aria-selected", "true");
   await expect(sheet.getByText("A market swap into USDC. This is not issuer redemption or an Alloy Melt.")).toBeVisible();
   await sheet.getByRole("tab", { name: "Buy" }).click();
-  await expect(sheet.getByRole("link", { name: "Buy AMZNx" })).toHaveAttribute("href", `/app/allocation?add=${encodeURIComponent(lot.instrument.mint)}`);
+  await expect(sheet.getByRole("link", { name: "Buy AMZNx" })).toHaveAttribute("href", `/app/baskets/build?add=${encodeURIComponent(lot.instrument.mint)}`);
   await sheet.getByRole("tab", { name: "Sell" }).click();
   await sheet.getByRole("button", { name: "Use 50%" }).click();
   await expect(sheet.getByLabel("Amount of AMZNx to sell")).toHaveValue("0.05");
