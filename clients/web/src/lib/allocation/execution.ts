@@ -236,6 +236,38 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
   };
 }
 
+/**
+ * Checks the whole Allocation spend before preparing any signatures, then
+ * prepares every independently executable leg. This keeps "one decision"
+ * honest: the wallet never signs a set whose combined USDC spend was already
+ * larger than its observed balance.
+ */
+export async function prepareBatch(
+  config: AllocationConfig,
+  walletText: string,
+  legs: { mint: string; inAtoms: bigint }[],
+  planMints: string[],
+): Promise<PreparedLeg[]> {
+  if (legs.length === 0) throw new Refusal(400, "An Allocation needs at least one constituent.");
+  if (new Set(legs.map((leg) => leg.mint)).size !== legs.length) throw new Refusal(400, "The Allocation names a constituent more than once.");
+  let wallet: PublicKey;
+  try {
+    wallet = new PublicKey(walletText);
+  } catch {
+    throw new Refusal(400, '"' + walletText + '" is not a Solana address.');
+  }
+
+  const requested = legs.reduce((sum, leg) => sum + leg.inAtoms, 0n);
+  const connection = new Connection(config.mainnetRpcUrl, "confirmed");
+  const usdcAccount = getAssociatedTokenAddressSync(new PublicKey(USDC_MINT), wallet, false, new PublicKey(USDC_TOKEN_PROGRAM));
+  const held = tokenAmount((await connection.getAccountInfo(usdcAccount, "confirmed"))?.data);
+  if (held < requested) {
+    throw new Refusal(402, "This wallet holds " + formatAmount(held, 6) + " USDC; the Allocation requires " + formatAmount(requested, 6) + " USDC.");
+  }
+
+  return Promise.all(legs.map((leg) => prepareLeg(config, walletText, leg.mint, leg.inAtoms, planMints)));
+}
+
 /** Builds an exact-input reverse swap. A current admission block does not hide a holder's exit route. */
 export async function prepareSale(config: AllocationConfig, walletText: string, mint: string, inAtoms: bigint): Promise<PreparedLeg> {
   const lot = listedLot(mint);
