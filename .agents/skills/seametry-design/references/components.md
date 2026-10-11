@@ -66,8 +66,8 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 **Answers:** which instrument is this, at a glance?
 **Anatomy:** a square tile at the symbol's left, sharing its row, in one of three sizes: row beside a one-line symbol, list beside a symbol with a second line, header beside a title. It shows the issuer's logo as mirrored at capture; with no captured logo it shows the symbol's leading letters on `surface.inverse`. Several marks for one Alloy may overlap as a round stack in a sunken tray.
 **Data:** the image path from `shared/evidence/instrument-logos.json`, written by `go run ./server/cmd/capture -logos` from the URI the issuer wrote into the mint. Keyed by mint address, never by symbol, since two issuers can share a ticker.
-**States:** captured logo; lettered tile when the manifest records any other state or has no entry for the mint.
-**Rules:** never linked to the issuer's server, so a changed or withdrawn file cannot change the page. Decorative (`alt=""`): the symbol always stands beside it as text, and the mark never replaces it. Carries no hue of its own beyond the issuer's picture.
+**States:** captured logo; lettered tile when the manifest records any other state or has no entry for the mint; lettered tile if a mirrored logo file fails to load (404, refusal or other browser error).
+**Rules:** every captured path remains mint-address-keyed and locally mirrored with a content digest. Never link directly to an issuer's server or borrow a logo from another tokenized representation with the same ticker. Browser image failures replace the image with a stable lettered tile rather than an empty/broken image. Decorative (`alt=""`): the symbol always stands beside it as text, and the mark never replaces it. Carries no hue of its own beyond the issuer's picture.
 
 ### Timestamp
 **Answers:** when, and which "when"?
