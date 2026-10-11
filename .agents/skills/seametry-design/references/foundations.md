@@ -230,6 +230,8 @@ Scale, in px: 12, 13, 15, 17, 20, 24, 30, 38, 48, 60, 76. Explorer display sizes
 
 **Edges carry meaning.** `data` 0 for rules, rows and figures; `surface` 4 for panels; `control` 0 for desktop actions; `sheet` 28 for mobile sheets; punches use their own shapes. Touchable controls are identified by green, an icon cell and short registration rules that protrude from the leading and trailing edges. Full-round controls are reserved for compact mobile layouts and named special cases. Never round a data row.
 
+**Page switches never use underline tabs.** Route-level switches and compact view selectors use a contained tonal rail: the current choice is distinguished by surface and type weight, never by a bottom border or sliding line. Hairline bottom rules remain valid for data rows and structural separation; they are not selection indicators.
+
 The seam between printed evidence and a control is the **registration cut**: a square surface with one corner clipped by `space.5`. It marks an authored plate, specimen, institutional header or desktop action without turning into a generic rounded rectangle. Do not introduce medium-radius cards as a compromise between square and round.
 
 **Elevation is tone.** `surface.ground` to `surface.sheet` to `surface.raised` to `surface.tray` step up in luminance on the neutral operational track, with full contrast headroom, since section 5a moved the olive hue to its own reserved `feature.*` track rather than forcing it to serve as the app's single default ground. See 5a for the two-ground structure and why it changed, and 5b to 5d for the tonal scales, the restricted Lens material, and a licensing note on using Directus as a reference.
