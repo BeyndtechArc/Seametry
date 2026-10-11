@@ -242,7 +242,6 @@ export function Positions() {
         allocationTemplateId: selectedAllocation.templateId,
       };
       recordLocalTrade(entry);
-      submitted.push(signedId);
       try {
         const response = await fetch("/api/allocation/submit", {
           method: "POST",
@@ -256,13 +255,20 @@ export function Positions() {
         }
         const sent = await responseJson<{ signature: string }>(response);
         if (sent.signature !== signedId) throw new Error("The server returned a different transaction signature.");
+        submitted.push(signedId);
         void check(entry);
       } catch (error) {
+        const stillTracked = readLocalTrades(wallet).some((trade) => trade.signature === signedId);
+        if (stillTracked) {
+          submitted.push(signedId);
+          void check(entry);
+        }
         setBatchSaleProblem("At least one signed sale could not be verified. Check the transaction list before another exit. " + (error instanceof Error ? error.message : String(error)));
       }
     }
     setActivity(readLocalTrades(wallet));
     setBatchSaleSignatures(submitted);
+    if (submitted.length === 0) setBatchSaleState("failed");
   }
 
   const position = reading && reading.wallet === wallet ? reading.positions.find((item) => item.mint === selectedMint) : undefined;
