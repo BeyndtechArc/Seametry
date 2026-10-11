@@ -48,17 +48,19 @@ export function AllocationMotion({
   total,
   settled,
   legs,
+  mode = "buy",
 }: {
   state: AllocationMotionState;
   total: number;
   settled: number;
   legs: SettlementLeg[];
+  mode?: "buy" | "sell";
 }) {
   return (
     <figure className={styles.settlementDiagram} data-state={state} aria-label="Constituent settlement overview">
       <div className={styles.settlementDiagramHead} aria-live="polite">
-        <strong>{names[state]}</strong>
-        <span>{settled} / {total} settled</span>
+        <strong>{mode === "sell" ? (state === "success" ? "Allocation exited" : state === "partial" ? "Partial exit" : state === "settling" ? "Settling sale legs" : names[state]) : names[state]}</strong>
+        <span>{settled} / {total} {mode === "sell" ? "exited" : "settled"}</span>
       </div>
       <ol className={styles.settlementTrack} aria-label="Individual purchase legs">
         {legs.map((leg, index) => {
@@ -74,7 +76,7 @@ export function AllocationMotion({
           );
         })}
       </ol>
-      <figcaption>{captions[state]}</figcaption>
+      <figcaption>{mode === "sell" ? (state === "success" ? "Every submitted sale settled." : state === "partial" ? "Some sales settled; inspect the unconfirmed legs." : state === "failure" ? "The exit was stopped or refused. Inspect the failed sale records." : captions[state]) : captions[state]}</figcaption>
     </figure>
   );
 }
