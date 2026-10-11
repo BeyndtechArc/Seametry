@@ -8,7 +8,8 @@ type AvailableSeries = {
   points: { time: number; close: number }[];
   source: string;
   kind: string;
-  observedAt: string;
+  lastSampledDay: string;
+  method: string;
 };
 
 type UnavailableSeries = {
@@ -61,20 +62,20 @@ export function BasketSparkline({ id, compact = false }: { id: string; compact?:
   if (!drawing || !series) {
     return (
       <div className={styles.sparkUnavailable} data-compact={compact || undefined}>
-        <span>{unavailable ? "No reference observation" : "Reading reference series"}</span>
+        <span>{unavailable ? "No routed history yet" : "Reading quote history"}</span>
       </div>
     );
   }
 
   return (
     <figure className={styles.basketSpark} data-compact={compact || undefined}>
-      <svg viewBox="0 0 160 48" role="img" aria-label="Price-only reference series">
+      <svg viewBox="0 0 160 48" role="img" aria-label="Indicative 25 USDC routed acquisition quote index, not investment returns">
         <path d="M0 42H160" className={styles.sparkBaseline} />
         <path d={drawing.path} className={styles.sparkLine} />
       </svg>
       <figcaption>
         <b>{drawing.change >= 0 ? "+" : ""}{drawing.change.toFixed(1)}%</b>
-        <span>{series.source} · last {new Date(series.points[series.points.length - 1].time * 1000).toUTCString().slice(5, 16)}</span>
+        <span>Quote index · {series.lastSampledDay}</span>
       </figcaption>
     </figure>
   );
