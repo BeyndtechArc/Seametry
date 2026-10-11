@@ -209,7 +209,7 @@ export function AllocationFlow({
   const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [batchPhase, setBatchPhase] = useState<"idle" | "preflight" | "approval" | "settling">("idle");
-  const allocationId = useRef<string>();
+  const allocationId = useRef<string | undefined>(undefined);
 
   const [query, setQuery] = useState("");
   const [backing, setBacking] = useState("any");
@@ -419,24 +419,22 @@ export function AllocationFlow({
     setBatchPhase("preflight");
     pending.forEach((leg) => update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined, signature: undefined, retryable: false, uncertain: false, walletBlocked: false }));
 
-    const preparedResults = await Promise.all(pending.map(async (leg) => {
-      try {
-        const prepared = await postJson<PreparedLeg>("/api/allocation/prepare", {
-          wallet: signingWallet,
-          mint: leg.mint,
-          usdcAtoms: leg.atoms.toString(),
-          planMints: chosen.map((lot) => lot.mint),
-        });
-        update(leg.mint, { phase: "signing", prepared });
-        return { leg, prepared };
-      } catch (error) {
-        update(leg.mint, { phase: "failed", note: reasonFrom(error), retryable: true });
-        return { leg, error };
-      }
-    }));
-
-    const ready = preparedResults.filter((result): result is { leg: Leg; prepared: PreparedLeg } => "prepared" in result);
-    if (ready.length !== pending.length) {
+    let ready: { leg: Leg; prepared: PreparedLeg }[];
+    try {
+      const prepared = await postJson<PreparedLeg[]>("/api/allocation/prepare-batch", {
+        wallet: signingWallet,
+        legs: pending.map((leg) => ({ mint: leg.mint, usdcAtoms: leg.atoms.toString() })),
+        planMints: chosen.map((lot) => lot.mint),
+      });
+      if (prepared.length !== pending.length) throw new Error("The Allocation preflight returned an incomplete plan.");
+      ready = pending.map((leg, index) => ({ leg, prepared: prepared[index] }));
+      ready.forEach(({ leg, prepared: item }) => update(leg.mint, { phase: "signing", prepared: item }));
+    } catch (error) {
+      pending.forEach((leg) => update(leg.mint, {
+        phase: "failed",
+        note: "Allocation preflight stopped before signing. " + reasonFrom(error),
+        retryable: true,
+      }));
       setBatchPhase("idle");
       buying.current = false;
       return;
@@ -495,6 +493,9 @@ export function AllocationFlow({
           transaction: toBase64(signed[index].serialize()),
           approval: prepared.approval,
         });
+        const templateIntact = Boolean(allocationTemplateId) &&
+          initialSelected.length === chosen.length &&
+          initialSelected.every((mint) => chosen.some((lot) => lot.mint === mint));
         recordLocalTrade({
           signature,
           wallet: signingWallet,
@@ -505,8 +506,8 @@ export function AllocationFlow({
           inputScale: USDC_SCALE,
           submittedAt: new Date().toISOString(),
           allocationId: runId,
-          allocationName,
-          allocationTemplateId,
+          allocationName: templateIntact ? allocationName : "Custom allocation",
+          allocationTemplateId: templateIntact ? allocationTemplateId : undefined,
         });
         update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
         void watch(leg.mint, signature);
