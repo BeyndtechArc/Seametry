@@ -22,6 +22,7 @@ const meta = {
 };
 const alloyMeta = { ...meta, cluster: "devnet" };
 const alloyAddress = "6BD6PprLyhiLeXKTAiLRA2hyMwUqMzpQPzftabQuduQ";
+const metadataAlloyAddress = "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d";
 const alloy = {
   address: alloyAddress,
   sponsor: "Sponsor1111111111111111111111111111111111111",
@@ -30,11 +31,6 @@ const alloy = {
   supply: "1000000",
   locked_genesis: "1000000",
   cluster: "devnet",
-  metadata: {
-    name: "Fixture Alloy",
-    symbol: "FIX",
-    uri: `https://www.seametry.xyz/alloys/${alloyAddress}/metadata.json`,
-  },
   legs: [
     {
       mint: "94L9f6NLadaF9YcDffBw4Ub7tsJb9BJBmFqCUm3zovwH",
@@ -52,6 +48,15 @@ const alloy = {
       held_back_reason: "The issuer currently prevents this Hall account from delivering.",
     },
   ],
+};
+const metadataAlloy = {
+  ...alloy,
+  address: metadataAlloyAddress,
+  metadata: {
+    name: "Fixture Alloy",
+    symbol: "FIX",
+    uri: `https://www.seametry.xyz/alloys/${metadataAlloyAddress}/metadata.json`,
+  },
 };
 // Terms for one whole share (1,000,000 share atoms) of an Alloy whose
 // 1,000,000 share atoms hold 5,000,000 and 3,000,000 atoms of its two legs.
@@ -112,6 +117,10 @@ const server = createServer((request, response) => {
   }
   if (path === `/v1/alloys/${alloyAddress}`) {
     writeJson(response, 200, { data: alloy, meta: alloyMeta });
+    return;
+  }
+  if (path === `/v1/alloys/${metadataAlloyAddress}`) {
+    writeJson(response, 200, { data: metadataAlloy, meta: alloyMeta });
     return;
   }
   if (path === `/v1/alloys/${alloyAddress}/strike-cost` || path === `/v1/alloys/${alloyAddress}/melt-proceeds`) {

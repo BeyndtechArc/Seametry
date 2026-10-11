@@ -119,13 +119,13 @@ test("the founding route refuses what would be permanent and wrong, before it sp
 });
 
 test("an address-specific metadata URL reads only a matching on-chain Alloy", async ({ request }) => {
-  const address = "6BD6PprLyhiLeXKTAiLRA2hyMwUqMzpQPzftabQuduQ";
+  const address = "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d";
   const published = await request.get(`/alloys/${address}/metadata.json`);
   expect(published.status()).toBe(200);
   const metadata = await published.json();
   expect(metadata).toMatchObject({ name: "Fixture Alloy", symbol: "FIX", description: expect.any(String) });
   expect(metadata.image).toBeUndefined();
-  const unknown = await request.get("/alloys/4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d/metadata.json");
+  const unknown = await request.get("/alloys/So11111111111111111111111111111111111111112/metadata.json");
   expect(unknown.status()).toBe(404);
 });
 
