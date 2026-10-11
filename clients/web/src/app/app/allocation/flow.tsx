@@ -8,6 +8,7 @@ import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock
 import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { Icon } from "@seametry/ui/icons";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
+import { recordLocalTrade } from "@/lib/allocation/activity";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
 import { logoFor } from "@/lib/instrument-logos";
@@ -158,7 +159,6 @@ function OrderSummary({
           <dd>{formatAmount(BigInt(SLIPPAGE_BPS), 2)}% of each swap</dd>
         </div>
       </dl>
-      <p className={styles.quiet}>Keep 0.01 SOL in this wallet as a demo reserve for network fees and new token accounts. The exact SOL cost is checked when you buy; a live route may need more than the USDC minimum.</p>
       <section className={styles.orderSelection} aria-label="Selected plan">
         <h3>Selected plan</h3>
         {selectedSymbols.length > 0 ? (
@@ -377,6 +377,7 @@ export function AllocationFlow({
         transaction: toBase64(signed.serialize()),
         approval: prepared.approval,
       });
+      recordLocalTrade({ signature, wallet: publicKey.toBase58(), mint: leg.mint, symbol: leg.symbol, direction: "buy", inputAtoms: leg.atoms.toString(), inputScale: USDC_SCALE, submittedAt: new Date().toISOString() });
       update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
       void watch(leg.mint, signature);
     } catch (error) {
@@ -598,7 +599,7 @@ export function AllocationFlow({
                         {leg.phase === "preparing" ? (
                           <p className={styles.loading}>Loading quotes for {formatAmount(leg.atoms, USDC_SCALE)} USDC</p>
                         ) : null}
-                        {leg.prepared && (leg.phase === "signing" || leg.phase === "sending") ? (
+                        {leg.prepared && leg.phase === "signing" ? (
                           <>
                             <QuoteBlock
                               floor={formatAmount(leg.prepared.floorAtoms, leg.prepared.outScale)}
@@ -635,6 +636,7 @@ export function AllocationFlow({
                     {walletBlocked ? " This wallet could not sign this purchase. The remaining purchases are paused." : uncertainCount ? ` ${uncertainCount} ${uncertainCount === 1 ? "submission needs" : "submissions need"} a wallet activity check.` : attempted.length === legs.length && settledCount < legs.length ? " The remaining purchases were not sent or did not settle." : ""}
                   </p>
                 ) : null}
+                {settledCount > 0 ? <Link href="/app/positions" className={styles.holdingsLink}>View holdings and sell</Link> : null}
                 {started && !inFlight && !walletBlocked ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
               </section>
             </>

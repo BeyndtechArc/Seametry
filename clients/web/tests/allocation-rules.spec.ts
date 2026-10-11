@@ -3,7 +3,9 @@ import { Keypair, PublicKey, TransactionInstruction, TransactionMessage, Version
 import { describeSplit, formatAmount, formatBalance, parseAmount, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
-import { countryGate, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, unlistedProgram } from "../src/lib/allocation/rules";
+import { countryGate, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
+import { listedPositions } from "../src/lib/allocation/positions";
+import { signedSignature } from "../src/lib/allocation/activity";
 import { registerTestWallet } from "./test-wallet";
 
 // Pure rules only: no build, no wallet, no network. The route handlers that
@@ -78,6 +80,41 @@ test("fee-bearing quotes request Jupiter V2 instructions for Token-2022 constitu
   expect(params.get("platformFeeBps")).toBe("15");
 });
 
+test("an exit quote spends exact token atoms and receives USDC", () => {
+  const params = sellQuoteParams("AMZNxMint", 380117n, 25);
+  expect(params.get("inputMint")).toBe("AMZNxMint");
+  expect(params.get("outputMint")).toBe(USDC_MINT);
+  expect(params.get("amount")).toBe("380117");
+  expect(params.get("platformFeeBps")).toBe("25");
+});
+
+test("holdings sum every token account for the same listed mint without including unknown mints", () => {
+  const lot = admissions.instruments.find((item) => item.instrument.symbol === "AMZNx")!;
+  const positions = listedPositions([
+    { mint: lot.instrument.mint, atoms: "100", decimals: lot.decimals, tokenProgram: lot.token_program },
+    { mint: lot.instrument.mint, atoms: "217", decimals: lot.decimals, tokenProgram: lot.token_program },
+    { mint: "UnlistedMint", atoms: "500", decimals: 6, tokenProgram: lot.token_program },
+  ], [lot]);
+  expect(positions).toEqual([{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "317", sellableAtoms: "317", scale: lot.decimals, tokenProgram: lot.token_program }]);
+});
+
+test("a sale only offers the associated account balance when holdings span token accounts", () => {
+  const lot = admissions.instruments.find((item) => item.instrument.symbol === "AMZNx")!;
+  const positions = listedPositions([
+    { mint: lot.instrument.mint, atoms: "100", decimals: lot.decimals, tokenProgram: lot.token_program, account: "associated" },
+    { mint: lot.instrument.mint, atoms: "217", decimals: lot.decimals, tokenProgram: lot.token_program, account: "other" },
+  ], [lot], new Map([[lot.instrument.mint, "associated"]]));
+  expect(positions[0].atoms).toBe("317");
+  expect(positions[0].sellableAtoms).toBe("100");
+});
+
+test("a signed transaction can be indexed before the submit response", () => {
+  const bytes = new Uint8Array(64);
+  bytes[63] = 1;
+  expect(signedSignature(bytes)).toBe(`${"1".repeat(63)}2`);
+  expect(() => signedSignature(new Uint8Array(64))).toThrow(/did not return a transaction signature/);
+});
+
 function swapLike(programIds: string[]): VersionedTransaction {
   const payer = Keypair.generate().publicKey;
   const message = new TransactionMessage({
@@ -105,6 +142,7 @@ test("a swap that invokes any unlisted program is refused, naming it", () => {
 
 const secret = "test-secret-not-a-deployment-value";
 const terms: ApprovalTerms = {
+  direction: "buy",
   wallet: Keypair.generate().publicKey.toBase58(),
   mint: "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
   inputDigest: "abc123",
@@ -403,7 +441,7 @@ test("the amount step names and enforces the funding floor before wallet signing
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx");
   await page.goto(`/app/allocation?selected=${aapl!.instrument.mint}&amount=0.5`);
   await expect(page.getByRole("region", { name: "Set the basket amount" }).getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toBeVisible();
-  await expect(page.getByRole("main").getByText("0.01 SOL", { exact: false }).first()).toBeVisible();
+  await expect(page.getByRole("main").getByText("0.01 SOL", { exact: false })).toHaveCount(0);
   await page.getByLabel("USDC to spend").fill("1");
   await expect(page.getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toHaveCount(0);
   await expect(page.getByText("AAPLx, 1.000000 USDC")).toBeVisible();

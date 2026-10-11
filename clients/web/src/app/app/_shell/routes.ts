@@ -10,7 +10,7 @@ const exactly = (href: string) => (pathname: string) => pathname === href;
 const within = (href: string) => (pathname: string) => pathname === href || pathname.startsWith(`${href}/`);
 
 export const appGroups: AppGroup[] = [
-  { group: "Desk", icon: "desk", routes: [{ label: "Overview", href: "/app", isActive: exactly("/app") }] },
+  { group: "Desk", icon: "desk", routes: [{ label: "Overview", href: "/app", isActive: exactly("/app") }, { label: "Holdings", href: "/app/positions", isActive: within("/app/positions") }] },
   { group: "Buy", icon: "buy", routes: [{ label: "Buy an Allocation", href: "/app/allocation", isActive: within("/app/allocation") }] },
   {
     group: "Hall",
@@ -30,7 +30,7 @@ export const readingRoutes = [
 ];
 
 export const mobileRoutes = [
-  { ...appGroups[0].routes[0], icon: "desk" as const },
+  { ...appGroups[0].routes[0], isActive: (pathname: string) => pathname === "/app" || within("/app/positions")(pathname), icon: "desk" as const },
   { ...appGroups[3].routes[0], icon: "assay" as const },
   { ...appGroups[1].routes[0], icon: "plus" as const, primary: true },
   { ...appGroups[2].routes[0], icon: "hall" as const },

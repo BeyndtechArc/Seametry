@@ -8,6 +8,7 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 // message is byte for byte the one approved.
 
 export type ApprovalTerms = {
+  direction: "buy" | "sell";
   wallet: string;
   mint: string;
   /** The admission decision's input digest: which evidence the instrument was judged on. */
@@ -24,6 +25,7 @@ export type ApprovalTerms = {
 // A fixed field order, so the same terms always produce the same bytes.
 function canonical(terms: ApprovalTerms): string {
   return JSON.stringify([
+    terms.direction,
     terms.wallet,
     terms.mint,
     terms.inputDigest,
@@ -66,8 +68,9 @@ export function openApproval(token: string, secret: string, now: Date): OpenedAp
   if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
     return { refused: "The approval was not issued by this server, or was changed after it was. Prepare the leg again." };
   }
-  const [wallet, mint, inputDigest, policyVersion, inAtoms, outAtoms, floorAtoms, messageSha256, expiresAt] = JSON.parse(body) as string[];
-  const terms = { wallet, mint, inputDigest, policyVersion, inAtoms, outAtoms, floorAtoms, messageSha256, expiresAt };
+  const [direction, wallet, mint, inputDigest, policyVersion, inAtoms, outAtoms, floorAtoms, messageSha256, expiresAt] = JSON.parse(body) as string[];
+  if (direction !== "buy" && direction !== "sell") return { refused: "The approval has no recognized trade direction. Prepare the leg again." };
+  const terms: ApprovalTerms = { direction, wallet, mint, inputDigest, policyVersion, inAtoms, outAtoms, floorAtoms, messageSha256, expiresAt };
   if (now.getTime() > Date.parse(expiresAt)) {
     return { refused: "This quote expired. Refresh to see current terms." };
   }

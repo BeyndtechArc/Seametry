@@ -6,7 +6,7 @@ import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { MIN_LEG_USDC_ATOMS, QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, unlistedProgram } from "./rules";
+import { MIN_LEG_USDC_ATOMS, QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 
@@ -16,6 +16,12 @@ function admittedLot(mint: string): Admission {
   if (!isAdmitted(admission)) {
     throw new Refusal(403, `${admission.instrument.symbol ?? mint} was refused by the policy engine and cannot enter an Allocation.`);
   }
+  return admission;
+}
+
+function listedLot(mint: string): Admission {
+  const admission = findAdmission(mint);
+  if (!admission) throw new Refusal(404, `${mint} is not in this deployment's instrument register, so it cannot be quoted here.`);
   return admission;
 }
 
@@ -196,6 +202,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
 
   const approval = signApproval(
     {
+      direction: "buy",
       wallet: wallet.toBase58(),
       mint,
       inputDigest: lot.capacity_decision.input_digest,
@@ -229,6 +236,82 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
   };
 }
 
+/** Builds an exact-input reverse swap. A current admission block does not hide a holder's exit route. */
+export async function prepareSale(config: AllocationConfig, walletText: string, mint: string, inAtoms: bigint): Promise<PreparedLeg> {
+  const lot = listedLot(mint);
+  if (inAtoms <= 0n) throw new Refusal(400, `Selling ${lot.instrument.symbol ?? mint} needs a token quantity greater than zero.`);
+  let wallet: PublicKey;
+  try {
+    wallet = new PublicKey(walletText);
+  } catch {
+    throw new Refusal(400, `"${walletText}" is not a Solana address.`);
+  }
+  const connection = new Connection(config.mainnetRpcUrl, "confirmed");
+  const feeAccount = getAssociatedTokenAddressSync(new PublicKey(USDC_MINT), new PublicKey(config.feeWallet), true, new PublicKey(USDC_TOKEN_PROGRAM));
+  if (!(await connection.getAccountInfo(feeAccount, "confirmed"))) throw new Refusal(503, "Seametry's USDC fee account is not open on mainnet. Seametry must open it before selling here is available.");
+
+  const feeBps = routingFeeBps(1);
+  const quote = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${sellQuoteParams(mint, inAtoms, feeBps)}`);
+  const receivedAt = new Date();
+  const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
+  const swap = await jupiter<{ swapTransaction: string; prioritizationFeeLamports?: number }>(config.jupiterApiKey, "/swap", {
+    method: "POST",
+    body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58() }),
+  });
+  const transaction = VersionedTransaction.deserialize(Buffer.from(swap.swapTransaction, "base64"));
+  const unlisted = unlistedProgram(transaction);
+  if (unlisted) throw new Refusal(502, `The sale route invokes ${unlisted}, which is not on this deployment's program allowlist. It was not offered for signing.`);
+  if (!transaction.message.staticAccountKeys[0]?.equals(wallet)) throw new Refusal(502, "The sale route does not name the connected wallet as fee payer. It was not offered for signing.");
+
+  const usdcAccount = getAssociatedTokenAddressSync(new PublicKey(USDC_MINT), wallet, false, new PublicKey(USDC_TOKEN_PROGRAM));
+  const lotAccount = getAssociatedTokenAddressSync(new PublicKey(mint), wallet, false, new PublicKey(lot.token_program));
+  const watched = [wallet, usdcAccount, lotAccount, feeAccount];
+  const before = await connection.getMultipleAccountsInfo(watched, "confirmed");
+  const held = tokenAmount(before[2]?.data);
+  if (held < inAtoms) throw new Refusal(402, `This wallet holds ${formatAmount(held, lot.decimals)} ${lot.instrument.symbol ?? mint}; the sale asks for ${formatAmount(inAtoms, lot.decimals)}.`);
+  let rent = 0n;
+  if (!before[1]) rent = BigInt(await connection.getMinimumBalanceForRentExemption(165));
+  const needed = rent + SIGNATURE_FEE_LAMPORTS + BigInt(swap.prioritizationFeeLamports ?? 0);
+  const solHeld = BigInt(before[0]?.lamports ?? 0);
+  if (solHeld < needed) throw new Refusal(402, `This wallet holds ${formatAmount(solHeld, 9)} SOL; the sale needs ${formatAmount(needed, 9)} SOL for network fees${rent ? " and a USDC token account" : ""}. Add SOL before selling.`);
+
+  const simulation = await connection.simulateTransaction(transaction, {
+    sigVerify: false,
+    replaceRecentBlockhash: false,
+    commitment: "confirmed",
+    accounts: { encoding: "base64", addresses: watched.map((key) => key.toBase58()) },
+  });
+  if (simulation.value.err) {
+    const logs = (simulation.value.logs ?? []).filter((line) => /error|failed/i.test(line)).slice(-3).join(" | ");
+    throw new Refusal(422, `Simulation on mainnet refused this sale: ${JSON.stringify(simulation.value.err)}${logs ? `. ${logs}` : ""}`);
+  }
+  const after = simulation.value.accounts ?? [];
+  const accountData = (index: number) => {
+    const data = after[index]?.data;
+    return Array.isArray(data) ? Buffer.from(data[0], "base64") : null;
+  };
+  const simulated: BalanceChange[] = [
+    { atoms: (tokenAmount(accountData(2)) - tokenAmount(before[2]?.data)).toString(), scale: lot.decimals, unit: lot.instrument.symbol ?? mint },
+    { atoms: (tokenAmount(accountData(1)) - tokenAmount(before[1]?.data)).toString(), scale: 6, unit: "USDC" },
+    { atoms: (BigInt(after[0]?.lamports ?? 0) - BigInt(before[0]?.lamports ?? 0)).toString(), scale: 9, unit: "SOL" },
+  ];
+  const feeAtoms = tokenAmount(accountData(3)) - tokenAmount(before[3]?.data);
+  if (new Date() > expiresAt) throw new Refusal(410, "This sale quote expired. Request current terms before signing.");
+  const approval = signApproval({
+    direction: "sell", wallet: wallet.toBase58(), mint,
+    inputDigest: lot.capacity_decision.input_digest, policyVersion: lot.capacity_decision.policy_version,
+    inAtoms: quote.inAmount, outAtoms: quote.outAmount, floorAtoms: quote.otherAmountThreshold,
+    messageSha256: messageDigest(transaction.message.serialize()), expiresAt: expiresAt.toISOString(),
+  }, config.approvalSecret);
+  return {
+    mint, symbol: lot.instrument.symbol ?? mint, inAtoms: quote.inAmount, outAtoms: quote.outAmount,
+    floorAtoms: quote.otherAmountThreshold, outScale: 6, route: quote.routePlan.map((hop) => hop.swapInfo.label),
+    contextSlot: quote.contextSlot, receivedAt: receivedAt.toISOString(), expiresAt: expiresAt.toISOString(),
+    priorityFeeLamports: String(swap.prioritizationFeeLamports ?? 0), routingFeeBps: feeBps,
+    routingFeeAtoms: feeAtoms.toString(), simulated, transaction: swap.swapTransaction, approval,
+  };
+}
+
 /**
  * Broadcasts a leg the holder signed, only if it is the transaction this
  * server approved, unchanged, still inside its quote's lifetime, and still
@@ -248,7 +331,7 @@ export async function submitLeg(config: AllocationConfig, signedBase64: string, 
   if (messageDigest(transaction.message.serialize()) !== terms.messageSha256) {
     throw new Refusal(409, "The transaction was changed after it was approved, so it was not sent. Prepare the leg again.");
   }
-  const lot = admittedLot(terms.mint);
+  const lot = terms.direction === "sell" ? listedLot(terms.mint) : admittedLot(terms.mint);
   if (lot.capacity_decision.input_digest !== terms.inputDigest || lot.capacity_decision.policy_version !== terms.policyVersion) {
     throw new Refusal(409, "The admission this leg was approved under has changed since. Prepare the leg again.");
   }
@@ -269,7 +352,7 @@ export type LegStatus = { state: "pending" | "confirmed" | "finalized" | "failed
 
 export async function legStatus(config: AllocationConfig, signature: string): Promise<LegStatus> {
   const connection = new Connection(config.mainnetRpcUrl, "confirmed");
-  const { value } = await connection.getSignatureStatuses([signature]);
+  const { value } = await connection.getSignatureStatuses([signature], { searchTransactionHistory: true });
   const status = value[0];
   if (!status) return { state: "pending" };
   if (status.err) return { state: "failed", detail: JSON.stringify(status.err) };

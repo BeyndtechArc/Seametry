@@ -35,6 +35,18 @@ export function quoteParams(mint: string, inAtoms: bigint, feeBps: number): URLS
   });
 }
 
+/** A sale spends token atoms and receives USDC; the USDC output pays the disclosed routing fee. */
+export function sellQuoteParams(mint: string, inAtoms: bigint, feeBps: number): URLSearchParams {
+  return new URLSearchParams({
+    inputMint: mint,
+    outputMint: USDC_MINT,
+    amount: inAtoms.toString(),
+    slippageBps: String(SLIPPAGE_BPS),
+    platformFeeBps: String(feeBps),
+    instructionVersion: "V2",
+  });
+}
+
 /**
  * Seametry's routing fee in basis points of the USDC each leg spends, by how
  * many constituents the plan buys, set by Storm on 7 October 2026: capped at

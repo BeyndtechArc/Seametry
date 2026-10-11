@@ -71,6 +71,7 @@ export default async function DeskPage() {
             <NetworkBadge network="Mainnet" />
           </header>
           <p>Allocation means direct ownership: each constituent settles into your wallet, with no pooled share between you and the assets.</p>
+          <TextAction href="/app/positions">See your holdings</TextAction>
         </div>
         <Figure
           label="Lots admitted"

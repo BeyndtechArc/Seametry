@@ -243,6 +243,13 @@
   color: var(--sm-text-primary);
 }
 
+.holdingsLink {
+  justify-self: start;
+  color: var(--sm-accent-touchText);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .purchaseOutcome {
   display: grid;
   grid-template-columns: var(--sm-space-8) minmax(0, 1fr);

@@ -1,0 +1,141 @@
+.page {
+  min-width: 0;
+}
+
+.workspace {
+  display: grid;
+  gap: var(--sm-space-8);
+  margin-top: var(--sm-space-8);
+}
+
+.ledger,
+.sale,
+.activity {
+  display: grid;
+  gap: var(--sm-space-5);
+  min-width: 0;
+  padding: var(--sm-space-6);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  background: var(--sm-surface-sheet);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sm-space-4);
+}
+
+.sectionHead h2 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-regular);
+}
+
+.sectionHead p,
+.notice,
+.quote p {
+  margin: var(--sm-space-2) 0 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.5;
+}
+
+.problem {
+  margin: 0;
+  padding: var(--sm-space-3) 0;
+  border-top: 0.5px solid var(--sm-line-strong);
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+}
+
+.holdings,
+.activity ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.holdings li,
+.activity li {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-4);
+  min-width: 0;
+  padding: var(--sm-space-4) 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.identity,
+.activity li > div {
+  display: grid;
+  gap: var(--sm-space-1);
+  min-width: 0;
+}
+
+.identity {
+  flex: 1;
+}
+
+.identity b,
+.activity b {
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-body);
+}
+
+.identity span,
+.activity span {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.activity li {
+  align-items: start;
+  justify-content: space-between;
+}
+
+.activity li > div:last-child {
+  justify-items: end;
+  text-align: right;
+}
+
+.activity a,
+.quote a,
+.notice a,
+.backLink {
+  color: var(--sm-accent-touchText);
+  font-size: var(--sm-font-size-small);
+}
+
+.actions,
+.quote {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-4);
+}
+
+.backLink {
+  justify-self: start;
+}
+
+@media (max-width: 640px) {
+  .ledger,
+  .sale,
+  .activity {
+    padding: var(--sm-space-4);
+  }
+
+  .holdings li,
+  .activity li {
+    flex-wrap: wrap;
+  }
+
+  .activity li > div:last-child {
+    justify-items: start;
+    text-align: left;
+  }
+}
