@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { sampleAdmittedRoutes } from "@/lib/market/route-sampler";
-import { claimDailyObservationRun, routeHistoryConfigured, saveRouteObservations } from "@/lib/market/route-history-store";
+import { claimDailyObservationRun, completeDailyObservationRun, routeHistoryConfigured, saveRouteObservations } from "@/lib/market/route-history-store";
 import { utcDay } from "@/lib/market/route-observations";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
     }
     const outcome = await sampleAdmittedRoutes(apiKey);
     await saveRouteObservations(outcome.observations);
+    if (outcome.observations.length > 0) await completeDailyObservationRun(day);
     return NextResponse.json({
       state: outcome.observations.length ? "recorded" : "no-usable-quotes",
       day,
