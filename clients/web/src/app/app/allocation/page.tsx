@@ -3,11 +3,13 @@ import { connection } from "next/server";
 import { headers } from "next/headers";
 import { admissions } from "@/lib/allocation/admissions";
 import { allocationOffer, purchasesUnavailable } from "@/lib/allocation/offer";
+import { allocationIndexes, findAllocationIndex } from "@/lib/allocation/indexes";
 import { SLIPPAGE_BPS, feeSchedule } from "@/lib/allocation/rules";
 import { formatAmount } from "@/lib/amount";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import { PageHeader } from "../_shell/page-header";
 import { AllocationFlow } from "./flow";
+import { IndexCatalog } from "./index-catalog";
 import styles from "./allocation.module.css";
 
 export const metadata: Metadata = {
@@ -15,11 +17,17 @@ export const metadata: Metadata = {
   description: "Plan and buy several admitted tokenized stocks directly into your own wallet, with every purchase shown before you sign.",
 };
 
-export default async function AllocationPage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string; amount?: string }> }) {
+export default async function AllocationPage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string; amount?: string; index?: string }> }) {
   await connection();
-  const { selected, add, amount } = await searchParams;
+  const { selected, add, amount, index: indexId } = await searchParams;
   const unavailable = purchasesUnavailable(await headers());
   const { offered, refused: refusedLots } = allocationOffer();
+  const activeIndex = findAllocationIndex(indexId);
+  const indexMints = activeIndex
+    ? activeIndex.members.map((member) => offered.find((lot) => lot.symbol === member.symbol)?.mint).filter((mint): mint is string => Boolean(mint))
+    : [];
+  const explicitMints = offered.filter((lot) => (selected?.split(",") ?? []).includes(lot.mint) || add === lot.mint).map((lot) => lot.mint);
+  const initialSelected = activeIndex && indexMints.length === activeIndex.members.length ? indexMints : explicitMints;
 
   return (
     <div className={styles.page}>
@@ -43,12 +51,15 @@ export default async function AllocationPage({ searchParams }: { searchParams: P
             </>
           }
         />
+        <IndexCatalog indexes={allocationIndexes} availableSymbols={offered.map((lot) => lot.symbol)} activeId={activeIndex?.id} />
         <AllocationFlow
           offered={offered}
           refused={refusedLots}
           unavailable={unavailable}
-          initialSelected={offered.filter((lot) => (selected?.split(",") ?? []).includes(lot.mint) || add === lot.mint).map((lot) => lot.mint)}
+          initialSelected={initialSelected}
           initialAmount={amount ?? ""}
+          allocationName={activeIndex?.name ?? "Custom allocation"}
+          allocationTemplateId={activeIndex?.id}
         />
     </div>
   );
