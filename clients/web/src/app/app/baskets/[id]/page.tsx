@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
+import { headers } from "next/headers";
 import { LotMark } from "@seametry/ui";
 import { findAllocationIndex } from "@/lib/allocation/indexes";
-import { allocationOffer } from "@/lib/allocation/offer";
+import { allocationOffer, purchasesUnavailable } from "@/lib/allocation/offer";
 import { BasketSparkline } from "../basket-history";
 import { BasketSectionNav } from "../section-nav";
+import { AllocationFlow } from "../../allocation/flow";
 import styles from "../baskets.module.css";
 
 export default async function BasketDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -14,7 +16,8 @@ export default async function BasketDetailPage({ params }: { params: Promise<{ i
   const basket = findAllocationIndex(id);
   if (!basket) notFound();
 
-  const { offered, asOf, policyVersion } = allocationOffer();
+  const { offered, refused, asOf, policyVersion } = allocationOffer();
+  const unavailable = purchasesUnavailable(await headers());
   const bySymbol = new Map(offered.map((lot) => [lot.symbol, lot]));
   const admitted = basket.members.map((member) => bySymbol.get(member.symbol)).filter((lot): lot is (typeof offered)[number] => Boolean(lot));
   const complete = !basket.researchOnly && admitted.length === basket.members.length;
@@ -42,12 +45,35 @@ export default async function BasketDetailPage({ params }: { params: Promise<{ i
           {basket.researchOnly ? (
             <p className={styles.detailBoundary}>{basket.researchBoundary}</p>
           ) : complete ? (
-            <Link className={styles.detailAction} href={"/app/baskets/build?basket=" + encodeURIComponent(basket.id)}>Build this basket</Link>
+            <a className={styles.detailAction} href="#basket-order">Buy basket</a>
           ) : (
             <p className={styles.detailBoundary}>This published basket is incomplete under the current admissions snapshot and cannot be prepared for purchase.</p>
           )}
         </div>
       </section>
+
+      {complete ? (
+        <section className={styles.detailPurchase} id="basket-order" aria-labelledby="basket-order-heading">
+          <header>
+            <div>
+              <span>Direct wallet ownership</span>
+              <h2 id="basket-order-heading">Buy {basket.name}</h2>
+              <p>Choose one USDC amount for the published composition. Every constituent is independently quoted and simulated before your wallet signs. No pooled basket token is issued.</p>
+            </div>
+            <Link href="/app/baskets/build" className={styles.detailCustomLink}>Build a different basket</Link>
+          </header>
+          <AllocationFlow
+            offered={offered}
+            refused={refused}
+            unavailable={unavailable}
+            initialSelected={admitted.map((lot) => lot.mint)}
+            initialAmount=""
+            allocationName={basket.name}
+            allocationTemplateId={basket.id}
+            fixedTemplate
+          />
+        </section>
+      ) : null}
 
       <section className={styles.detailSection} aria-labelledby="basket-observation">
         <h2 id="basket-observation">Routed acquisition history</h2>
