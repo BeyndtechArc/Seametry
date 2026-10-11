@@ -11,7 +11,7 @@ import styles from "./desk.module.css";
 
 export const metadata: Metadata = {
   title: "Desk | Seametry",
-  description: "The Alloys on the Hall, direct basket building, the Hall demo and instrument evidence.",
+  description: "Alloys on the Hall, researched direct-wallet baskets and instrument evidence."
 };
 
 async function readRegister() {
@@ -67,10 +67,10 @@ export default async function DeskPage() {
         <span className={styles.index}>02 / Allocation</span>
         <div className={styles.entryBody}>
           <header>
-            <h2 id="allocation-entry">Buy an Allocation</h2>
+            <h2 id="allocation-entry">Baskets</h2>
             <NetworkBadge network="Mainnet" />
           </header>
-          <p>Allocation means direct ownership: each constituent settles into your wallet, with no pooled share between you and the assets.</p>
+          <p>Published baskets and custom Allocations settle each constituent directly into your wallet, with no pooled share between you and the assets.</p>
           <TextAction href="/app/positions">See your holdings</TextAction>
         </div>
         <Figure
@@ -82,7 +82,7 @@ export default async function DeskPage() {
           age={snapshotAge}
           observedAt={admissions.as_of}
         />
-        <TextAction href="/app/allocation">Buy into your wallet</TextAction>
+        <TextAction href="/app/baskets">Browse baskets</TextAction>
       </section>
 
       <section className={styles.entry} aria-labelledby="assay-entry">
