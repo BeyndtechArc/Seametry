@@ -295,6 +295,13 @@ Amount, plan, Quote block, path, approval Key, expiry. Occludes the page behind;
 **Data:** accessible title, close label and caller-owned content. The component owns no product data.
 **Rules:** use the native dialog focus and Escape contract; restore focus to the opening control; label the dialog from its visible title. An end sheet is for review or a bounded task, never generic navigation. It does not create a second Key. Opening motion uses `duration.sheet`; reduced motion lands immediately.
 
+### Process outcome
+**Answers:** is the signed action still being checked, confirmed, or refused?
+**Anatomy:** large outlined status mark, one short heading, one factual sentence, optional transaction link or technical disclosure.
+**States:** pending in semantic warning, success in semantic success, error in semantic error. Unknown confirmation remains pending, never success.
+**Data:** explicit request state and chain confirmation supplied by the caller.
+**Rules:** show success only after confirmation. Never leave a completed request in the running Step register. State is named in text as well as colour.
+
 ### Melt panel
 Constituent rows, each deliverable or held as a Claim with its reason. Held rows stay still.
 

@@ -104,3 +104,12 @@ export function ProcessDialog({
     </dialog>
   );
 }
+
+export function ProcessOutcome({ kind, title, children }: { kind: "pending" | "success" | "error"; title: string; children: ReactNode }) {
+  return (
+    <section className={styles.outcome} data-kind={kind} role={kind === "error" ? "alert" : "status"}>
+      <span className={styles.outcomeMark} aria-hidden="true"><Icon name={kind === "success" ? "check" : kind === "error" ? "close" : "info"} /></span>
+      <div className={styles.outcomeBody}><h3>{title}</h3>{children}</div>
+    </section>
+  );
+}

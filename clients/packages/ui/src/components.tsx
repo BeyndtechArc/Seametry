@@ -471,6 +471,7 @@ export function Field({
   label,
   message,
   invalid = false,
+  endAdornment,
   inputMode,
   onChange,
   pattern,
@@ -480,6 +481,7 @@ export function Field({
   label: string;
   message?: string;
   invalid?: boolean;
+  endAdornment?: ReactNode;
 }) {
   const numericPattern = inputMode === "decimal" ? "[0-9]+([.][0-9]*)?" : inputMode === "numeric" ? "[0-9]+" : undefined;
   return (
@@ -507,6 +509,7 @@ export function Field({
             if (accepted) onChange(event);
           } : undefined}
         />
+        {endAdornment ? <span className={styles.fieldAdornment} aria-hidden="true">{endAdornment}</span> : null}
       </span>
       {message ? <span className={styles.fieldMessage} id={`${id}-message`}>{message}</span> : null}
     </label>

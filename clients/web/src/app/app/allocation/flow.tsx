@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepTrack, Stamp, StepRegister, type RegisterStep } from "@seametry/ui";
-import { ProcessDialog } from "@seametry/ui/modal-sheet";
+import { ProcessDialog, ProcessOutcome } from "@seametry/ui/modal-sheet";
 import { Icon } from "@seametry/ui/icons";
 import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
 import { recordLocalTrade } from "@/lib/allocation/activity";
@@ -438,15 +438,13 @@ export function AllocationFlow({
         footer={purchaseRun?.state === "stopped" && purchaseRun.retryable ? <QuietAction type="button" onClick={() => void buy()}>Prepare {purchaseRun.symbol} again</QuietAction> : purchaseRun?.outcome === "blocked" ? <QuietAction type="button" onClick={() => { setPurchaseOpen(false); void disconnect(); }}>Disconnect wallet</QuietAction> : undefined}
       >
         {purchaseRun?.state === "running" ? <StepRegister label={`Purchase ${purchaseRun.symbol}`} steps={purchaseSteps(purchaseRun)} /> : purchaseRun ? (
-          <section className={styles.purchaseOutcome} data-kind={purchaseRun.state === "settled" ? "success" : purchaseRun.outcome === "unsent" || purchaseRun.outcome === "uncertain" ? "warning" : "error"} role={purchaseRun.state === "settled" ? "status" : "alert"}>
-            <span className={styles.outcomeMark}><Icon name={purchaseRun.state === "settled" ? "check" : purchaseRun.outcome === "unsent" || purchaseRun.outcome === "uncertain" ? "info" : "close"} /></span>
+          <ProcessOutcome kind={purchaseRun.state === "settled" ? "success" : purchaseRun.outcome === "uncertain" ? "pending" : "error"} title={purchaseRun.state === "settled" ? "Purchase settled" : purchaseRun.outcome === "blocked" ? "Purchase not sent" : purchaseRun.outcome === "uncertain" ? "Check wallet activity" : purchaseRun.outcome === "failed" ? "Purchase failed on mainnet" : purchaseRun.stage === "sign" ? "Purchase not signed" : "Purchase not prepared"}>
             <div className={styles.outcomeBody}>
-              <h3>{purchaseRun.state === "settled" ? "Purchase settled" : purchaseRun.outcome === "blocked" ? "Purchase not sent" : purchaseRun.outcome === "uncertain" ? "Check wallet activity" : purchaseRun.outcome === "failed" ? "Purchase failed on mainnet" : purchaseRun.stage === "sign" ? "Purchase not signed" : "Purchase not prepared"}</h3>
               <p>{purchaseRun.state === "settled" ? "Mainnet confirmed this transaction." : purchaseRun.problem?.plain}</p>
               {purchaseRun.problem?.technical ? <details><summary>Technical detail</summary><pre>{purchaseRun.problem.technical}</pre></details> : null}
               {purchaseRun.signature ? <a className={styles.signature} href={`https://explorer.solana.com/tx/${purchaseRun.signature}`} rel="noreferrer" target="_blank">View transaction</a> : null}
             </div>
-          </section>
+          </ProcessOutcome>
         ) : null}
       </ProcessDialog>
       {unavailable ? (
@@ -563,6 +561,7 @@ export function AllocationFlow({
               <Field
                 id="allocation-usdc"
                 label="USDC to spend"
+                endAdornment={<><Icon name="currency" />USDC</>}
                 inputMode="decimal"
                 autoComplete="off"
                 placeholder="250"

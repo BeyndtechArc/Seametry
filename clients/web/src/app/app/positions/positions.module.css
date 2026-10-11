@@ -9,7 +9,6 @@
 }
 
 .ledger,
-.sale,
 .activity {
   display: grid;
   gap: var(--sm-space-5);
@@ -18,6 +17,45 @@
   border-top: 0.5px solid var(--sm-line-highlight);
   background: var(--sm-surface-sheet);
 }
+
+.sale,
+.tradePanel {
+  display: grid;
+  gap: var(--sm-space-5);
+  min-width: 0;
+}
+
+.tradeTabs,
+.amountShortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sm-space-2);
+}
+
+.tradeTabs { border-bottom: 0.5px solid var(--sm-line-rule); }
+.tradeTabs button {
+  min-width: var(--sm-space-11);
+  min-height: var(--sm-size-target);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--sm-text-secondary);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.tradeTabs button[aria-selected="true"] { border-bottom-color: var(--sm-accent-touch); color: var(--sm-text-primary); }
+.tradeTabs button:focus-visible { outline: 2px solid var(--sm-accent-provenance); }
+.sheetLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--sm-size-target);
+  padding: 0 var(--sm-space-6);
+  color: var(--sm-text-onTouch);
+  background: var(--sm-accent-touch);
+  text-decoration: none;
+}
+.sheetLink:focus-visible { outline: 2px solid var(--sm-accent-provenance); }
 
 .sectionHead {
   display: flex;
@@ -111,7 +149,6 @@
   font-size: var(--sm-font-size-small);
 }
 
-.actions,
 .quote {
   display: grid;
   justify-items: start;

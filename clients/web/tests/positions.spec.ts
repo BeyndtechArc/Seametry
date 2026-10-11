@@ -15,7 +15,15 @@ test("holdings names the exit route without presenting it as redemption", async 
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await expect(page.getByText("0.15 held; 0.1 available to this route")).toBeVisible();
   await page.getByRole("button", { name: "Sell AMZNx" }).click();
-  await expect(page.getByText("A market swap into USDC. This is not issuer redemption or an Alloy Melt.")).toBeVisible();
+  const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByRole("tab", { name: "Sell" })).toHaveAttribute("aria-selected", "true");
+  await expect(sheet.getByText("A market swap into USDC. This is not issuer redemption or an Alloy Melt.")).toBeVisible();
+  await sheet.getByRole("tab", { name: "Buy" }).click();
+  await expect(sheet.getByRole("link", { name: "Buy AMZNx" })).toHaveAttribute("href", `/app/allocation?add=${encodeURIComponent(lot.instrument.mint)}`);
+  await sheet.getByRole("tab", { name: "Sell" }).click();
+  await sheet.getByRole("button", { name: "Use 50%" }).click();
+  await expect(sheet.getByLabel("Amount of AMZNx to sell")).toHaveValue("0.05");
   await page.getByRole("button", { name: "Use available balance" }).click();
   await expect(page.getByLabel("Amount of AMZNx to sell")).toHaveValue("0.1");
   await page.getByLabel("Amount of AMZNx to sell").fill("0.2");

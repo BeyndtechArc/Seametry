@@ -6,7 +6,7 @@ import { AnchorProvider } from "@coral-xyz/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { Field, Key, QuietAction, StepRegister, type RegisterStep } from "@seametry/ui";
 import type { IconName } from "@seametry/ui/icons";
-import { ProcessDialog } from "@seametry/ui/modal-sheet";
+import { ModalSheet, ProcessDialog, ProcessOutcome } from "@seametry/ui/modal-sheet";
 import { buildDelivery, buildMelt, buildStrike, readClaim, type ClaimLeg } from "@/lib/alloys/hall-transactions";
 import { formatAmount, parseAmount } from "@/lib/amount";
 import { legIdentity } from "@/lib/alloys/records";
@@ -116,6 +116,8 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
   const [meltTyped, setMeltTyped] = useState("1");
   const [run, setRun] = useState<Run>();
   const [open, setOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [side, setSide] = useState<"strike" | "melt">("strike");
   const [strikeReady, setStrikeReady] = useState<string>();
   const [meltReady, setMeltReady] = useState<string>();
 
@@ -174,6 +176,7 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
         await awaitLanding(connection, signature, transaction.message.recentBlockhash);
         return signature;
       };
+      setSheetOpen(false);
       setOpen(true);
       advance(0, "prepare");
       try {
@@ -237,33 +240,42 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
           : undefined);
 
   return (
-    <section className={styles.alloyActions} aria-label="Strike or Melt">
-      <div className={styles.actionCard}>
-        <h3>Strike</h3>
+    <>
+      <Key type="button" onClick={() => setSheetOpen(true)}>Strike or Melt</Key>
+      <ModalSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Strike or Melt" register="Devnet Hall" closeLabel="Close Alloy actions" footer={side === "strike" ? (
+        <Key type="button" disabled={Boolean(notConnected) || !("atoms" in strikeAmount) || strikeAmount.atoms === 0n || ("atoms" in strikeAmount && strikeReady !== strikeAmount.atoms.toString())} disabledReason={notConnected ?? "Reading the current deposit quantities."} busy={busy} busyLabel="Working" onClick={() => "atoms" in strikeAmount && void strike(strikeAmount.atoms)}>Strike shares</Key>
+      ) : (
+        <Key type="button" disabled={Boolean(meltReason) || !("atoms" in meltAmount) || meltAmount.atoms === 0n || ("atoms" in meltAmount && meltReady !== meltAmount.atoms.toString())} disabledReason={meltReason ?? "Reading the current return quantities."} busy={busy} busyLabel="Working" onClick={() => "atoms" in meltAmount && void melt(meltAmount.atoms)}>Melt shares</Key>
+      )}>
+      <section className={styles.alloyActions} aria-label="Strike or Melt">
+        <div className={styles.actionTabs} role="tablist" aria-label="Alloy action">
+          <button type="button" role="tab" aria-selected={side === "strike"} onClick={() => setSide("strike")}>Strike</button>
+          <button type="button" role="tab" aria-selected={side === "melt"} onClick={() => setSide("melt")}>Melt</button>
+        </div>
+      {side === "strike" ? <div className={styles.actionCard} role="tabpanel">
         <p>Deposit the stocks one share holds and receive new shares. On devnet, Seametry first mints the stand-ins into your wallet.</p>
         <Field id="strike-shares" label="Shares to Strike" inputMode="decimal" value={strikeTyped} onChange={(event) => { setStrikeReady(undefined); setStrikeTyped(event.target.value); }} message={"refused" in strikeAmount ? strikeAmount.refused : undefined} invalid={"refused" in strikeAmount} />
         <QuantityTerms alloy={alloy} atoms={"atoms" in strikeAmount ? strikeAmount.atoms : undefined} side="strike" onReady={setStrikeReady} />
-        <Key type="button" disabled={Boolean(notConnected) || !("atoms" in strikeAmount) || strikeAmount.atoms === 0n || ("atoms" in strikeAmount && strikeReady !== strikeAmount.atoms.toString())} disabledReason={notConnected ?? "Reading the current deposit quantities."} busy={busy} busyLabel="Working" onClick={() => "atoms" in strikeAmount && void strike(strikeAmount.atoms)}>
-          Strike shares
-        </Key>
-      </div>
-      <div className={styles.actionCard}>
-        <h3>Melt</h3>
+      </div> : <div className={styles.actionCard} role="tabpanel">
         <p>{shares !== undefined && connected ? `You hold ${formatAmount(shares, SHARE_DECIMALS)} shares. ` : ""}Return shares and take every stock back. A stock its issuer holds back stays in your Claim.</p>
         <Field id="melt-shares" label="Shares to Melt" inputMode="decimal" value={meltTyped} onChange={(event) => { setMeltReady(undefined); setMeltTyped(event.target.value); }} message={"refused" in meltAmount ? meltAmount.refused : undefined} invalid={"refused" in meltAmount} />
+        {shares !== undefined && shares > 0n ? <div className={styles.shareShortcuts}>
+          <QuietAction type="button" onClick={() => { setMeltReady(undefined); setMeltTyped(formatAmount(shares / 4n, SHARE_DECIMALS).replace(/,/g, "")); }}>Use 25%</QuietAction>
+          <QuietAction type="button" onClick={() => { setMeltReady(undefined); setMeltTyped(formatAmount(shares / 2n, SHARE_DECIMALS).replace(/,/g, "")); }}>Use 50%</QuietAction>
+          <QuietAction type="button" onClick={() => { setMeltReady(undefined); setMeltTyped(formatAmount(shares, SHARE_DECIMALS).replace(/,/g, "")); }}>Use max</QuietAction>
+        </div> : null}
         <QuantityTerms alloy={alloy} atoms={"atoms" in meltAmount ? meltAmount.atoms : undefined} side="melt" onReady={setMeltReady} />
-        <Key type="button" disabled={Boolean(meltReason) || !("atoms" in meltAmount) || meltAmount.atoms === 0n || ("atoms" in meltAmount && meltReady !== meltAmount.atoms.toString())} disabledReason={meltReason ?? "Reading the current return quantities."} busy={busy} busyLabel="Working" onClick={() => "atoms" in meltAmount && void melt(meltAmount.atoms)}>
-          Melt shares
-        </Key>
         {deliverable.length > 0 ? (
           <QuietAction type="button" disabled={busy} onClick={() => void deliver()}>
             Deliver your Claim ({deliverable.length} {deliverable.length === 1 ? "stock" : "stocks"})
           </QuietAction>
         ) : null}
-      </div>
+      </div>}
       {run && !open ? (
         <QuietAction type="button" onClick={() => setOpen(true)}>{run.state === "stopped" ? `Read why the ${run.steps[run.at].subject.noun} stopped` : `Show the progress of: ${run.title}`}</QuietAction>
       ) : null}
+      </section>
+      </ModalSheet>
       {run ? (
         <ProcessDialog
           open={open}
@@ -272,9 +284,9 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
           register="Devnet"
           closeLabel={`Close: ${run.title}`}
         >
-          <StepRegister label={run.title} steps={registerSteps(run)} />
+          {run.state === "done" ? <ProcessOutcome kind="success" title="Confirmed on devnet"><p>{run.title} completed.</p></ProcessOutcome> : run.state === "stopped" ? <ProcessOutcome kind="error" title="Action stopped"><p>{run.problem?.plain ?? "The action stopped before confirmation."}</p>{run.problem?.technical ? <details><summary>Technical detail</summary><pre>{run.problem.technical}</pre></details> : null}</ProcessOutcome> : <StepRegister label={run.title} steps={registerSteps(run)} />}
         </ProcessDialog>
       ) : null}
-    </section>
+    </>
   );
 }

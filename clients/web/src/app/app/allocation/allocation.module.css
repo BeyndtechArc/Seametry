@@ -250,38 +250,10 @@
   text-underline-offset: 0.2em;
 }
 
-.purchaseOutcome {
-  display: grid;
-  grid-template-columns: var(--sm-space-8) minmax(0, 1fr);
-  gap: var(--sm-space-5);
-  align-items: start;
-}
-
-.outcomeMark {
-  display: grid;
-  place-items: center;
-  width: var(--sm-space-8);
-  height: var(--sm-space-8);
-  border: 1px solid currentColor;
-  border-radius: 50%;
-}
-
-.outcomeMark svg { width: 55%; height: 55%; }
-.purchaseOutcome[data-kind="success"] .outcomeMark { color: var(--sm-status-success); }
-.purchaseOutcome[data-kind="warning"] .outcomeMark { color: var(--sm-status-warning); }
-.purchaseOutcome[data-kind="error"] .outcomeMark { color: var(--sm-status-error); }
-
 .outcomeBody {
   display: grid;
   gap: var(--sm-space-3);
   min-width: 0;
-}
-
-.outcomeBody h3 {
-  margin: 0;
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-title-s);
-  font-weight: var(--sm-font-weight-medium);
 }
 
 .outcomeBody p {

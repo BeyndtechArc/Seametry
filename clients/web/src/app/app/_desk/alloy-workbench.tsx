@@ -186,34 +186,9 @@ export function AlloyRecord({ address }: { address: string }) {
               <p className={styles.alloySentence}>
                 One share holds {alloy.legs.length} {alloy.legs.length === 1 ? "stock" : "stocks"} in fixed amounts. Anyone can Strike a share by depositing them, or Melt one to take them back.
               </p>
-              {identity.source !== "none" ? (
-                <small className={styles.alloySource}>Name read from the {identity.source}{identity.source === "share mint" ? ", fixed at founding" : ", generated from devnet"}.</small>
-              ) : null}
+              <AlloyActions alloy={alloy} onChanged={reload} />
             </div>
           </section>
-
-          <section className={styles.holdings} aria-labelledby="holdings-heading">
-            <h2 id="holdings-heading">One share holds</h2>
-            <ol>
-              {alloy.legs.map((leg, index) => {
-                const lot = legIdentity(alloy, leg.mint);
-                const strike = amountFor(value.strike.data, leg.mint);
-                return (
-                  <li key={leg.mint} data-held={leg.held_back || undefined}>
-                    <LotMark symbol={lot.symbol ?? String(index + 1)} src={lot.logo} />
-                    <b>{lot.symbol ?? `Leg ${String(index + 1).padStart(2, "0")}`}</b>
-                    <span className={styles.holdingAmount}>{strike ? formatAmount(strike.amount.atoms, strike.amount.scale) : "No observation"}</span>
-                    {leg.held_back ? <Stamp kind="warn" reason="Held as a Claim" /> : <span className={styles.holdingState}>Delivering</span>}
-                  </li>
-                );
-              })}
-            </ol>
-            <p>
-              Devnet stand-ins carrying each stock&apos;s token settings. {hallSource(meta)}, observed {observedAge(meta.as_of)} ago.
-            </p>
-          </section>
-
-          <AlloyActions alloy={alloy} onChanged={reload} />
 
           <section className={styles.recordFacts} aria-label="Live Alloy figures">
             <Figure
@@ -243,6 +218,25 @@ export function AlloyRecord({ address }: { address: string }) {
               age={observedAge(meta.as_of)}
               observedAt={meta.as_of}
             />
+          </section>
+
+          <section className={styles.holdings} aria-labelledby="holdings-heading">
+            <h2 id="holdings-heading">One share holds</h2>
+            <ol>
+              {alloy.legs.map((leg, index) => {
+                const lot = legIdentity(alloy, leg.mint);
+                const strike = amountFor(value.strike.data, leg.mint);
+                return (
+                  <li key={leg.mint} data-held={leg.held_back || undefined}>
+                    <LotMark symbol={lot.symbol ?? String(index + 1)} src={lot.logo} />
+                    <b>{lot.symbol ?? `Leg ${String(index + 1).padStart(2, "0")}`}</b>
+                    <span className={styles.holdingAmount}>{strike ? formatAmount(strike.amount.atoms, strike.amount.scale) : "No observation"}</span>
+                    {leg.held_back ? <Stamp kind="warn" reason="Held as a Claim" /> : <span className={styles.holdingState}>Delivering</span>}
+                  </li>
+                );
+              })}
+            </ol>
+            <p>Devnet stand-ins carrying each stock&apos;s token settings. {hallSource(meta)}, observed {observedAge(meta.as_of)} ago.</p>
           </section>
 
           <details className={styles.recordDetails}>

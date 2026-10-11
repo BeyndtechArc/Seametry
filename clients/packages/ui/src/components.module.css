@@ -1089,6 +1089,17 @@
   font-weight: var(--sm-font-weight-medium);
 }
 
+.fieldAdornment {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: var(--sm-space-2);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.fieldAdornment svg { width: var(--sm-space-5); height: var(--sm-space-5); }
+
 .fieldShell input::placeholder {
   color: var(--sm-text-faint);
 }
@@ -1444,8 +1455,8 @@
 }
 
 .stepRegister li[data-state="now"] .stepMark {
-  border-color: var(--sm-accent-provenance);
-  color: var(--sm-accent-provenance);
+  border-color: var(--sm-status-warning);
+  color: var(--sm-status-warning);
 }
 
 .stepRegister li[data-state="now"] .stepMark svg {
@@ -1453,14 +1464,13 @@
 }
 
 .stepRegister li[data-state="done"] .stepMark {
-  border-color: var(--sm-text-primary);
-  color: var(--sm-text-primary);
+  border-color: var(--sm-status-success);
+  color: var(--sm-status-success);
 }
 
 .stepRegister li[data-state="stopped"] .stepMark {
-  border-color: var(--sm-surface-inverse);
-  color: var(--sm-text-inverse);
-  background: var(--sm-surface-inverse);
+  border-color: var(--sm-status-error);
+  color: var(--sm-status-error);
 }
 
 @keyframes step-turn {

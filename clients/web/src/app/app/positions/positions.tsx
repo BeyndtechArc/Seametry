@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import { Field, Key, LotMark, QuietAction, QuoteBlock } from "@seametry/ui";
+import { ModalSheet, ProcessOutcome } from "@seametry/ui/modal-sheet";
 import { formatAmount, formatBalance, parseAmount } from "@/lib/amount";
 import { forgetLocalTrade, readLocalTrades, recordLocalTrade, signedSignature, type LocalTrade } from "@/lib/allocation/activity";
 import type { PreparedLeg } from "@/lib/allocation/execution";
@@ -39,6 +40,7 @@ export function Positions() {
   const [readingProblem, setReadingProblem] = useState<string>();
   const [readingBusy, setReadingBusy] = useState(false);
   const [selectedMint, setSelectedMint] = useState<string>();
+  const [tradeTab, setTradeTab] = useState<"buy" | "sell">("sell");
   const [amount, setAmount] = useState("");
   const [prepared, setPrepared] = useState<PreparedLeg>();
   const [tradeState, setTradeState] = useState<TradeState>("idle");
@@ -77,6 +79,10 @@ export function Positions() {
       }
     } catch (error) {
       setStatuses((current) => ({ ...current, [entry.signature]: { signature: entry.signature, state: "unavailable", detail: error instanceof Error ? error.message : String(error) } }));
+      if (entry.signature === signature) {
+        setTradeState("unavailable");
+        setTradeProblem("Mainnet status could not be read. Check the transaction before another sale.");
+      }
     }
   }, [refresh, signature, wallet]);
 
@@ -102,10 +108,20 @@ export function Positions() {
   }, [activity, check, signature, tradeState]);
 
   const position = reading && reading.wallet === wallet ? reading.positions.find((item) => item.mint === selectedMint) : undefined;
+  const currentTrade = activity.find((entry) => entry.signature === signature);
   const parsed = position && amount ? parseAmount(amount, position.scale) : undefined;
   const amountProblem = parsed && "refused" in parsed ? parsed.refused : parsed && "atoms" in parsed && parsed.atoms > BigInt(position!.sellableAtoms) ? `The associated token account holds ${formatAmount(position!.sellableAtoms, position!.scale)} ${position!.symbol} available to this route.` : undefined;
   const validAtoms = parsed && "atoms" in parsed && parsed.atoms > 0n && !amountProblem ? parsed.atoms : undefined;
   const remaining = prepared ? Math.max(0, Math.ceil((Date.parse(prepared.expiresAt) - now) / 1000)) : 0;
+
+  function fillAvailable(percent: bigint) {
+    if (!position) return;
+    setAmount(formatBalance(BigInt(position.sellableAtoms) * percent / 100n, position.scale));
+    setPrepared(undefined);
+    setTradeState("idle");
+    setTradeProblem(undefined);
+    setSignature(undefined);
+  }
 
   async function prepare() {
     if (!wallet || !position || !validAtoms) return;
@@ -165,7 +181,7 @@ export function Positions() {
         <>
           <section className={styles.ledger} aria-labelledby="holdings-title">
             <header className={styles.sectionHead}>
-              <div><h2 id="holdings-title">In this wallet</h2><p>Solana mainnet RPC. {reading?.wallet === wallet ? `Observed ${new Date(reading.observedAt).toLocaleString()}.` : "No observation yet."}</p></div>
+              <div><h2 id="holdings-title">In this wallet</h2><p>Solana mainnet RPC. {reading?.wallet === wallet ? `Observed ${new Date(reading.observedAt).toLocaleString()}.` : "No observation yet."}</p><p>Total portfolio value: no price observation. Balances below are exact token quantities, not a sum in USDC.</p></div>
               <QuietAction type="button" onClick={() => void refresh(wallet)} disabled={readingBusy}>Refresh holdings</QuietAction>
             </header>
             {readingBusy && !reading ? <p className={styles.notice}>Reading mainnet token accounts for this wallet.</p> : null}
@@ -176,36 +192,58 @@ export function Positions() {
                 {reading.positions.map((item) => <li key={item.mint}>
                   <LotMark symbol={item.symbol} src={logoFor(item.mint)} />
                   <div className={styles.identity}><b>{item.symbol}</b><span>{formatBalance(item.atoms, item.scale)} held{item.atoms !== item.sellableAtoms ? `; ${formatBalance(item.sellableAtoms, item.scale)} available to this route` : ""}</span></div>
-                  <QuietAction type="button" onClick={() => { setSelectedMint(item.mint); setAmount(""); setPrepared(undefined); setTradeState("idle"); setTradeProblem(undefined); }}>Sell {item.symbol}</QuietAction>
+                  <QuietAction type="button" onClick={() => { setSelectedMint(item.mint); setTradeTab("sell"); setAmount(""); setPrepared(undefined); setTradeState("idle"); setTradeProblem(undefined); setSignature(undefined); }}>Sell {item.symbol}</QuietAction>
                 </li>)}
               </ul>
             ) : null}
             {reading?.wallet === wallet && reading.outsideRegister > 0 ? <p className={styles.notice}>This wallet also holds tokens outside this register. They are not included in these rows.</p> : null}
           </section>
 
-          {position ? <section className={styles.sale} aria-labelledby="sale-title">
-            <div className={styles.sectionHead}><div><h2 id="sale-title">Sell {position.symbol}</h2><p>A market swap into USDC. This is not issuer redemption or an Alloy Melt.</p></div></div>
-            <Field id="sale-amount" label={`Amount of ${position.symbol} to sell`} inputMode="decimal" value={amount} onChange={(event) => { setAmount(event.target.value); setPrepared(undefined); setTradeState("idle"); }} message={amountProblem ?? `Available to this route: ${formatAmount(position.sellableAtoms, position.scale)} ${position.symbol}, observed ${new Date(reading!.observedAt).toLocaleString()}.`} invalid={Boolean(amountProblem)} />
-            <div className={styles.actions}><QuietAction type="button" onClick={() => { setAmount(formatBalance(position.sellableAtoms, position.scale)); setPrepared(undefined); setTradeState("idle"); }} disabled={position.sellableAtoms === "0"}>Use available balance</QuietAction>
-              {!prepared ? <Key type="button" onClick={() => void prepare()} disabled={!validAtoms || tradeState === "preparing" || tradeState === "checking" || tradeState === "signing" || !signTransaction} busy={tradeState === "preparing"} busyLabel="Checking sale" disabledReason={!signTransaction ? "This wallet cannot sign transactions in this browser." : undefined}>Review sale</Key> : null}
+          <ModalSheet
+            open={Boolean(position)}
+            onClose={() => setSelectedMint(undefined)}
+            title={`Trade ${position?.symbol ?? "instrument"}`}
+            register="Mainnet"
+            closeLabel="Close trade sheet"
+            footer={position ? tradeTab === "buy" ? (
+              <Link className={styles.sheetLink} href={`/app/allocation?add=${encodeURIComponent(position.mint)}`}>Buy {position.symbol}</Link>
+            ) : signature ? (
+              tradeState === "unavailable" && currentTrade ? <QuietAction type="button" onClick={() => void check(currentTrade)}>Check status</QuietAction> : null
+            ) : !prepared ? (
+              <Key type="button" onClick={() => void prepare()} disabled={!validAtoms || tradeState === "preparing" || tradeState === "checking" || tradeState === "signing" || !signTransaction} busy={tradeState === "preparing"} busyLabel="Checking sale" disabledReason={!signTransaction ? "This wallet cannot sign transactions in this browser." : undefined}>Review sale</Key>
+            ) : (
+              <><Key type="button" onClick={() => void signSale()} disabled={remaining === 0 || tradeState === "signing" || tradeState === "checking"} busy={tradeState === "signing"} busyLabel="Signing sale" disabledReason={remaining === 0 ? "This quote expired. Request current terms before signing." : undefined}>Sign sale</Key>{remaining === 0 ? <QuietAction type="button" onClick={() => void prepare()}>Request current terms</QuietAction> : null}</>
+            ) : undefined}
+          >
+            {position ? <div className={styles.sale}>
+            <div className={styles.tradeTabs} role="tablist" aria-label="Trade direction">
+              <button type="button" role="tab" aria-selected={tradeTab === "buy"} onClick={() => setTradeTab("buy")}>Buy</button>
+              <button type="button" role="tab" aria-selected={tradeTab === "sell"} onClick={() => setTradeTab("sell")}>Sell</button>
+            </div>
+            {tradeTab === "buy" ? <div className={styles.tradePanel} role="tabpanel"><p>Buy {position.symbol} into this wallet through an Allocation. The purchase receives a fresh mainnet quote before signing.</p></div> : <div className={styles.tradePanel} role="tabpanel">
+            <p>A market swap into USDC. This is not issuer redemption or an Alloy Melt.</p>
+            <Field id="sale-amount" label={`Amount of ${position.symbol} to sell`} inputMode="decimal" value={amount} onChange={(event) => { setAmount(event.target.value); setPrepared(undefined); setTradeState("idle"); setTradeProblem(undefined); setSignature(undefined); }} message={amountProblem ?? `Available to this route: ${formatAmount(position.sellableAtoms, position.scale)} ${position.symbol}, observed ${new Date(reading!.observedAt).toLocaleString()}.`} invalid={Boolean(amountProblem)} />
+            <div className={styles.amountShortcuts}>
+              <QuietAction type="button" onClick={() => fillAvailable(25n)} disabled={position.sellableAtoms === "0"}>Use 25%</QuietAction>
+              <QuietAction type="button" onClick={() => fillAvailable(50n)} disabled={position.sellableAtoms === "0"}>Use 50%</QuietAction>
+              <QuietAction type="button" onClick={() => fillAvailable(100n)} disabled={position.sellableAtoms === "0"}>Use available balance</QuietAction>
             </div>
             {prepared ? <div className={styles.quote}>
               <QuoteBlock floor={formatAmount(prepared.floorAtoms, 6)} expected={formatAmount(prepared.outAtoms, 6)} unit="USDC" fees={[{ label: `Seametry routing fee, ${formatAmount(BigInt(prepared.routingFeeBps), 2)}%`, value: `${formatAmount(prepared.routingFeeAtoms, 6)} USDC` }, { label: "Priority fee set by the route", value: `${formatAmount(prepared.priorityFeeLamports, 9)} SOL` }, { label: "Venue fees", value: "Included in expected output" }]} route={`Jupiter through ${prepared.route.join(", ")}, slot ${prepared.contextSlot}`} received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(prepared.receivedAt)) / 1000))}s`, absolute: prepared.receivedAt }} secondsLeft={remaining} />
               <p>Simulated on mainnet for this wallet: {prepared.simulated.map((change) => `${change.atoms.startsWith("-") ? "" : "+"}${formatAmount(change.atoms, change.scale)} ${change.unit}`).join("; ")}.</p>
-              <Key type="button" onClick={() => void signSale()} disabled={remaining === 0 || tradeState === "signing" || tradeState === "checking"} busy={tradeState === "signing"} busyLabel="Signing sale" disabledReason={remaining === 0 ? "This quote expired. Request current terms before signing." : undefined}>Sign sale</Key>
-              {remaining === 0 ? <QuietAction type="button" onClick={() => void prepare()}>Request current terms</QuietAction> : null}
             </div> : null}
             {tradeProblem ? <p className={styles.problem} role="alert">{tradeProblem}</p> : null}
-            {signature ? <p className={styles.notice} role="status">{tradeState === "settled" ? "Sale confirmed on mainnet." : tradeState === "failed" ? "Sale failed on mainnet." : "Checking the sale on mainnet."} <a href={`https://explorer.solana.com/tx/${signature}`} target="_blank" rel="noreferrer">Open transaction</a></p> : null}
-          </section> : null}
+            {signature ? <ProcessOutcome kind={tradeState === "settled" ? "success" : tradeState === "failed" ? "error" : "pending"} title={tradeState === "settled" ? "Sale settled" : tradeState === "failed" ? "Sale failed" : tradeState === "unavailable" ? "Check transaction" : "Checking sale"}><p>{tradeState === "settled" ? "Mainnet confirmed this sale." : tradeState === "failed" ? "Mainnet rejected this sale." : tradeState === "unavailable" ? "Confirmation is unavailable. Check before another sale." : "Waiting for mainnet confirmation."}</p><a href={`https://explorer.solana.com/tx/${signature}`} target="_blank" rel="noreferrer">Open transaction</a></ProcessOutcome> : null}
+            </div>}
+          </div> : null}
+          </ModalSheet>
 
           <section className={styles.activity} aria-labelledby="activity-title">
-            <div className={styles.sectionHead}><div><h2 id="activity-title">Recent activity</h2><p>Signatures saved in this browser. Each status is read from mainnet; this is not a sealed hallmark.</p></div></div>
-            {activity.length === 0 ? <p className={styles.notice}>No Seametry signatures saved on this device. Your holdings above still come from the wallet.</p> : <ol>{activity.map((entry) => <li key={entry.signature}>
+            <div className={styles.sectionHead}><div><h2 id="activity-title">Recent activity</h2><p>Seametry trades on this device.</p></div></div>
+            {activity.length === 0 ? <p className={styles.notice}>No trades recorded here yet.</p> : <ol>{activity.map((entry) => <li key={entry.signature}>
               <div><b>{entry.direction === "buy" ? "Bought" : "Sold"} {entry.symbol}</b><span>{formatAmount(entry.inputAtoms, entry.inputScale)} {entry.direction === "buy" ? "USDC" : entry.symbol}, submitted {new Date(entry.submittedAt).toLocaleString()}</span></div>
               <div><span>{statuses[entry.signature]?.state ?? "Status not read"}</span><a href={`https://explorer.solana.com/tx/${entry.signature}`} target="_blank" rel="noreferrer">Open transaction</a><QuietAction type="button" onClick={() => void check(entry)}>Check status</QuietAction></div>
             </li>)}</ol>}
-            <p className={styles.notice}>Trades made outside Seametry or on another device are not listed here. They remain visible in your wallet and on mainnet.</p>
           </section>
           <Link className={styles.backLink} href="/app/allocation">Buy another constituent</Link>
         </>
