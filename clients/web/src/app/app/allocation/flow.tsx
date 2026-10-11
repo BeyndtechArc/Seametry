@@ -188,6 +188,7 @@ export function AllocationFlow({
   initialAmount,
   allocationName,
   allocationTemplateId,
+  fixedTemplate = false,
 }: {
   offered: OfferedLot[];
   refused: RefusedLot[];
@@ -196,13 +197,15 @@ export function AllocationFlow({
   initialAmount: string;
   allocationName: string;
   allocationTemplateId?: string;
+  /** A published, admitted basket: skip custom constituent selection. */
+  fixedTemplate?: boolean;
 }) {
   const { publicKey, connected, signTransaction, signAllTransactions, disconnect } = useWallet();
   const walletAddress = publicKey?.toBase58();
   const currentWallet = useRef(walletAddress);
   // Nothing starts chosen: choosing is the first step's whole question.
   const [selected, setSelected] = useState<string[]>(initialSelected);
-  const [step, setStep] = useState(initialAmount && initialSelected.length > 0 ? 1 : 0);
+  const [step, setStep] = useState(fixedTemplate || (initialAmount && initialSelected.length > 0) ? 1 : 0);
   const [typed, setTyped] = useState(initialAmount);
   const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
   const [purchaseRun, setPurchaseRun] = useState<PurchaseRun>();
@@ -293,7 +296,7 @@ export function AllocationFlow({
     allocationId.current = undefined;
     setTyped("");
     keepUnsignedPlanInUrl(chosen.map((lot) => lot.mint), "");
-    setStep(0);
+    setStep(fixedTemplate ? 1 : 0);
   };
 
   const watch = useCallback(
@@ -599,11 +602,11 @@ export function AllocationFlow({
         </p>
       ) : null}
 
-      <StepTrack label="Allocation steps" steps={steps} current={step} onStep={(index) => !started && setStep(index)} />
+      {!fixedTemplate ? <StepTrack label="Allocation steps" steps={steps} current={step} onStep={(index) => !started && setStep(index)} /> : null}
 
       <div className={styles.workspace}>
         <div className={styles.builder}>
-          {step === 0 ? (
+          {step === 0 && !fixedTemplate ? (
               <section className={styles.section} aria-label="Choose the constituents">
                 <p className={styles.quiet}>Allow at least 1 USDC per constituent, plus SOL for network fees. A live route may need more.</p>
                 {offered.length > 0 ? (
@@ -729,7 +732,7 @@ export function AllocationFlow({
                   step where signing happens carries it. */}
               <div className={styles.orderInline} data-testid="order-sheet-inline">{orderSummary}</div>
               <section className={styles.section} aria-label="Buy allocation">
-                <AllocationMotion state={motionState} total={legs.length} settled={settledCount} />
+                {motionState !== "idle" ? <AllocationMotion state={motionState} total={legs.length} settled={settledCount} legs={legs.map((leg) => ({ symbol: leg.symbol, phase: leg.phase }))} /> : null}
                 <p className={styles.quiet}>One allocation decision, independently simulated legs. Wallets with batch signing can approve the set together; other wallets may still show more than one signature prompt.</p>
                 <ol className={styles.legs}>
                   {legs.map((leg) => {
@@ -805,11 +808,11 @@ export function AllocationFlow({
         <StepBar
           plan={planLine}
           problem={false}
-          back={
+          back={fixedTemplate ? undefined : (
             <QuietAction icon="back" disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
               Back
             </QuietAction>
-          }
+          )}
           next={
             !connected ? (
               <ContinueAction onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</ContinueAction>
