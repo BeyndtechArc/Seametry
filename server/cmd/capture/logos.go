@@ -144,6 +144,13 @@ func plainSVG(body []byte) string {
 				return "the SVG carries <" + t.Name.Local + ">, which the mirror does not keep"
 			}
 			for _, attribute := range t.Attr {
+				// Some issuer artwork declares xmlns:x but never uses it. A
+				// namespace declaration alone cannot draw or fetch anything;
+				// any actual namespaced element or attribute is still checked
+				// below and refused unless it is ordinary SVG drawing.
+				if attribute.Name.Space == "xmlns" && attribute.Name.Local == "x" {
+					continue
+				}
 				if attribute.Name.Space != "" || !svgAttributes[attribute.Name.Local] {
 					return "the SVG's <" + t.Name.Local + "> carries the attribute " + qualified(attribute.Name) + ", which the mirror does not keep"
 				}
