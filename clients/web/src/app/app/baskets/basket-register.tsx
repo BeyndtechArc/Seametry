@@ -8,13 +8,15 @@ import type { OfferedLot } from "@/lib/allocation/offer";
 import { BasketSparkline } from "./basket-history";
 import styles from "./baskets.module.css";
 
-type FilterKey = "all" | "ai-compute" | "cloud-software" | "space-frontier" | "backpack" | "xstocks" | "private-markets";
+type FilterKey = "all" | "ai-compute" | "cloud-software" | "space-frontier" | "digital-capital" | "global-markets" | "backpack" | "xstocks" | "private-markets";
 
 const filters: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "ai-compute", label: "AI & compute" },
   { key: "cloud-software", label: "Cloud & software" },
-  { key: "space-frontier", label: "Space & frontier" },
+  { key: "space-frontier", label: "Space & defense" },
+  { key: "digital-capital", label: "Digital capital" },
+  { key: "global-markets", label: "Global ETFs" },
   { key: "backpack", label: "Backpack" },
   { key: "xstocks", label: "xStocks" },
   { key: "private-markets", label: "Private / pre-IPO" },
