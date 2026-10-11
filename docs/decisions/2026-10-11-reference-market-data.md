@@ -1,43 +1,54 @@
-# Reference market data may be credentialed; transaction truth may not
+# Oracle-free observation before licensed price feeds
 
-**Decision record. Recorded 11 October 2026.**
+**Decision record. Revised 11 October 2026 after field testing.**
 
-This decision narrows, rather than reverses, `2026-09-23-oracles-on-chain.md`.
+This record is historical rationale. Current source boundaries are owned by
+`docs/THESIS.md`, the published Allocation methodology, and the implementation.
 
 ## Context
 
-The original oracle decision correctly kept transaction-critical evidence verifiable from chain wherever possible. The Allocation product now needs historical equity series for inline charts, index cards, drift displays and reference valuation before Alloy share markets exist.
-
-Pyth Core supports U.S. equity price feeds, but the set of sponsored push accounts on Solana is not equivalent to the full historical equity catalogue needed by the UI. Pyth Pro exposes equity symbology and authenticated historical OHLC data.
+The previous draft introduced a Pyth Pro adapter for index-card charts.
+However, an authenticated equity-data subscription adds a cost and licensing
+dependency before Seametry has a secondary Alloy market or contract-critical
+price actions. The Hall does not use prices to Strike or Melt. Allocation
+execution already relies on size-specific Jupiter route quotes and simulation.
 
 ## Decision
 
-**The Hall remains price-blind. Execution continues to use executable Jupiter quotes.**
+Remove Pyth Pro from the current production route. Start with a
+**read-only, fixed-size Jupiter quote observation history**:
 
-For informational reference surfaces only, the web server may read Pyth Pro equity history using a server-side `PYTH_PRO_ACCESS_TOKEN`.
+- one 25 USDC exact-input quote per currently admitted mint, sampled daily;
+- store actual output raw atoms, timestamp, route, context slot and source;
+- show a basket history only for dates where all constituents have observations;
+- build a normalized fixed-unit series with no interpolated prices or
+  automatic rebalancing;
+- label its source and limitations clearly;
+- keep records in optional inexpensive Redis REST storage, not in memory
+  that vanishes on serverless deployment;
+- secure the sampler as a CRON_SECRET-only route, not an open visitor endpoint.
 
-The browser never receives the credential.
+This does **not** create a price oracle. The quote may be unavailable or
+unexecutable at signing time, and is not a traditional equity price observation.
 
-The resulting observations are labelled:
-- source: Pyth Pro;
-- kind: price-only reference;
-- methodology version;
-- observation time.
+Current user trades still require fresh Jupiter terms, transaction simulation
+and explicit wallet signature. No historical quote may authorize a trade.
 
-A missing credential or missing constituent series makes the chart unavailable. The product does not fabricate, forward-fill or partially compute a basket series.
+## Why it is reversible
 
-## Why
+The data record contains mint, size, raw output, decimals, route, slot, and
+sample time. If direct issuer reference prices, licensed display data or a
+verified onchain oracle later become necessary, Seametry can publish those
+as separate attributed observations without silently replacing the quote
+series or changing Hall arithmetic.
 
-The product now has three distinct price concepts:
+## Operational boundary
 
-1. **Reference price / NAV:** useful for valuation, charts and comparison.
-2. **Executable quote:** what a route can actually transact at a stated size.
-3. **Alloy market price:** what a secondary share venue trades at, once one exists.
+Cron sampling remains disabled unless `JUPITER_API_KEY`,
+`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` and `CRON_SECRET`
+are configured. With no storage, the UI reports that there is no observed
+history. Once enabled, the first historical chart requires at least two
+complete days of collected observations.
 
-Only the second can authorize an Allocation swap. None of them enters Hall Strike or Melt arithmetic.
-
-## Security boundary
-
-Pyth's API key is server-only. It is never committed, exposed through `NEXT_PUBLIC_`, or used as an authority over wallet execution.
-
-If an on-chain Pyth or Stork feed exists for the same underlying, the Office may later publish it as a separately attributable observation. It does not silently average sources into a synthetic consensus.
+The reader-facing UI must never claim a route sample is executable NAV,
+an ETF premium/discount, or a verified return.
