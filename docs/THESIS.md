@@ -110,7 +110,7 @@ An Allocation is **not** a substitute for Alloy secondary liquidity. It is a dir
 
 While the Hall remains on devnet, mainnet Allocations can carry more of the product.
 
-Seametry may publish versioned, rules-based Allocation indexes grouped by industry. A purchase remains direct ownership: the application orchestrates independently simulated constituent swaps into the holder's wallet. A named index is only used when a published methodology defines membership, weighting, review and drift treatment.
+Seametry may publish versioned, rules-based Allocation baskets around industries, infrastructure layers and observable market themes. A purchase remains direct ownership: the application orchestrates independently simulated constituent swaps into the holder's wallet. The interface calls something an index only when a published methodology justifies that word.
 
 The first methodology uses equal weighting, current Good Delivery admission and public industry evidence. Existing holders are never silently rebalanced. A methodology change creates a new version and the holder decides whether to migrate.
 
@@ -126,10 +126,12 @@ The Allocation UI may use an oracle or market-data provider for **reference** va
 
 Current model:
 
-- Pyth Pro equity history: price-only reference charts and index series.
-- Jupiter quotes: executable buy/sell terms at the user's actual size.
-- Hall: no oracle input to Strike or Melt.
-- Future Alloy pool: independent secondary-market share price.
+- optional reference-data adapter: price-only charts and basket reference series; Pyth Pro is the current prototype source, not a vendor commitment;
+- Jupiter quotes: executable buy/sell terms at the user's actual size;
+- Hall: no oracle input to Strike or Melt;
+- future Alloy pool: independent secondary-market share price.
+
+Protocol-grade oracle access is intentionally deferred until a contract needs to make a value-dependent decision. Ordinary catalogue charts do not justify that cost by themselves. See `research/2026-10-11-allocation-reference-data.md`.
 
 A missing oracle observation removes the chart or reference valuation. It does not prevent quantity accounting, and it must never be silently replaced by a stale or partial basket value.
 
