@@ -450,7 +450,7 @@ export function Positions() {
             register="Mainnet"
             closeLabel="Close trade sheet"
             footer={position ? tradeTab === "buy" ? (
-              <Link className={styles.sheetLink} href={`/app/allocation?add=${encodeURIComponent(position.mint)}`}>Buy {position.symbol}</Link>
+              <Link className={styles.sheetLink} href={`/app/baskets/build?add=${encodeURIComponent(position.mint)}`}>Buy {position.symbol}</Link>
             ) : signature ? (
               tradeState === "unavailable" && currentTrade ? <QuietAction type="button" onClick={() => void check(currentTrade)}>Check status</QuietAction> : null
             ) : !prepared ? (
@@ -489,7 +489,7 @@ export function Positions() {
               <div><span>{statuses[entry.signature]?.state ?? "Status not read"}</span><a href={`https://explorer.solana.com/tx/${entry.signature}`} target="_blank" rel="noreferrer">Open transaction</a><QuietAction type="button" onClick={() => void check(entry)}>Check status</QuietAction></div>
             </li>)}</ol>}
           </section>
-          <Link className={styles.backLink} href="/app/allocation">Buy another constituent</Link>
+          <Link className={styles.backLink} href="/app/baskets/build">Build another basket</Link>
         </>
       )}
     </div>
