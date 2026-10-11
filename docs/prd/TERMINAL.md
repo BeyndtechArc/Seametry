@@ -38,7 +38,7 @@ Nothing here is interactive. There is no input for a formula, no live quote, and
 
 ## 4. What does not exist
 
-- **NAV against share price.** It needs prices, and the Hall reads none. Oracle values are to be read from chain (`../decisions/2026-09-23-oracles-on-chain.md`) and that read is not built.
+- **NAV against share price.** It needs both a share market and production reference observations. The Hall reads neither. The web Allocation catalogue now has an optional Pyth Pro historical reference adapter for informational charts, governed by `../decisions/2026-10-11-reference-market-data.md`; it is not the Terminal NAV service and does not enter Hall arithmetic. The core on-chain oracle read remains unbuilt.
 - **A share price.** No share pool exists, so there is nothing to compare against. Seeding one is a phase 3 activity and needs capital.
 - **Execution.** Signing, transaction construction, transfer hook accounts, and the lookup table a large basket needs.
 - **Depth for selling.** Depth is measured for buying only.
