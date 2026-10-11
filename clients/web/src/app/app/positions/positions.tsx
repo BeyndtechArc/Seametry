@@ -411,19 +411,32 @@ export function Positions() {
           >
             {selectedAllocation ? (
               <div className={styles.batchSale}>
-                <AllocationMotion
-                  mode="sell"
-                  state={(
-                    batchSaleState === "preparing" ? "preflight" :
-                    batchSaleState === "review" || batchSaleState === "signing" ? "approval" :
-                    batchSaleState === "checking" ? "settling" :
-                    batchSaleState === "success" ? "success" :
-                    batchSaleState === "partial" ? "partial" :
-                    batchSaleState === "failed" ? "failure" : "idle"
-                  ) as AllocationMotionState}
-                  total={batchSaleLegs.length}
-                  settled={batchSaleSignatures.filter((id) => ["confirmed", "finalized"].includes(statuses[id]?.state ?? "")).length}
-                />
+                {batchSaleState !== "idle" ? (
+                  <AllocationMotion
+                    mode="sell"
+                    state={(
+                      batchSaleState === "preparing" ? "preflight" :
+                      batchSaleState === "review" || batchSaleState === "signing" ? "approval" :
+                      batchSaleState === "checking" ? "settling" :
+                      batchSaleState === "success" ? "success" :
+                      batchSaleState === "partial" ? "partial" :
+                      batchSaleState === "failed" ? "failure" : "idle"
+                    ) as AllocationMotionState}
+                    total={batchSaleLegs.length}
+                    settled={batchSaleSignatures.filter((id) => ["confirmed", "finalized"].includes(statuses[id]?.state ?? "")).length}
+                    legs={batchSaleLegs.map((leg) => {
+                      const submitted = activity.find((entry) => entry.mint === leg.mint && entry.direction === "sell" && batchSaleSignatures.includes(entry.signature));
+                      const status = submitted ? statuses[submitted.signature]?.state : undefined;
+                      const phase = status === "confirmed" || status === "finalized" ? "settled"
+                        : status === "failed" ? "failed"
+                        : submitted ? "sending"
+                        : batchSaleState === "failed" ? "failed"
+                        : batchSaleState === "preparing" ? "preparing"
+                        : batchSaleState === "signing" ? "signing" : "idle";
+                      return { symbol: leg.symbol, phase } as const;
+                    })}
+                  />
+                ) : null}
                 <p className={styles.notice}>Sell All exits only the quantities attributed to this Allocation, capped by what the connected wallet still holds.</p>
                 <ol className={styles.batchSaleLegs}>
                   {batchSaleLegs.map((leg) => (
