@@ -256,6 +256,22 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 ### Lot header
 Top of every constituent and alloy page. Lot number; name in display serif; ticker and Grade; hero Figure with evidence state; the Key in the thumb zone on mobile.
 
+### Basket section switch
+**Answers:** am I browsing published baskets or building my own?
+**Anatomy:** two route links inside one compact tonal rail: Baskets and Build a basket. The current route is a filled neutral segment with stronger text; the other remains a quiet touch target.
+**Identity:** one square registration-cut rail, never an underline. The selected segment reads by tone and weight, not a bottom rule.
+**States:** Baskets current; Build a basket current; keyboard focus.
+**Data:** current pathname and two real routes.
+**Rules:** route navigation, not an ARIA tab widget. Never uses a border-bottom indicator, sliding underline, or autonomous motion. All tab-like page switches in Seametry follow this treatment.
+
+### Basket register
+**Answers:** which researched direct-wallet basket should I inspect?
+**Anatomy:** one ruled list row per basket. Identity and short thesis first; constituent Lot marks and symbols; compact reference sparkline when available; admission and issuer facts; one quiet route into the basket record.
+**Identity:** the same open catalogue grammar as the Alloy register: square rows, hairline separators, no card grid, no decorative illustration.
+**States:** default; reference series loading; filtered empty; reference unavailable; partially admitted research row; error leaves identity and evidence readable.
+**Data:** published basket definition, admitted constituent join, issuer count, Grade set, minimum measured executable capacity, optional price-only reference series and its source.
+**Rules:** browsing is still. No pulsing marks or chart-draw animation. Equal-weight methodology never appears as an acronym in the basket name. A research-only row cannot expose a buy action.
+
 ### Catalogue table
 **Answers:** what is in this set, and which entries meet the standard?
 Columns: Lot, Name, Grade, Condition summary, Evidence, Stamp. Sortable. Rows are data: radius 0, rules between, no zebra fills heavier than one tone.
