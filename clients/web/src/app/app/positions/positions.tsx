@@ -7,15 +7,18 @@ import { VersionedTransaction } from "@solana/web3.js";
 import { Field, Key, LotMark, QuietAction, QuoteBlock } from "@seametry/ui";
 import { ModalSheet, ProcessOutcome } from "@seametry/ui/modal-sheet";
 import { formatAmount, formatBalance, parseAmount } from "@/lib/amount";
-import { forgetLocalTrade, readLocalTrades, recordLocalTrade, signedSignature, type LocalTrade } from "@/lib/allocation/activity";
+import { forgetLocalTrade, patchLocalTrade, readLocalTrades, readTrackedAllocations, recordLocalTrade, signedSignature, type LocalTrade, type TrackedAllocation } from "@/lib/allocation/activity";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { ListedPosition } from "@/lib/allocation/positions";
 import { logoFor } from "@/lib/instrument-logos";
+import { AllocationMotion, type AllocationMotionState } from "../allocation/allocation-motion";
 import styles from "./positions.module.css";
 
 type Reading = { wallet: string; network: "mainnet"; source: string; observedAt: string; positions: ListedPosition[]; outsideRegister: number };
 type TradeState = "idle" | "preparing" | "review" | "signing" | "checking" | "settled" | "failed" | "unavailable";
 type ActivityStatus = { signature: string; state: string; detail?: string };
+type BatchSaleState = "idle" | "preparing" | "review" | "signing" | "checking" | "success" | "partial" | "failed";
+type BatchSaleLeg = { mint: string; symbol: string; atoms: string; scale: number; prepared?: PreparedLeg };
 
 function fromBase64(text: string): Uint8Array {
   return Uint8Array.from(atob(text), (character) => character.charCodeAt(0));
@@ -34,7 +37,7 @@ async function responseJson<T>(response: Response): Promise<T> {
 }
 
 export function Positions() {
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, signTransaction, signAllTransactions } = useWallet();
   const wallet = publicKey?.toBase58();
   const [reading, setReading] = useState<Reading>();
   const [readingProblem, setReadingProblem] = useState<string>();
@@ -49,6 +52,12 @@ export function Positions() {
   const [activity, setActivity] = useState<LocalTrade[]>([]);
   const [statuses, setStatuses] = useState<Record<string, ActivityStatus>>({});
   const [now, setNow] = useState(() => Date.now());
+  const [allocations, setAllocations] = useState<TrackedAllocation[]>([]);
+  const [selectedAllocation, setSelectedAllocation] = useState<TrackedAllocation>();
+  const [batchSaleState, setBatchSaleState] = useState<BatchSaleState>("idle");
+  const [batchSaleLegs, setBatchSaleLegs] = useState<BatchSaleLeg[]>([]);
+  const [batchSaleProblem, setBatchSaleProblem] = useState<string>();
+  const [batchSaleSignatures, setBatchSaleSignatures] = useState<string[]>([]);
 
   const refresh = useCallback(async (address: string) => {
     setReadingBusy(true);
@@ -66,9 +75,21 @@ export function Positions() {
 
   const check = useCallback(async (entry: LocalTrade) => {
     try {
-      const response = await fetch(`/api/allocation/status?signature=${encodeURIComponent(entry.signature)}`, { cache: "no-store" });
-      const status = await responseJson<{ state: string; detail?: string }>(response);
+      const query = new URLSearchParams({ signature: entry.signature, wallet: entry.wallet, mint: entry.mint });
+      const response = await fetch("/api/allocation/status?" + query.toString(), { cache: "no-store" });
+      const status = await responseJson<{ state: string; detail?: string; tokenDeltaAtoms?: string; tokenDeltaScale?: number }>(response);
       setStatuses((current) => ({ ...current, [entry.signature]: { signature: entry.signature, ...status } }));
+      if (status.state === "confirmed" || status.state === "finalized") {
+        patchLocalTrade(entry.wallet, entry.signature, {
+          settled: true,
+          ...(entry.direction === "buy" && status.tokenDeltaAtoms && !status.tokenDeltaAtoms.startsWith("-") ? { settledAtoms: status.tokenDeltaAtoms } : {}),
+          ...(entry.direction === "buy" && status.tokenDeltaScale !== undefined ? { settledScale: status.tokenDeltaScale } : {}),
+        });
+        if (wallet === entry.wallet) {
+          setActivity(readLocalTrades(wallet));
+          setAllocations(readTrackedAllocations(wallet));
+        }
+      }
       if (entry.signature === signature && (status.state === "confirmed" || status.state === "finalized")) {
         setTradeState("settled");
         if (wallet) void refresh(wallet);
@@ -91,6 +112,7 @@ export function Positions() {
     void refresh(wallet);
     const stored = readLocalTrades(wallet);
     setActivity(stored);
+    setAllocations(readTrackedAllocations(wallet));
     stored.forEach((entry) => { void check(entry); });
   }, [wallet, refresh, check]);
 
@@ -106,6 +128,142 @@ export function Positions() {
     const timer = setInterval(() => { void check(entry); }, 3000);
     return () => clearInterval(timer);
   }, [activity, check, signature, tradeState]);
+
+  useEffect(() => {
+    if (!wallet) return;
+    const pending = activity.filter((entry) => {
+      const state = statuses[entry.signature]?.state;
+      return state !== "confirmed" && state !== "finalized" && state !== "failed";
+    });
+    if (pending.length === 0) return;
+    const timer = setInterval(() => pending.forEach((entry) => { void check(entry); }), 3000);
+    return () => clearInterval(timer);
+  }, [activity, check, statuses, wallet]);
+
+  useEffect(() => {
+    if (batchSaleState !== "checking" || batchSaleSignatures.length === 0) return;
+    const states = batchSaleSignatures.map((id) => statuses[id]?.state);
+    if (states.some((state) => !state || state === "pending" || state === "unavailable")) return;
+    const settled = states.filter((state) => state === "confirmed" || state === "finalized").length;
+    if (settled === states.length) setBatchSaleState("success");
+    else if (settled > 0) setBatchSaleState("partial");
+    else setBatchSaleState("failed");
+  }, [batchSaleSignatures, batchSaleState, statuses]);
+
+  const allocationSaleLegs = (allocation: TrackedAllocation): BatchSaleLeg[] => {
+    if (!reading || reading.wallet !== wallet) return [];
+    return allocation.legs.map((leg) => {
+      const held = reading.positions.find((position) => position.mint === leg.mint);
+      const available = BigInt(held?.sellableAtoms ?? "0");
+      const tracked = BigInt(leg.atoms);
+      const atoms = tracked < available ? tracked : available;
+      return { mint: leg.mint, symbol: leg.symbol, atoms: atoms.toString(), scale: leg.scale };
+    }).filter((leg) => BigInt(leg.atoms) > 0n);
+  };
+
+  function openAllocationSale(allocation: TrackedAllocation) {
+    setSelectedAllocation(allocation);
+    setBatchSaleLegs(allocationSaleLegs(allocation));
+    setBatchSaleState("idle");
+    setBatchSaleProblem(undefined);
+    setBatchSaleSignatures([]);
+  }
+
+  async function prepareAllocationSale() {
+    if (!wallet || !selectedAllocation) return;
+    const legs = allocationSaleLegs(selectedAllocation);
+    if (legs.length === 0) {
+      setBatchSaleProblem("None of the tracked Allocation quantities remain available to this route.");
+      setBatchSaleState("failed");
+      return;
+    }
+    setBatchSaleState("preparing");
+    setBatchSaleProblem(undefined);
+    try {
+      const prepared = await Promise.all(legs.map(async (leg) => {
+        const response = await fetch("/api/allocation/sell/prepare", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ wallet, mint: leg.mint, atoms: leg.atoms }),
+        });
+        return { ...leg, prepared: await responseJson<PreparedLeg>(response) };
+      }));
+      setBatchSaleLegs(prepared);
+      setBatchSaleState("review");
+    } catch (error) {
+      setBatchSaleProblem(error instanceof Error ? error.message : String(error));
+      setBatchSaleState("failed");
+    }
+  }
+
+  async function signAllocationSale() {
+    if (!wallet || !selectedAllocation || batchSaleLegs.length === 0 || batchSaleLegs.some((leg) => !leg.prepared) || (!signAllTransactions && !signTransaction)) return;
+    setBatchSaleState("signing");
+    setBatchSaleProblem(undefined);
+    const originals = batchSaleLegs.map((leg) => VersionedTransaction.deserialize(fromBase64(leg.prepared!.transaction)));
+    const before = originals.map((transaction) => transaction.message.serialize().slice());
+
+    let signed: VersionedTransaction[];
+    try {
+      if (signAllTransactions) signed = await signAllTransactions(originals);
+      else {
+        signed = [];
+        for (const transaction of originals) signed.push(await signTransaction!(transaction));
+      }
+      const changed = signed.findIndex((transaction, index) => {
+        const after = transaction.message.serialize();
+        return before[index].length !== after.length || before[index].some((byte, offset) => byte !== after[offset]);
+      });
+      if (changed >= 0) throw new Error("The wallet changed one of the checked sale transactions. Nothing was sent.");
+      if (publicKey?.toBase58() !== wallet) throw new Error("The connected wallet changed before submission. Nothing was sent.");
+    } catch (error) {
+      setBatchSaleProblem(error instanceof Error ? error.message : String(error));
+      setBatchSaleState("failed");
+      return;
+    }
+
+    const submitted: string[] = [];
+    setBatchSaleState("checking");
+    for (let index = 0; index < batchSaleLegs.length; index += 1) {
+      const leg = batchSaleLegs[index];
+      const prepared = leg.prepared!;
+      const signedId = signedSignature(signed[index].signatures[0]);
+      const entry: LocalTrade = {
+        signature: signedId,
+        wallet,
+        mint: leg.mint,
+        symbol: leg.symbol,
+        direction: "sell",
+        inputAtoms: leg.atoms,
+        inputScale: leg.scale,
+        submittedAt: new Date().toISOString(),
+        allocationId: selectedAllocation.id,
+        allocationName: selectedAllocation.name,
+        allocationTemplateId: selectedAllocation.templateId,
+      };
+      recordLocalTrade(entry);
+      submitted.push(signedId);
+      try {
+        const response = await fetch("/api/allocation/submit", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ transaction: toBase64(signed[index].serialize()), approval: prepared.approval }),
+        });
+        if ([400, 409, 410, 451, 503].includes(response.status)) {
+          const body = await response.json() as { error?: string };
+          forgetLocalTrade(signedId);
+          throw new Error(body.error ?? "Seametry refused a sale before sending it.");
+        }
+        const sent = await responseJson<{ signature: string }>(response);
+        if (sent.signature !== signedId) throw new Error("The server returned a different transaction signature.");
+        void check(entry);
+      } catch (error) {
+        setBatchSaleProblem("At least one signed sale could not be verified. Check the transaction list before another exit. " + (error instanceof Error ? error.message : String(error)));
+      }
+    }
+    setActivity(readLocalTrades(wallet));
+    setBatchSaleSignatures(submitted);
+  }
 
   const position = reading && reading.wallet === wallet ? reading.positions.find((item) => item.mint === selectedMint) : undefined;
   const currentTrade = activity.find((entry) => entry.signature === signature);
@@ -179,6 +337,32 @@ export function Positions() {
     <div className={styles.workspace}>
       {!wallet ? <p className={styles.notice}>Connect the wallet that holds your instruments. Connecting buys or sells nothing.</p> : (
         <>
+          {allocations.length > 0 ? (
+            <section className={styles.allocations} aria-labelledby="allocations-title">
+              <header className={styles.sectionHead}>
+                <div>
+                  <h2 id="allocations-title">Your Allocations</h2>
+                  <p>Device-local grouping of confirmed Seametry purchases. Current wallet balances remain the authority.</p>
+                </div>
+              </header>
+              <div className={styles.allocationCards}>
+                {allocations.map((allocation) => (
+                  <article key={allocation.id} className={styles.allocationCard}>
+                    <div>
+                      <span>{allocation.templateId ? "Published-rule Allocation" : "Custom Allocation"}</span>
+                      <h3>{allocation.name}</h3>
+                      <p>{allocation.legs.length} tracked constituents · opened {new Date(allocation.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className={styles.allocationLegs}>
+                      {allocation.legs.map((leg) => <b key={leg.mint}>{leg.symbol} <small>{formatBalance(leg.atoms, leg.scale)}</small></b>)}
+                    </div>
+                    <QuietAction type="button" onClick={() => openAllocationSale(allocation)}>Sell allocation</QuietAction>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <section className={styles.ledger} aria-labelledby="holdings-title">
             <header className={styles.sectionHead}>
               <div><h2 id="holdings-title">In this wallet</h2><p>Solana mainnet RPC. {reading?.wallet === wallet ? `Observed ${new Date(reading.observedAt).toLocaleString()}.` : "No observation yet."}</p><p>Total portfolio value: no price observation. Balances below are exact token quantities, not a sum in USDC.</p></div>
@@ -198,6 +382,56 @@ export function Positions() {
             ) : null}
             {reading?.wallet === wallet && reading.outsideRegister > 0 ? <p className={styles.notice}>This wallet also holds tokens outside this register. They are not included in these rows.</p> : null}
           </section>
+
+          <ModalSheet
+            open={Boolean(selectedAllocation)}
+            onClose={() => setSelectedAllocation(undefined)}
+            title={selectedAllocation ? "Sell " + selectedAllocation.name : "Sell Allocation"}
+            register="Mainnet"
+            closeLabel="Close Allocation exit"
+            footer={selectedAllocation ? (
+              batchSaleState === "review"
+                ? <Key type="button" onClick={() => void signAllocationSale()} disabled={!signAllTransactions && !signTransaction}>Approve sell all</Key>
+                : batchSaleState === "preparing" || batchSaleState === "signing" || batchSaleState === "checking"
+                  ? undefined
+                  : batchSaleState === "success"
+                    ? <QuietAction type="button" onClick={() => setSelectedAllocation(undefined)}>Close</QuietAction>
+                    : <Key type="button" onClick={() => void prepareAllocationSale()} disabled={batchSaleLegs.length === 0}>Review sell all</Key>
+            ) : undefined}
+          >
+            {selectedAllocation ? (
+              <div className={styles.batchSale}>
+                <AllocationMotion
+                  mode="sell"
+                  state={(
+                    batchSaleState === "preparing" ? "preflight" :
+                    batchSaleState === "review" || batchSaleState === "signing" ? "approval" :
+                    batchSaleState === "checking" ? "settling" :
+                    batchSaleState === "success" ? "success" :
+                    batchSaleState === "partial" ? "partial" :
+                    batchSaleState === "failed" ? "failure" : "idle"
+                  ) as AllocationMotionState}
+                  total={batchSaleLegs.length}
+                  settled={batchSaleSignatures.filter((id) => ["confirmed", "finalized"].includes(statuses[id]?.state ?? "")).length}
+                />
+                <p className={styles.notice}>Sell All exits only the quantities attributed to this Allocation, capped by what the connected wallet still holds.</p>
+                <ol className={styles.batchSaleLegs}>
+                  {batchSaleLegs.map((leg) => (
+                    <li key={leg.mint}>
+                      <div><b>{leg.symbol}</b><span>{formatBalance(leg.atoms, leg.scale)} to sell</span></div>
+                      {leg.prepared ? <div><strong>{formatAmount(leg.prepared.outAtoms, 6)} USDC</strong><small>expected · floor {formatAmount(leg.prepared.floorAtoms, 6)}</small></div> : null}
+                    </li>
+                  ))}
+                </ol>
+                {batchSaleProblem ? <p className={styles.problem} role="alert">{batchSaleProblem}</p> : null}
+                {batchSaleSignatures.length > 0 ? (
+                  <div className={styles.batchSignatures}>
+                    {batchSaleSignatures.map((id) => <a key={id} href={"https://explorer.solana.com/tx/" + id} target="_blank" rel="noreferrer">{statuses[id]?.state ?? "pending"} · {id.slice(0, 8)}…</a>)}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </ModalSheet>
 
           <ModalSheet
             open={Boolean(position)}
