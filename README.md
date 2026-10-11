@@ -72,21 +72,31 @@ code is the first thing that rots.
   written and tested in litesvm, and deployed to devnet only, where
   `chain/tools/devnet-demo` ran the demonstration with signatures.
 - A generated Explorer, captured mainnet fixtures and evidence, and CI.
-- Generated design tokens in `clients/packages/ui/src/generated`, the only surviving
-  member of the earlier TypeScript workspace: the rest (source adapters, a
-  gateway, an Expo shell, a Next.js console) was retired once the Go core, the
-  Explorer and the Hall replaced what it did.
+- The Next.js web app in `clients/web`, including a mainnet Allocation path:
+  admitted tokenized equities can be quoted, simulated, bought directly into
+  the holder's wallet and sold back through Jupiter. Curated Allocation
+  templates orchestrate several independently checked swaps as one user
+  decision, with batch signing where the wallet supports it.
+- Device-local Allocation attribution rebuilt from confirmed transaction
+  deltas, so a confirmed curated purchase can be shown as one persistent
+  portfolio and exited with Sell All without selling unrelated quantities of
+  the same mint.
+- Optional Pyth Pro reference-history charts for curated Allocations. They are
+  informational only; executable Jupiter quotes still authorize trades and
+  the Hall remains price-blind.
+- Generated design tokens in `clients/packages/ui/src/generated`.
 
-**Does not exist:** anything on mainnet. A running server or a database. The contract in
-`contracts/openapi/`. The Terminal. Oracle values read from chain and consumed by the
-policy.
+**Does not exist:** a mainnet Hall or Alloy share pool; audited mainnet basket
+issuance; server/database-backed portfolio persistence; the full professional
+Terminal NAV/share-price service; or the on-chain oracle observation adapter
+specified for the core policy layer.
 
-**Known gap:** the retired TypeScript `preflight` also flagged missing and
-divergent reference prices, and the retired coverage probe flagged issuer,
-Chainlink and Stork coverage the same way. `server/internal/policy` has no
-counterpart for either, because oracle values are to be read from chain
-([decision](docs/decisions/2026-09-23-oracles-on-chain.md)) and that read is not
-built.
+**Known gap:** the Go policy core still has no live oracle counterpart for
+missing or divergent reference prices. The web Allocation surface now has a
+separate optional Pyth Pro history adapter for charts, but that adapter is not
+transaction authority and does not satisfy the core's on-chain observation
+decision ([original decision](docs/decisions/2026-09-23-oracles-on-chain.md);
+[reference-data boundary](docs/decisions/2026-10-11-reference-market-data.md)).
 
 The full gap list, including documentation gaps, is in
 [docs/README.md](docs/README.md) under Open items.
