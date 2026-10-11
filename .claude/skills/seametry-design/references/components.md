@@ -265,12 +265,28 @@ Top of every constituent and alloy page. Lot number; name in display serif; tick
 **Rules:** route navigation, not an ARIA tab widget. Never uses a border-bottom indicator, sliding underline, or autonomous motion. All tab-like page switches in Seametry follow this treatment.
 
 ### Basket register
-**Answers:** which researched direct-wallet basket should I inspect?
-**Anatomy:** one ruled list row per basket. Identity and short thesis first; constituent Lot marks and symbols; compact reference sparkline when available; admission and issuer facts; one quiet route into the basket record.
-**Identity:** the same open catalogue grammar as the Alloy register: square rows, hairline separators, no card grid, no decorative illustration.
-**States:** default; reference series loading; filtered empty; reference unavailable; partially admitted research row; error leaves identity and evidence readable.
-**Data:** published basket definition, admitted constituent join, issuer count, Grade set, minimum measured executable capacity, optional price-only reference series and its source.
-**Rules:** browsing is still. No pulsing marks or chart-draw animation. Equal-weight methodology never appears as an acronym in the basket name. A research-only row cannot expose a buy action.
+**Answers:** which published, researched direct-wallet basket do I want to inspect?
+**Anatomy:** one keyboard-focusable route link owns the entire ruled row. One SVG mark; title and single truncated category line; constituent count when room allows; terse admission state when room allows; one quiet trailing arrow cell with no "Open" caption. Search and category/provider filtering live above the list in their established controls.
+**Identity:** the same open catalogue grammar as the Alloy register: hairline separators, no bordered cards, no charts or animations while browsing.
+**States:** default row; focus or hover changes surface tone; filtered empty states the correction; partially admitted or private-market research remains inspectable but cannot be bought.
+**Data:** published basket id, name, category, constituent count and admission completeness.
+**Rules:** the whole row opens the basket record. Never add a second action link, a repeated descriptor, a verbose issuer block, a capacity table or a fake performance sparkline in the list. Every market figure and source belongs on the details page.
+
+### Published basket purchase
+**Answers:** how do I purchase this reviewed composition without constructing it again?
+**Anatomy:** a Buy basket anchor stays on the basket record; the record contains a fixed-template amount and wallet-execution workbench using the existing AllocationFlow engine. Selected mints derive from the admitted basket recipe. A separate quiet link enters Build a basket for custom selection.
+**Identity:** one amount decision, the normal order sheet and the custody-changing Key; no unneeded Choose step.
+**States:** full admission + country eligibility; insufficient admission (no purchase); no wallet; inadequate USDC/SOL; quote or simulation refusal; signing; settlement; partial settlement.
+**Data:** exact published constituent mints, fee tier, individual current Jupiter quotes, simulated transaction data and actual settlement status.
+**Rules:** no redirect to the custom builder to buy a predefined basket. Never bypass the existing simulation, eligibility gate, wallet approval, attribution or non-atomic failure handling.
+
+### Constituent settlement register
+**Answers:** which exact constituent legs have been prepared, signed, submitted or settled?
+**Anatomy:** compact per-constituent process register, one rule and one short status per leg, backed by transaction-phase state. Active rule moves only while real preflight/signing/settlement is in progress. Settled rule fills, failed rule breaks.
+**Identity:** a ledger of independent outcomes, not an orbital illustration. Nothing renders before the user initiates a purchase or exit.
+**States:** checking, approval, sending, complete, partial, refused, reduced motion.
+**Data:** actual constituent symbols, phase transitions and confirmed count from transaction state.
+**Rules:** do not create placeholder orbit nodes, fake progress percentages, invented transaction success or animation while idle.
 
 ### Catalogue table
 **Answers:** what is in this set, and which entries meet the standard?
