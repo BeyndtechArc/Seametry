@@ -527,14 +527,6 @@
   border-bottom: 0.5px solid var(--sm-feature-raised);
 }
 
-.indexVisual::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 30%, var(--sm-feature-ground) 100%);
-  opacity: 0.7;
-  pointer-events: none;
-}
 
 .indexIllustration {
   position: absolute;
@@ -1060,14 +1052,9 @@
 }
 
 .leg[data-phase="failed"]::after {
-  height: 1px;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--sm-line-strong) 0,
-    var(--sm-line-strong) var(--sm-space-3),
-    transparent var(--sm-space-3),
-    transparent var(--sm-space-5)
-  );
+  height: 0;
+  background: none;
+  border-top: 1px dashed var(--sm-line-strong);
 }
 
 @keyframes legScan {
