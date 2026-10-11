@@ -348,15 +348,56 @@ export async function submitLeg(config: AllocationConfig, signedBase64: string, 
   }
 }
 
-export type LegStatus = { state: "pending" | "confirmed" | "finalized" | "failed"; detail?: string };
+export type LegStatus = {
+  state: "pending" | "confirmed" | "finalized" | "failed";
+  detail?: string;
+  tokenDeltaAtoms?: string;
+  tokenDeltaScale?: number;
+};
 
-export async function legStatus(config: AllocationConfig, signature: string): Promise<LegStatus> {
+/**
+ * Confirmation remains the authority for whether a leg settled. When the
+ * caller supplies a wallet and mint, transaction meta is also used to return
+ * the wallet's actual token delta for that mint. That delta is portfolio
+ * attribution only; wallet balances remain the ownership authority.
+ */
+export async function legStatus(
+  config: AllocationConfig,
+  signature: string,
+  walletText?: string,
+  mint?: string,
+): Promise<LegStatus> {
   const connection = new Connection(config.mainnetRpcUrl, "confirmed");
   const { value } = await connection.getSignatureStatuses([signature], { searchTransactionHistory: true });
   const status = value[0];
   if (!status) return { state: "pending" };
   if (status.err) return { state: "failed", detail: JSON.stringify(status.err) };
-  if (status.confirmationStatus === "finalized") return { state: "finalized" };
-  if (status.confirmationStatus === "confirmed") return { state: "confirmed" };
-  return { state: "pending" };
+
+  const state = status.confirmationStatus === "finalized" ? "finalized" : status.confirmationStatus === "confirmed" ? "confirmed" : "pending";
+  if (state === "pending" || !walletText || !mint) return { state };
+
+  let wallet: PublicKey;
+  try {
+    wallet = new PublicKey(walletText);
+  } catch {
+    return { state };
+  }
+
+  const transaction = await connection.getTransaction(signature, {
+    commitment: "confirmed",
+    maxSupportedTransactionVersion: 0,
+  });
+  const meta = transaction?.meta;
+  if (!meta) return { state };
+
+  const owner = wallet.toBase58();
+  const balances = (rows: typeof meta.preTokenBalances) => (rows ?? [])
+    .filter((row) => row.owner === owner && row.mint === mint)
+    .reduce((sum, row) => sum + BigInt(row.uiTokenAmount.amount), 0n);
+  const pre = balances(meta.preTokenBalances);
+  const post = balances(meta.postTokenBalances);
+  const scale = (meta.postTokenBalances ?? []).find((row) => row.owner === owner && row.mint === mint)?.uiTokenAmount.decimals ??
+    (meta.preTokenBalances ?? []).find((row) => row.owner === owner && row.mint === mint)?.uiTokenAmount.decimals;
+  if (scale === undefined) return { state };
+  return { state, tokenDeltaAtoms: (post - pre).toString(), tokenDeltaScale: scale };
 }
