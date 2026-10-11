@@ -1,6 +1,6 @@
 > **Living document. Owns:** off chain basket valuation, weighting and drift, delivery standard evaluation for whole alloys, and execution planning for baskets. The domain concepts specific to a basket (Alloy, Allocation, Holding, Claim) as more than the narrower on-chain types `server/internal/basket` already implements.
 > **Does not own:** instrument identity, grade, prerogatives and live multiplier resolution (`../SERVICE_CATALOG.md` section 3.1, Registry), provider adapters and raw observation capture (section 3.2, Observation), executable routes and depth at size (section 3.4, Liquidity), the decision engine, policy documents and reason codes (section 3.5, Policy, and `../ENGINEERING_STANDARD.md` section 8 for the determinism rule it follows), and the Hall's own arithmetic (`HALL.md`, specified in `server/internal/basket`). None of those subjects gets restated here.
-> **Core, from phase 0 for the recipe; unbuilt for everything else.** `server/internal/basket` and its shared vectors exist and are load bearing. NAV, weighting, delivery evaluation for a whole alloy, and acquisition planning are specified below and not yet built; `TERMINAL.md` is the surface that will need them first.
+> **Core status:** `server/internal/basket` and its shared vectors exist and are load bearing. The web Allocation surface now executes admitted direct-wallet baskets and publishes versioned equal-weight thematic templates, but the reusable Go-domain implementations of NAV, drift, whole-alloy delivery evaluation and path optimization described below are still not built. The client orchestration is not allowed to masquerade as that core.
 
 # Basket Domain
 
@@ -64,7 +64,7 @@ Schemes for allocations: equal, curated with a stated reason per weight, market 
 
 Alloys have a fixed recipe, so their value weights drift by design. This document reports that drift for information and never proposes trades against it. A new formula is a new alloy.
 
-Not built.
+The reusable Basket-domain weighting/drift engine is not built. The web Allocation catalogue currently implements a deliberately narrower equal-weight methodology with explicit holder-approved rebalancing semantics; see `../methodologies/SEAMETRY_EQUAL_WEIGHT_THEMATIC_V0.md`.
 
 ### 3.4 Delivery standard evaluation
 
@@ -86,7 +86,7 @@ Produces plans, never executes them. This is planning which acquisition path to 
 - Batched for a single approval where the wallet supports it.
 - Never plans a leg it cannot assay.
 
-Not built.
+The general acquisition planner is not built in the Go core. The web Allocation path does implement the direct-allocation subset: whole-plan USDC preflight, independently simulated Jupiter legs, wallet batch signing when available, confirmed transaction attribution, and allocation-specific Sell All. This is an execution surface, not a replacement for the domain planner.
 
 ---
 
