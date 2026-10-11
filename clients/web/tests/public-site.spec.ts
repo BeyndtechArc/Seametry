@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
-test("saved to a home screen, the site opens on Allocation with icons at the sizes it names", async ({ page, request }) => {
+test("saved to a home screen, the site opens on Baskets with icons at the sizes it names", async ({ page, request }) => {
   await page.goto("/");
   const manifestHref = await page.locator("link[rel=manifest]").getAttribute("href");
   expect(await page.locator("link[rel=apple-touch-icon]").getAttribute("href")).toBe("/icons/apple-touch-icon.png");
   const manifest = await (await request.get(manifestHref!)).json();
-  expect({ start_url: manifest.start_url, display: manifest.display }).toEqual({ start_url: "/app/allocation", display: "standalone" });
+  expect({ start_url: manifest.start_url, display: manifest.display }).toEqual({ start_url: "/app/baskets", display: "standalone" });
   const icons = [...manifest.icons, { src: "/icons/apple-touch-icon.png", sizes: "180x180" }];
   for (const icon of icons) {
     const png = await (await request.get(icon.src)).body();
@@ -154,10 +154,10 @@ test("the Allocation keeps its terms behind an info note, and the order sheet st
   // Scoped to main: while the page streams, the loading boundary holds a
   // hidden copy of the same text outside it, and an unscoped lookup matches twice.
   const main = page.getByRole("main");
-  await expect(main.getByRole("heading", { level: 1, name: "Buy an Allocation" })).toBeVisible();
+  await expect(main.getByRole("heading", { level: 1, name: "Build a basket" })).toBeVisible();
   const terms = main.getByText("You remain bound by each issuer's terms of eligibility.", { exact: true });
   await expect(terms).toBeHidden();
-  await main.getByLabel("About Buy an Allocation").click();
+  await main.getByLabel("About Build a basket").click();
   await expect(terms).toBeVisible();
   // components.md, Info note: what the note says about cost is never only there.
   const sheet = main.getByRole("complementary", { name: "Order sheet" });
@@ -284,7 +284,7 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   await expect(page.getByRole("banner").getByText("Seametry", { exact: true })).toBeHidden();
   const appTabs = page.getByRole("navigation", { name: "Mobile product" });
   await expect(appTabs.getByRole("link")).toHaveCount(5);
-  await expect(appTabs.getByRole("link", { name: "Buy an Allocation" })).toHaveAttribute("href", "/app/allocation");
+  await expect(appTabs.getByRole("link", { name: "Baskets" })).toHaveAttribute("href", "/app/baskets");
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("button", { name: "Use light mode" })).toBeVisible();
   const appOrder = await page.evaluate(() => ({
@@ -426,7 +426,7 @@ test("the app header connects a wallet and keeps the mode control beside it", as
   await expect(page.getByRole("banner").getByRole("navigation", { name: "Product" }).getByRole("link")).toHaveText([
     "Overview",
     "Holdings",
-    "Buy an Allocation",
+    "Baskets",
     "Alloys",
     "Sponsor",
     "Instruments",
@@ -437,7 +437,8 @@ test("every app page names its network, and the top bar and mobile register shar
   for (const [path, network] of [
     ["/app", "Mainnet evidence"],
     ["/app/positions", "Mainnet"],
-    ["/app/allocation", "Mainnet"],
+    ["/app/baskets", "Mainnet"],
+    ["/app/baskets/build", "Mainnet"],
     ["/app/compose", "Devnet"],
     ["/app/alloys/storm", "Devnet"],
     ["/app/instruments", "Mainnet evidence"],
@@ -463,7 +464,7 @@ test("the app shell marks only the current tab with an icon, and keeps one globa
   const reading = page.getByRole("navigation", { name: "Reading" });
   await expect(reading.locator("svg")).toHaveCount(2);
 
-  for (const path of ["/app/allocation", "/app/compose"]) {
+  for (const path of ["/app/baskets/build", "/app/compose"]) {
     await page.goto(path);
     await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toHaveCount(1);
   }
@@ -472,7 +473,7 @@ test("the app shell marks only the current tab with an icon, and keeps one globa
 test("the desk cards let their content lead without decorative icons", async ({ page }) => {
   await page.goto("/app");
 
-  for (const name of ["The Alloy register", "Buy an Allocation", "Demo", "Instruments"]) {
+  for (const name of ["The Alloy register", "Baskets", "Demo", "Instruments"]) {
     const card = page.getByRole("heading", { level: 2, name }).locator("..");
     await expect(card.locator("svg")).toHaveCount(0);
   }
@@ -512,7 +513,7 @@ test("secondary actions carry the ink cell, primary actions stay green", async (
 
 test("no page scrolls sideways on a 320px phone", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 780 });
-  for (const path of ["/", "/app", "/app/allocation", "/app/alloys", "/app/alloys/storm", "/app/instruments", "/how-it-works", "/papers/the-exit", "/sign-in", "/the-key"]) {
+  for (const path of ["/", "/app", "/app/baskets", "/app/baskets/build", "/app/allocation", "/app/alloys", "/app/alloys/storm", "/app/instruments", "/how-it-works", "/papers/the-exit", "/sign-in", "/the-key"]) {
     await page.goto(path, { waitUntil: "networkidle" });
     // scrollWidth, not a visible scrollbar: the root hides horizontal overflow,
     // which stops a scrollbar but not a finger dragging the page sideways.
