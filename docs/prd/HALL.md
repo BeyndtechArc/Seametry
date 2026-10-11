@@ -151,11 +151,14 @@ Compiled constants per program version, taken in shares: a fraction of minted sh
 The current program permits any wallet to initialize an alloy and strike shares,
 and it has no deposit or supply ceiling. Funding only the operator's wallet with
 a small amount does not bound what other wallets may deposit. Before a canary,
-its build must enforce the named entry wallets, named constituent mints, and
-raw-unit ceilings for each leg. Melt, claim withdrawal, and reconciliation stay
-permissionless. Record the exact deployed binary, program ID, authorities,
-wallets, mints, ceilings, and transactions. Do not remove the upgrade authority
-during this test. The unrestricted Hall requires a separate release decision.
+its build must enforce named constituent mints and program-wide cumulative
+raw-unit intake ceilings for each mint. Any wallet may sponsor, Strike, Melt,
+withdraw a claim, or reconcile. A per-wallet ceiling is insufficient because
+another address could bypass it. Cumulative intake does not reset after Melt;
+this bounds all deposits through this deployment without a price oracle.
+Record the exact deployed binary, program ID, authorities, mints, ceilings,
+and transactions. Do not remove the upgrade authority during this test. The
+unrestricted Hall requires a separate release decision.
 
 **Guidance for lenders pricing shares:** read `ledger` plus vested credit per share on-chain, multiply by their own constituent prices, and never price a share from any Office figure alone.
 
