@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@seametry/ui/icons";
@@ -13,6 +13,7 @@ import styles from "./app-shell.module.css";
 /** components.md, App shell: the top bar carries wide routes; the bottom tabs keep product routes within reach on phones. */
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className={styles.shell}>
@@ -33,9 +34,49 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className={styles.headerActions} data-testid="app-header-actions">
             <WalletState />
             <span className={styles.theme} data-testid="app-header-theme"><ThemeControl defaultTheme="dark" /></span>
+            <button
+              type="button"
+              className={styles.mobileMenuButton}
+              aria-label="Open more navigation"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <Icon name={menuOpen ? "close" : "menu"} />
+            </button>
           </div>
         </div>
       </header>
+      {menuOpen ? (
+        <div className={styles.mobileMenuLayer}>
+          <button className={styles.mobileMenuScrim} type="button" aria-label="Close navigation" onClick={() => setMenuOpen(false)} />
+          <aside className={styles.mobileMenu} aria-label="More navigation">
+            <div className={styles.mobileMenuHead}>
+              <span>More</span>
+              <button type="button" aria-label="Close navigation" onClick={() => setMenuOpen(false)}><Icon name="close" /></button>
+            </div>
+            <nav className={styles.mobileMenuRoutes}>
+              {appGroups.flatMap(({ icon, routes }) => routes.map((route) => ({ ...route, icon }))).map((route) => {
+                const current = route.isActive(pathname);
+                return (
+                  <Link key={route.href} href={route.href} aria-current={current ? "page" : undefined} onClick={() => setMenuOpen(false)}>
+                    <Icon name={route.icon} />
+                    <span>{route.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className={styles.mobileMenuReading}>
+              <span>Reference</span>
+              {readingRoutes.map((route) => (
+                <Link key={route.href} href={route.href} onClick={() => setMenuOpen(false)}>
+                  <Icon name={route.icon} />
+                  <span>{route.label}</span>
+                </Link>
+              ))}
+            </div>
+          </aside>
+        </div>
+      ) : null}
       <main className={styles.content}>{children}</main>
       <nav className={styles.mobileTabs} aria-label="Mobile product">
         {mobileRoutes.map((route) => {
