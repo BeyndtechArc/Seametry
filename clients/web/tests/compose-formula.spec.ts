@@ -3,7 +3,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { draftFormula, identityProblem, unitsToAtoms, type QuotedLeg } from "../src/lib/compose/formula";
 import { FOUNDING, requestProblem } from "../src/lib/request-problem";
-import { SEAMETRY_SPONSOR_MARK } from "../src/lib/compose/founding-transaction";
+import { UNREGISTERED_SPONSOR_MARK } from "../src/lib/compose/founding-transaction";
+import { registeredMetadataPath, registeredMetadataUri } from "../src/lib/compose/identity";
 import { REGISTER_HALL_PROGRAM_ID } from "../src/lib/hall/constants";
 import { registerTestWallet } from "./test-wallet";
 
@@ -51,6 +52,12 @@ test("the share's name and symbol are checked before they become immutable", () 
   expect(identityProblem("Technology Five", "t5")).toBe("A symbol is 2 to 10 capital letters or digits, starting with a letter.");
 });
 
+test("each founded Alloy gets an address-specific metadata URI", () => {
+  const address = "6BD6PprLyhiLeXKTAiLRA2hyMwUqMzpQPzftabQuduQ";
+  expect(registeredMetadataPath(address)).toBe(`/alloys/${address}/metadata.json`);
+  expect(registeredMetadataUri(address)).toBe(`https://www.seametry.xyz/alloys/${address}/metadata.json`);
+});
+
 test("Compose stops at the twelve legs an Alloy can hold", async ({ page }) => {
   await page.goto("/app/compose");
   const main = page.getByRole("main");
@@ -90,9 +97,8 @@ test("every published Alloy's metadata is served whole, and its image is the one
   }
 });
 
-test("the founding records the sponsor mark by its file's hash, on the register's Hall", () => {
-  const mark = createHash("sha256").update(readFileSync("public/sponsor-mark.svg")).digest("hex");
-  expect(SEAMETRY_SPONSOR_MARK).toBe(mark);
+test("a visitor's founding does not claim Seametry's sponsor mark", () => {
+  expect(Array.from(UNREGISTERED_SPONSOR_MARK)).toEqual(Array(32).fill(0));
   const server = /HallDevnetProgramID = "([1-9A-HJ-NP-Za-km-z]{32,44})"/.exec(readFileSync("../../server/internal/basket/chain.go", "utf8"))?.[1];
   expect(REGISTER_HALL_PROGRAM_ID.toBase58()).toBe(server);
 });
@@ -109,14 +115,18 @@ test("the founding route refuses what would be permanent and wrong, before it sp
     error: "So11111111111111111111111111111111111111112 is not admitted by the policy engine, so it cannot enter a founded Formula.",
   });
   expect((await refused({ legs: Array.from({ length: 13 }, () => ({ mint: aapl, atomsPerShare: "1" })) })).error).toBe("A Formula holds 1 to 12 constituents; this one has 13.");
-  expect(await refused({ name: "Unpublished Alloy", symbol: "UNPUB" })).toEqual({
-    status: 409,
-    error: "No metadata is published at /alloys/unpublished-alloy/metadata.json, so Unpublished Alloy has no URI to found with yet.",
-  });
-  expect(await refused({ symbol: "STOICX" })).toEqual({
-    status: 409,
-    error: "The metadata at /alloys/stoic-crew/metadata.json describes Stoic Crew (STOIC), not Stoic Crew (STOICX).",
-  });
+  expect((await refused({ name: "New Alloy", symbol: "NEW" })).error).toContain("HALL_DEMO_FUNDER_SECRET_KEY is not set");
+});
+
+test("an address-specific metadata URL reads only a matching on-chain Alloy", async ({ request }) => {
+  const address = "6BD6PprLyhiLeXKTAiLRA2hyMwUqMzpQPzftabQuduQ";
+  const published = await request.get(`/alloys/${address}/metadata.json`);
+  expect(published.status()).toBe(200);
+  const metadata = await published.json();
+  expect(metadata).toMatchObject({ name: "Fixture Alloy", symbol: "FIX", description: expect.any(String) });
+  expect(metadata.image).toBeUndefined();
+  const unknown = await request.get("/alloys/4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d/metadata.json");
+  expect(unknown.status()).toBe(404);
 });
 
 test("Compose offers founding once the draft is priced and named, and holds the Key until a wallet logs in", async ({ page }) => {
@@ -128,7 +138,7 @@ test("Compose offers founding once the draft is priced and named, and holds the 
   await main.getByLabel("Symbol", { exact: true }).fill("STOIC");
   const founding = main.getByTestId("founding");
   await expect(founding.getByRole("heading", { level: 3, name: "Found Stoic Crew" })).toBeVisible({ timeout: QUOTED });
-  await expect(founding.getByText("https://www.seametry.xyz/alloys/stoic-crew/metadata.json", { exact: true })).toBeVisible();
+  await expect(founding.getByText("Assigned from this Alloy's address at founding", { exact: true })).toBeVisible();
   // The Key sits in the step bar with the flow's other next moves, and the bar says why it waits.
   await expect(main.getByRole("button", { name: "Found on devnet" })).toBeDisabled();
   await expect(founding.getByRole("button", { name: "Found on devnet" })).toHaveCount(0);

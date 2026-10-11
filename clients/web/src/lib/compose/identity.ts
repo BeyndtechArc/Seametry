@@ -1,6 +1,5 @@
-// Where an Alloy's token metadata is published. The URI written into the
-// share mint is permanent, so it is derived from the name by one rule and
-// the founding refuses a name with no published metadata behind it.
+// Earlier Alloys use name-based, manually published files. New Alloys use an
+// address-specific endpoint backed by their own on-chain share metadata.
 
 export const METADATA_ORIGIN = "https://www.seametry.xyz";
 
@@ -16,4 +15,13 @@ export function metadataPath(name: string): string {
 /** The permanent URI written into the share mint. */
 export function metadataUri(name: string): string {
   return `${METADATA_ORIGIN}${metadataPath(name)}`;
+}
+
+/** Each founded Alloy has a distinct URI even when names or symbols repeat. */
+export function registeredMetadataPath(address: string): string {
+  return `/alloys/${address}/metadata.json`;
+}
+
+export function registeredMetadataUri(address: string): string {
+  return `${METADATA_ORIGIN}${registeredMetadataPath(address)}`;
 }

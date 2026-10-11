@@ -10,13 +10,8 @@ import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-
 import { BN, type Idl, type Program } from "@coral-xyz/anchor";
 import type { PreparedFounding } from "./founding-prepare";
 
-/**
- * SHA-256 of clients/web/public/sponsor-mark.svg: the Alloy records which
- * mark sponsored it as these 32 bytes. A test recomputes it from the file.
- * The mark was redrawn on 6 October 2026; Stoic Crew, founded before that,
- * carries the earlier file's hash, 6156faf1...ad19, on chain for good.
- */
-export const SEAMETRY_SPONSOR_MARK = "36fc4cfbb83cb6f08adc3f57ad942c0cd1adc3c709e49d9a2f92559f713571e6";
+/** A visitor's Alloy has no registered mark; the sponsor's wallet is recorded separately. */
+export const UNREGISTERED_SPONSOR_MARK = new Uint8Array(32);
 
 /**
  * A six-leg founding consumed 253,393 compute units on devnet on 5 October
@@ -40,7 +35,7 @@ export async function buildFoundingTransaction(
   const instruction = await program.methods
     .initializeAlloy({
       id: new BN(prepared.id),
-      sponsorMark: Array.from(Buffer.from(SEAMETRY_SPONSOR_MARK, "hex")),
+      sponsorMark: Array.from(UNREGISTERED_SPONSOR_MARK),
       name: identity.name,
       symbol: identity.symbol,
       uri: identity.uri,

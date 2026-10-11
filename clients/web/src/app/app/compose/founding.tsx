@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Connection } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
@@ -8,7 +8,7 @@ import { Digest, Key, QuietAction, StepRegister, TextAction, type RegisterStep }
 import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { buildFoundingTransaction, type FoundingIdentity } from "@/lib/compose/founding-transaction";
 import type { PreparedFounding } from "@/lib/compose/founding-prepare";
-import { metadataPath, metadataUri } from "@/lib/compose/identity";
+import { registeredMetadataUri } from "@/lib/compose/identity";
 import { DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID } from "@/lib/hall/constants";
 import { hallProgram } from "@/lib/hall/program";
 import { FOUNDING, requestProblem, type RequestStage, type StageProblem } from "@/lib/request-problem";
@@ -41,25 +41,6 @@ function registerSteps(run: Run | undefined): RegisterStep[] {
   });
 }
 
-/** Whether the metadata this name would be founded with is published, read once per name. */
-function usePublished(name: string): boolean | undefined {
-  const [answer, setAnswer] = useState<{ name: string; published: boolean }>();
-  useEffect(() => {
-    if (!name) return;
-    let current = true;
-    fetch(metadataPath(name), { cache: "no-store" })
-      .then(async (response) => {
-        const body = response.ok ? await response.json().catch(() => undefined) : undefined;
-        if (current) setAnswer({ name, published: Boolean(body && body.name === name) });
-      })
-      .catch(() => current && setAnswer({ name, published: false }));
-    return () => {
-      current = false;
-    };
-  }, [name]);
-  return answer?.name === name ? answer.published : undefined;
-}
-
 const LOOKUP_TABLE_ATTEMPTS = 5;
 
 /** A lookup table answers from the slot after it was extended, so the first read can be a moment early. */
@@ -84,7 +65,6 @@ export type Founding = ReturnType<typeof useFounding>;
 export function useFounding(legs: { mint: string; atomsPerShare: bigint }[], name: string, symbol: string) {
   const { connected, sendTransaction } = useWallet();
   const wallet = useAnchorWallet();
-  const published = usePublished(name);
   const [run, setRun] = useState<Run>();
   const [open, setOpen] = useState(false);
 
@@ -129,13 +109,7 @@ export function useFounding(legs: { mint: string; atomsPerShare: bigint }[], nam
   };
 
   const running = run?.state === "running";
-  const reason = !connected
-    ? "Log in with a devnet wallet: it signs as the sponsor."
-    : published === false
-      ? `No metadata is published at ${metadataPath(name)}, so this name has no URI to found with.`
-      : published === undefined
-        ? "Checking this name's published metadata."
-        : undefined;
+  const reason = !connected ? "Log in with a devnet wallet: it signs as the sponsor." : undefined;
 
   return { name, run, open, setOpen, found, running, reason };
 }
@@ -177,6 +151,7 @@ export function FoundingPanel({ founding }: { founding: Founding }) {
         <span className={styles.label}>Founded on devnet</span>
         <h3 id="founded-heading">{name} is founded</h3>
         <Digest value={run.prepared.alloy} />
+        <p className={styles.note}>Metadata URI: {registeredMetadataUri(run.prepared.alloy)}</p>
         <p className={styles.note}>Its Formula, name, symbol and URI are fixed. One share is locked as the genesis, forever.</p>
         <TextAction href={`/app/alloys/${run.prepared.alloy}`}>Open the Alloy record</TextAction>
         <TextAction href={`https://explorer.solana.com/tx/${run.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer">Open the founding on Solana</TextAction>
@@ -194,9 +169,9 @@ export function FoundingPanel({ founding }: { founding: Founding }) {
         <div><dt>Sponsor</dt><dd>Your connected wallet, which signs</dd></div>
         <div><dt>Constituents</dt><dd>Devnet stand-ins carrying each stock&apos;s token settings</dd></div>
         <div><dt>Genesis</dt><dd>One share, locked forever</dd></div>
-        <div><dt>URI</dt><dd>{metadataUri(name)}</dd></div>
+        <div><dt>URI</dt><dd>Assigned from this Alloy&apos;s address at founding</dd></div>
       </dl>
-      <p className={styles.note}>The Formula, name, symbol and URI cannot change after this. Found sits in the bar below.</p>
+      <p className={styles.note}>The Formula, name, symbol and URI cannot change after this. This founding has no custom image; the register shows its symbol as a mark.</p>
       {run && !open ? <QuietAction type="button" onClick={() => setOpen(true)}>{run.state === "stopped" ? "Read why the founding stopped" : "Show the founding's progress"}</QuietAction> : null}
       {sheet}
     </section>

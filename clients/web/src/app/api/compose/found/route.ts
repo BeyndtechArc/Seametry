@@ -3,7 +3,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { admissions, isAdmitted } from "@/lib/allocation/admissions";
 import { identityProblem } from "@/lib/compose/formula";
 import { prepareFounding, type FoundingLeg } from "@/lib/compose/founding-prepare";
-import { metadataPath, metadataUri } from "@/lib/compose/identity";
+import { registeredMetadataUri } from "@/lib/compose/identity";
 import { DEVNET_RPC_ENDPOINT, MAX_CONSTITUENTS, REGISTER_HALL_PROGRAM_ID } from "@/lib/hall/constants";
 import { demoFunder } from "@/lib/hall/env";
 import { standInIssuer } from "@/lib/hall/issuer";
@@ -24,8 +24,8 @@ function refuse(error: string, status = 400) {
  * Formula's real constituents, the sponsor's genesis deposits, rent for the
  * sponsor, and the lookup table its transaction compiles against. The
  * sponsor's own wallet then signs initialize_alloy in the browser; nothing
- * here signs for the sponsor. Everything that becomes permanent is checked
- * before any devnet SOL is spent.
+ * here signs for the sponsor. The share's metadata URI is unique to its
+ * on-chain Alloy address, rather than requiring a static file per name.
  */
 export async function POST(request: NextRequest) {
   let body: Body;
@@ -66,17 +66,6 @@ export async function POST(request: NextRequest) {
     legs.push({ symbol: admission.instrument.symbol ?? admission.instrument.mint, realMint: admission.instrument.mint, decimals: admission.decimals, atomsPerShare: atoms });
   }
 
-  // The URI is written into the share forever, so the metadata it names must
-  // already be published and must describe this Alloy.
-  const published = await fetch(new URL(metadataPath(name), request.nextUrl.origin), { cache: "no-store" }).catch(() => undefined);
-  const metadata = published?.ok ? ((await published.json().catch(() => undefined)) as { name?: string; symbol?: string } | undefined) : undefined;
-  if (!metadata) {
-    return refuse(`No metadata is published at ${metadataPath(name)}, so ${name} has no URI to found with yet.`, 409);
-  }
-  if (metadata.name !== name || metadata.symbol !== symbol) {
-    return refuse(`The metadata at ${metadataPath(name)} describes ${metadata.name} (${metadata.symbol}), not ${name} (${symbol}).`, 409);
-  }
-
   const waitMs = throttle.retryAfter(clientAddress(request.headers.get("x-forwarded-for")), Date.now());
   if (waitMs > 0) {
     return NextResponse.json(
@@ -88,7 +77,7 @@ export async function POST(request: NextRequest) {
   try {
     const connection = new Connection(DEVNET_RPC_ENDPOINT, "confirmed");
     const prepared = await prepareFounding(connection, demoFunder(), standInIssuer(), REGISTER_HALL_PROGRAM_ID, sponsor, legs);
-    return NextResponse.json({ prepared, identity: { name, symbol, uri: metadataUri(name) } });
+    return NextResponse.json({ prepared, identity: { name, symbol, uri: registeredMetadataUri(prepared.alloy) } });
   } catch (error) {
     if (error instanceof Refusal) return refuse(error.message, error.status);
     return refuse(error instanceof Error ? error.message : "Preparing the founding failed.", 502);

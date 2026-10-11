@@ -30,6 +30,11 @@ const alloy = {
   supply: "1000000",
   locked_genesis: "1000000",
   cluster: "devnet",
+  metadata: {
+    name: "Fixture Alloy",
+    symbol: "FIX",
+    uri: `https://www.seametry.xyz/alloys/${alloyAddress}/metadata.json`,
+  },
   legs: [
     {
       mint: "94L9f6NLadaF9YcDffBw4Ub7tsJb9BJBmFqCUm3zovwH",
