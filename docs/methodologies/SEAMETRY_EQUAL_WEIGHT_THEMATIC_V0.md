@@ -107,21 +107,23 @@ Partial failures remain explicit. Seametry does not silently substitute a consti
 
 ## 9. Current published baskets
 
-Executable under the current admission snapshot when every named representation remains admitted:
+The catalogue is deliberately broader than the currently executable set. A published row can remain research-only or incomplete while its constituents are being captured and evaluated; the interface must not expose a purchase action until every required representation is admitted.
+
+Current catalogue:
 - Prime Seven
 - Compute Chain
-- Intelligence Layer
-- Cloud Core
-- Data Center Stack
-- Memory Cycle
-- Attention Economy
-- Frontier Systems
+- AI Cloud
 - Physical AI
+- Defense & Autonomy
+- Attention Economy
+- Digital Capital
+- Global Rotation
+- Cloud Core
+- Private Frontier
 
-Research register, not executable:
-- Private AI & Venture
+`Private Frontier` is permanently research-only under this version because it compares three different legal access shapes: a Backpack private-company security entitlement, an Ondo private-market note and VCXx fund exposure. Other incomplete rows may become executable after their named representations are captured, graded and admitted.
 
-The exact constituent set and catalogue filters live in `clients/web/src/lib/allocation/indexes.ts`. The research-only private-market row exists to make a fast-moving product category visible without silently treating notes or fund interests as public-equity tokens.
+The exact constituent set, research literature and catalogue filters live in `clients/web/src/lib/allocation/indexes.ts`.
 
 ## 10. Naming boundary
 
