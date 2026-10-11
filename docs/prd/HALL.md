@@ -147,6 +147,16 @@ Compiled constants per program version, taken in shares: a fraction of minted sh
 
 **Audit before size.** Devnet and small mainnet testing do not need it. Open deposits do.
 
+**The mainnet canary is a separate deployment, not an unadvertised public Hall.**
+The current program permits any wallet to initialize an alloy and strike shares,
+and it has no deposit or supply ceiling. Funding only the operator's wallet with
+a small amount does not bound what other wallets may deposit. Before a canary,
+its build must enforce the named entry wallets, named constituent mints, and
+raw-unit ceilings for each leg. Melt, claim withdrawal, and reconciliation stay
+permissionless. Record the exact deployed binary, program ID, authorities,
+wallets, mints, ceilings, and transactions. Do not remove the upgrade authority
+during this test. The unrestricted Hall requires a separate release decision.
+
 **Guidance for lenders pricing shares:** read `ledger` plus vested credit per share on-chain, multiply by their own constituent prices, and never price a share from any Office figure alone.
 
 ---

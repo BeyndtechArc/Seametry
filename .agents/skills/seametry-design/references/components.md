@@ -159,6 +159,14 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Data:** `Alloy.legs`, joined with `FormulaConstituent.units_per_share`, instrument symbol and Grade; every amount remains integer atoms plus scale.
 **Rules:** never derive weights, NAV or units per share in the interface. One caption provenance applies only when every row shares the same source, age and evidence state; otherwise each row carries its own.
 
+### Holdings ledger
+**Answers:** which listed instruments does this wallet hold on mainnet now, and which can it select for an exit quote?
+**Anatomy:** wallet and RPC observation caption; one ruled row per mint with Lot mark, symbol, exact token quantity and a quiet selection action.
+**Identity:** open catalogue rows, not cards; a registration rule keeps the amounts aligned.
+**States:** observed; loading names the balance read; empty names the connected wallet without listed holdings; stale retains the last observed rows with age; unavailable names the missing RPC; error states what must be retried.
+**Data:** wallet address; observed_at; mainnet RPC source; mint, token program, integer atoms and scale; admissions snapshot symbol.
+**Rules:** never infer holdings from past purchases, never show a fabricated price or imply a reverse route exists until quoted. Instruments outside the admissions snapshot are named as outside this ledger, not silently represented as zero.
+
 ### Provenance line
 **Answers:** through whose hands does my claim pass?
 **Anatomy:** ordered chain, company to wallet, each link named with its role, separated by semicolons, set like a catalogue entry.

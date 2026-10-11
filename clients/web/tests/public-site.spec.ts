@@ -425,6 +425,7 @@ test("the app header connects a wallet and keeps the mode control beside it", as
   await expect(login.locator(":scope > span").last().locator("svg")).toHaveCount(1);
   await expect(page.getByRole("banner").getByRole("navigation", { name: "Product" }).getByRole("link")).toHaveText([
     "Overview",
+    "Holdings",
     "Buy an Allocation",
     "Alloys",
     "Sponsor",
@@ -435,6 +436,7 @@ test("the app header connects a wallet and keeps the mode control beside it", as
 test("every app page names its network, and the top bar and mobile register share one route list", async ({ page }) => {
   for (const [path, network] of [
     ["/app", "Mainnet evidence"],
+    ["/app/positions", "Mainnet"],
     ["/app/allocation", "Mainnet"],
     ["/app/compose", "Devnet"],
     ["/app/alloys/storm", "Devnet"],
