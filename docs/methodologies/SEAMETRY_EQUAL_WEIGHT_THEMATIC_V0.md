@@ -107,12 +107,21 @@ Partial failures remain explicit. Seametry does not silently substitute a consti
 
 ## 9. Current published baskets
 
-The application currently defines:
-- Semiconductor & Compute EW
-- Platform Technology EW
-- Digital Media EW
+Executable under the current admission snapshot when every named representation remains admitted:
+- Prime Seven
+- Compute Chain
+- Intelligence Layer
+- Cloud Core
+- Data Center Stack
+- Memory Cycle
+- Attention Economy
+- Frontier Systems
+- Physical AI
 
-Their exact members live in `clients/web/src/lib/allocation/indexes.ts`. That file is the executable catalogue; this document owns the methodology.
+Research register, not executable:
+- Private AI & Venture
+
+The exact constituent set and catalogue filters live in `clients/web/src/lib/allocation/indexes.ts`. The research-only private-market row exists to make a fast-moving product category visible without silently treating notes or fund interests as public-equity tokens.
 
 ## 10. Naming boundary
 
