@@ -968,3 +968,143 @@
     transition: none !important;
   }
 }
+
+
+.indexEvidence {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.indexEvidence div {
+  display: grid;
+  gap: var(--sm-space-1);
+  min-width: 0;
+  padding: var(--sm-space-3);
+}
+
+.indexEvidence div + div {
+  border-left: 0.5px solid var(--sm-line-rule);
+}
+
+.indexEvidence dt {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.indexEvidence dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+  font-variant-numeric: tabular-nums lining-nums;
+  overflow-wrap: anywhere;
+}
+
+/* A leg's edge carries its transaction state. Success joins; failure breaks.
+   This is intentionally quiet beside the larger Allocation ceremony. */
+.leg {
+  position: relative;
+  overflow: hidden;
+  transition: background 240ms ease, border-color 240ms ease;
+}
+
+.leg::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--sm-line-rule);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+.leg[data-phase="preparing"]::after {
+  background: var(--sm-accent-provenance);
+  transform: scaleX(0.28);
+  animation: legScan 1.15s ease-in-out infinite alternate;
+}
+
+.leg[data-phase="signing"] {
+  border-top-color: var(--sm-accent-provenance);
+}
+
+.leg[data-phase="signing"]::after {
+  background: var(--sm-accent-provenance);
+  transform: scaleX(0.56);
+  animation: legHold 1.45s ease-in-out infinite;
+}
+
+.leg[data-phase="sending"]::after {
+  background: var(--sm-accent-touch);
+  transform: scaleX(0.76);
+  animation: legSend 950ms cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
+}
+
+.leg[data-phase="settled"] {
+  border-top-color: var(--sm-accent-touch);
+  background: var(--sm-surface-raised);
+}
+
+.leg[data-phase="settled"]::after {
+  background: var(--sm-accent-touch);
+  animation: legSettle 680ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.leg[data-phase="failed"] {
+  border-top-style: dashed;
+}
+
+.leg[data-phase="failed"]::after {
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--sm-line-strong) 0,
+    var(--sm-line-strong) var(--sm-space-3),
+    transparent var(--sm-space-3),
+    transparent var(--sm-space-5)
+  );
+}
+
+@keyframes legScan {
+  from { transform: scaleX(0.18); opacity: 0.45; }
+  to { transform: scaleX(0.72); opacity: 1; }
+}
+
+@keyframes legHold {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+@keyframes legSend {
+  from { transform: scaleX(0.58); }
+  to { transform: scaleX(0.92); }
+}
+
+@keyframes legSettle {
+  from { transform: scaleX(0.74); opacity: 0.65; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+@media (max-width: 560px) {
+  .indexEvidence {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .indexEvidence div + div {
+    border-top: 0.5px solid var(--sm-line-rule);
+    border-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leg,
+  .leg::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
