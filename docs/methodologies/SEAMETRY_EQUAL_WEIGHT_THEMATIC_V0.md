@@ -76,26 +76,37 @@ The product observes current value weights and compares them with the published 
 
 A membership change creates a new methodology version. Existing positions retain their recorded version until the holder explicitly migrates.
 
-## 7. Reference index series
+## 7. Historical routed-acquisition quote index
 
-The UI may show a **price-only reference series** for research and charting.
+The first available history is **an indicative Jupiter buy-side route series**,
+not a stock-price index, legal NAV or a user's realized performance.
 
-For each constituent:
+For each currently admitted constituent:
 
-1. obtain an attributed underlying-equity price series;
-2. normalize the first common observation to 100;
-3. calculate the equal-weight mean across all constituents at every timestamp.
+1. At most once per UTC day, sample a read-only exact-input route from 25 USDC
+   into its actual token mint with Jupiter, without executing the swap.
+2. Record token output atoms, mint decimals, issuer, policy digest, context
+   slot, route venues and observation time; no wallet identity is sampled.
+3. At each UTC date on which **all** basket constituents have valid observations,
+   compare that day's output atoms to the first complete date. Each constituent
+   starts with equal-dollar exposure, and its initial raw-token quantity
+   remains fixed for the comparison; the series does not rebalance.
+4. Exclude incomplete dates and refuse to draw a series with fewer than two
+   complete dates. No interpolation or artificial history is allowed.
 
-A timestamp is omitted unless every constituent has an acceptable observation. Seametry does not publish a partial index level that looks complete.
+This measures what the constituent acquisition quotes implied at a fixed size.
+It varies with token prices, route quality, spread, depth and available venues.
+It does **not** measure the underlying public equity's reference price.
 
-The initial adapter is Pyth Pro historical equity data. The source, methodology version and data availability are shown with the chart.
+Historical quotes:
+- do not guarantee execution or settlement;
+- are not official NAV or the user's P&L;
+- omit user-specific transaction costs, network fees and Seametry's routing fee;
+- cannot authorize a present-day purchase or sale;
+- never enter Hall Strike or Melt arithmetic.
 
-The reference series:
-- does not include execution fees or slippage;
-- is not the holder's realized P&L;
-- is not a guaranteed liquidation value;
-- does not set a transaction price;
-- never enters Hall Strike or Melt arithmetic.
+The feed needs only Jupiter and optional quote-observation storage.
+No licensed equity data plan or oracle is required.
 
 ## 8. Purchase and exit
 
