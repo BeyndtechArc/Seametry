@@ -184,7 +184,9 @@ test("Strike and Melt are held, with their reasons, until a wallet logs in", asy
   await page.goto(`/app/alloys/${alloyAddress}`);
   await page.getByRole("button", { name: "Strike or Melt" }).click();
   const actions = page.getByRole("dialog", { name: "Strike or Melt" });
-  await expect(actions.getByRole("tab", { name: "Strike" })).toHaveAttribute("aria-selected", "true");
+  await expect(actions.getByRole("list", { name: "Alloy action steps" })).toContainText("Choose action");
+  await expect(actions.getByRole("radio", { name: "Strike" })).toBeChecked();
+  await actions.getByRole("button", { name: "Set Strike amount" }).click();
   await expect(actions.getByRole("button", { name: "Strike shares" })).toBeDisabled();
   await expect(actions.getByText("Log in with a devnet wallet: it signs the Strike or Melt.").first()).toBeVisible();
   await expect(actions.getByRole("list", { name: "Strike quantities" })).toContainText("5.000000");
@@ -192,7 +194,9 @@ test("Strike and Melt are held, with their reasons, until a wallet logs in", asy
   await expect(actions.getByRole("list", { name: "Strike quantities" })).toContainText("10.000000");
   await expect(actions.getByRole("list", { name: "Strike quantities" })).toContainText("6.000000");
   await expect(actions.getByText("Solana devnet via Gateway", { exact: false }).last()).toBeVisible();
-  await actions.getByRole("tab", { name: "Melt" }).click();
+  await actions.getByRole("list", { name: "Alloy action steps" }).getByRole("button").click();
+  await actions.getByRole("radio", { name: "Melt" }).click();
+  await actions.getByRole("button", { name: "Set Melt amount" }).click();
   await expect(actions.getByRole("button", { name: "Melt shares" })).toBeDisabled();
 });
 
@@ -214,14 +218,17 @@ test("a Strike opens its steps and stops at the first with what did not happen",
   const actions = page.getByRole("dialog", { name: "Strike or Melt" });
   // The fixture's share mint is not a real address: the panel says so
   // rather than waiting on a read that cannot be made.
-  await actions.getByRole("tab", { name: "Melt" }).click();
+  await actions.getByRole("radio", { name: "Melt" }).click();
+  await actions.getByRole("button", { name: "Set Melt amount" }).click();
   await expect(actions.getByText("is not a Solana address, so your shares cannot be read.", { exact: false }).first()).toBeVisible();
   await expect(actions.getByRole("button", { name: "Melt shares" })).toBeDisabled();
-  await actions.getByRole("tab", { name: "Strike" }).click();
+  await actions.getByRole("list", { name: "Alloy action steps" }).getByRole("button").click();
+  await actions.getByRole("radio", { name: "Strike" }).click();
+  await actions.getByRole("button", { name: "Set Strike amount" }).click();
 
   await actions.getByRole("button", { name: "Strike shares" }).click();
   // The test server has no funder key, so preparation stops at step one.
-  const dialog = page.getByRole("dialog", { name: "Strike 1.000000 shares" });
+  const dialog = page.getByRole("dialog", { name: "Action stopped" });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("alert")).toContainText("Action stopped");
   await expect(dialog.getByRole("alert")).toContainText("HALL_DEMO_FUNDER_SECRET_KEY is not set");

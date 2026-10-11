@@ -210,7 +210,7 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Anatomy:** native dialog centred in the viewport; quiet register label; title; a Step register; an icon-only round close control labelled for assistive technology, a named full-round case; optional footer for the one follow-up action.
 **Identity:** a `radius.sheet` plate with the single top highlight rule and tonal elevation; no shadow, blur or glow.
 **States:** closed; open. The request's own states live in its Step register.
-**Rules:** for watching a request (founding, signing, confirming), never for a task the user edits; that is the Modal sheet. Closing does not cancel the request, and the opening surface offers a way back. Native focus and Escape contract; focus returns to the opening control.
+**Rules:** for watching a request (founding, signing, confirming), never for a task the user edits; that is the Modal sheet. The editable sheet carries its own Step track before the request starts. When the watched request ends, close its progress dialog and open a separate outcome dialog, so confirmation never masquerades as another running step. Closing does not cancel the request, and the opening surface offers a way back. Native focus and Escape contract; focus returns to the opening control.
 
 ### Purchase outcome
 **Answers:** was this constituent purchase sent, settled, or stopped before any funds moved?

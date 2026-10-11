@@ -5,7 +5,7 @@ import { Connection } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { Digest, Key, QuietAction, StepRegister, TextAction, type RegisterStep } from "@seametry/ui";
-import { ProcessDialog } from "@seametry/ui/modal-sheet";
+import { ProcessDialog, ProcessOutcome } from "@seametry/ui/modal-sheet";
 import { buildFoundingTransaction, type FoundingIdentity } from "@/lib/compose/founding-transaction";
 import type { PreparedFounding } from "@/lib/compose/founding-prepare";
 import { registeredMetadataUri } from "@/lib/compose/identity";
@@ -66,11 +66,13 @@ export function useFounding(legs: { mint: string; atomsPerShare: bigint }[], nam
   const { connected, sendTransaction } = useWallet();
   const wallet = useAnchorWallet();
   const [run, setRun] = useState<Run>();
-  const [open, setOpen] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(false);
+  const [outcomeOpen, setOutcomeOpen] = useState(false);
 
   const found = async () => {
     if (!wallet) return;
-    setOpen(true);
+    setProgressOpen(true);
+    setOutcomeOpen(false);
     let stage: RequestStage = "prepare";
     try {
       setRun({ state: "running", stage });
@@ -103,15 +105,19 @@ export function useFounding(legs: { mint: string; atomsPerShare: bigint }[], nam
       setRun({ state: "running", stage });
       await awaitLanding(connection, signature, transaction.message.recentBlockhash);
       setRun({ state: "founded", signature, prepared });
+      setProgressOpen(false);
+      setOutcomeOpen(true);
     } catch (error) {
       setRun({ state: "stopped", stage, problem: requestProblem(FOUNDING, stage, error) });
+      setProgressOpen(false);
+      setOutcomeOpen(true);
     }
   };
 
   const running = run?.state === "running";
   const reason = !connected ? "Log in with a devnet wallet: it signs as the sponsor." : undefined;
 
-  return { name, run, open, setOpen, found, running, reason };
+  return { name, run, progressOpen, setProgressOpen, outcomeOpen, setOutcomeOpen, found, running, reason };
 }
 
 /** The founding's Key, for the step bar. */
@@ -124,26 +130,31 @@ export function FoundingKey({ founding, disabled }: { founding: Founding; disabl
 }
 
 export function FoundingPanel({ founding }: { founding: Founding }) {
-  const { name, run, open, setOpen, found } = founding;
+  const { name, run, progressOpen, setProgressOpen, outcomeOpen, setOutcomeOpen, found } = founding;
 
-  const sheet = (
+  const dialogs = (<>
+    {run?.state === "running" ? (
     <ProcessDialog
-      open={open}
-      onClose={() => setOpen(false)}
-      title={run?.state === "founded" ? `${name} is founded` : `Founding ${name}`}
+      open={progressOpen}
+      onClose={() => setProgressOpen(false)}
+      title={`Founding ${name}`}
       register="Devnet"
       closeLabel="Close founding"
-      footer={
-        run?.state === "stopped" ? (
-          <QuietAction type="button" onClick={() => void found()}>Try again</QuietAction>
-        ) : run?.state === "founded" ? (
-          <TextAction href={`/app/alloys/${run.prepared.alloy}`}>Open the Alloy</TextAction>
-        ) : undefined
-      }
     >
       <StepRegister label={`Founding ${name}`} steps={registerSteps(run)} />
     </ProcessDialog>
-  );
+    ) : null}
+    {run && run.state !== "running" ? <ProcessDialog
+      open={outcomeOpen}
+      onClose={() => setOutcomeOpen(false)}
+      title={run.state === "founded" ? `${name} is founded` : "Founding stopped"}
+      register="Devnet"
+      closeLabel="Close founding outcome"
+      footer={run.state === "stopped" ? <QuietAction type="button" onClick={() => void found()}>Try founding again</QuietAction> : <TextAction href={`/app/alloys/${run.prepared.alloy}`}>Open the Alloy</TextAction>}
+    >
+      {run.state === "founded" ? <ProcessOutcome kind="success" title="Founded on devnet"><p>The Hall confirmed this Alloy.</p></ProcessOutcome> : <ProcessOutcome kind="error" title="Founding stopped"><p>{run.problem.plain}</p>{run.problem.technical ? <details><summary>Technical detail</summary><pre>{run.problem.technical}</pre></details> : null}</ProcessOutcome>}
+    </ProcessDialog> : null}
+  </>);
 
   if (run?.state === "founded") {
     return (
@@ -155,7 +166,7 @@ export function FoundingPanel({ founding }: { founding: Founding }) {
         <p className={styles.note}>Its Formula, name, symbol and URI are fixed. One share is locked as the genesis, forever.</p>
         <TextAction href={`/app/alloys/${run.prepared.alloy}`}>Open the Alloy record</TextAction>
         <TextAction href={`https://explorer.solana.com/tx/${run.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer">Open the founding on Solana</TextAction>
-        {sheet}
+        {dialogs}
       </section>
     );
   }
@@ -172,8 +183,9 @@ export function FoundingPanel({ founding }: { founding: Founding }) {
         <div><dt>URI</dt><dd>Assigned from this Alloy&apos;s address at founding</dd></div>
       </dl>
       <p className={styles.note}>The Formula, name, symbol and URI cannot change after this. This founding has no custom image; the register shows its symbol as a mark.</p>
-      {run && !open ? <QuietAction type="button" onClick={() => setOpen(true)}>{run.state === "stopped" ? "Read why the founding stopped" : "Show the founding's progress"}</QuietAction> : null}
-      {sheet}
+      {run && run.state === "running" && !progressOpen ? <QuietAction type="button" onClick={() => setProgressOpen(true)}>Show the founding progress</QuietAction> : null}
+      {run && run.state !== "running" && !outcomeOpen ? <QuietAction type="button" onClick={() => setOutcomeOpen(true)}>{run.state === "stopped" ? "Read why the founding stopped" : "Read the founding result"}</QuietAction> : null}
+      {dialogs}
     </section>
   );
 }

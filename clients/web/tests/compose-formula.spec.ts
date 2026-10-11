@@ -193,7 +193,7 @@ test("the server spaces every Jupiter call at least a second apart, however many
   expect(Math.min(...gaps)).toBeGreaterThanOrEqual(950);
 });
 
-test("pressing Found opens the founding's steps, and a stop says what did not happen", async ({ page }) => {
+test("pressing Found separates progress from the final stopped outcome", async ({ page }) => {
   // The test server has no funder key, so preparation stops at step one.
   await registerTestWallet(page, { trusted: true });
   await page.goto("/app/compose");
@@ -208,20 +208,18 @@ test("pressing Found opens the founding's steps, and a stop says what did not ha
   await main.getByLabel("Symbol", { exact: true }).fill("STOIC");
   await main.getByRole("button", { name: "Found on devnet" }).click({ timeout: QUOTED });
 
-  const sheet = page.getByRole("dialog", { name: "Founding Stoic Crew" });
-  await expect(sheet).toBeVisible();
-  const steps = sheet.getByTestId("step-register").getByRole("listitem");
-  await expect(steps.nth(0)).toContainText("Stopped", { timeout: QUOTED });
-  await expect(steps.nth(1)).toContainText("Waiting");
-  await expect(steps.nth(2)).toContainText("Waiting");
-  await expect(steps.nth(0).getByRole("alert")).toContainText("HALL_DEMO_FUNDER_SECRET_KEY is not set");
-  await expect(sheet.getByRole("button", { name: "Try again" })).toBeVisible();
-  // The process is watched, not worked in, so it is centred rather than an end sheet.
-  const box = (await sheet.boundingBox())!;
+  const outcome = page.getByRole("dialog", { name: "Founding stopped" });
+  await expect(outcome).toBeVisible({ timeout: QUOTED });
+  await expect(outcome.getByRole("alert")).toContainText("Nothing was founded");
+  await outcome.getByText("Technical detail").click();
+  await expect(outcome.getByText("HALL_DEMO_FUNDER_SECRET_KEY is not set", { exact: false })).toBeVisible();
+  await expect(outcome.getByRole("button", { name: "Try founding again" })).toBeVisible();
+  // Outcomes are watched, not worked in, so the dialog is centred rather than an end sheet.
+  const box = (await outcome.boundingBox())!;
   const viewport = page.viewportSize()!;
   expect(Math.abs(box.x + box.width / 2 - viewport.width / 2)).toBeLessThan(2);
-  await sheet.getByRole("button", { name: "Close founding" }).click();
-  await expect(sheet).toBeHidden();
+  await outcome.getByRole("button", { name: "Close founding outcome" }).click();
+  await expect(outcome).toBeHidden();
   await expect(main.getByRole("button", { name: "Read why the founding stopped" })).toBeVisible();
 });
 

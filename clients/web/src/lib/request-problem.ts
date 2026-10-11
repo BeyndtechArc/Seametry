@@ -53,6 +53,12 @@ export function requestProblem(subject: RequestSubject, stage: RequestStage, err
         technical,
       };
     }
+    if (/HALL_DEMO_| is not set\b/i.test(message)) {
+      return {
+        plain: `The ${noun} is not available from this deployment. Nothing was ${done} and your wallet was not asked to sign.`,
+        technical,
+      };
+    }
     // The routes' own refusals are already written as sentences for a holder.
     return { plain: message || `Preparing the ${noun} did not complete. Nothing was ${done} and your wallet was not asked to sign.` };
   }
