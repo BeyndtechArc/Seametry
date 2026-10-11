@@ -306,11 +306,11 @@ export function AllocationFlow({
           const status = (await response.json()) as { state?: string; detail?: string; error?: string; tokenDeltaAtoms?: string; tokenDeltaScale?: number };
           if (status.state === "confirmed" || status.state === "finalized") {
             update(mint, { phase: "settled", note: `Settled, ${status.state} on mainnet.` });
-            if (walletAddress) {
+            if (walletAddress && status.tokenDeltaAtoms && !status.tokenDeltaAtoms.startsWith("-") && status.tokenDeltaScale !== undefined) {
               patchLocalTrade(walletAddress, signature, {
                 settled: true,
-                ...(status.tokenDeltaAtoms && !status.tokenDeltaAtoms.startsWith("-") ? { settledAtoms: status.tokenDeltaAtoms } : {}),
-                ...(status.tokenDeltaScale !== undefined ? { settledScale: status.tokenDeltaScale } : {}),
+                settledAtoms: status.tokenDeltaAtoms,
+                settledScale: status.tokenDeltaScale,
               });
             }
             setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "settled", stage: "confirm", signature } : current);
