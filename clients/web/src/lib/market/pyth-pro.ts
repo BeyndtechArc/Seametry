@@ -53,8 +53,9 @@ async function resolveEquitySymbol(ticker: string): Promise<string> {
     return 0;
   };
   const match = [...rows].sort((a, b) => score(b) - score(a))[0];
-  const symbol = match?.symbol ?? match?.ticker ?? match?.full_name;
-  if (!symbol || score(match) === 0) throw new Error("Pyth exposes no unambiguous equity symbol for " + ticker + ".");
+  if (!match || score(match) === 0) throw new Error("Pyth exposes no unambiguous equity symbol for " + ticker + ".");
+  const symbol = match.symbol ?? match.ticker ?? match.full_name;
+  if (!symbol) throw new Error("Pyth exposes no usable equity symbol for " + ticker + ".");
   return symbol;
 }
 
