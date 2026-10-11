@@ -1,6 +1,6 @@
 # Documentation
 
-**Last substantive change:** 8 October 2026.
+**Last substantive change:** 11 October 2026.
 
 ---
 
@@ -53,12 +53,18 @@ Read all three before writing code. They are short on purpose.
 | Document | Owns | Status |
 |---|---|---|
 | [prd/HALL.md](prd/HALL.md) | The Hall on-chain program: guarantees, instructions, arithmetic, prerogative handling, the devnet demonstration | Live. **The product.** Devnet is phase 1, mainnet is phase 3 |
-| [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Off chain basket valuation, weighting and drift, whole-alloy delivery evaluation, acquisition planning | Live. The holdings boundary and NAV/weighting/delivery/execution specs are written; only the holdings boundary and (via `server/internal/basket`) the recipe arithmetic are built |
+| [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Off chain basket valuation, weighting and drift, whole-alloy delivery evaluation, acquisition planning | Live. Recipe arithmetic is in the core; the web now executes the direct-Allocation subset and curated equal-weight templates, while reusable core NAV/drift/path planning remains open |
 | [prd/MOBILE.md](prd/MOBILE.md) | Mobile holding, monitoring, and approval surface | Live. Phase 2. Deliberately not a consumer brokerage |
 | [prd/SITE.md](prd/SITE.md) | The business pages: landing, how it works, the Key, and later pricing and legal | Live. Phase 1. Front door to the Explorer by link, not a fifth surface, not its deployment |
 | [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the catalogue, the verification ritual, instrument pages, evidence pages, the Hall demonstration, hallmarks | Live. Phase 1. Evidence only, since 27 September 2026 |
-| [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Nothing interactive exists yet |
+| [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Allocation execution and reference charts exist in the web app; the professional Alloy NAV/share-price workbench does not |
 | [prd/API.md](prd/API.md) | The public API: contract, response model, resources, sign-in and keys, entitlements and metering, streaming, the storage behind it, and the order the server is built in | Live. Step A0 (the contract, its Go and TypeScript generation, the drift check, and the service boundary test) is built; the rest is specified, not built. Serves the Explorer from phase 1; the metered product is phase 3 |
+
+### Methodologies
+
+| Document | Owns |
+|---|---|
+| [methodologies/SEAMETRY_EQUAL_WEIGHT_THEMATIC_V0.md](methodologies/SEAMETRY_EQUAL_WEIGHT_THEMATIC_V0.md) | Published-rule direct-wallet thematic Allocations: eligibility, duplicate issuer choice, equal weighting, review, drift and reference-series semantics |
 
 ### Brand, and the design system
 
@@ -82,6 +88,7 @@ Literal names live in code and in every external contract.
 
 | Document | What it is |
 |---|---|
+| [decisions/2026-10-11-reference-market-data.md](decisions/2026-10-11-reference-market-data.md) | Why credentialed Pyth Pro history may power informational Allocation charts while the Hall remains price-blind and executable quotes remain transaction authority |
 | [decisions/2026-09-27-explorer-stays-separate.md](decisions/2026-09-27-explorer-stays-separate.md) | Why the Explorer was pulled back out of the Next.js app days after joining it: a real, Chromium-proven CSP conflict with React's inline hydration script, and the Cloudflare Pages plus Vercel split that resolved it |
 | [decisions/2026-09-27-web-app-and-payments.md](decisions/2026-09-27-web-app-and-payments.md) | Why the Explorer, Terminal and business pages briefly became one Next.js app (partly reversed above), why the Explorer narrowed to evidence only, and why Vercel, Fly and x402 with USDC replaced the earlier hosting and payment shape |
 | [decisions/2026-09-27-repository-layout.md](decisions/2026-09-27-repository-layout.md) | Why the repository splits into server, chain, clients and contracts, why Go runs from the root through `go.work`, and which free hosts were checked and why each was kept or excluded |
