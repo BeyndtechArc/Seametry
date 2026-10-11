@@ -155,7 +155,10 @@ its build must enforce named constituent mints and program-wide cumulative
 raw-unit intake ceilings for each mint. Any wallet may sponsor, Strike, Melt,
 withdraw a claim, or reconcile. A per-wallet ceiling is insufficient because
 another address could bypass it. Cumulative intake does not reset after Melt;
-this bounds all deposits through this deployment without a price oracle.
+this bounds deposits made through Hall instructions without a price oracle.
+It cannot stop someone transferring tokens directly to a Hall token account;
+such donations can still change the balance that `sync` sees. Do not call
+this a bound on total custody or dollar value.
 Record the exact deployed binary, program ID, authorities, mints, ceilings,
 and transactions. Do not remove the upgrade authority during this test. The
 unrestricted Hall requires a separate release decision.
