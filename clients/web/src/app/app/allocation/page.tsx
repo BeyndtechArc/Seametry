@@ -3,13 +3,13 @@ import { connection } from "next/server";
 import { headers } from "next/headers";
 import { admissions } from "@/lib/allocation/admissions";
 import { allocationOffer, purchasesUnavailable } from "@/lib/allocation/offer";
-import { allocationIndexes, findAllocationIndex } from "@/lib/allocation/indexes";
+import { findAllocationIndex } from "@/lib/allocation/indexes";
 import { SLIPPAGE_BPS, feeSchedule } from "@/lib/allocation/rules";
 import { formatAmount } from "@/lib/amount";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import { PageHeader } from "../_shell/page-header";
 import { AllocationFlow } from "./flow";
-import { IndexCatalog } from "./index-catalog";
+import { BasketSectionNav } from "../baskets/section-nav";
 import styles from "./allocation.module.css";
 
 export const metadata: Metadata = {
@@ -17,9 +17,10 @@ export const metadata: Metadata = {
   description: "Plan and buy several admitted tokenized stocks directly into your own wallet, with every purchase shown before you sign.",
 };
 
-export default async function AllocationPage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string; amount?: string; index?: string }> }) {
+export default async function AllocationPage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string; amount?: string; index?: string; basket?: string }> }) {
   await connection();
-  const { selected, add, amount, index: indexId } = await searchParams;
+  const { selected, add, amount, index: legacyIndexId, basket: basketId } = await searchParams;
+  const indexId = basketId ?? legacyIndexId;
   const unavailable = purchasesUnavailable(await headers());
   const { offered, refused: refusedLots } = allocationOffer();
   const activeIndex = findAllocationIndex(indexId);
@@ -51,7 +52,7 @@ export default async function AllocationPage({ searchParams }: { searchParams: P
             </>
           }
         />
-        <IndexCatalog indexes={allocationIndexes} offered={offered} activeId={activeIndex?.id} />
+        <BasketSectionNav current="build" />
         <AllocationFlow
           offered={offered}
           refused={refusedLots}
