@@ -80,7 +80,7 @@ export default async function BasketDetailPage({ params }: { params: Promise<{ i
       <section className={styles.detailSection} aria-labelledby="basket-method">
         <h2 id="basket-method">Method</h2>
         <dl className={styles.detailFacts}>
-          <div><dt>Methodology</dt><dd>{basket.methodologyVersion}</dd></div>
+          <div><dt>Methodology</dt><dd>{basket.researchOnly ? "Private-market research rule 0.1" : "Equal weight · published rule 0.1"}</dd></div>
           <div><dt>Review</dt><dd>{basket.review}</dd></div>
           <div><dt>Drift trigger</dt><dd>{basket.driftBandPp} percentage points before Seametry proposes a holder-approved rebalance</dd></div>
         </dl>
