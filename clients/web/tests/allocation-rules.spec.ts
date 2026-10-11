@@ -347,7 +347,7 @@ test("a wallet that already trusts the site shows as connected the moment it is 
   await expect(page.getByTestId("wallet-account")).toBeVisible();
 });
 
-test("one Buy tap prepares the next leg and never asks a wallet to sign a refused simulation", async ({ page }) => {
+test("one Allocation decision preflights the whole plan and never signs a refused simulation", async ({ page }) => {
   await registerTestWallet(page, { trusted: true });
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx");
   expect(aapl).toBeDefined();
@@ -357,7 +357,7 @@ test("one Buy tap prepares the next leg and never asks a wallet to sign a refuse
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
   let prepares = 0;
   let submits = 0;
-  await page.route("**/api/allocation/prepare", (route) => {
+  await page.route("**/api/allocation/prepare-batch", (route) => {
     prepares += 1;
     return route.fulfill({ status: 422, json: { error: "The route could not be simulated." } });
   });
@@ -365,16 +365,15 @@ test("one Buy tap prepares the next leg and never asks a wallet to sign a refuse
     submits += 1;
     return route.fulfill({ status: 500, json: { error: "Unexpected submission." } });
   });
-  await expect(page.getByRole("button", { name: "Buy AAPLx" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Preview purchase" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Buy AAPLx" }).click();
-  await expect(page.getByRole("region", { name: "Buy each constituent" }).getByText("The route could not be simulated.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Buy allocation" })).toBeVisible();
+  await page.getByRole("button", { name: "Buy allocation" }).click();
+  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText(/route could not be simulated/i)).toBeVisible();
   expect(prepares).toBe(1);
   expect(submits).toBe(0);
-  await expect(page.getByRole("button", { name: "Buy AAPLx" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Buy allocation" })).toBeEnabled();
 });
 
-test("a changed signed purchase stops the plan without offering the same-wallet retry", async ({ page }) => {
+test("a changed signed Allocation stops the whole plan without same-wallet retry", async ({ page }) => {
   await registerTestWallet(page, { trusted: true });
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
   const nvda = admissions.instruments.find((lot) => lot.instrument.symbol === "NVDAx")!;
@@ -384,37 +383,33 @@ test("a changed signed purchase stops the plan without offering the same-wallet 
     recentBlockhash: Keypair.generate().publicKey.toBase58(),
     instructions: [],
   }).compileToV0Message());
+  const prepared = {
+    transaction: Buffer.from(transaction.serialize()).toString("base64"),
+    approval: "test-approval",
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
+    floorAtoms: "1", outAtoms: "1", outScale: 6,
+    routingFeeBps: 15, routingFeeAtoms: "1500", priorityFeeLamports: "0",
+    route: ["Test route"], contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
+  };
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint},${nvda.instrument.mint}&amount=2`);
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   let prepares = 0;
-  await page.route("**/api/allocation/prepare", (route) => {
+  await page.route("**/api/allocation/prepare-batch", (route) => {
     prepares += 1;
-    return route.fulfill({ json: {
-      transaction: Buffer.from(transaction.serialize()).toString("base64"),
-      approval: "test-approval",
-      expiresAt: new Date(Date.now() + 60_000).toISOString(),
-      floorAtoms: "1", outAtoms: "1", outScale: 6,
-      routingFeeBps: 25, routingFeeAtoms: "2500", priorityFeeLamports: "0",
-      route: ["Test route"], contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
-    } });
+    return route.fulfill({ json: [prepared, prepared] });
   });
   await page.route("**/api/allocation/submit", (route) => route.fulfill({
     status: 409,
     json: { code: "SIGNED_MESSAGE_CHANGED", sent: false, error: "The transaction was changed after it was approved, so it was not sent. Prepare the leg again." },
   }));
-  await page.getByRole("button", { name: "Buy AAPLx" }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByRole("dialog").locator('[data-kind="error"]')).toBeVisible();
-  await expect(page.getByRole("dialog").getByText(/No USDC was spent/i)).toBeVisible();
-  await expect(page.getByRole("dialog").getByRole("button", { name: "Retry AAPLx" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Close purchase status" }).click();
-  await expect(page.getByRole("button", { name: "Buy NVDAx" })).toHaveCount(0);
-  await expect(page.getByText(/wallet could not sign this purchase/i)).toBeVisible();
+  await page.getByRole("button", { name: "Buy allocation" }).click();
+  await expect(page.getByText("Purchase paused")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText(/signed transaction no longer matched/i).first()).toBeVisible();
   expect(prepares).toBe(1);
 });
 
-test("a confirmed purchase shows a settled state and transaction link", async ({ page }) => {
+test("a confirmed Allocation shows settlement state and transaction evidence", async ({ page }) => {
   await registerTestWallet(page, { trusted: true });
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
   const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
@@ -422,18 +417,17 @@ test("a confirmed purchase shows a settled state and transaction link", async ({
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
-  await page.route("**/api/allocation/prepare", (route) => route.fulfill({ json: {
+  await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: [{
     transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
     expiresAt: new Date(Date.now() + 60_000).toISOString(), floorAtoms: "1", outAtoms: "1", outScale: 6,
     routingFeeBps: 25, routingFeeAtoms: "2500", priorityFeeLamports: "0", route: ["Test route"],
     contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
-  } }));
+  }] }));
   await page.route("**/api/allocation/submit", (route) => route.fulfill({ json: { signature: "test-signature" } }));
-  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed" } }));
-  await page.getByRole("button", { name: "Buy AAPLx" }).click();
-  await expect(page.getByRole("dialog").getByRole("heading", { name: "Purchase settled" })).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByRole("dialog").locator('[data-kind="success"]')).toBeVisible();
-  await expect(page.getByRole("dialog").getByRole("link", { name: "View transaction" })).toHaveAttribute("href", /test-signature/);
+  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed", tokenDeltaAtoms: "1", tokenDeltaScale: 6 } }));
+  await page.getByRole("button", { name: "Buy allocation" }).click();
+  await expect(page.getByText("Allocation assembled")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("region", { name: "Buy allocation" }).getByRole("link", { name: "test-signature" })).toHaveAttribute("href", /test-signature/);
   await expect(page.getByText("1 of 1 purchase settled.")).toBeVisible();
 });
 
