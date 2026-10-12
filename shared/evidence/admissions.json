@@ -2629,13 +2629,13 @@
       }
     },
     {
-      "issuer": "xStocks",
+      "issuer": "Backed Finance (xStocks)",
       "decimals": 8,
       "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
-          "captured_at": "2026-10-12T06:47:06Z",
-          "slot": "455952955"
+          "captured_at": "2026-10-12T13:46:09Z",
+          "slot": "456068140"
         },
         "grade": "certificate",
         "mint": "Xs7UsqobM3EJgMeHwdAbmDBCZH1G5WTCjatpeYcCr8x",
@@ -2678,7 +2678,7 @@
       },
       "decision": {
         "decision": "BLOCK",
-        "input_digest": "b119a7daa864fced5d47f1eade81dc998e2c5f93132eca4b915e2fc3b9cb4f2c",
+        "input_digest": "d71a188724f4627530746f409af91bacb4da55d96c28240229b9ad8e5e963f57",
         "policy_version": "policy-2026.10.1",
         "reasons": [
           {
@@ -2721,7 +2721,7 @@
       "capacity_usdc": 0,
       "capacity_decision": {
         "decision": "BLOCK",
-        "input_digest": "f5233be1c37816515ba9dc0605d9f640ed5d200719902978d283e91e15bb93a9",
+        "input_digest": "1c1d0cc12e0f307799c7f3f76e087197c7dbfac7da381bcea7a9a18f7fb081d8",
         "policy_version": "policy-2026.10.1",
         "reasons": [
           {

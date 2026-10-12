@@ -1,6 +1,6 @@
 {
   "producer": "go run ./server/cmd/capture -logos",
-  "captured_at": "2026-10-12T06:48:57Z",
+  "captured_at": "2026-10-12T13:46:12Z",
   "logos": [
     {
       "symbol": "AAPLx",
