@@ -3,7 +3,9 @@ import type { Plan, Point3, Projection } from "@/lib/iso/iso-kit";
 
 // The Hall's press: three constituent canisters feed a screw press through
 // gated channels; a Strike drops the ram and stamps one Alloy share onto the
-// output stack, a Melt returns a share and files a Claim chit for every leg.
+// output stack, a Melt returns a share and files a Claim chit for every leg,
+// and each Claim is then delivered to the holder's wallet tray unless its
+// issuer has frozen it.
 // World units, z up; the camera looks from +x, +y.
 
 export const WIDTH = 640;
@@ -41,6 +43,13 @@ export const STACK = [92, -14] as const;
 const TRAY: Plan = { x: 70, y: -36, w: 44, d: 44, r: 3 };
 const RACK_X = 150;
 const RACK: Plan = { x: RACK_X - 18, y: -66, w: 36, d: 132, r: 2 };
+const WALLET: Plan = { x: 70, y: 24, w: 46, d: 50, r: 3 };
+const WALLET_FLOOR = 3.6;
+const WALLET_LANES = [35, 49, 63];
+const CHIT: Plan = { x: RACK.x + 9, y: -13, w: 2, d: 26, r: 0.3 };
+const CHIT_MID: Point3 = [RACK.x + 10, 0, 15];
+const INGOT_H = 3.6;
+export const WALLET_DEPTH = 3;
 export const STACK_MAX = 8;
 
 export const P: Projection = k.fitProjection(
@@ -72,7 +81,7 @@ function base() {
   out.push(L(screws.map(([x, y]) => k.ring(x, y, 2.4, 0, P, 16)).join(""), { tone: "lo" }));
   out.push(D(screws.map(([x, y]) => [x, y, 0]), { size: 0.55 }));
   // A ruler strip along the front edge, ticks every 5 units, every fifth long.
-  const strip: Plan = { x: -170, y: PLATE.y + PLATE.d - 16, w: 250, d: 8, r: 1 };
+  const strip: Plan = { x: -170, y: PLATE.y + PLATE.d - 16, w: 225, d: 8, r: 1 };
   out.push(S(k.slabOf(strip, 0, 0.6, P, 3), { tone: "lo", crease: "none" }));
   const ticks = k.topTicks(strip.x + 4, strip.x + strip.w - 4, 5, 5, strip.y + 0.8, 0.6, [2.2, 4], P);
   out.push(L(ticks.minor, { tone: "lo" }), L(ticks.major, { tone: "mid" }));
@@ -248,12 +257,31 @@ function rack() {
   return ordered(parts);
 }
 
-/** A Claim chit filed in a leg's slot, drawn at its resting place. */
-export function chit(legIndex: number, index: number) {
-  const y = LEGS[legIndex].y - 13;
-  const plan: Plan = { x: RACK.x + 7 + index * 3.2, y, w: 1.6, d: 26, r: 0.3 };
+/** A leg's Claim chit, filed upright in its slot of the rack. */
+export function chit(legIndex: number) {
+  const plan: Plan = { ...CHIT, y: LEGS[legIndex].y + CHIT.y };
+  return S(k.slabOf(plan, 4, 22, P, 2), { tone: "hi", crease: "lo" });
+}
+
+// The holder's wallet: a shallow tray with one lane per leg, where a delivered
+// Claim lands as an ingot of that constituent.
+function wallet() {
   return [
-    S(k.slabOf(plan, 4, 22 - index * 1.2, P, 2), { tone: "hi", crease: "lo" }),
+    S(k.slabOf(WALLET, 0, 2, P, 6, 0.4), { tone: "lo" }),
+    S(k.slabOf(k.insetPlan(WALLET, 1), 2, WALLET_FLOOR - 2, P, 6), { tone: "mid", crease: "none" }),
+    L(k.planOutline(k.insetPlan(WALLET, 3), WALLET_FLOOR, P, 6), { tone: "faint" }),
+    L([42, 56].map((y) => k.lineOnTop([WALLET.x + 3, y], [WALLET.x + WALLET.w - 3, y], WALLET_FLOOR, P)).join(""), { tone: "faint" }),
+    D(k.corners(WALLET, 1.8).map(([x, y]) => [x, y, WALLET_FLOOR]), { size: 0.45 }),
+  ].join("");
+}
+
+/** One delivered ingot in a leg's wallet lane, at its height in the pile. */
+export function walletIngot(legIndex: number, index: number) {
+  const plan: Plan = { x: WALLET.x + 12, y: WALLET_LANES[legIndex] - 4, w: 22, d: 8, r: 1 };
+  const z = WALLET_FLOOR + index * INGOT_H;
+  return [
+    S(k.slabOf(plan, z, INGOT_H, P, 3, 0.5), { tone: "hi", crease: "lo" }),
+    L(k.planOutline(k.insetPlan(plan, 1.8), z + INGOT_H, P, 3), { tone: "faint" }),
   ].join("");
 }
 
@@ -267,7 +295,10 @@ export const STATIC = {
   crosshead: crosshead(),
   tray: tray(),
   rack: rack(),
+  wallet: wallet(),
 };
+
+const UNIT_FRONT = CHANNEL_FROM + 8;
 
 /** Screen offsets for moving parts, from world vectors, so the client never imports the kit. */
 export const MOVES = {
@@ -276,7 +307,10 @@ export const MOVES = {
   gateDrop: k.axisVector(P, [0, 0, -6.6]),
   coinToStack: k.axisVector(P, [STACK[0], STACK[1], 4 - DIE_TOP]),
   stackStep: k.axisVector(P, [0, 0, COIN_H]),
-  chitStep: k.axisVector(P, [0, 0, 1]),
   strokeUnits: RAM_REST - 3 - DIE_TOP - COIN_H,
   channelUnits: CHANNEL_TO - CHANNEL_FROM - 8,
+  // A unit bound for a frozen leg stops against its lowered gate blade.
+  gateStopUnits: GATE_X - 0.8 - UNIT_FRONT - 0.4,
+  chitToWallet: LEGS.map((leg, legIndex) =>
+    k.axisVector(P, [WALLET.x + 23 - CHIT_MID[0], WALLET_LANES[legIndex] - leg.y, WALLET_FLOOR + INGOT_H - CHIT_MID[2]])),
 };

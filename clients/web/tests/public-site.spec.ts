@@ -479,7 +479,7 @@ test("desktop rails share the page content edge", async ({ page }) => {
   });
   expect(activeTreatment.color).toBe(activeTreatment.expected);
   expect(activeTreatment.rule).toBe("none");
-  await expect(page.getByRole("figure", { name: "The Hall's press" }).locator("figcaption")).toBeVisible();
+  await expect(page.getByRole("figure", { name: "The Hall's press" }).getByText("Illustrative Formula")).toBeVisible();
   await page.goto("/app");
   const edges = await page.evaluate(() => {
     const header = document.querySelector<HTMLElement>("[data-testid='app-header-inner']");
@@ -494,20 +494,32 @@ test("desktop rails share the page content edge", async ({ page }) => {
   expect(edges?.headerRight).toBe(edges?.mainRight);
 });
 
-test("the landing's press strikes the Formula, refuses Strike on a frozen leg, and still melts", async ({ page }) => {
+test("the landing's press strikes, refuses Strike on a frozen leg, and delivers every other leg on Melt", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   const press = page.getByRole("figure", { name: "The Hall's press" });
-  const readout = press.getByRole("status");
+  const status = press.getByRole("status");
+  const held = press.locator("[data-part='chit-1']");
+  const ingots = (leg: number) => press.locator(`[data-part^='ingot-${leg}-']:not([data-hidden])`);
   // The touched figure stops its idle tour, so only the reader's moves run.
   await expect(async () => {
     await press.getByRole("button", { name: "Strike 1 share" }).click();
-    await expect(readout).toContainText("Struck 1 share. Paid 2 AAPLx, 1.5 NVDAx, 0.25 TSLAx. No price was read.", { timeout: 6000 });
+    await expect(status).toHaveText("Struck 1 share for 2 AAPLx, 1.5 NVDAx and 0.25 TSLAx.", { timeout: 6000 });
   }).toPass({ timeout: 20_000 });
   await press.getByRole("checkbox", { name: "Issuer freezes NVDAx" }).check();
   await press.getByRole("button", { name: "Strike 1 share" }).click();
-  await expect(readout).toContainText("Strike refused. The issuer froze the Hall's NVDAx account");
+  await expect(status).toHaveText("Strike refused: NVDAx is frozen by its issuer, so nothing moved.");
   await press.getByRole("button", { name: "Melt 1 share" }).click();
-  await expect(readout).toContainText("Withdrew AAPLx and TSLAx; NVDAx stays filed as a Claim", { timeout: 10_000 });
+  await expect(status).toHaveText("Melted 1 share: 2 AAPLx and 0.25 TSLAx delivered. 1.5 NVDAx held as a Claim until the freeze lifts.", { timeout: 10_000 });
+  // The drawing says the same: the frozen leg's Claim stays in the rack, marked, and the others reached the wallet.
+  await expect(held).toHaveAttribute("data-held", "");
+  await expect(held).not.toHaveAttribute("data-hidden");
+  await expect(ingots(0)).toHaveCount(1);
+  await expect(ingots(1)).toHaveCount(0);
+  await expect(ingots(2)).toHaveCount(1);
+  await press.getByRole("checkbox", { name: "Issuer freezes NVDAx" }).uncheck();
+  await expect(status).toHaveText("Freeze lifted: the held 1.5 NVDAx Claim is delivered.", { timeout: 10_000 });
+  await expect(held).toHaveAttribute("data-hidden", "");
+  await expect(ingots(1)).toHaveCount(1);
 });
 
 test("the app keeps its reading pages in the status bar", async ({ page }) => {

@@ -23,6 +23,11 @@
   min-width: 0;
 }
 
+.figure {
+  margin: 0;
+  min-width: 0;
+}
+
 :global(:root[data-theme="dark"]) .press {
   --press-paper: var(--sm-surface-sheet);
   --press-top: var(--sm-surface-tray);
@@ -84,6 +89,17 @@
    painter's order, ready to show. */
 .stage [data-hidden] { visibility: hidden; }
 
+/* An issuer's freeze is a warning about the claim, so the padlock and the
+   Claim it holds back take provenance purple, never red (foundations
+   section 2). Purple marks only these two parts. */
+.stage [data-part^="padlock"] :global(.iso-fill),
+.stage [data-part^="padlock"] :global(.iso-top),
+.stage [data-held] :global(.iso-fill),
+.stage [data-held] :global(.iso-top) { fill: var(--sm-accent-provenance); }
+.stage [data-part^="padlock"] :global(.iso-shade),
+.stage [data-held] :global(.iso-shade) { fill: color-mix(in srgb, var(--sm-accent-provenance) 72%, var(--sm-text-primary)); }
+.stage [data-part^="padlock"] :global(.iso-line[data-tone="hi"]) { stroke: var(--sm-accent-provenance); }
+
 .panel {
   display: grid;
   gap: var(--sm-space-3);
@@ -144,22 +160,33 @@
   outline-offset: var(--sm-space-1);
 }
 
-.readout {
-  margin: 0;
-  color: var(--sm-text-secondary);
-  font-family: var(--sm-font-family-digest);
-  font-size: var(--sm-font-size-micro);
-  line-height: 1.6;
-}
-
 .controls button {
   white-space: nowrap;
 }
 
-.caption {
-  margin: 0;
+.source {
+  margin-left: auto;
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
+}
+
+.status {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
   line-height: 1.5;
+}
+
+/* Provenance purple measured 3.87:1 as text on the light hero, under the
+   4.5:1 floor, so a frozen state is marked beside the words rather than in
+   them; as a mark it needs 3:1. */
+.status[data-frozen]::before {
+  content: "";
+  display: inline-block;
+  width: var(--sm-space-2);
+  height: var(--sm-space-2);
+  margin-right: var(--sm-space-2);
+  vertical-align: middle;
+  background: var(--sm-accent-provenance);
 }
 

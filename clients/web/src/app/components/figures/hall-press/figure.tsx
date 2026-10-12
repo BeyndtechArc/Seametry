@@ -1,6 +1,6 @@
 import { formatBalance } from "@/lib/amount";
-import { CHITS_PER_LEG, pressSvg } from "./art";
-import { LEGS, MOVES, STACK_MAX } from "./geometry";
+import { pressSvg } from "./art";
+import { LEGS, MOVES, STACK_MAX, WALLET_DEPTH } from "./geometry";
 import { HallPressLive } from "./live";
 import styles from "./press.module.css";
 
@@ -14,21 +14,18 @@ const SCALE = 6;
 /** The landing hero: the Hall as a press a reader can operate. */
 export function HallPress() {
   const legs = LEGS.map((leg, index) => ({ symbol: leg.symbol, perShare: FORMULA[index] }));
-  const readout = `One share holds ${legs.map((leg) => `${formatBalance(BigInt(leg.perShare), SCALE)} ${leg.symbol}`).join(", ")}. Strike, Melt, or freeze a leg.`;
+  const status = `One share holds ${legs.map((leg) => `${formatBalance(BigInt(leg.perShare), SCALE)} ${leg.symbol}`).join(", ")}.`;
   return (
-    <figure className={styles.press} aria-label="The Hall's press">
+    <figure className={styles.figure} aria-label="The Hall's press">
       <HallPressLive
         svg={pressSvg()}
         moves={MOVES}
         legs={legs}
         initialSupply={Number(INITIAL_SUPPLY)}
         stackMax={STACK_MAX}
-        chitsPerLeg={CHITS_PER_LEG}
-        initialReadout={readout}
+        walletDepth={WALLET_DEPTH}
+        initialStatus={status}
       />
-      <figcaption className={styles.caption}>
-        Illustrative Formula and quantities; the arithmetic is the Hall&apos;s. Canisters show what the Hall holds for every share, the stack holds the shares, and the rack files Claims. A frozen leg closes its gate: Strike is refused and Melt still works.
-      </figcaption>
     </figure>
   );
 }
