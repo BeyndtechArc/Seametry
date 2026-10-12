@@ -22,7 +22,7 @@ For persistent cross-deployment history, configure an HTTP-compatible Redis prov
 
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
-- `CRON_SECRET` — a new cryptographically random bearer secret
+- `CRON_SECRET` - a new cryptographically random bearer secret
 
 No Pyth, Chainlink, Stork, equity subscription or wallet private key is required.
 
