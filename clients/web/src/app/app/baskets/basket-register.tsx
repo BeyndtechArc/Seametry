@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { LotMark } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
 import type { AllocationIndex, BasketFilter } from "@/lib/allocation/indexes";
 import type { OfferedLot } from "@/lib/allocation/offer";
@@ -22,11 +23,21 @@ const filters: { key: FilterKey; label: string }[] = [
   { key: "private-markets", label: "Private / pre-IPO" },
 ];
 
+function accessLabel(basket: AllocationIndex) {
+  if (basket.researchOnly) return "Mixed access";
+  const backpack = basket.filters.includes("backpack");
+  const xstocks = basket.filters.includes("xstocks");
+  if (backpack && xstocks) return "Backpack + xStocks";
+  if (backpack) return "Backpack";
+  if (xstocks) return "xStocks";
+  return "Mixed issuers";
+}
+
 export function BasketRegister({ baskets, offered }: { baskets: readonly AllocationIndex[]; offered: OfferedLot[] }) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [query, setQuery] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const admittedSymbols = useMemo(() => new Set(offered.map((lot) => lot.symbol)), [offered]);
+  const bySymbol = useMemo(() => new Map(offered.map((lot) => [lot.symbol, lot])), [offered]);
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -42,7 +53,7 @@ export function BasketRegister({ baskets, offered }: { baskets: readonly Allocat
       <header className={styles.registerHead}>
         <div>
           <h2 id="basket-register-title">Published baskets</h2>
-          <p>One theme, several instruments. Examine a basket before you buy.</p>
+          <p>Curated themes built from tokenized instruments. Open a row for the full composition, evidence and purchase flow.</p>
         </div>
         <div className={styles.registerTools}>
           <label className={styles.search}>
@@ -100,19 +111,42 @@ export function BasketRegister({ baskets, offered }: { baskets: readonly Allocat
       ) : (
         <ol className={styles.basketRows} aria-label="Published basket register">
           {visible.map((basket) => {
-            const covered = basket.members.filter((member) => admittedSymbols.has(member.symbol)).length;
-            const available = !basket.researchOnly && covered === basket.members.length;
-            const state = basket.researchOnly ? "Research" : available ? "Available" : "Admission pending";
+            const admitted = basket.members.map((member) => bySymbol.get(member.symbol)).filter((lot): lot is OfferedLot => Boolean(lot));
+            const available = !basket.researchOnly && admitted.length === basket.members.length;
+            const state = basket.researchOnly ? "Research" : available ? "Available" : admitted.length + "/" + basket.members.length + " admitted";
+
             return (
               <li key={basket.id} data-state={available ? "available" : "research"}>
                 <Link className={styles.basketRow} href={"/app/baskets/" + encodeURIComponent(basket.id)} aria-label={basket.name}>
-                  <span className={styles.basketAvatar}><BasketEmblem basketId={basket.id} /></span>
-                  <span className={styles.basketRowIdentity}>
-                    <b>{basket.name}</b>
-                    <small>{basket.category}</small>
+                  <span className={styles.basketIdentity}>
+                    <span className={styles.basketAvatar}><BasketEmblem basketId={basket.id} /></span>
+                    <span className={styles.basketIdentityText}>
+                      <b>{basket.name}</b>
+                      <small>{basket.category}</small>
+                      <span>{basket.description}</span>
+                    </span>
                   </span>
-                  <span className={styles.basketRowMembers}>{basket.members.length} constituents</span>
-                  <span className={styles.basketRowStatus}>{state}</span>
+
+                  <span className={styles.basketComposition}>
+                    <span className={styles.basketLotStack} aria-hidden="true">
+                      {basket.members.slice(0, 6).map((member) => {
+                        const lot = bySymbol.get(member.symbol);
+                        return <LotMark key={member.symbol} symbol={member.symbol} src={lot?.logo} />;
+                      })}
+                    </span>
+                    <small>{basket.members.length} constituents</small>
+                  </span>
+
+                  <span className={styles.basketAccess}>
+                    <small>Access</small>
+                    <b>{accessLabel(basket)}</b>
+                  </span>
+
+                  <span className={styles.basketState}>
+                    <small>Status</small>
+                    <b>{state}</b>
+                  </span>
+
                   <span className={styles.basketRowArrow} aria-hidden="true"><Icon name="next" /></span>
                 </Link>
               </li>
