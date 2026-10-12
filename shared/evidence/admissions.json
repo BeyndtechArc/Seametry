@@ -134,6 +134,140 @@
       "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "ARMbSB1MBRQrY6PNMao1HdQ431VafC6JRJCsGZ2Yv3iJ",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "ARM",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "BLOCK",
+        "input_digest": "400f057e0c5e6de6dea9354a77f6e35482c6d588fe386c2236506b3adc2fa723",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "EXECUTION_IMPACT_ABOVE_CEILING",
+            "fact": "The aggregator states 266 basis points of price impact for buying 1000 USDC, above the 100 basis point ceiling.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 0,
+      "capacity_decision": {
+        "decision": "BLOCK",
+        "input_digest": "9911c756e93e9b0915892755c49505e3a2fa672a5b3d17ba833ab74fc7d0318d",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "fact": "Buying 10000 USDC realises a rate 616 basis points worse than buying 100 USDC, above the 100 basis point ceiling.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
           "captured_at": "2026-10-07T13:01:32Z",
           "slot": "454230392"
         },
@@ -217,6 +351,874 @@
       "capacity_decision": {
         "decision": "WARN",
         "input_digest": "741b5eca31e404e98497ccee42c52f729344915f44b759697474d96dfddb85fc",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "BLKKYfF41c6xRPrtX1rdYbxLE1xxEdZUnxQsB5hcZ8Nf",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "BLK",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "27e02c25aceb21c3276db584d8a1fcd831a9de9a6bf7f551774f28106df49c23",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 1000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "27e02c25aceb21c3276db584d8a1fcd831a9de9a6bf7f551774f28106df49c23",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "CRWVJeR2yEZuDUKYfGuKCHvLz8ywn4LGvovHfy5WiFmi",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "CRWV",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "b3f263cb0254a3119a81451e4827b0c3f37f23db70db738d5f0a4528307223f9",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 1000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "b3f263cb0254a3119a81451e4827b0c3f37f23db70db738d5f0a4528307223f9",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "CzLTZppPdZtTjyq3WGpHLstoc3GLhu7zH5Zg6xUa6Gv5",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "COPX",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "8ecd59a868e0500100a7268eb39f84b3fd69f3a8f2dc53c8a15a14a7e9c50482",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 1000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "8ecd59a868e0500100a7268eb39f84b3fd69f3a8f2dc53c8a15a14a7e9c50482",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "EWY4owSJYMpwN33qGDu5gGxpkQkpMJu8ZUsQJaNZG5dv",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "EWY",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "83162269b1931b65b825fa94cd9d485ff30a66c48e30488193aa01b314e4a650",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 1000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "83162269b1931b65b825fa94cd9d485ff30a66c48e30488193aa01b314e4a650",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "EWZzCki1igp2y73UyUM4RCG4QUVMQAtnrQUVNaDHzDxJ",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "EWZ",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "e3a0179bb30eafd97349f6e425e4fb30eb086a79f72f20c9e0a2d99cf73ce18d",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 1000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "e3a0179bb30eafd97349f6e425e4fb30eb086a79f72f20c9e0a2d99cf73ce18d",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "FWDtiB5fXHdVAewPqvHPL2dh4aBC1C6GacQbePoQXKjz",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "FWDI",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "03245b6ba6ae865fb035b2fa48ead2a0ca7b020152669c109fa232d97854e14d",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 1000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "03245b6ba6ae865fb035b2fa48ead2a0ca7b020152669c109fa232d97854e14d",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "HooDYv5RewLRiMLnEVq3VJqdqxhuE6c5eYvqejMC3e9A",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "HOOD",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "7a237767d933b6e5c06d6705a99ef4f7ceb5ce821d3701f3427f888754d4d81e",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 1000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "7a237767d933b6e5c06d6705a99ef4f7ceb5ce821d3701f3427f888754d4d81e",
         "policy_version": "policy-2026.10.1",
         "reasons": [
           {
@@ -382,6 +1384,130 @@
       "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
       "instrument": {
         "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "MSTRdWXMeZxdE8osAQy3fA4rvTY5rgummDSMEx6U7Nz",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "MSTR",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "1645ab47b52a91c725623f182e4b17bda63207e16b04e97a28b87381eab4b9fe",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 10000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "e0af28fe81f4b732a08b0069708d9a09a9aba28f75e0f364e0df40e844a1a6e0",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
           "captured_at": "2026-10-07T13:01:32Z",
           "slot": "454230392"
         },
@@ -465,6 +1591,130 @@
       "capacity_decision": {
         "decision": "WARN",
         "input_digest": "d4b94507ea9dfbef4d8b3edbff28fbe3f07040ebbc7894e35657e745f22d698c",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "NBiSF3UaVUFtRzHwAfxyHsBCAZWGEKnMpewAE4oh7BG",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "NBIS",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "e049e50165f76f51688f5f9a376d03dab582a5474bca915445f0e9b6f3b94a2d",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 1000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "e049e50165f76f51688f5f9a376d03dab582a5474bca915445f0e9b6f3b94a2d",
         "policy_version": "policy-2026.10.1",
         "reasons": [
           {
@@ -591,6 +1841,264 @@
         "input_digest": "82f1edd0203fff937a8233d7b2b00031238ad28eb986ded8e05e0727a2cf7152",
         "policy_version": "policy-2026.10.1",
         "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "PUSAG1stksTcAoK9MjinEHUwAYRJsbovywYCk37m6hy",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "PUSA",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "WARN",
+        "input_digest": "79950cf2bb2e2ea1fb728b5b2c2e48367e76f6ad4e80ed36be73e0417875eb3e",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 1000,
+      "capacity_decision": {
+        "decision": "WARN",
+        "input_digest": "79950cf2bb2e2ea1fb728b5b2c2e48367e76f6ad4e80ed36be73e0417875eb3e",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "Backpack Securities",
+      "decimals": 6,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "entitlement",
+        "mint": "RENzhrJQgmAnfcLhU1U5XwAMc6TC15UA6jCbPBaasnj",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "IREN",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "BLOCK",
+        "input_digest": "9b01d2c78b305308d3014adb3da5b1853db910c07d9c92d3ccb50e2431ffdc72",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "EXECUTION_IMPACT_ABOVE_CEILING",
+            "fact": "The aggregator states 185 basis points of price impact for buying 1000 USDC, above the 100 basis point ceiling.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 0,
+      "capacity_decision": {
+        "decision": "BLOCK",
+        "input_digest": "9123df519c42702f6c6608686680c7d5343ac97404ecdffb2774344b73e307e8",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "fact": "Buying 10000 USDC realises a rate 254 basis points worse than buying 100 USDC, above the 100 basis point ceiling.",
+            "severity": "BLOCK"
+          },
           {
             "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
             "fact": "The issuer can change how many of these you appear to hold.",
@@ -1087,6 +2595,140 @@
         "input_digest": "c331e2b657000496d59bf1be9cf3cd296a44b5a77d1d9ef71e45bae2d35fb269",
         "policy_version": "policy-2026.10.1",
         "reasons": [
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      }
+    },
+    {
+      "issuer": "xStocks",
+      "decimals": 8,
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "instrument": {
+        "capture": {
+          "captured_at": "2026-10-12T06:47:06Z",
+          "slot": "455952955"
+        },
+        "grade": "certificate",
+        "mint": "Xs7UsqobM3EJgMeHwdAbmDBCZH1G5WTCjatpeYcCr8x",
+        "multiplier": {
+          "activation_pending": false,
+          "effective_at": "1970-01-01T00:00:00Z",
+          "naive_is_stale": false,
+          "naive_value": {
+            "atoms": "1",
+            "scale": 0
+          },
+          "source": "new_multiplier",
+          "value": {
+            "atoms": "1",
+            "scale": 0
+          }
+        },
+        "prerogatives": [
+          {
+            "sentence": "The issuer can freeze this where it sits."
+          },
+          {
+            "sentence": "The issuer can pause all movement of this."
+          },
+          {
+            "sentence": "The issuer can take this back from any wallet."
+          },
+          {
+            "sentence": "The issuer can switch on a check of who may receive this."
+          },
+          {
+            "sentence": "The issuer can change how many of these you appear to hold."
+          },
+          {
+            "sentence": "The issuer can create more of these."
+          }
+        ],
+        "symbol": "VCXx",
+        "unknown_extensions": []
+      },
+      "decision": {
+        "decision": "BLOCK",
+        "input_digest": "b119a7daa864fced5d47f1eade81dc998e2c5f93132eca4b915e2fc3b9cb4f2c",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "fact": "Buying 1000 USDC realises a rate 8995 basis points worse than buying 100 USDC, above the 100 basis point ceiling.",
+            "severity": "BLOCK"
+          },
+          {
+            "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
+            "fact": "The issuer can change how many of these you appear to hold.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_FREEZE",
+            "fact": "The issuer can freeze this where it sits.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_MINT_MORE",
+            "fact": "The issuer can create more of these.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_PAUSE",
+            "fact": "The issuer can pause all movement of this.",
+            "severity": "WARN"
+          },
+          {
+            "code": "ISSUER_CAN_SEIZE",
+            "fact": "The issuer can take this back from any wallet.",
+            "severity": "WARN"
+          },
+          {
+            "code": "TRANSFER_HOOK_CAN_BE_ENABLED",
+            "fact": "The issuer can switch on a check of who may receive this.",
+            "severity": "WARN"
+          }
+        ]
+      },
+      "capacity_usdc": 0,
+      "capacity_decision": {
+        "decision": "BLOCK",
+        "input_digest": "f5233be1c37816515ba9dc0605d9f640ed5d200719902978d283e91e15bb93a9",
+        "policy_version": "policy-2026.10.1",
+        "reasons": [
+          {
+            "code": "DEPTH_ABOVE_CEILING",
+            "fact": "Buying 10000 USDC realises a rate 9900 basis points worse than buying 100 USDC, above the 100 basis point ceiling.",
+            "severity": "BLOCK"
+          },
           {
             "code": "ISSUER_CAN_CHANGE_APPARENT_QUANTITY",
             "fact": "The issuer can change how many of these you appear to hold.",

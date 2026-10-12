@@ -1,0 +1,9 @@
+{
+  "symbol": "COPX",
+  "mint": "CzLTZppPdZtTjyq3WGpHLstoc3GLhu7zH5Zg6xUa6Gv5",
+  "size_usdc": 1000,
+  "captured_at": "2026-10-12T06:47:49Z",
+  "status": 200,
+  "sha256": "3d711f293e902b2da4baa382a147bb7251b3dc41cfb36400ccb6436ca9d2e123",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"1000000000\",\"outputMint\":\"CzLTZppPdZtTjyq3WGpHLstoc3GLhu7zH5Zg6xUa6Gv5\",\"outAmount\":\"11582201\",\"otherAmountThreshold\":\"11524290\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0055160879073545009458536733\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"51AhFzj1wHv8Em7dNpfarA1fKP9u4iBY5YNkFS1r2kRK\",\"label\":\"Meteora DLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"CzLTZppPdZtTjyq3WGpHLstoc3GLhu7zH5Zg6xUa6Gv5\",\"inAmount\":\"1000000000\",\"outAmount\":\"11582201\",\"updateContextSlot\":\"455953113\"},\"percent\":100,\"bps\":null}],\"contextSlot\":455953177,\"timeTaken\":0.004495768,\"swapUsdValue\":\"999.728708448668000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"5vJcDWLBQSh767DzHACeEmfMh7nGCWZc8eb76v6cCFVr\":\"11546455\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"1000971914\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"HhcfXbZ2rukoKx8oAH8rfkmzXbwvfdh6MMLZjneg4rWk\"]}"
+}

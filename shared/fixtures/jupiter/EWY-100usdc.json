@@ -1,0 +1,9 @@
+{
+  "symbol": "EWY",
+  "mint": "EWY4owSJYMpwN33qGDu5gGxpkQkpMJu8ZUsQJaNZG5dv",
+  "size_usdc": 100,
+  "captured_at": "2026-10-12T06:47:34Z",
+  "status": 200,
+  "sha256": "5695e99ba5ddcaec8cb51967bae7dfb993d50bd5255e0783fea5307d7b6ff4ad",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"EWY4owSJYMpwN33qGDu5gGxpkQkpMJu8ZUsQJaNZG5dv\",\"outAmount\":\"565976\",\"otherAmountThreshold\":\"563147\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0044514991751627023199158753\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"C2AFToqwbmHEvCPXhjyUTS2q2VWmXyHeUBwqje5LLQLt\",\"label\":\"Obsidian\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"So11111111111111111111111111111111111111112\",\"inAmount\":\"100000000\",\"outAmount\":\"890218709\",\"updateContextSlot\":\"455953109\"},\"percent\":100,\"bps\":null},{\"swapInfo\":{\"ammKey\":\"AA4tPBFzd83Zomac5YRqNPA4T2WKbWXBubDrQB6DjDD4\",\"label\":\"Meteora DLMM\",\"inputMint\":\"So11111111111111111111111111111111111111112\",\"outputMint\":\"EWY4owSJYMpwN33qGDu5gGxpkQkpMJu8ZUsQJaNZG5dv\",\"inAmount\":\"890218709\",\"outAmount\":\"565976\",\"updateContextSlot\":\"455944753\"},\"percent\":100,\"bps\":null}],\"contextSlot\":455953109,\"timeTaken\":0.003121514,\"swapUsdValue\":\"99.972870844866800\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"100097206\",\"4BwF3wSPgv9gRn6AAYNQj91zkSy5Q3UkaNthZTVR9Vtt\":\"491700\",\"Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE\":\"889633856\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"4RQUffJw21gc53u6Somr9ZXSmPzTYY81dLC7E3BWu4hJ\"]}"
+}

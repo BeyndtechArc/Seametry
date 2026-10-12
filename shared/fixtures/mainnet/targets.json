@@ -196,5 +196,83 @@
     "mint": "BEBVfXZ8uCxRBuunEbW9wcq9r7W9ySNo14oJBJkDgpZx",
     "issuer": "Backpack Securities",
     "note": "Backpack's twin of BEx, compared on depth at size."
+  },
+  {
+    "symbol": "MSTR",
+    "mint": "MSTRdWXMeZxdE8osAQy3fA4rvTY5rgummDSMEx6U7Nz",
+    "issuer": "Backpack Securities",
+    "note": "Digital Capital constituent. Published in a basket before any assay; captured so the policy engine decides it."
+  },
+  {
+    "symbol": "FWDI",
+    "mint": "FWDtiB5fXHdVAewPqvHPL2dh4aBC1C6GacQbePoQXKjz",
+    "issuer": "Backpack Securities",
+    "note": "Digital Capital constituent. Published in a basket before any assay; captured so the policy engine decides it."
+  },
+  {
+    "symbol": "HOOD",
+    "mint": "HooDYv5RewLRiMLnEVq3VJqdqxhuE6c5eYvqejMC3e9A",
+    "issuer": "Backpack Securities",
+    "note": "Digital Capital constituent. Published in a basket before any assay; captured so the policy engine decides it."
+  },
+  {
+    "symbol": "BLK",
+    "mint": "BLKKYfF41c6xRPrtX1rdYbxLE1xxEdZUnxQsB5hcZ8Nf",
+    "issuer": "Backpack Securities",
+    "note": "Digital Capital constituent. Published in a basket before any assay; captured so the policy engine decides it."
+  },
+  {
+    "symbol": "EWY",
+    "mint": "EWY4owSJYMpwN33qGDu5gGxpkQkpMJu8ZUsQJaNZG5dv",
+    "issuer": "Backpack Securities",
+    "note": "Global Rotation constituent, a tokenized ETF. Captured so the policy engine decides it before the basket is offered."
+  },
+  {
+    "symbol": "EWZ",
+    "mint": "EWZzCki1igp2y73UyUM4RCG4QUVMQAtnrQUVNaDHzDxJ",
+    "issuer": "Backpack Securities",
+    "note": "Global Rotation constituent, a tokenized ETF. Captured so the policy engine decides it before the basket is offered."
+  },
+  {
+    "symbol": "COPX",
+    "mint": "CzLTZppPdZtTjyq3WGpHLstoc3GLhu7zH5Zg6xUa6Gv5",
+    "issuer": "Backpack Securities",
+    "note": "Global Rotation constituent, a tokenized ETF. Its mint has no vanity prefix, so the mint, not the ticker, is what binds it."
+  },
+  {
+    "symbol": "NBIS",
+    "mint": "NBiSF3UaVUFtRzHwAfxyHsBCAZWGEKnMpewAE4oh7BG",
+    "issuer": "Backpack Securities",
+    "note": "AI Cloud constituent. Captured so the policy engine decides it before the basket is offered."
+  },
+  {
+    "symbol": "CRWV",
+    "mint": "CRWVJeR2yEZuDUKYfGuKCHvLz8ywn4LGvovHfy5WiFmi",
+    "issuer": "Backpack Securities",
+    "note": "AI Cloud constituent. Captured so the policy engine decides it before the basket is offered."
+  },
+  {
+    "symbol": "IREN",
+    "mint": "RENzhrJQgmAnfcLhU1U5XwAMc6TC15UA6jCbPBaasnj",
+    "issuer": "Backpack Securities",
+    "note": "AI Cloud constituent. Captured so the policy engine decides it before the basket is offered."
+  },
+  {
+    "symbol": "ARM",
+    "mint": "ARMbSB1MBRQrY6PNMao1HdQ431VafC6JRJCsGZ2Yv3iJ",
+    "issuer": "Backpack Securities",
+    "note": "AI Cloud constituent. Captured so the policy engine decides it before the basket is offered."
+  },
+  {
+    "symbol": "PUSA",
+    "mint": "PUSAG1stksTcAoK9MjinEHUwAYRJsbovywYCk37m6hy",
+    "issuer": "Backpack Securities",
+    "note": "Defense and Autonomy constituent. Captured so the policy engine decides it before the basket is offered."
+  },
+  {
+    "symbol": "VCXx",
+    "mint": "Xs7UsqobM3EJgMeHwdAbmDBCZH1G5WTCjatpeYcCr8x",
+    "issuer": "xStocks",
+    "note": "Private Frontier research constituent. Assayed so the research basket names a decision, not an absence."
   }
 ]

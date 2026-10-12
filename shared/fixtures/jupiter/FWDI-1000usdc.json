@@ -1,0 +1,9 @@
+{
+  "symbol": "FWDI",
+  "mint": "FWDtiB5fXHdVAewPqvHPL2dh4aBC1C6GacQbePoQXKjz",
+  "size_usdc": 1000,
+  "captured_at": "2026-10-12T06:47:16Z",
+  "status": 200,
+  "sha256": "004d6013e43d44817d8e69e2c1cbbb7e265efc62b4a095ddffc0bc8a8272d65c",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"1000000000\",\"outputMint\":\"FWDtiB5fXHdVAewPqvHPL2dh4aBC1C6GacQbePoQXKjz\",\"outAmount\":\"132320011\",\"otherAmountThreshold\":\"131658411\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.0046665793700978495353630858\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"AzYwttRBkfp3R5tpUHMgcFPWEM8VQJ5WGQP1XoK22s2A\",\"label\":\"Raydium CLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"FWDtiB5fXHdVAewPqvHPL2dh4aBC1C6GacQbePoQXKjz\",\"inAmount\":\"1000000000\",\"outAmount\":\"132320011\",\"updateContextSlot\":\"455952828\"},\"percent\":100,\"bps\":null}],\"contextSlot\":455953032,\"timeTaken\":0.003527084,\"swapUsdValue\":\"999.728708448668000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"1000971906\",\"AzYwttRBkfp3R5tpUHMgcFPWEM8VQJ5WGQP1XoK22s2A\":\"132320011\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"EioN9wGsc9U39XnzFesnd7keSywBcPoJc49NhMpivot\"]}"
+}

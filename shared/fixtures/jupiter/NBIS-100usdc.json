@@ -1,0 +1,9 @@
+{
+  "symbol": "NBIS",
+  "mint": "NBiSF3UaVUFtRzHwAfxyHsBCAZWGEKnMpewAE4oh7BG",
+  "size_usdc": 100,
+  "captured_at": "2026-10-12T06:47:54Z",
+  "status": 200,
+  "sha256": "a01e0a99c21a48a5f201ed98f7755d9ed06c3421b8c00ecd0e9539370fefe6fc",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"100000000\",\"outputMint\":\"NBiSF3UaVUFtRzHwAfxyHsBCAZWGEKnMpewAE4oh7BG\",\"outAmount\":\"448238\",\"otherAmountThreshold\":\"445997\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"FE8jVZHEytGkEv2wmFS8faFWnGXqJLUbrw1qJMrk7RTv\",\"label\":\"Raydium CLMM\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"NBiSF3UaVUFtRzHwAfxyHsBCAZWGEKnMpewAE4oh7BG\",\"inAmount\":\"100000000\",\"outAmount\":\"448238\",\"updateContextSlot\":\"455953196\"},\"percent\":100,\"bps\":null}],\"contextSlot\":455953203,\"timeTaken\":0.002938003,\"swapUsdValue\":\"99.972870844866800\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"100097206\",\"FE8jVZHEytGkEv2wmFS8faFWnGXqJLUbrw1qJMrk7RTv\":\"448238\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0,\"additionalIntermediateTokens\":[\"EioN9wGsc9U39XnzFesnd7keSywBcPoJc49NhMpivot\"]}"
+}

@@ -1,0 +1,9 @@
+{
+  "symbol": "VCXx",
+  "mint": "Xs7UsqobM3EJgMeHwdAbmDBCZH1G5WTCjatpeYcCr8x",
+  "size_usdc": 10000,
+  "captured_at": "2026-10-12T06:48:27Z",
+  "status": 200,
+  "sha256": "e48bbcfa983fab3054796e356a7b4692ecf7b8fe7df3bc9b0f4496afe3cc4c03",
+  "body": "{\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"inAmount\":\"10000000000\",\"outputMint\":\"Xs7UsqobM3EJgMeHwdAbmDBCZH1G5WTCjatpeYcCr8x\",\"outAmount\":\"174947\",\"otherAmountThreshold\":\"174073\",\"swapMode\":\"ExactIn\",\"slippageBps\":50,\"platformFee\":null,\"priceImpactPct\":\"0.9999947526545100097038458453\",\"routePlan\":[{\"swapInfo\":{\"ammKey\":\"DNCeWkdRnZ948sptd77JUhWL6ARW6EiYCQbq33Gag9C6\",\"label\":\"FluxBeam\",\"inputMint\":\"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\",\"outputMint\":\"Xs7UsqobM3EJgMeHwdAbmDBCZH1G5WTCjatpeYcCr8x\",\"inAmount\":\"10000000000\",\"outAmount\":\"174947\",\"updateContextSlot\":\"455953237\"},\"percent\":100,\"bps\":null}],\"contextSlot\":455953354,\"timeTaken\":0.000067761,\"swapUsdValue\":\"9997.08959055120000\",\"mostReliableAmmsQuoteReport\":{\"info\":{\"DNCeWkdRnZ948sptd77JUhWL6ARW6EiYCQbq33Gag9C6\":\"174947\",\"BZtgQEyS6eXUXicYPHecYQ7PybqodXQMvkjUbP4R8mUU\":\"Not used RG: FullLiquidIntermediate, contains ALT: true\"}},\"longtailMarketQuoteReport\":null,\"useIncurredSlippageForQuoting\":null,\"useRewards\":null,\"otherRoutePlans\":null,\"loadedLongtailToken\":false,\"instructionVersion\":null,\"transactionVersion\":0}"
+}

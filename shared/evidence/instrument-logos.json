@@ -1,6 +1,6 @@
 {
   "producer": "go run ./server/cmd/capture -logos",
-  "captured_at": "2026-10-07T15:32:15Z",
+  "captured_at": "2026-10-12T06:48:57Z",
   "logos": [
     {
       "symbol": "AAPLx",
@@ -47,6 +47,17 @@
       "path": "/instruments/Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg.png"
     },
     {
+      "symbol": "ARM",
+      "mint": "ARMbSB1MBRQrY6PNMao1HdQ431VafC6JRJCsGZ2Yv3iJ",
+      "state": "captured",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/arm.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/ARM",
+      "content_type": "image/svg+xml",
+      "bytes": 688,
+      "sha256": "53f9575078f77a17ccb1d5f19c79e0bb4aa83a02183bb9540e34fd4255a3d5e3",
+      "path": "/instruments/ARMbSB1MBRQrY6PNMao1HdQ431VafC6JRJCsGZ2Yv3iJ.svg"
+    },
+    {
       "symbol": "AVGOx",
       "mint": "XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo",
       "state": "captured",
@@ -80,6 +91,17 @@
       "path": "/instruments/XsmGSEqT6VXpVis3aVBDxaNwPgHNXbkjkVUCncsLkNB.png"
     },
     {
+      "symbol": "BLK",
+      "mint": "BLKKYfF41c6xRPrtX1rdYbxLE1xxEdZUnxQsB5hcZ8Nf",
+      "state": "captured",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/blk.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/BLK",
+      "content_type": "image/svg+xml",
+      "bytes": 903,
+      "sha256": "c9b2dfc147fcd4c991771a0903913e033521451a9be88e72eae9cdae839ab535",
+      "path": "/instruments/BLKKYfF41c6xRPrtX1rdYbxLE1xxEdZUnxQsB5hcZ8Nf.svg"
+    },
+    {
       "symbol": "CATx",
       "mint": "XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6",
       "state": "captured",
@@ -89,6 +111,17 @@
       "bytes": 16652,
       "sha256": "051bd013e6e305eedc0e51bbad2283d3923037bda9fd04b89bf5624979f27ec8",
       "path": "/instruments/XsRvd1meWQ9kW1SrZPa1jokQqmBoPWWjd6wGTgdp5E6.png"
+    },
+    {
+      "symbol": "COPX",
+      "mint": "CzLTZppPdZtTjyq3WGpHLstoc3GLhu7zH5Zg6xUa6Gv5",
+      "state": "captured",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/copx.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/COPX",
+      "content_type": "image/svg+xml",
+      "bytes": 410,
+      "sha256": "267e1200300b3ef92ba724eb83e54434d8e952bf06b64b1aedd9e987ba4e48ac",
+      "path": "/instruments/CzLTZppPdZtTjyq3WGpHLstoc3GLhu7zH5Zg6xUa6Gv5.svg"
     },
     {
       "symbol": "CRDAx",
@@ -102,6 +135,17 @@
       "path": "/instruments/XshoX6qy11Q4HHcaJKU6h7JVmVqXiAXPLACiGLqLTxZ.png"
     },
     {
+      "symbol": "CRWV",
+      "mint": "CRWVJeR2yEZuDUKYfGuKCHvLz8ywn4LGvovHfy5WiFmi",
+      "state": "captured",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/crwv.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/CRWV",
+      "content_type": "image/svg+xml",
+      "bytes": 836,
+      "sha256": "4fa3007837106b699173fe3b2047ba654cbaa20339e4a59995a476154c7d0e2f",
+      "path": "/instruments/CRWVJeR2yEZuDUKYfGuKCHvLz8ywn4LGvovHfy5WiFmi.svg"
+    },
+    {
       "symbol": "DELLx",
       "mint": "Xsu7Tc5J2fVUE4H5vYAiSr34cvLJeCsYPMjAYnayQn6",
       "state": "captured",
@@ -111,6 +155,39 @@
       "bytes": 16024,
       "sha256": "95adcc037abadc475ca053f3f030bc6e9ea6b8818fc49bc87d655a78c2520396",
       "path": "/instruments/Xsu7Tc5J2fVUE4H5vYAiSr34cvLJeCsYPMjAYnayQn6.png"
+    },
+    {
+      "symbol": "EWY",
+      "mint": "EWY4owSJYMpwN33qGDu5gGxpkQkpMJu8ZUsQJaNZG5dv",
+      "state": "captured",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/ewy.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/EWY",
+      "content_type": "image/svg+xml",
+      "bytes": 191,
+      "sha256": "16566dce77dc1e152956d88a681dcdf3c71ba060d2463766b06c052914a3632c",
+      "path": "/instruments/EWY4owSJYMpwN33qGDu5gGxpkQkpMJu8ZUsQJaNZG5dv.svg"
+    },
+    {
+      "symbol": "EWZ",
+      "mint": "EWZzCki1igp2y73UyUM4RCG4QUVMQAtnrQUVNaDHzDxJ",
+      "state": "captured",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/ewz.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/EWZ",
+      "content_type": "image/svg+xml",
+      "bytes": 191,
+      "sha256": "16566dce77dc1e152956d88a681dcdf3c71ba060d2463766b06c052914a3632c",
+      "path": "/instruments/EWZzCki1igp2y73UyUM4RCG4QUVMQAtnrQUVNaDHzDxJ.svg"
+    },
+    {
+      "symbol": "FWDI",
+      "mint": "FWDtiB5fXHdVAewPqvHPL2dh4aBC1C6GacQbePoQXKjz",
+      "state": "captured",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/fwdi.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/FWDI",
+      "content_type": "image/svg+xml",
+      "bytes": 850,
+      "sha256": "c215c322ae8c267e6cc8065eaca109a13aae9aef4f93498d3155cc4d32990e4d",
+      "path": "/instruments/FWDtiB5fXHdVAewPqvHPL2dh4aBC1C6GacQbePoQXKjz.svg"
     },
     {
       "symbol": "GOOGLx",
@@ -124,10 +201,21 @@
       "path": "/instruments/XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN.png"
     },
     {
+      "symbol": "HOOD",
+      "mint": "HooDYv5RewLRiMLnEVq3VJqdqxhuE6c5eYvqejMC3e9A",
+      "state": "captured",
+      "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/hood.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/HOOD",
+      "content_type": "image/svg+xml",
+      "bytes": 886,
+      "sha256": "af873d765ae8902101327ac1659b77ef176b1e63055f8d3e0e39bbf936d650c1",
+      "path": "/instruments/HooDYv5RewLRiMLnEVq3VJqdqxhuE6c5eYvqejMC3e9A.svg"
+    },
+    {
       "symbol": "INTC",
       "mint": "iNTCy1qTsUEZQe3DSocLz1ZXXai34Gdw8THQh5rxFaF",
       "state": "unsupported",
-      "reason": "the SVG's \u003csvg\u003e carries the attribute xmlns:x, which the mirror does not keep",
+      "reason": "the SVG's \u003csvg\u003e carries the attribute xmlns:i, which the mirror does not keep",
       "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/intc.us.json",
       "image_uri": "https://backpack.exchange/api/stock-logo/INTC"
     },
@@ -141,6 +229,17 @@
       "bytes": 14292,
       "sha256": "9d2a44123644f9dc5380fa51b2db887fbf9a0e16ec395ae29c088a85f64ee44f",
       "path": "/instruments/XshPgPdXFRWB8tP1j82rebb2Q9rPgGX37RuqzohmArM.png"
+    },
+    {
+      "symbol": "IREN",
+      "mint": "RENzhrJQgmAnfcLhU1U5XwAMc6TC15UA6jCbPBaasnj",
+      "state": "captured",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/iren.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/IREN",
+      "content_type": "image/svg+xml",
+      "bytes": 1124,
+      "sha256": "0bef3d9c093e15a9a6a865bdfc17563aaaab10174a5ae1db28fc2fd81d68e232",
+      "path": "/instruments/RENzhrJQgmAnfcLhU1U5XwAMc6TC15UA6jCbPBaasnj.svg"
     },
     {
       "symbol": "METAx",
@@ -187,6 +286,17 @@
       "path": "/instruments/XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX.png"
     },
     {
+      "symbol": "MSTR",
+      "mint": "MSTRdWXMeZxdE8osAQy3fA4rvTY5rgummDSMEx6U7Nz",
+      "state": "captured",
+      "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/mstr.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/MSTR",
+      "content_type": "image/svg+xml",
+      "bytes": 8956,
+      "sha256": "233ca2ed268d1b87732d9970908375832dabaa6cb1d43794b55e977bad0c38c9",
+      "path": "/instruments/MSTRdWXMeZxdE8osAQy3fA4rvTY5rgummDSMEx6U7Nz.svg"
+    },
+    {
       "symbol": "MU",
       "mint": "MUxEsUKSMACyw5fZf68wxf5FLnZVhtU9CwH8uNNGay1",
       "state": "captured",
@@ -207,6 +317,17 @@
       "bytes": 24291,
       "sha256": "580adef0a2b7c9623e545933b1a20c4c3a15ce8c6dca8b5694fb17979beecc32",
       "path": "/instruments/XsQLZycSZ7QnBBdBXQaTbQdiUcbRqjNJgyBGAMzhHav.png"
+    },
+    {
+      "symbol": "NBIS",
+      "mint": "NBiSF3UaVUFtRzHwAfxyHsBCAZWGEKnMpewAE4oh7BG",
+      "state": "captured",
+      "metadata_uri": "https://trek-labs.github.io/heart-metadata/stocks/nbis.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/NBIS",
+      "content_type": "image/svg+xml",
+      "bytes": 407,
+      "sha256": "94a387f10444e5bfd4114b5b740ac6af39b2300d9ec25db057c97764bd8b10d3",
+      "path": "/instruments/NBiSF3UaVUFtRzHwAfxyHsBCAZWGEKnMpewAE4oh7BG.svg"
     },
     {
       "symbol": "NFLX",
@@ -273,6 +394,17 @@
       "bytes": 20139,
       "sha256": "edada1087693ec0de61c5386c0a166617b8b140658d6532326133a563441fd6e",
       "path": "/instruments/XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4.png"
+    },
+    {
+      "symbol": "PUSA",
+      "mint": "PUSAG1stksTcAoK9MjinEHUwAYRJsbovywYCk37m6hy",
+      "state": "captured",
+      "metadata_uri": "https://metadata.backpack.exchange/stocks/pusa.us.json",
+      "image_uri": "https://backpack.exchange/api/stock-logo/PUSA",
+      "content_type": "image/png",
+      "bytes": 78561,
+      "sha256": "19520f3d44503f0ba85bb1e5fcfd362fc2386b06ac92b3f2de3b6eb6db7f8f6a",
+      "path": "/instruments/PUSAG1stksTcAoK9MjinEHUwAYRJsbovywYCk37m6hy.png"
     },
     {
       "symbol": "SNDK",
@@ -361,6 +493,17 @@
       "bytes": 18034,
       "sha256": "1425b20cb8df64e7c02f8ab6b36ba6253aeed7538228f051af06eb822b1390d0",
       "path": "/instruments/XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV.png"
+    },
+    {
+      "symbol": "VCXx",
+      "mint": "Xs7UsqobM3EJgMeHwdAbmDBCZH1G5WTCjatpeYcCr8x",
+      "state": "captured",
+      "metadata_uri": "https://xstocks-metadata.backed.fi/tokens/Solana/VCXx/metadata.json",
+      "image_uri": "https://xstocks-metadata.backed.fi/logos/tokens/VCXx.png",
+      "content_type": "image/png",
+      "bytes": 10106,
+      "sha256": "4c8925a45f4c2f76239324732e102da21e128643891b15bcb65d9f5301d287ed",
+      "path": "/instruments/Xs7UsqobM3EJgMeHwdAbmDBCZH1G5WTCjatpeYcCr8x.png"
     }
   ]
 }

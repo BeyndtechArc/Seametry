@@ -87,6 +87,7 @@ Only rows whose required constituent representations are all admitted may expose
 Prioritize issuer families and themes that unlock several useful Baskets per capture pass:
 
 1. Backpack: PUSA, NBIS, CRWV, IREN, CBRS, ARM, MSTR, FWDI, HOOD, BLK, EWY, EWZ.
+   Captured 12 October 2026 with COPX and VCXx (`shared/evidence/depth-2026-10-12.md`, `admissions.json`): PUSA, NBIS, CRWV, MSTR, FWDI, HOOD, BLK, EWY, EWZ and COPX admitted with WARN; ARM and IREN refused on execution impact at 10,000 USDC; VCXx refused on depth. CBRS was not captured, since no published basket holds it. AI Cloud took AVGOx and MU in place of ARM and IREN.
 2. Securitize Stocks: capture one overlapping underlying first to compare legal Grade and token controls against existing xStocks/Backpack representations.
 3. Ondo Private Markets: keep OPAIPon research-only until its note mechanics, eligibility, transfer controls and execution venues are represented in the policy model.
 4. VCXx: treat as fund exposure, not direct ownership of its private portfolio companies.
