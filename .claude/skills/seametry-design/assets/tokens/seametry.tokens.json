@@ -2,59 +2,60 @@
   "$description": "Seametry design tokens. W3C Design Tokens Community Group format. Single source of truth: never hand-edit generated tokens.css or tokens.ts.",
   "theme": {
     "dark": {
-      "$description": "The touchstone. Subdued green-black operational surfaces.",
+      "$description": "The touchstone. Olive-black operational surfaces, in the hue of the house's deck (clients/web/public/Slide-*.png, ground #171C03).",
       "surface": {
         "$type": "color",
         "ground": {
-          "$value": "#10140F",
-          "$description": "Operational green-black ground, subdued so the cool touch green remains visible."
+          "$value": "#14180A",
+          "$description": "Operational olive-black ground, a step quieter than the deck's #171C03 so feature surfaces still read above it."
         },
         "sheet": {
-          "$value": "#181D17"
+          "$value": "#1B2010"
         },
         "raised": {
-          "$value": "#20271F"
+          "$value": "#232915"
         },
         "tray": {
-          "$value": "#2B3229"
+          "$value": "#2D3420"
         },
         "inverse": {
-          "$value": "#F5F5F3"
+          "$value": "#ECEEDF"
         }
       },
       "text": {
         "$type": "color",
         "primary": {
-          "$value": "#E4E9E0",
-          "$description": "Soft chalk on green-black operational surfaces."
+          "$value": "#ECEEDF",
+          "$description": "Bone, as on the deck. 15.34:1 on ground, 11.00:1 on tray."
         },
         "secondary": {
-          "$value": "#ABB6A8",
-          "$description": "Readable supporting text across ground, sheet, raised and tray."
+          "$value": "#B4B9A2",
+          "$description": "Readable supporting text. 8.93:1 on ground, 6.41:1 on tray."
         },
         "tertiary": {
-          "$value": "#939F90",
-          "$description": "Lowest readable text step, at least 4.5:1 even on tray."
+          "$value": "#9CA289",
+          "$description": "Lowest readable text step. 6.82:1 on ground, 4.89:1 on tray."
         },
         "faint": {
-          "$value": "#5A6559",
+          "$value": "#5E644A",
           "$description": "Decorative only. Never for text a user must read."
         },
         "onTouch": {
-          "$value": "#12140F",
-          "$description": "Text on the touch fill. 6.5:1"
+          "$value": "#141803",
+          "$description": "Text on the touch fill. 7.21:1 on touch, 6.38:1 on touchPressed."
         },
         "inverse": {
-          "$value": "#10140F"
+          "$value": "#14180A",
+          "$description": "15.34:1 on surface.inverse."
         }
       },
       "line": {
         "$type": "color",
         "rule": {
-          "$value": "#30382D"
+          "$value": "#343B26"
         },
         "strong": {
-          "$value": "#495548"
+          "$value": "#4E573A"
         },
         "highlight": {
           "$value": "rgba(236,246,232,0.06)",
@@ -64,11 +65,11 @@
       "accent": {
         "$type": "color",
         "touch": {
-          "$value": "#8DA32C",
-          "$description": "Fill on keys and full-round controls only. Not for text; fails contrast as text on any surface."
+          "$value": "#98AD39",
+          "$description": "Fill on keys and full-round controls only, the deck's lime. 7.19:1 against the ground, so the control reads as a shape before its label is read."
         },
         "touchPressed": {
-          "$value": "#7A8E23"
+          "$value": "#8DA32C"
         },
         "provenance": {
           "$value": "#AAA8D0",
@@ -80,8 +81,8 @@
         },
         "touchText": {
           "$type": "color",
-          "$value": "#A9BD69",
-          "$description": "Cool light green for links and small touchable marks on operational surfaces."
+          "$value": "#AFC45F",
+          "$description": "Light lime for links and small touchable marks. 9.34:1 on ground, 6.70:1 on tray."
         }
       },
       "status": {
@@ -95,23 +96,24 @@
         "$type": "color",
         "$description": "The olive track. Reserved for named feature surfaces (see foundations.md section 5b): hero sections, alloy ceremony panels, sponsor profile headers, the Explorer landing. Never the default app background.",
         "ground": {
-          "$value": "#141A11"
+          "$value": "#171C03",
+          "$description": "The deck's own ground."
         },
         "sheet": {
-          "$value": "#20281A"
+          "$value": "#1F2507"
         },
         "raised": {
-          "$value": "#303724"
+          "$value": "#2A310F"
         },
         "text": {
           "$type": "color",
           "primary": {
-            "$value": "#E7E8DC",
-            "$description": "Bone tuned for the green-black feature ground."
+            "$value": "#ECEEDF",
+            "$description": "Bone. 14.84:1 on feature.ground, 11.56:1 on feature.raised."
           },
           "secondary": {
-            "$value": "#B2B7A2",
-            "$description": "restricted to feature.ground/sheet; see foundations.md 5b"
+            "$value": "#B4B9A2",
+            "$description": "8.64:1 on feature.ground, 7.84:1 on feature.sheet; restricted to feature.ground/sheet, see foundations.md 5b."
           }
         }
       }
@@ -154,7 +156,8 @@
           "$description": "Decorative only."
         },
         "onTouch": {
-          "$value": "#16200B"
+          "$value": "#141803",
+          "$description": "Text on the touch fill. 7.21:1 on touch, 6.38:1 on touchPressed."
         },
         "inverse": {
           "$value": "#F5F5F3"
@@ -175,11 +178,11 @@
       "accent": {
         "$type": "color",
         "touch": {
-          "$value": "#8DA32C",
-          "$description": "Fill only on light. Green text fails contrast on paper; touchable text uses text.primary with an underline."
+          "$value": "#98AD39",
+          "$description": "The deck's lime, the same fill as dark mode so the action green never drifts between modes. A step brighter than the #8DA32C it replaced, which held its label at only 5.95:1 and its icon at 4.59:1 (Storm, 12 October 2026)."
         },
         "touchPressed": {
-          "$value": "#7A8E23"
+          "$value": "#8DA32C"
         },
         "provenance": {
           "$value": "#554C9C",

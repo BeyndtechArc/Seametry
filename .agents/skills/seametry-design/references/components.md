@@ -92,7 +92,7 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 
 ### Quiet link
 **Answers:** which secondary destination can I inspect without leaving the current decision context?
-**Anatomy:** cornerless `surface.sheet`, top and bottom rules, `text.secondary`, with an icon cell when an icon improves scanning.
+**Anatomy:** cornerless `surface.sheet`, top and bottom rules, `text.secondary`, with an icon cell when an icon improves scanning, drawn as the Quiet action's is.
 **Identity:** the Quiet action silhouette rendered as a link, with no fill hue and no tray.
 **States:** default, hover, keyboard focus, unavailable.
 **Data:** a real route that resolves.
@@ -108,7 +108,7 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 
 ### Quiet action
 **Answers:** which secondary or reversible action is available?
-**Anatomy:** cornerless, `surface.sheet`, top and bottom rules, `text.secondary`, with a separate icon cell when an icon improves scanning.
+**Anatomy:** cornerless, `surface.sheet`, top and bottom rules, `text.secondary`, with a separate icon cell when an icon improves scanning: the glyph in the label's colour behind a hairline, never an ink block.
 **Identity:** the control keeps the Key's registration rules but has no tray and no green. Family resemblance comes from the shared edge treatment.
 **Rules:** for secondary and reversible actions. Never green.
 
@@ -249,6 +249,28 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 ### Definition
 **Anatomy:** term in display serif, one-sentence definition, "Where you meet it" link, related terms.
 
+### Docs page tree
+**Answers:** where am I in the docs, and what else is there to read?
+**Anatomy:** a left column of page links in reading order, grouped under quiet separator labels, with links out (the thesis, a paper not written in MDX) in the same list. Wide layouts keep it beside the page; narrow layouts fold it into one disclosure, "Docs pages", above the page.
+**Identity:** the current page is a raised tone behind primary text, as the App shell's current tab is; no underline, no bullet, no icon per row.
+**States:** current page; other page; separator; keyboard focus; folded and open on narrow layouts.
+**Data:** the page tree built from `content/docs/**/meta.json` and the compiled pages, so the tree and the pages cannot disagree.
+**Rules:** one tree for the whole docs. Never a second navigation for the same pages.
+
+### Docs contents rail
+**Answers:** what does this page cover, and where in it am I going?
+**Anatomy:** "On this page" and the page's second- and third-level headings, indented by level, each linking to its anchor, beside the prose.
+**States:** present on wide layouts when a page has two or more headings; absent otherwise. Narrow layouts omit it: above the prose it would be read before the page title.
+**Data:** the heading list compiled from the page itself.
+**Rules:** text only, `text.secondary`, the hovered entry in primary. Never a progress bar or scroll-linked animation.
+
+### Docs search
+**Answers:** which page talks about this?
+**Anatomy:** a search Field at the top of the page tree; results replace the tree while a query is present, each a page title with the matching heading or sentence beneath it.
+**States:** empty (the tree shows); searching (a sentence names what is being searched, no spinner); results; no match (says so and suggests a shorter word); unavailable (says search could not be reached, the tree stays usable).
+**Data:** `/api/docs/search`, an index built from the compiled pages inside this deployment; no query reaches a third-party service.
+**Rules:** search narrows what is shown, never the docs themselves; Escape clears it and returns the tree.
+
 ---
 
 ## 3. Organisms
@@ -256,29 +278,37 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 ### Lot header
 Top of every constituent and alloy page. Lot number; name in display serif; ticker and Grade; hero Figure with evidence state; the Key in the thumb zone on mobile.
 
-### Basket section switch
-**Answers:** am I browsing published baskets or building my own?
-**Anatomy:** two route links inside one compact tonal rail: Baskets and Build a basket. The current route is a filled neutral segment with stronger text; the other remains a quiet touch target.
-**Identity:** one square registration-cut rail, never an underline. The selected segment reads by tone and weight, not a bottom rule.
-**States:** Baskets current; Build a basket current; keyboard focus.
-**Data:** current pathname and two real routes.
-**Rules:** route navigation, not an ARIA tab widget. Never uses a border-bottom indicator, sliding underline, or autonomous motion. All tab-like page switches in Seametry follow this treatment.
-
 ### Basket register
 **Answers:** which published, researched direct-wallet basket do I want to inspect?
-**Anatomy:** one keyboard-focusable route link owns the entire ruled row. One SVG mark; title and single truncated category line; constituent count when room allows; terse admission state when room allows; one quiet trailing arrow cell with no "Open" caption. Search and category/provider filtering live above the list in their established controls.
-**Identity:** the same open catalogue grammar as the Alloy register: hairline separators, no bordered cards, no charts or animations while browsing.
+**Anatomy:** one keyboard-focusable route link owns the entire ruled row. A Basket plate; title and single truncated category line; Holds, the round Lot mark stack with the constituent count; Access, the issuer families; Admission, how many constituents the current snapshot admits; one quiet trailing arrow cell with no "Open" caption. The Filter bar sits above the list. Build a basket is a route in the App shell and a Text action closing the register, never a switch or a control drawn under the page title. On a phone the row is one reading line: the plate, then name, category and admission stacked, then the arrow; Holds and Access give way because the plate already shows the composition.
+**Identity:** the Alloy register's grammar: hairline separators, quiet labelled cells, the same sunken round stack, no bordered cards, no charts or animations while browsing.
 **States:** default row; focus or hover changes surface tone; filtered empty states the correction; partially admitted or private-market research remains inspectable but cannot be bought.
-**Data:** published basket id, name, category, constituent count and admission completeness.
+**Data:** published basket id, code, name, category, constituents and admission per constituent.
 **Rules:** the whole row opens the basket record. Never add a second action link, a repeated descriptor, a verbose issuer block, a capacity table or a fake performance sparkline in the list. Every market figure and source belongs on the details page.
+
+### Basket plate
+**Answers:** which basket is this, and is every part of it set?
+**Anatomy:** a square engraved plate in the manner of the Fortune Five artwork: a dotted outer ring, a dark field crossed by guilloche ellipses, one rosette per constituent on the ring, spokes from each rosette into a centre polygon with as many sides as constituents. Row size beside a register title (72px, 56px on a phone), header size beside the record's title (96px, the Alloy record's artwork size).
+**Identity:** generated from the recipe, so no basket needs commissioned artwork and no two published baskets share a plate: the count of rosettes, the turn of the ring and the density and swell of the engraving come from the constituents and the basket's code (Storm, 12 October 2026, replacing a weight ring whose ten instances read alike). Two steps of `scale.touch`, lime ground and olive-black ink, in both modes, as a printed plate. An admitted constituent is a set rosette; one the snapshot refuses or never assessed is an empty dashed socket, so a part-admitted basket reads as incomplete before its label is read.
+**States:** every constituent admitted; some sockets empty; every socket empty (research only).
+**Data:** the published members, the basket code, and admission per member from the current snapshot.
+**Rules:** never another basket's or an Alloy's artwork: an Alloy's picture belongs to that Alloy. Decorative (`aria-hidden`): the name and the Admission cell carry the same facts as text. Never a performance chart or a price.
 
 ### Published basket purchase
 **Answers:** how do I purchase this reviewed composition without constructing it again?
-**Anatomy:** a Buy basket anchor stays on the basket record; the record contains a fixed-template amount and wallet-execution workbench using the existing AllocationFlow engine. Selected mints derive from the admitted basket recipe. A separate quiet link enters Build a basket for custom selection.
+**Anatomy:** a Buy basket anchor stays on the basket record; the record contains a fixed-template amount and wallet-execution workbench using the existing AllocationFlow engine. Selected mints derive from the admitted basket recipe. The Key on the record reads "Buy basket"; equal weight is the published rule, so the record offers no weighting.
 **Identity:** one amount decision, the normal order sheet and the custody-changing Key; no unneeded Choose step.
 **States:** full admission + country eligibility; insufficient admission (no purchase); no wallet; inadequate USDC/SOL; quote or simulation refusal; signing; settlement; partial settlement.
 **Data:** exact published constituent mints, fee tier, individual current Jupiter quotes, simulated transaction data and actual settlement status.
 **Rules:** no redirect to the custom builder to buy a predefined basket. Never bypass the existing simulation, eligibility gate, wallet approval, attribution or non-atomic failure handling.
+
+### Basket remix
+**Answers:** can I start from this basket and make it mine?
+**Anatomy:** on every basket record with at least one admitted constituent, a Quiet link "Remix this basket" with one line saying what the remix starts from. It opens Build a basket with the admitted constituents chosen and a note naming the basket and any constituent left out. The amount step adds Weighting: Equal, or Custom weights, a ruled list of each chosen constituent with a whole-percent field, and a line stating how much of 100% is assigned.
+**Identity:** a remix is the builder, not a second purchase surface. Custom weights open on the equal split in whole percents, so changing one weight is the first edit, not a blank form.
+**States:** complete basket; part-admitted basket (left-out constituents named, the record says why); equal; custom and assigned; custom and not adding to 100% (stated with the figure, no Key); a constituent below 1 USDC at its weight (named, with what to raise).
+**Data:** the published members, current admission, whole-percent weights split by `splitByWeights` in integer atoms. Weights travel in the URL with the rest of the unsigned plan, paired by position with `selected`.
+**Rules:** whole percents only, so the split is exact integer arithmetic. Holdings name a purchase after its basket only when it is that basket as published, every constituent at equal weight; anything else started from a basket is "<name> remix", never passed off as the published composition.
 
 ### Constituent settlement register
 **Answers:** which exact constituent legs have been prepared, signed, submitted or settled?
@@ -371,7 +401,7 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### App shell
 **Answers:** where am I in the product, on which network, with which wallet?
-**Anatomy:** no sidebar. Wide layouts: one sticky Top bar holding the Brand mark, every product route as a text tab, Wallet state and the Mode control; a quiet Status bar holds reading links. Narrow layouts: the mark, Wallet state and Mode control remain in the top bar. Five labelled product tabs sit at the bottom; the central green plus opens Build a basket. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
+**Anatomy:** no sidebar. Wide layouts: one sticky Top bar holding the Brand mark, every product route as a text tab, Wallet state and the Mode control; a quiet Status bar holds reading links. Narrow layouts: the mark, Wallet state and Mode control remain in the top bar. Five labelled product tabs sit at the bottom; the central green plus opens Baskets, the Allocation entry, whose register closes with a Text action to Build a basket. Narrow layouts carry no menu button and no overflow drawer. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
 **Identity:** a terminal's top bar on the sheet surface, aligned to the content width so its edges meet the page. The current tab is a raised tone behind primary text, led by its group's icon in the action green (Desk, Buy, Hall, Assay), so the icon marks where you are rather than decorating every route; the House rail uses only the action-green label because its destinations share one line with no tab. The reading links in the Status bar keep their icons, which distinguish an exit from the operational routes.
 **States:** current route; narrow; wallet disconnected or connected; each page's network.
 **Data:** one route list that drives the top bar tabs and the narrow navigation register, so they cannot disagree.

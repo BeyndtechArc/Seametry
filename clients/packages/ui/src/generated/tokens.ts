@@ -2,31 +2,31 @@
 export const theme = {
   "dark": {
     "surface": {
-      "ground": "#10140F",
-      "sheet": "#181D17",
-      "raised": "#20271F",
-      "tray": "#2B3229",
-      "inverse": "#F5F5F3"
+      "ground": "#14180A",
+      "sheet": "#1B2010",
+      "raised": "#232915",
+      "tray": "#2D3420",
+      "inverse": "#ECEEDF"
     },
     "text": {
-      "primary": "#E4E9E0",
-      "secondary": "#ABB6A8",
-      "tertiary": "#939F90",
-      "faint": "#5A6559",
-      "onTouch": "#12140F",
-      "inverse": "#10140F"
+      "primary": "#ECEEDF",
+      "secondary": "#B4B9A2",
+      "tertiary": "#9CA289",
+      "faint": "#5E644A",
+      "onTouch": "#141803",
+      "inverse": "#14180A"
     },
     "line": {
-      "rule": "#30382D",
-      "strong": "#495548",
+      "rule": "#343B26",
+      "strong": "#4E573A",
       "highlight": "rgba(236,246,232,0.06)"
     },
     "accent": {
-      "touch": "#8DA32C",
-      "touchPressed": "#7A8E23",
+      "touch": "#98AD39",
+      "touchPressed": "#8DA32C",
       "provenance": "#AAA8D0",
       "provenanceField": "#3A20D6",
-      "touchText": "#A9BD69"
+      "touchText": "#AFC45F"
     },
     "status": {
       "success": "#8FCBA4",
@@ -34,12 +34,12 @@ export const theme = {
       "error": "#DEA098"
     },
     "feature": {
-      "ground": "#141A11",
-      "sheet": "#20281A",
-      "raised": "#303724",
+      "ground": "#171C03",
+      "sheet": "#1F2507",
+      "raised": "#2A310F",
       "text": {
-        "primary": "#E7E8DC",
-        "secondary": "#B2B7A2"
+        "primary": "#ECEEDF",
+        "secondary": "#B4B9A2"
       }
     }
   },
@@ -56,7 +56,7 @@ export const theme = {
       "secondary": "#3D493C",
       "tertiary": "#51604F",
       "faint": "#9AA596",
-      "onTouch": "#16200B",
+      "onTouch": "#141803",
       "inverse": "#F5F5F3"
     },
     "line": {
@@ -65,8 +65,8 @@ export const theme = {
       "highlight": "rgba(255,255,255,0.55)"
     },
     "accent": {
-      "touch": "#8DA32C",
-      "touchPressed": "#7A8E23",
+      "touch": "#98AD39",
+      "touchPressed": "#8DA32C",
       "provenance": "#554C9C",
       "provenanceField": "#3520C0",
       "touchText": "#43540B"

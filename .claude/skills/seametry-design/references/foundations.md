@@ -139,10 +139,10 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 | `accent.provenance` | Provenance outlines, stamps, focus rings and marks | Bare text, loss, error, decoration |
 | `accent.provenanceField` | Bars beside green, chart fills, chips | Any surface larger than a chip |
 | `line.highlight` | Top-edge hairline on raised surfaces | Anything else |
-| `surface.inverse`, `text.inverse` | The supporting ink: BLOCK stamps, the icon cell of secondary actions, index chips on plates, and compact utility wrappers. Black on the light certificate, bone on the dark touchstone | A primary action's fill, a panel, more than one ink block per control |
+| `surface.inverse`, `text.inverse` | The supporting ink: BLOCK stamps, index chips on plates, and compact utility wrappers. Black on the light certificate, bone on the dark touchstone | A primary action's fill, a panel, more than one ink block per control |
 | `status.success`, `status.warning`, `status.error` | Purchase outcome icons only, with the outcome stated in text | Market movement, evidence grade, whole-panel fill |
 
-**Ink.** Black supports green; it never competes with it (Storm, 4 October 2026). A primary action stays green with its pressed-green cell. A secondary action keeps its sheet label and takes an ink icon cell, so the two read as different jobs at a glance without a second hue. Ink is a neutral, not a hue, so it carries no meaning beyond weight.
+**Ink.** Black supports green; it never competes with it (Storm, 4 October 2026). A primary action stays green with its pressed-green cell. A secondary action keeps its sheet label and its glyph sits behind a hairline in the label's own colour, so the two read as different jobs by fill alone; an ink icon cell was tried there and removed because it read as a stray black stamp beside a quiet label (Storm, 12 October 2026). Ink is a neutral, not a hue, so it carries no meaning beyond weight.
 
 **Decisions.** ALLOW renders in `text.primary`. WARN uses `text.primary` inside a provenance outline. BLOCK renders as an inverted stamp: `surface.inverse` fill, `text.inverse` type. Semantic error colour is reserved for the small purchase outcome mark, never a decision, value or panel.
 
@@ -158,7 +158,7 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 
 An earlier draft tried to make the olive brand hue serve as the single default ground. It left too little headroom for readable supporting text on elevated surfaces. The operational palette now uses a restrained green cast; the stronger olive track remains reserved for feature surfaces. Text contrast is checked against the sheet and tray as well as the ground.
 
-**`surface.*` (operational, default).** Pale mineral paper in light mode and a subdued green-black in dark mode. Use `surface.sheet` for list rows and reading areas, one tonal step above the page; reserve `surface.raised` for a selected row or order sheet. The green-black lets the cool light green of touchable actions stay visible. Used for every data-dense, decision-bearing screen: catalogue tables, order sheets, hallmark rows, the Assay matrix, Today, Lot, Claims. `text.tertiary` remains readable on all four operational surfaces.
+**`surface.*` (operational, default).** Pale mineral paper in light mode and an olive-black in dark mode, taken from the house's deck (`clients/web/public/Slide-*.png`, Storm, 12 October 2026) rather than a grey with a green cast. The touch fill is the deck's lime in both modes with near-black text on it, so the action green is one colour whichever mode is chosen. Use `surface.sheet` for list rows and reading areas, one tonal step above the page; reserve `surface.raised` for a selected row or order sheet. The green-black lets the cool light green of touchable actions stay visible. Used for every data-dense, decision-bearing screen: catalogue tables, order sheets, hallmark rows, the Assay matrix, Today, Lot, Claims. `text.tertiary` remains readable on all four operational surfaces.
 
 **`feature.*` (the olive track, reserved).** Used only on named feature surfaces: the Explorer landing hero, an alloy's ceremony panel (the Strike), a sponsor's profile header, marketing cards on the Catalogue's editorial rows. Never the app's default background. `feature.text.secondary` is restricted to `feature.ground` and `feature.sheet`; there is no `feature.text.tertiary` token, because the olive ground doesn't have the budget for a third readable step. If a feature surface needs a third level of emphasis, use weight or size, not a lower-contrast colour.
 
@@ -230,7 +230,7 @@ Scale, in px: 12, 13, 15, 17, 20, 24, 30, 38, 48, 60, 76. Explorer display sizes
 
 **Edges carry meaning.** `data` 0 for rules, rows and figures; `surface` 4 for panels; `control` 0 for desktop actions; `sheet` 28 for mobile sheets; punches use their own shapes. Touchable controls are identified by green, an icon cell and short registration rules that protrude from the leading and trailing edges. Full-round controls are reserved for compact mobile layouts and named special cases. Never round a data row.
 
-**Page switches never use underline tabs.** Route-level switches and compact view selectors use a contained tonal rail: the current choice is distinguished by surface and type weight, never by a bottom border or sliding line. Hairline bottom rules remain valid for data rows and structural separation; they are not selection indicators.
+**Page switches are routes.** Sibling views are routes in the App shell's tab list, where the current one is a raised tone behind primary text; a page never draws its own tab rail, underline tab or sliding indicator. Hairline bottom rules remain valid for data rows and structural separation; they are not selection indicators.
 
 The seam between printed evidence and a control is the **registration cut**: a square surface with one corner clipped by `space.5`. It marks an authored plate, specimen, institutional header or desktop action without turning into a generic rounded rectangle. Do not introduce medium-radius cards as a compromise between square and round.
 

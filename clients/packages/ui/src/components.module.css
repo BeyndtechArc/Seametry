@@ -956,11 +956,18 @@
   background: var(--sm-surface-sheet);
 }
 
-.quietAction .actionIcon,
-.textAction .actionIcon {
-  border-left: 0;
-  color: var(--sm-text-inverse);
-  background: var(--sm-surface-inverse);
+/* A secondary action's glyph sits in its own colour behind a hairline. The
+   ink block it used to sit in read as a stray black stamp beside a quiet
+   label (Storm, 12 October 2026). */
+.quietAction .actionIcon {
+  border-left: 0.5px solid var(--sm-line-rule);
+  color: inherit;
+  background: transparent;
+}
+
+.quietAction .actionIcon svg {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
 }
 
 .quietAction:hover:not(:disabled) {
@@ -981,19 +988,51 @@
   text-decoration: none;
 }
 
+/* components.md, Text action: a catalogue cross-reference, not a button.
+   Verb-led text in the touch ink, its glyph inline, and one short rule
+   running on from the final word as its signature. */
 .textAction {
+  align-items: center;
+  gap: var(--sm-space-2);
   width: fit-content;
-  border-top: 0.5px solid var(--sm-line-rule);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-text-primary);
-  background: var(--sm-surface-sheet);
+  color: var(--sm-accent-touchText);
   font-size: var(--sm-font-size-small);
   text-decoration: none;
 }
 
-.textAction:hover {
-  border-top-color: var(--sm-line-strong);
-  border-bottom-color: var(--sm-line-strong);
+.textAction::before,
+.textAction::after {
+  content: none;
+}
+
+.textAction .actionLabel {
+  gap: var(--sm-space-2);
+  min-height: 0;
+  padding: 0;
+}
+
+/* The rule runs on from the final word to the glyph; after the glyph it read
+   as a stray minus. */
+.textAction .actionLabel::after {
+  content: "";
+  width: var(--sm-space-4);
+  border-top: 0.5px solid currentColor;
+}
+
+.textAction .actionIcon {
+  width: auto;
+  min-width: 0;
+  border-left: 0;
+}
+
+.textAction .actionIcon svg {
+  width: var(--sm-space-4);
+  height: var(--sm-space-4);
+}
+
+.textAction:hover .actionLabel {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .themeControl {
