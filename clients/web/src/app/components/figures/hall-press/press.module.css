@@ -1,0 +1,165 @@
+/* The anatomy kit's tone classes mapped onto the house tokens. Faces step
+   from the darkest surface to the lightest, so the press is lit by tone, with
+   no shadow, blur or gradient (foundations section 7). One part, the share
+   being struck, is the lit accent, and it takes the touch green because the
+   figure is operable. */
+.press {
+  --press-paper: var(--sm-surface-raised);
+  --press-top: var(--sm-surface-raised);
+  --press-shade-0: var(--sm-surface-tray);
+  --press-shade-1: color-mix(in srgb, var(--sm-surface-tray) 55%, var(--sm-surface-ground));
+  --press-shade-2: var(--sm-surface-ground);
+  --press-shade-3: var(--sm-surface-sheet);
+  --press-hi: var(--sm-text-primary);
+  --press-mid: var(--sm-text-secondary);
+  --press-lo: var(--sm-line-strong);
+  --press-faint: var(--sm-line-rule);
+  --press-lit: var(--sm-accent-touch);
+  --press-lit-top: var(--sm-accent-touch);
+  --press-lit-shade: var(--sm-accent-touchPressed);
+  position: relative;
+  display: grid;
+  gap: var(--sm-space-4);
+  min-width: 0;
+}
+
+:global(:root[data-theme="dark"]) .press {
+  --press-paper: var(--sm-surface-sheet);
+  --press-top: var(--sm-surface-tray);
+  --press-shade-0: var(--sm-surface-ground);
+  --press-shade-1: color-mix(in srgb, var(--sm-surface-ground) 50%, var(--sm-surface-sheet));
+  --press-shade-2: var(--sm-surface-sheet);
+  --press-shade-3: var(--sm-surface-raised);
+  --press-mid: var(--sm-text-tertiary);
+}
+
+.stage {
+  position: relative;
+  min-width: 0;
+}
+
+.stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.stage :global(.iso-fill) { fill: var(--press-paper); stroke: none; }
+.stage :global(.iso-shade),
+.stage :global(.iso-top) { stroke: none; }
+.stage :global(.iso-shade[data-shade="0"]) { fill: var(--press-shade-0); }
+.stage :global(.iso-shade[data-shade="1"]) { fill: var(--press-shade-1); }
+.stage :global(.iso-shade[data-shade="2"]) { fill: var(--press-shade-2); }
+.stage :global(.iso-shade[data-shade="3"]) { fill: var(--press-shade-3); }
+.stage :global(.iso-top) { fill: var(--press-top); }
+.stage :global(.iso-solid[data-lit] > .iso-fill),
+.stage :global(.iso-solid[data-lit] > .iso-top) { fill: var(--press-lit-top); }
+.stage :global(.iso-solid[data-lit] > .iso-shade) { fill: var(--press-lit-shade); }
+.stage :global(.iso-solid[data-lit] > .iso-edge) { stroke: var(--sm-text-onTouch); }
+.stage :global(.iso-line) {
+  fill: none;
+  stroke: var(--press-lo);
+  stroke-width: 0.6px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.stage :global(.iso-line[data-tone="hi"]) { stroke: var(--press-hi); }
+.stage :global(.iso-line[data-tone="mid"]) { stroke: var(--press-mid); }
+.stage :global(.iso-line[data-tone="lo"]) { stroke: var(--press-lo); }
+.stage :global(.iso-line[data-tone="faint"]) { stroke: var(--press-faint); }
+.stage :global(.iso-line[data-tone="lit"]) { stroke: var(--press-lit); }
+.stage :global(.iso-dots circle) { fill: var(--press-hi); stroke: none; opacity: 0.32; }
+.stage :global(.iso-dots[data-tone="hi"] circle) { opacity: 0.85; }
+.stage :global(.iso-dots[data-tone="mid"] circle) { opacity: 0.45; }
+.stage :global(.iso-dots[data-tone="lo"] circle) { opacity: 0.22; }
+.stage :global(.iso-face-text) {
+  fill: var(--press-hi);
+  font-family: var(--sm-font-family-digest);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* State the live component writes as attributes; hidden parts stay in the
+   painter's order, ready to show. */
+.stage [data-hidden] { visibility: hidden; }
+
+.panel {
+  display: grid;
+  gap: var(--sm-space-3);
+  padding-top: var(--sm-space-3);
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-3);
+}
+
+.controls button {
+  min-height: var(--sm-size-target);
+  padding: 0 var(--sm-space-5);
+  border: 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-raised);
+  font: inherit;
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+  cursor: pointer;
+}
+
+.controls button:first-child {
+  border: 0;
+  color: var(--sm-text-onTouch);
+  background: var(--sm-accent-touch);
+}
+
+.controls button:disabled {
+  color: var(--sm-text-tertiary);
+  background: transparent;
+  cursor: default;
+}
+
+.controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-2);
+  min-height: var(--sm-size-target);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  cursor: pointer;
+}
+
+.controls input {
+  accent-color: var(--sm-accent-touch);
+}
+
+.controls button:focus-visible,
+.controls input:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}
+
+.readout {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+  line-height: 1.6;
+}
+
+.controls button {
+  white-space: nowrap;
+}
+
+.caption {
+  margin: 0;
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+  line-height: 1.5;
+}
+

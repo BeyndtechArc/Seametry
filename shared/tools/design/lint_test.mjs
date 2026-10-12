@@ -72,6 +72,15 @@ test('a suppression comment with a reason silences one line', () => {
   assert.deepEqual(lint('j.css', source), []);
 });
 
+// React Native's shadow props mean a shadow only in the mobile app. On the web
+// "elevation" is a camera's angle (the landing's isometric press), and the
+// rule reported it as a shadow (12 October 2026).
+test('React Native shadow props are reported in the mobile app, not on the web', () => {
+  assert.deepEqual(lint(join('web', 'src', 'figure.ts'), 'const P = fit(points, { azimuth: 58, elevation: 30 });'), []);
+  assert.ok(lint(join('mobile', 'src', 'card.tsx'), 'const card = { elevation: 4, shadowColor: tokens.ink };').includes('shadow'));
+  assert.ok(lint(join('web', 'src', 'card.css'), '.x { box-shadow: 0 2px 4px black; }').includes('shadow'));
+});
+
 test('the Lens is accepted inside a cross-platform components/lens path', () => {
   const source = '.x { backdrop-filter: blur(var(--sm-space-5)); }';
   assert.deepEqual(lint(join('components', 'lens', 'rail.css'), source), []);

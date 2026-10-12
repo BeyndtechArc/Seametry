@@ -37,10 +37,10 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1, name: "Open AP ETFs" })).toBeVisible();
-  const apField = page.getByTestId("open-ap-field");
-  for (const label of ["Any wallet", "Strike", "Alloy", "Melt", "Claims"]) {
-    await expect(apField.getByText(label, { exact: true })).toBeVisible();
-  }
+  const press = page.getByRole("figure", { name: "The Hall's press" });
+  await expect(press.getByRole("img", { name: "The Hall's press" })).toBeVisible();
+  await expect(press.getByRole("button", { name: "Strike 1 share" })).toBeVisible();
+  await expect(press.getByRole("button", { name: "Melt 1 share" })).toBeVisible();
   await expect(page.getByText("Recorded on Solana devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A melt survives the freeze." })).toBeVisible();
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
@@ -413,15 +413,12 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   expect(bounds.right).toBeLessThanOrEqual(360);
   await page.goto("/");
   await expect(page.getByTestId("change-register").getByTestId("mechanism-plate")).toHaveCount(4);
-  const mechanismGeometry = await page.getByTestId("open-ap-mechanism").evaluate((element) => {
-    const bounds = element.getBoundingClientRect();
-    const children = Array.from(element.children).map((child) => child.getBoundingClientRect());
-    return {
-      contained: children.every((child) => child.left >= bounds.left && child.right <= bounds.right),
-      stacked: children.every((child, index) => index === 0 || child.top >= children[index - 1].bottom),
-    };
+  // The press drawing and its controls stay inside a 360px screen.
+  const pressBounds = await page.getByRole("figure", { name: "The Hall's press" }).evaluate((element) => {
+    const parts = [element, ...element.querySelectorAll("svg, button, label")].map((child) => child.getBoundingClientRect());
+    return parts.every((box) => box.left >= 0 && box.right <= window.innerWidth + 0.5);
   });
-  expect(mechanismGeometry).toEqual({ contained: true, stacked: true });
+  expect(pressBounds).toBe(true);
   const instrumentHeading = await page.locator("section").filter({ hasText: "The instrument, opened" }).evaluate((element) => {
     const title = element.querySelector("h2")?.getBoundingClientRect();
     const question = element.querySelector("header p")?.getBoundingClientRect();
@@ -482,9 +479,7 @@ test("desktop rails share the page content edge", async ({ page }) => {
   });
   expect(activeTreatment.color).toBe(activeTreatment.expected);
   expect(activeTreatment.rule).toBe("none");
-  const mechanismFooter = page.getByTestId("open-ap-field").locator("figcaption");
-  await expect(mechanismFooter).toBeVisible();
-  expect(await mechanismFooter.evaluate((element) => getComputedStyle(element).maxWidth)).toBe("none");
+  await expect(page.getByRole("figure", { name: "The Hall's press" }).locator("figcaption")).toBeVisible();
   await page.goto("/app");
   const edges = await page.evaluate(() => {
     const header = document.querySelector<HTMLElement>("[data-testid='app-header-inner']");
@@ -499,15 +494,23 @@ test("desktop rails share the page content edge", async ({ page }) => {
   expect(edges?.headerRight).toBe(edges?.mainRight);
 });
 
-test("the Open AP field keeps its inset and the app keeps its reading pages in the status bar", async ({ page }) => {
-  await page.setViewportSize({ width: 800, height: 900 });
-  await page.goto("/");
-  const fieldPadding = await page.getByTestId("open-ap-field").evaluate((element) => {
-    const style = getComputedStyle(element);
-    return { left: style.paddingLeft, right: style.paddingRight };
-  });
-  expect(fieldPadding.left).toBe(fieldPadding.right);
+test("the landing's press strikes the Formula, refuses Strike on a frozen leg, and still melts", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  const press = page.getByRole("figure", { name: "The Hall's press" });
+  const readout = press.getByRole("status");
+  // The touched figure stops its idle tour, so only the reader's moves run.
+  await expect(async () => {
+    await press.getByRole("button", { name: "Strike 1 share" }).click();
+    await expect(readout).toContainText("Struck 1 share. Paid 2 AAPLx, 1.5 NVDAx, 0.25 TSLAx. No price was read.", { timeout: 6000 });
+  }).toPass({ timeout: 20_000 });
+  await press.getByRole("checkbox", { name: "Issuer freezes NVDAx" }).check();
+  await press.getByRole("button", { name: "Strike 1 share" }).click();
+  await expect(readout).toContainText("Strike refused. The issuer froze the Hall's NVDAx account");
+  await press.getByRole("button", { name: "Melt 1 share" }).click();
+  await expect(readout).toContainText("Withdrew AAPLx and TSLAx; NVDAx stays filed as a Claim", { timeout: 10_000 });
+});
 
+test("the app keeps its reading pages in the status bar", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app");
   await expect(page.locator("aside")).toHaveCount(0);

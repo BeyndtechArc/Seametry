@@ -465,6 +465,14 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **Data:** none. Annotations name register nouns and Hall rules only, never a market quantity, price, count or participant.
 **Rules:** every drawing depicts the sentence beneath it and nothing the product cannot do. Annotations are lower case nouns or short phrases, never instructions. Built only from the shared plate primitives in `@seametry/ui/plates`, so stroke, projection and type cannot drift between plates.
 
+### Hero instrument
+**Answers:** how does the mechanism behave when I work it myself?
+**Anatomy:** an isometric machine of many small, purposeful parts (base on feet, rails, columns, fasteners, gauges) whose working is the product's mechanism, with its controls and a live readout beneath it and a caption that says what is illustrative. The landing's is the Hall's press: three constituent canisters feed a screw press through gated channels; Strike pulls the Formula's quantities and stamps a share onto the stack; Melt files a Claim chit for every leg in a rack; an issuer's padlock on a canister drops that channel's gate.
+**Identity:** faces are surface tokens stepped by facing, outlines text and line tokens, and exactly one lit part, in the action green, is the thing the reader acts on. No halo, blur, gradient or shadow. Drawn back to front with every moving part in the slot where it physically sits.
+**States:** rest (the top share lit); acting (the parts move with eased, time-based motion); a refused action (stated in the readout with the rule that refused it, the drawing unchanged); reduced motion (each action jumps to its end); offscreen (the idle tour pauses); touched (the idle tour stops for good).
+**Data:** the product's own arithmetic, tested against the shared vectors (`lib/hall/recipe.ts`), with an illustrative Formula and quantities labelled as such in the caption.
+**Rules:** the static art is built on the server from `clients/web/src/lib/iso`; the client only writes attributes (`transform`, `data-hidden`), never style. Every refusal and outcome the readout states is the Hall's real behaviour, cited in code to `HALL.md`. One hero instrument per surface.
+
 ### Pattern Register
 **Answers:** does each shared component retain Seametry's identity across states, themes, widths and difficult content?
 **Anatomy:** house plate; atom specimens; molecule specimens; universal state assay; dark and light stress bench.

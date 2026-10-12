@@ -4,41 +4,6 @@ import { publicIncident, publicIncidentAge } from "@/lib/public-evidence";
 import { HouseRail, type PublicDestination } from "./components/lens/house-rail";
 import styles from "./site.module.css";
 
-export function OpenAPField() {
-  return (
-    <figure className={styles.apField} data-testid="open-ap-field">
-      <header>
-        <span>Open participant loop</span>
-        <span>No permission list</span>
-      </header>
-      <div className={styles.apMechanism} data-testid="open-ap-mechanism">
-        <div className={`${styles.apNode} ${styles.apWallet}`}>
-          <span>Any wallet</span>
-          <small>Holds the Formula</small>
-        </div>
-        <div className={`${styles.apPath} ${styles.apStrike}`}>
-          <b>Strike</b>
-          <span>Deposit constituents</span>
-        </div>
-        <div className={styles.apCore}>
-          <span>Alloy</span>
-          <b>Share</b>
-          <small>Fixed Formula</small>
-        </div>
-        <div className={`${styles.apPath} ${styles.apMelt}`}>
-          <b>Melt</b>
-          <span>Destroy shares</span>
-        </div>
-        <div className={`${styles.apNode} ${styles.apClaims}`}>
-          <span>Claims</span>
-          <small>One per constituent</small>
-        </div>
-      </div>
-      <figcaption>The Hall moves quantities. No oracle, quote or NAV enters Strike or Melt.</figcaption>
-    </figure>
-  );
-}
-
 export function PublicShell({
   current,
   children,

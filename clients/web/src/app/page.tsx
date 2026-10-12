@@ -11,7 +11,8 @@ import {
   TextAction,
 } from "@seametry/ui";
 import { MechanismPlate } from "@seametry/ui/plates";
-import { IncidentLedger, OpenAPField, PublicShell, SectionHeading } from "./public-shell";
+import { HallPress } from "./components/figures/hall-press/figure";
+import { IncidentLedger, PublicShell, SectionHeading } from "./public-shell";
 import styles from "./site.module.css";
 
 export const metadata: Metadata = {
@@ -49,7 +50,7 @@ export default async function Home() {
             <TextAction href="/docs/how-it-works">Read mechanism</TextAction>
           </div>
         </div>
-        <OpenAPField />
+        <HallPress />
       </section>
 
       <section className={`${styles.section} ${styles.incidentSection}`}>

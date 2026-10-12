@@ -18,7 +18,8 @@ const RULES = [
   { id: 'raw-color', test: (l, f) => !TOKEN_FILE.test(f) && /(^|[^&\w])#[0-9a-fA-F]{3}([0-9a-fA-F]{3}([0-9a-fA-F]{2})?)?\b/.test(l) && !/url\(|href=/.test(l),
     msg: 'Raw colour literal. Use a token (var(--sm-...) or theme.*).' },
   { id: 'raw-rgba', test: (l, f) => !TOKEN_FILE.test(f) && /\brgba?\(/.test(l), msg: 'Raw rgb/rgba. Use a token.' },
-  { id: 'shadow', test: (l) => (/(box-shadow|boxShadow)\s*:/.test(l) && !/var\(--sm-line-highlight\)|(box-shadow|boxShadow)\s*:\s*['"]?none/.test(l)) || /\b(shadowColor|shadowOpacity|shadowRadius|shadowOffset|elevation)\s*:/.test(l),
+  // React Native's shadow props are shadows only in the mobile app; elsewhere "elevation" is a camera angle.
+  { id: 'shadow', test: (l, f) => (/(box-shadow|boxShadow)\s*:/.test(l) && !/var\(--sm-line-highlight\)|(box-shadow|boxShadow)\s*:\s*['"]?none/.test(l)) || (/(?:^|[\\/])mobile[\\/]/.test(f) && /\b(shadowColor|shadowOpacity|shadowRadius|shadowOffset|elevation)\s*:/.test(l)),
     msg: 'Shadows are banned. Elevation is tone; the only light effect is the line.highlight top hairline.' },
   { id: 'gradient', test: (l) => /(linear|radial|conic)-gradient\(|LinearGradient/.test(l), msg: 'Gradients are decoration. Banned outside approved ceremony components.' },
   { id: 'uppercase', test: (l) => /text-transform\s*:\s*uppercase|textTransform\s*:\s*['"]uppercase/.test(l), msg: 'No all-caps labels. Sentence case only.' },
