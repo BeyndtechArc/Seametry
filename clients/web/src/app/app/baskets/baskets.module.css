@@ -256,11 +256,12 @@
 
 .basketRow {
   display: grid;
-  grid-template-columns: var(--sm-space-11) minmax(0, 1fr) auto minmax(var(--sm-space-13), auto) var(--sm-size-target);
+  grid-template-columns: minmax(0, 2.25fr) minmax(0, 1.35fr) minmax(0, 0.85fr) minmax(0, 0.85fr) var(--sm-size-target);
   align-items: center;
-  gap: var(--sm-space-5);
-  min-height: calc(var(--sm-size-target) + var(--sm-space-5));
-  padding: var(--sm-space-3) var(--sm-space-4);
+  gap: var(--sm-space-7);
+  min-width: 0;
+  min-height: calc(var(--sm-size-target) + var(--sm-space-8));
+  padding: var(--sm-space-5);
   color: inherit;
   background: var(--sm-surface-sheet);
   text-decoration: none;
@@ -276,8 +277,16 @@
   outline-offset: -2px;
 }
 
+.basketIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-5);
+  min-width: 0;
+}
+
 .basketAvatar {
   display: grid;
+  flex: none;
   place-items: center;
   width: var(--sm-space-11);
   height: var(--sm-space-11);
@@ -290,42 +299,79 @@
   height: 100%;
 }
 
-.basketRowIdentity {
+.basketIdentityText {
   display: grid;
-  align-content: center;
   gap: var(--sm-space-1);
   min-width: 0;
 }
 
-.basketRowIdentity b,
-.basketRowIdentity small {
+.basketIdentityText b,
+.basketIdentityText small,
+.basketIdentityText > span {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-.basketRowIdentity b {
+.basketIdentityText b {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title);
   font-weight: var(--sm-font-weight-regular);
+  line-height: 1.1;
 }
 
-.basketRowIdentity small,
-.basketRowMembers,
-.basketRowStatus {
+.basketIdentityText small {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.basketIdentityText > span {
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
 }
 
-.basketRowMembers,
-.basketRowStatus {
-  font-variant-numeric: tabular-nums lining-nums;
-  white-space: nowrap;
+.basketComposition,
+.basketAccess,
+.basketState {
+  display: grid;
+  gap: var(--sm-space-2);
+  min-width: 0;
 }
 
-.basketRowStatus {
-  text-align: right;
+.basketComposition small,
+.basketAccess small,
+.basketState small {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.basketAccess b,
+.basketState b {
+  overflow: hidden;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.basketLotStack {
+  display: inline-flex;
+  justify-self: start;
+  min-width: 0;
+  padding: var(--sm-space-1) var(--sm-space-2);
+  background: var(--sm-surface-tray);
+}
+
+.basketLotStack > * {
+  width: var(--sm-space-8);
+  height: var(--sm-space-8);
+  outline: 2px solid var(--sm-surface-tray);
+}
+
+.basketLotStack > * + * {
+  margin-left: calc(var(--sm-space-4) * -1);
 }
 
 .basketRowArrow {
@@ -334,7 +380,6 @@
   justify-self: end;
   width: var(--sm-size-target);
   height: var(--sm-size-target);
-  border: 0.5px solid var(--sm-line-rule);
   color: var(--sm-accent-touchText);
   background: var(--sm-surface-tray);
 }
@@ -617,9 +662,12 @@
 
 @media (max-width: 1050px) {
   .basketRow {
-    grid-template-columns: var(--sm-space-11) minmax(0, 1fr) auto var(--sm-size-target);
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 0.8fr) var(--sm-size-target);
   }
-  .basketRowStatus { display: none; }
+
+  .basketAccess {
+    display: none;
+  }
 }
 
 @media (max-width: 760px) {
@@ -629,11 +677,38 @@
   }
 
   .basketRow {
-    grid-template-columns: var(--sm-space-11) minmax(0, 1fr) var(--sm-size-target);
-    gap: var(--sm-space-3);
-    padding: var(--sm-space-3) var(--sm-space-2);
+    grid-template-columns: minmax(0, 1fr) var(--sm-size-target);
+    gap: var(--sm-space-4);
+    padding: var(--sm-space-4) var(--sm-space-2);
   }
-  .basketRowMembers { display: none; }
+
+  .basketIdentity,
+  .basketComposition,
+  .basketState {
+    grid-column: 1;
+  }
+
+  .basketRowArrow {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: center;
+  }
+
+  .basketComposition {
+    display: flex;
+    align-items: center;
+    gap: var(--sm-space-4);
+    padding-left: calc(var(--sm-space-11) + var(--sm-space-5));
+  }
+
+  .basketState {
+    display: block;
+    padding-left: calc(var(--sm-space-11) + var(--sm-space-5));
+  }
+
+  .basketState small {
+    margin-right: var(--sm-space-2);
+  }
 
   .detailFacts {
     grid-template-columns: minmax(0, 1fr);
