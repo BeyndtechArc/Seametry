@@ -1,6 +1,6 @@
 ---
 title: The Key
-description: The Hall's current upgrade-authority state and the guarantees its final program must carry.
+description: Who can change the Hall today, what they can and cannot do with that power, and what the final program must carry once the Key is gone.
 ---
 
 <KeyState />
@@ -9,29 +9,95 @@ Devnet builds remain upgradeable while the Hall is being built. The mainnet
 ceremony follows a program audit and legal read. Until then, every surface says
 what the chain says now, and this page reads it on every visit.
 
-## What the final Hall must preserve
+## Who can change the Hall right now?
 
-Which properties make the mechanism the product?
+On Solana, a program's code can be replaced only by its upgrade authority: one
+key, recorded on chain next to the program. That key is what Seametry calls the
+Key. While someone holds it, the program can be changed. Once it is set to
+none, the program can never change again, by anyone, including Seametry.
+
+Think of a printed contract with one person allowed to reprint it. While that
+person exists, the contract you signed can be swapped for a new one. Remove that
+person, and the contract you hold is the only version there will ever be.
+
+You do not have to take this page's word for it. The Solana command line reads
+the same record:
+
+<KeyCheck />
+
+## What can the holder of the Key do, and what can't they?
+
+The holder can replace the program's code. Nobody else can, and once the Key is
+thrown away, nobody can at all. Try both sides of that rule:
+
+<KeyUpgrade />
+
+That is why the Key matters more than any promise about behaviour. A promise
+can be broken by the next version of the code. A program with no upgrade
+authority has no next version.
+
+## What must the final Hall preserve?
+
+Three guarantees. Every design decision in the Hall exists to make them literally
+true, and the final program must carry all three.
 
 **The melt always works. Delivery is each issuer's.** Burning shares for a
-claim on the constituents cannot be blocked. Delivering each constituent remains
-subject to that constituent's issuer.
+claim on the constituents can never be blocked by anyone. Delivering each
+constituent is subject to that constituent's issuer, and the Hall says so rather
+than pretending otherwise.
+
+In practice: if an issuer freezes one stock, you can still Melt. The frozen
+stock stays yours as a named Claim, and the others are delivered. You can try it
+on [How it works](/docs/how-it-works#what-happens-when-i-melt-and-what-if-an-issuer-freezes-one-constituent).
 
 **The Hall adds no prerogatives of its own.** The share mint has no freeze
-authority, permanent delegate, pause or hook. No instruction alters a Formula or
-stops a Melt.
+authority, no permanent delegate, no pause, no hook. No instruction lets anyone
+alter a formula, move a holder's assets, or stop a melt.
 
-**The Hall never needs a price.** Strike and Melt move quantities. No oracle,
-quote or NAV enters either instruction.
+In practice: the issuers of the stocks inside an Alloy keep their powers, and
+the Hall states them. The Hall itself adds none on top, so an Alloy share can
+never be frozen or taken by the Hall.
 
-## What final means
+**The Hall never needs a price.** Strike and melt move quantities. No oracle, no
+quote, no NAV is an input to any instruction. Price manipulation cannot touch
+minting, and the Hall keeps working when every price source is down.
 
-How does the Hall change after the Key?
+In practice: a Strike of 10 shares costs the same quantities whether prices are
+calm, moving fast, or unavailable.
 
-A new version is a new deployment. The old Hall keeps its bytecode. Holders
-leave by Melting from one version and Striking into another.
+Which instructions move constituents, and which only keep records:
 
-There is no transaction to cite yet because the devnet program has not been
-made final. This page will carry that transaction when it exists.
+```text
+instruction   what it does                                     moves a constituent
+create        pulls exactly the required units, mints shares   yes, every leg, in
+redeem        burns shares, credits a Claim on every leg       no
+withdraw      delivers one leg of a Claim                      yes, that one leg, out
+sync          reconciles one leg's records with its balance    no, reads only
+```
+
+Because `redeem` moves no constituent, a freeze, a pause or a transfer hook,
+which all act on transfers, has nothing to stop. That is the first guarantee,
+built into the instruction rather than promised beside it.
+
+<ClaimLine lead="The Hall reads quantities.">Strike and Melt do not use an oracle, a quote or NAV as an instruction input.</ClaimLine>
+
+## What does "final" mean, if the Hall still needs to improve?
+
+An upgrade path is an admin key with a better name. So the Hall never upgrades
+in place. Each version is its own program, made final once. Improving the Hall
+means deploying a new version beside the old one. The old Hall keeps working for
+whoever stays, and anyone can move across, because Melting is always open.
+
+Walk through a move from one version to the next:
+
+<VersionSteps />
+
+## Why is the Key not thrown away today?
+
+Because the Hall is still on devnet, a test network, and still being built.
+Throwing the Key away fixes the code forever, so it happens once, on the mainnet
+Hall, after a program audit and a legal read. When it happens, this page will
+show the transaction that did it, and the panel at the top will read the
+authority as none.
 
 <InspectHallProgram />

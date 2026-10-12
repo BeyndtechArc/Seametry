@@ -53,7 +53,9 @@ and the link to inspect it. The upgrade authority is read from devnet on every
 visit (`clients/web/src/lib/hall/authority.ts`, the upgradeable loader's
 programdata account), shown with its slot, time and source; when devnet does
 not answer the page says "No observation" and why, and never falls back to a
-written state (Storm, 12 October 2026). The Hall's three guarantees are stated word for word
+written state (Storm, 12 October 2026). The same observation fills a
+`solana program show` block a reader can run to compare, and an upgrade bench
+that models the loader's rule against the observed authority. The Hall's three guarantees are stated word for word
 from `HALL.md` section 1, matching how `MOBILE.md` section 10 requires the same
 sentence in the app's own About screen. One sentence, the same everywhere it
 appears, is what makes it a guarantee rather than a claim that drifts by

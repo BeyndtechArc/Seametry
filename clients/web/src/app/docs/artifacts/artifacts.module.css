@@ -266,6 +266,71 @@
   border-left: 2px solid var(--sm-accent-provenance);
 }
 
+.stepper {
+  display: grid;
+  gap: var(--sm-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepper li {
+  display: grid;
+  grid-template-columns: var(--sm-space-7) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sm-space-3);
+  padding: var(--sm-space-2) var(--sm-space-3);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.stepper li span {
+  display: grid;
+  place-items: center;
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
+  border: 0.5px solid var(--sm-line-strong);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.stepper li[data-done] span {
+  border-color: var(--sm-text-secondary);
+  color: var(--sm-text-primary);
+}
+
+/* The current step: the App shell's current-tab treatment, raised tone and primary text. */
+.stepper li[aria-current="step"] {
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-raised);
+}
+
+.stepper li[aria-current="step"] span {
+  border-color: var(--sm-accent-provenance);
+}
+
+.walletBox {
+  display: grid;
+  gap: var(--sm-space-2);
+  padding: var(--sm-space-4);
+  border-left: 2px solid var(--sm-line-strong);
+  background: var(--sm-surface-ground);
+}
+
+.walletBox > span {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.walletBox ul {
+  display: grid;
+  gap: var(--sm-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--sm-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
 .marks {
   display: flex;
   flex-wrap: wrap;

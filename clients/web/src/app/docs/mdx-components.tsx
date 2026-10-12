@@ -6,7 +6,9 @@ import { readHallAuthority } from "@/lib/hall/authority";
 import recipeVectors from "../../../../../shared/spec/recipe/vectors.json";
 import { FreezeBench } from "./artifacts/freeze-bench";
 import { GradeTable, InstrumentExplorer, PowerCounts } from "./artifacts/evidence";
+import { KeyCheck, KeyUpgrade } from "./artifacts/key-check";
 import { LoopDiagram } from "./artifacts/loop-diagram";
+import { VersionSteps } from "./artifacts/version-steps";
 import { StrikeMeltBench } from "./artifacts/strike-melt-bench";
 import styles from "./docs.module.css";
 
@@ -86,4 +88,7 @@ export const mdxComponents = {
   PowerCounts,
   InstrumentExplorer,
   LoopDiagram,
+  KeyCheck,
+  KeyUpgrade,
+  VersionSteps,
 };

@@ -153,6 +153,33 @@ test("How it works lets a reader run the Hall's arithmetic, a frozen leg and any
   await expect(explorer.getByText(/realises a rate 254 basis points worse/)).toBeVisible();
 });
 
+test("The Key shows the loader's record, its upgrade rule, and a move between versions", async ({ page }) => {
+  await page.goto("/docs/the-key", { waitUntil: "networkidle" });
+
+  // The fixture devnet lays the programdata out with a deployment slot of
+  // 450,000,000 and an authority present; the command block reads both.
+  const check = page.getByRole("figure", { name: "Check the Key yourself" }).getByLabel("What the command reports");
+  await expect(check).toContainText("solana program show GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE --url devnet");
+  await expect(check).toContainText(`Authority: ${new PublicKey(Buffer.alloc(32, 7)).toBase58()}`);
+  await expect(check).toContainText("Last Deployed In Slot: 450000000");
+
+  const upgrade = page.getByRole("figure", { name: "Who can change the Hall" });
+  const decision = upgrade.getByLabel("The loader's decision");
+  await expect(decision).toContainText("REFUSED");
+  await upgrade.getByRole("radio", { name: /The upgrade authority/ }).check();
+  await expect(decision).toContainText("ACCEPTED");
+  await upgrade.getByRole("checkbox", { name: "Thrown away (authority set to none)" }).check();
+  await expect(decision).toContainText("REFUSED");
+  await expect(upgrade.getByText(/Its code can no longer change\./)).toBeVisible();
+
+  const versions = page.getByRole("figure", { name: "Leaving one Hall version for another" });
+  for (const next of ["melt them on version 1", "withdraw each leg", "strike on version 2"]) {
+    await versions.getByRole("button", { name: `Next: ${next}` }).click();
+  }
+  await expect(versions.getByText("Version 2 Alloy shares, at version 2's Formula")).toBeVisible();
+  await expect(versions.getByRole("listitem").filter({ hasText: "Strike on version 2" })).toHaveAttribute("aria-current", "step");
+});
+
 test("the docs carry one page tree, search with stated states, and a contents rail", async ({ page }) => {
   await page.goto("/docs/the-key");
   const tree = page.getByRole("navigation", { name: "Docs" });
@@ -161,7 +188,13 @@ test("the docs carry one page tree, search with stated states, and a contents ra
   await expect(tree.getByRole("link", { name: "The thesis" })).toHaveCount(0);
   await expect(tree.getByRole("link", { name: "The exit" })).toHaveAttribute("href", "/docs/papers/the-exit");
   await expect(tree.getByText("Papers", { exact: true })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "On this page" }).getByRole("link")).toHaveText(["What the final Hall must preserve", "What final means"]);
+  await expect(page.getByRole("navigation", { name: "On this page" }).getByRole("link")).toHaveText([
+    "Who can change the Hall right now?",
+    "What can the holder of the Key do, and what can't they?",
+    "What must the final Hall preserve?",
+    "What does \"final\" mean, if the Hall still needs to improve?",
+    "Why is the Key not thrown away today?",
+  ]);
 
   const search = page.getByRole("searchbox", { name: "Search the docs" });
   await search.fill("melt");

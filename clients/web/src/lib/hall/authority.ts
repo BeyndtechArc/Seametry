@@ -1,11 +1,12 @@
 import "server-only";
+import { cache } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID } from "./constants";
 
 const UPGRADEABLE_LOADER = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
 
 export type HallAuthority =
-  | { state: "observed"; program: string; programData: string; authority: string | null; slot: number; observedAt: string; source: string }
+  | { state: "observed"; program: string; programData: string; authority: string | null; deployedSlot: bigint; slot: number; observedAt: string; source: string }
   | { state: "unavailable"; program: string; reason: string; source: string };
 
 // HALL_DEVNET_RPC_URL lets the tests answer from a fixture instead of the
@@ -22,7 +23,8 @@ function endpoint() {
  * Option<Pubkey> authority: one byte, then 32 when present. None is the
  * program made final.
  */
-export async function readHallAuthority(): Promise<HallAuthority> {
+// cache(): one devnet read per request, however many parts of a page show it.
+export const readHallAuthority = cache(async (): Promise<HallAuthority> => {
   const program = REGISTER_HALL_PROGRAM_ID;
   const source = "Solana devnet RPC, upgradeable loader";
   try {
@@ -49,6 +51,7 @@ export async function readHallAuthority(): Promise<HallAuthority> {
       program: program.toBase58(),
       programData: programData.toBase58(),
       authority: present ? new PublicKey(value.data.subarray(13, 45)).toBase58() : null,
+      deployedSlot: value.data.readBigUInt64LE(4),
       slot: context.slot,
       observedAt: new Date().toISOString(),
       source,
@@ -56,4 +59,4 @@ export async function readHallAuthority(): Promise<HallAuthority> {
   } catch (error) {
     return { state: "unavailable", program: program.toBase58(), reason: `Devnet did not answer: ${error instanceof Error ? error.message : String(error)}`, source };
   }
-}
+});
