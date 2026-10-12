@@ -353,7 +353,14 @@ export function AllocationFlow({
           // A missed poll is retried; the signature stays on screen either way.
         }
       }
-      update(mint, { note: "No confirmation within a minute. The signature below shows where it stands." });
+      // Unconfirmed is not failed: the purchase may still land, so it is never
+      // retried from this plan. Left in "sending", the Key read busy for good.
+      update(mint, {
+        phase: "failed",
+        retryable: false,
+        uncertain: true,
+        note: "No confirmation within a minute. It may still settle; check wallet activity and the signature below before buying this again.",
+      });
     },
     [update, walletAddress],
   );

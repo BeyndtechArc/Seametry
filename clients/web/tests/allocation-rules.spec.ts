@@ -500,6 +500,42 @@ test("a published basket buys every constituent from its record with one Key pre
   await expect(page.getByText("Purchases settled", { exact: true })).toBeVisible();
 });
 
+test("a basket purchase that mainnet never confirms ends as a wallet check, not a purchase stuck sending", async ({ page }) => {
+  await page.clock.install();
+  await registerTestWallet(page, { trusted: true });
+  const basket = findAllocationIndex("prime-seven")!;
+  const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
+  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: wallet, recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
+  const prepared = {
+    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
+    expiresAt: new Date(Date.now() + 600_000).toISOString(), floorAtoms: "1", outAtoms: "1", outScale: 6,
+    routingFeeBps: 20, routingFeeAtoms: "2000", priorityFeeLamports: "0", route: ["Test route"],
+    contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
+  };
+  let submits = 0;
+  await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: basket.members.map(() => prepared) }));
+  await page.route("**/api/allocation/submit", (route) => {
+    submits += 1;
+    return route.fulfill({ json: { signature: `unconfirmed-signature-${submits}` } });
+  });
+  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "processed" } }));
+
+  await page.goto("/app/baskets/prime-seven?amount=7");
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  const order = page.getByRole("region", { name: "Buy Prime Seven" });
+  await order.getByRole("button", { name: "Buy basket" }).click();
+  await expect.poll(() => submits).toBe(basket.members.length);
+  // The page polls each signature every two seconds for a minute; run the page's clock past that.
+  for (let tick = 0; tick < 34; tick += 1) {
+    await page.clock.runFor(2000);
+    await page.waitForTimeout(40);
+  }
+  await expect(page.getByText(`${basket.members.length} submissions need a wallet activity check.`)).toBeVisible();
+  await expect(page.getByText("Check wallet activity", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Sending/)).toHaveCount(0);
+});
+
 test("a remix buys at the weights the reader set, exactly, and is recorded as a remix", async ({ page }) => {
   await registerTestWallet(page, { trusted: true });
   const basket = findAllocationIndex("prime-seven")!;
