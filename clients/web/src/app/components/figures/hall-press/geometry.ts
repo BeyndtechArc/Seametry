@@ -319,6 +319,8 @@ export const MOVES = {
   channelUnits: CHANNEL_TO - CHANNEL_FROM - 8,
   // A unit bound for a frozen leg stops against its lowered gate blade.
   gateStopUnits: GATE_X - 0.8 - UNIT_FRONT - 0.4,
+  // A melted share leaves the die as one Claim per leg, each flying to its slot in the rack.
+  dieToChit: LEGS.map((leg) => k.axisVector(P, [CHIT_MID[0], leg.y, CHIT_MID[2] - DIE_TOP])),
   chitToWallet: LEGS.map((leg, legIndex) =>
     k.axisVector(P, [WALLET.x + 23 - CHIT_MID[0], WALLET_LANES[legIndex] - leg.y, WALLET_FLOOR + INGOT_H - CHIT_MID[2]])),
 };

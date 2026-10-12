@@ -112,6 +112,7 @@
   --sm-status-success: #8FCBA4;
   --sm-status-warning: #E3C178;
   --sm-status-error: #DEA098;
+  --sm-figure-frozen: #B84C40;
   --sm-feature-ground: #171C03;
   --sm-feature-sheet: #1F2507;
   --sm-feature-raised: #2A310F;
@@ -143,6 +144,7 @@
     --sm-status-success: #2E6947;
     --sm-status-warning: #7B5915;
     --sm-status-error: #A3433A;
+    --sm-figure-frozen: #A3433A;
     --sm-feature-ground: #B8C56A;
     --sm-feature-sheet: #C5D17C;
     --sm-feature-raised: #D3DC94;
@@ -174,6 +176,7 @@
   --sm-status-success: #2E6947;
   --sm-status-warning: #7B5915;
   --sm-status-error: #A3433A;
+  --sm-figure-frozen: #A3433A;
   --sm-feature-ground: #B8C56A;
   --sm-feature-sheet: #C5D17C;
   --sm-feature-raised: #D3DC94;
@@ -204,6 +207,7 @@
   --sm-status-success: #8FCBA4;
   --sm-status-warning: #E3C178;
   --sm-status-error: #DEA098;
+  --sm-figure-frozen: #B84C40;
   --sm-feature-ground: #171C03;
   --sm-feature-sheet: #1F2507;
   --sm-feature-raised: #2A310F;
@@ -234,6 +238,7 @@
   --sm-status-success: #2E6947;
   --sm-status-warning: #7B5915;
   --sm-status-error: #A3433A;
+  --sm-figure-frozen: #A3433A;
   --sm-feature-ground: #B8C56A;
   --sm-feature-sheet: #C5D17C;
   --sm-feature-raised: #D3DC94;
@@ -264,6 +269,7 @@
   --sm-status-success: #8FCBA4;
   --sm-status-warning: #E3C178;
   --sm-status-error: #DEA098;
+  --sm-figure-frozen: #B84C40;
   --sm-feature-ground: #171C03;
   --sm-feature-sheet: #1F2507;
   --sm-feature-raised: #2A310F;

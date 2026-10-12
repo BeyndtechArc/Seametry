@@ -17,9 +17,7 @@
   --press-lit: var(--sm-accent-touch);
   --press-lit-top: var(--sm-accent-touch);
   --press-lit-shade: var(--sm-accent-touchPressed);
-  /* No orange token exists: warning alone read mustard-brown and error alone
-     read red, so a frozen leg takes their even blend (Storm, 12 October 2026). */
-  --press-frozen-ink: color-mix(in srgb, var(--sm-status-warning) 50%, var(--sm-status-error));
+  --press-frozen-ink: var(--sm-figure-frozen);
   --press-frozen: color-mix(in srgb, var(--press-frozen-ink) 72%, var(--press-paper));
   --press-frozen-shade: var(--press-frozen-ink);
   position: relative;

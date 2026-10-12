@@ -87,10 +87,18 @@
       },
       "status": {
         "$type": "color",
-        "$description": "Reserved for purchase outcome icons, where meaning is repeated in text, and the hero instrument's frozen leg (warning blended evenly with error).",
+        "$description": "Reserved for purchase outcome icons. Meaning is repeated in text.",
         "success": { "$value": "#8FCBA4" },
         "warning": { "$value": "#E3C178" },
         "error": { "$value": "#DEA098" }
+      },
+      "figure": {
+        "$type": "color",
+        "$description": "Reserved for hero instruments' drawn parts. Never text and never a surface.",
+        "frozen": {
+          "$value": "#B84C40",
+          "$description": "An issuer-frozen leg: its collar, padlock and held Claim. A saturated brick, because status.error is a pastel in dark and read as pink (Storm, 12 October 2026)."
+        }
       },
       "feature": {
         "$type": "color",
@@ -199,10 +207,18 @@
       },
       "status": {
         "$type": "color",
-        "$description": "Reserved for purchase outcome icons, where meaning is repeated in text, and the hero instrument's frozen leg (warning blended evenly with error).",
+        "$description": "Reserved for purchase outcome icons. Meaning is repeated in text.",
         "success": { "$value": "#2E6947" },
         "warning": { "$value": "#7B5915" },
         "error": { "$value": "#A3433A" }
+      },
+      "figure": {
+        "$type": "color",
+        "$description": "Reserved for hero instruments' drawn parts. Never text and never a surface.",
+        "frozen": {
+          "$value": "#A3433A",
+          "$description": "An issuer-frozen leg: its collar, padlock and held Claim, in a muted brick (Storm, 12 October 2026)."
+        }
       },
       "feature": {
         "$type": "color",

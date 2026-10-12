@@ -5,7 +5,7 @@ import { melt } from "@/lib/hall/recipe";
 import styles from "./press.module.css";
 
 type Flat = [number, number];
-type Moves = { ramPerUnit: Flat; channelPerUnit: Flat; gateDrop: Flat; coinToStack: Flat; stackStep: Flat; chitToWallet: Flat[]; strokeUnits: number; channelUnits: number; gateStopUnits: number };
+type Moves = { ramPerUnit: Flat; channelPerUnit: Flat; gateDrop: Flat; coinToStack: Flat; stackStep: Flat; chitToWallet: Flat[]; dieToChit: Flat[]; strokeUnits: number; channelUnits: number; gateStopUnits: number };
 type Move = "strike" | "melt" | "freeze" | "thaw";
 /** Claims filed in the rack and ingots delivered to the wallet are per leg. */
 type Model = { supply: bigint; frozen: number | null; held: bigint[]; delivered: number[] };
@@ -111,9 +111,12 @@ export function HallPressLive({ svg, moves, formula, initialSupply, stackMax, wa
       const { supply, frozen } = model;
       legs.forEach((leg) => show(`unit-${leg}`, true));
       if (frozen !== null) {
-        // Strike is one transaction: the frozen leg cannot move in, so every leg goes back.
+        // Strike is one transaction: the frozen leg jolts against its closed gate,
+        // and every leg stops with it and is gone, because nothing moved. Sliding
+        // back into the canisters read as a redemption, which this is not.
         await run(800, (t) => units(phase(t, 0, 1) * moves.gateStopUnits));
-        await run(900, (t) => units((1 - phase(t, 0.35, 1)) * moves.gateStopUnits));
+        await run(420, (t) => units(moves.gateStopUnits - Math.sin(t * Math.PI * 3) * (1 - t) * 2.4));
+        await wait(500);
       } else {
         await run(900, (t) => units(phase(t, 0, 1) * moves.channelUnits));
         legs.forEach((leg) => show(`unit-${leg}`, false));
@@ -142,9 +145,19 @@ export function HallPressLive({ svg, moves, formula, initialSupply, stackMax, wa
       await run(520, (t) => ram(phase(t, 0, 1)));
       show("coin", false);
       part("coin")?.setAttribute("transform", "");
+      // The ram lifts off one Claim per leg, which rise from the die and file into the rack.
+      legs.forEach((leg) => {
+        part(`chit-${leg}`)?.setAttribute("transform", translate(moves.dieToChit[leg], -1));
+        show(`chit-${leg}`, true);
+      });
       await run(520, (t) => ram(1 - phase(t, 0, 1)));
+      await run(1100, (t) => legs.forEach((leg, order) => {
+        const by = phase(t, order * 0.1, 0.8 + order * 0.1);
+        part(`chit-${leg}`)?.setAttribute("transform", translate(moves.dieToChit[leg], by - 1, Math.sin(by * Math.PI) * 30));
+      }));
+      legs.forEach((leg) => part(`chit-${leg}`)?.setAttribute("transform", ""));
       commit({ supply: supply - 1n, held: held.map((value, leg) => value + credited[leg]) });
-      await wait(700);
+      await wait(600);
       // Delivery is each issuer's: every leg but a frozen one leaves the rack.
       await deliver(legs.filter((leg) => leg !== frozen));
     }

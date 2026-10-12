@@ -33,6 +33,9 @@ export const theme = {
       "warning": "#E3C178",
       "error": "#DEA098"
     },
+    "figure": {
+      "frozen": "#B84C40"
+    },
     "feature": {
       "ground": "#171C03",
       "sheet": "#1F2507",
@@ -75,6 +78,9 @@ export const theme = {
       "success": "#2E6947",
       "warning": "#7B5915",
       "error": "#A3433A"
+    },
+    "figure": {
+      "frozen": "#A3433A"
     },
     "feature": {
       "ground": "#B8C56A",

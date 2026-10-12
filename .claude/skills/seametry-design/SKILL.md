@@ -50,7 +50,7 @@ This is not internal reasoning to skip under a short prompt. `scripts/check-buil
 - No raw colours or font families. No emoji. No em or en dashes. No arrows appended to actions. No all-caps labels.
 - No spinners. Loading is a rule-line skeleton with a sentence naming what is loading. The one exception is the status mark of a step that is running in a Step register (Storm, 6 October 2026): a request the user started and is waiting on shows that it is alive.
 - GSAP on web, Reanimated and Skia on mobile. No other animation library.
-- Gains and losses carry no colour. Decisions: ALLOW in primary text, WARN in provenance blue, BLOCK as an inverted stamp. No red anywhere.
+- Gains and losses carry no colour. Decisions: ALLOW in primary text, WARN in provenance blue, BLOCK as an inverted stamp. No red anywhere, with one exception: `figure.frozen` marks an issuer-frozen leg inside a hero instrument's drawing, never text, a surface or a decision (Storm, 12 October 2026).
 - Never an estimate, never a price opinion, never true, correct, fair, safe, guaranteed or pure about a value.
 - A source that said nothing is shown as "no observation", never omitted.
 - Desktop actions use the square registration-control silhouette with protruding edge rules. Full-round controls are reserved for compact mobile and named special cases.
