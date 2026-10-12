@@ -39,8 +39,7 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   await expect(page.getByRole("heading", { level: 1, name: "Open AP ETFs" })).toBeVisible();
   const press = page.getByRole("figure", { name: "The Hall's press" });
   await expect(press.getByRole("img", { name: "The Hall's press" })).toBeVisible();
-  await expect(press.getByRole("button", { name: "Strike 1 share" })).toBeVisible();
-  await expect(press.getByRole("button", { name: "Melt 1 share" })).toBeVisible();
+  await expect(press.locator("button, input, [role=status], figcaption")).toHaveCount(0);
   await expect(page.getByText("Recorded on Solana devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A melt survives the freeze." })).toBeVisible();
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
@@ -413,9 +412,9 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   expect(bounds.right).toBeLessThanOrEqual(360);
   await page.goto("/");
   await expect(page.getByTestId("change-register").getByTestId("mechanism-plate")).toHaveCount(4);
-  // The press drawing and its controls stay inside a 360px screen.
+  // The press drawing stays inside a 360px screen.
   const pressBounds = await page.getByRole("figure", { name: "The Hall's press" }).evaluate((element) => {
-    const parts = [element, ...element.querySelectorAll("svg, button, label")].map((child) => child.getBoundingClientRect());
+    const parts = [element, ...element.querySelectorAll("svg")].map((child) => child.getBoundingClientRect());
     return parts.every((box) => box.left >= 0 && box.right <= window.innerWidth + 0.5);
   });
   expect(pressBounds).toBe(true);
@@ -479,7 +478,6 @@ test("desktop rails share the page content edge", async ({ page }) => {
   });
   expect(activeTreatment.color).toBe(activeTreatment.expected);
   expect(activeTreatment.rule).toBe("none");
-  await expect(page.getByRole("figure", { name: "The Hall's press" }).getByText("Illustrative Formula")).toBeVisible();
   await page.goto("/app");
   const edges = await page.evaluate(() => {
     const header = document.querySelector<HTMLElement>("[data-testid='app-header-inner']");
@@ -494,32 +492,29 @@ test("desktop rails share the page content edge", async ({ page }) => {
   expect(edges?.headerRight).toBe(edges?.mainRight);
 });
 
-test("the landing's press strikes, refuses Strike on a frozen leg, and delivers every other leg on Melt", async ({ page }) => {
+test("the landing's press plays on its own, and a pointer over it does not stop it", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   const press = page.getByRole("figure", { name: "The Hall's press" });
-  const status = press.getByRole("status");
+  await press.hover();
+  await press.click();
+  // The first tour move is a Strike, which drops the ram.
+  await expect(press.locator("[data-part='ram-lower']")).toHaveAttribute("transform", /translate\((?!0\.00 0\.00)/, { timeout: 8000 });
+});
+
+test("under reduced motion the press holds still on a Melt that delivered around a frozen leg", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/", { waitUntil: "networkidle" });
+  const press = page.getByRole("figure", { name: "The Hall's press" });
   const held = press.locator("[data-part='chit-1']");
   const ingots = (leg: number) => press.locator(`[data-part^='ingot-${leg}-']:not([data-hidden])`);
-  // The touched figure stops its idle tour, so only the reader's moves run.
-  await expect(async () => {
-    await press.getByRole("button", { name: "Strike 1 share" }).click();
-    await expect(status).toHaveText("Struck 1 share for 2 AAPLx, 1.5 NVDAx and 0.25 TSLAx.", { timeout: 6000 });
-  }).toPass({ timeout: 20_000 });
-  await press.getByRole("checkbox", { name: "Issuer freezes NVDAx" }).check();
-  await press.getByRole("button", { name: "Strike 1 share" }).click();
-  await expect(status).toHaveText("Strike refused: NVDAx is frozen by its issuer, so nothing moved.");
-  await press.getByRole("button", { name: "Melt 1 share" }).click();
-  await expect(status).toHaveText("Melted 1 share: 2 AAPLx and 0.25 TSLAx delivered. 1.5 NVDAx held as a Claim until the freeze lifts.", { timeout: 10_000 });
-  // The drawing says the same: the frozen leg's Claim stays in the rack, marked, and the others reached the wallet.
   await expect(held).toHaveAttribute("data-held", "");
   await expect(held).not.toHaveAttribute("data-hidden");
+  await expect(press.locator("[data-part='band-1']")).not.toHaveAttribute("data-hidden");
+  await expect(press.locator("[data-part='padlock-1']")).not.toHaveAttribute("data-hidden");
   await expect(ingots(0)).toHaveCount(1);
   await expect(ingots(1)).toHaveCount(0);
   await expect(ingots(2)).toHaveCount(1);
-  await press.getByRole("checkbox", { name: "Issuer freezes NVDAx" }).uncheck();
-  await expect(status).toHaveText("Freeze lifted: the held 1.5 NVDAx Claim is delivered.", { timeout: 10_000 });
-  await expect(held).toHaveAttribute("data-hidden", "");
-  await expect(ingots(1)).toHaveCount(1);
+  await expect(press.locator("[data-part^='chit-']:not([data-hidden])")).toHaveCount(1);
 });
 
 test("the app keeps its reading pages in the status bar", async ({ page }) => {

@@ -87,7 +87,7 @@
       },
       "status": {
         "$type": "color",
-        "$description": "Reserved for purchase outcome icons. Meaning is repeated in text.",
+        "$description": "Reserved for purchase outcome icons, where meaning is repeated in text, and the hero instrument's frozen leg (warning blended evenly with error).",
         "success": { "$value": "#8FCBA4" },
         "warning": { "$value": "#E3C178" },
         "error": { "$value": "#DEA098" }
@@ -199,7 +199,7 @@
       },
       "status": {
         "$type": "color",
-        "$description": "Reserved for purchase outcome icons. Meaning is repeated in text.",
+        "$description": "Reserved for purchase outcome icons, where meaning is repeated in text, and the hero instrument's frozen leg (warning blended evenly with error).",
         "success": { "$value": "#2E6947" },
         "warning": { "$value": "#7B5915" },
         "error": { "$value": "#A3433A" }

@@ -124,6 +124,14 @@ export function gateBlade(y: number) {
   return S(k.slabOf({ x: GATE_X - 0.8, y: y - 5.6, w: 1.6, d: 11.2, r: 0.3 }, 9, 7, P, 2), { tone: "hi", crease: "lo" });
 }
 
+/** A collar clamped round a frozen leg's canister, so the frozen asset reads from across the bench. */
+export function freezeBand(y: number) {
+  return [
+    S(k.cylinder(CAN_X, y, CAN_R + 1, 14, 9, P, 44, 0.4), { tone: "hi", crease: "lo" }),
+    L(k.sideArc(CAN_X, y, CAN_R + 1, 18.5, P, 30), { tone: "lo" }),
+  ].join("");
+}
+
 /** An issuer's padlock set on a canister's lid, where a frozen leg is seen first. */
 export function padlock(y: number) {
   const out: string[] = [];

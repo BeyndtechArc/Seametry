@@ -287,9 +287,9 @@
   display: grid;
   grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
   gap: var(--sm-space-9);
-  min-height: calc(var(--sm-space-13) * 4);
+  min-height: calc(var(--sm-space-13) * 3);
   margin-top: var(--sm-space-8);
-  padding: var(--sm-space-10);
+  padding: var(--sm-space-8) var(--sm-space-10);
   overflow: hidden;
   color: var(--sm-feature-text-secondary);
   background: var(--sm-feature-ground);
@@ -355,6 +355,19 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--sm-space-6);
+}
+
+/* The hero's second action keeps its glyph in an ink cell beside the green
+   primary (Storm, 12 October 2026); elsewhere a quiet action's glyph sits
+   behind a hairline. */
+.inkAction {
+  align-items: stretch;
+}
+
+.inkAction > span:last-child {
+  border-left: 0;
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
 }
 
 .section {

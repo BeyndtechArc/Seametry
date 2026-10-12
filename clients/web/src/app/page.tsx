@@ -6,9 +6,9 @@ import {
   Grade,
   ProofStrip,
   ProvenanceLine,
+  QuietLink,
   RouteAction,
   Stamp,
-  TextAction,
 } from "@seametry/ui";
 import { MechanismPlate } from "@seametry/ui/plates";
 import { HallPress } from "./components/figures/hall-press/figure";
@@ -47,7 +47,7 @@ export default async function Home() {
           <p>Any wallet can create or redeem shares from a fixed Formula. Seametry opens every constituent and its issuer powers before the basket moves.</p>
           <div className={styles.heroActions}>
             <RouteAction href="/app">Open app</RouteAction>
-            <TextAction href="/docs/how-it-works">Read mechanism</TextAction>
+            <QuietLink className={styles.inkAction} href="/docs/how-it-works" icon="arrow-up-right">Read mechanism</QuietLink>
           </div>
         </div>
         <HallPress />

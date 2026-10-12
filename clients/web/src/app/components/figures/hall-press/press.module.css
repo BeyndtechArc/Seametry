@@ -17,15 +17,15 @@
   --press-lit: var(--sm-accent-touch);
   --press-lit-top: var(--sm-accent-touch);
   --press-lit-shade: var(--sm-accent-touchPressed);
+  /* No orange token exists: warning alone read mustard-brown and error alone
+     read red, so a frozen leg takes their even blend (Storm, 12 October 2026). */
+  --press-frozen-ink: color-mix(in srgb, var(--sm-status-warning) 50%, var(--sm-status-error));
+  --press-frozen: color-mix(in srgb, var(--press-frozen-ink) 72%, var(--press-paper));
+  --press-frozen-shade: var(--press-frozen-ink);
   position: relative;
-  display: grid;
-  gap: var(--sm-space-4);
+  align-self: center;
   min-width: 0;
-}
-
-.figure {
   margin: 0;
-  min-width: 0;
 }
 
 :global(:root[data-theme="dark"]) .press {
@@ -89,104 +89,16 @@
    painter's order, ready to show. */
 .stage [data-hidden] { visibility: hidden; }
 
-/* An issuer's freeze is a warning about the claim, so the padlock and the
-   Claim it holds back take provenance purple, never red (foundations
-   section 2). Purple marks only these two parts. */
+/* A frozen leg takes a muted warm tone (Storm, 12 October 2026): its
+   canister's collar, its padlock and the Claim it holds back in the rack.
+   Nothing else in the drawing takes a hue but the lit share. */
+.stage [data-part^="band"] :global(.iso-fill),
+.stage [data-part^="band"] :global(.iso-top),
 .stage [data-part^="padlock"] :global(.iso-fill),
 .stage [data-part^="padlock"] :global(.iso-top),
 .stage [data-held] :global(.iso-fill),
-.stage [data-held] :global(.iso-top) { fill: var(--sm-accent-provenance); }
+.stage [data-held] :global(.iso-top) { fill: var(--press-frozen); }
+.stage [data-part^="band"] :global(.iso-shade),
 .stage [data-part^="padlock"] :global(.iso-shade),
-.stage [data-held] :global(.iso-shade) { fill: color-mix(in srgb, var(--sm-accent-provenance) 72%, var(--sm-text-primary)); }
-.stage [data-part^="padlock"] :global(.iso-line[data-tone="hi"]) { stroke: var(--sm-accent-provenance); }
-
-.panel {
-  display: grid;
-  gap: var(--sm-space-3);
-  padding-top: var(--sm-space-3);
-  border-top: 0.5px solid var(--sm-line-rule);
-}
-
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sm-space-3);
-}
-
-.controls button {
-  min-height: var(--sm-size-target);
-  padding: 0 var(--sm-space-5);
-  border: 0;
-  border-top: 0.5px solid var(--sm-line-rule);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-text-primary);
-  background: var(--sm-surface-raised);
-  font: inherit;
-  font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-medium);
-  cursor: pointer;
-}
-
-.controls button:first-child {
-  border: 0;
-  color: var(--sm-text-onTouch);
-  background: var(--sm-accent-touch);
-}
-
-.controls button:disabled {
-  color: var(--sm-text-tertiary);
-  background: transparent;
-  cursor: default;
-}
-
-.controls label {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sm-space-2);
-  min-height: var(--sm-size-target);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  cursor: pointer;
-}
-
-.controls input {
-  accent-color: var(--sm-accent-touch);
-}
-
-.controls button:focus-visible,
-.controls input:focus-visible {
-  outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-1);
-}
-
-.controls button {
-  white-space: nowrap;
-}
-
-.source {
-  margin-left: auto;
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.status {
-  margin: 0;
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  line-height: 1.5;
-}
-
-/* Provenance purple measured 3.87:1 as text on the light hero, under the
-   4.5:1 floor, so a frozen state is marked beside the words rather than in
-   them; as a mark it needs 3:1. */
-.status[data-frozen]::before {
-  content: "";
-  display: inline-block;
-  width: var(--sm-space-2);
-  height: var(--sm-space-2);
-  margin-right: var(--sm-space-2);
-  vertical-align: middle;
-  background: var(--sm-accent-provenance);
-}
-
+.stage [data-held] :global(.iso-shade) { fill: var(--press-frozen-shade); }
+.stage [data-part^="padlock"] :global(.iso-line[data-tone="hi"]) { stroke: var(--press-frozen-shade); }

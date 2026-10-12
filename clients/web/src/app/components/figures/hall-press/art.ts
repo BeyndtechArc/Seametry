@@ -1,4 +1,4 @@
-import { HEIGHT, LEGS, STACK_MAX, STATIC, WALLET_DEPTH, WIDTH, chit, coin, gateBlade, padlock, ramLower, ramUpper, stackCoin, unit, walletIngot } from "./geometry";
+import { HEIGHT, LEGS, STACK_MAX, STATIC, WALLET_DEPTH, WIDTH, chit, coin, freezeBand, gateBlade, padlock, ramLower, ramUpper, stackCoin, unit, walletIngot } from "./geometry";
 
 const group = (part: string, body: string, extra = "") => `<g data-part="${part}"${extra}>${body}</g>`;
 const hidden = " data-hidden=\"\"";
@@ -15,6 +15,7 @@ const hidden = " data-hidden=\"\"";
 export function pressSvg() {
   const legs = LEGS.map((leg, index) => [
     STATIC.canisters[index],
+    group(`band-${index}`, freezeBand(leg.y), hidden),
     STATIC.channels[index],
     group(`unit-${index}`, unit(leg.y), hidden),
     group(`gate-${index}`, gateBlade(leg.y)),
