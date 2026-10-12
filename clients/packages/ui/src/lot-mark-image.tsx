@@ -43,6 +43,12 @@ export function LotMarkImage({
       height={40}
       loading="lazy"
       onError={() => setFailedSrc(src)}
+      // The server renders this img, so a request that fails before hydration
+      // fires its error event before onError exists. A finished request with
+      // no pixels is that same failure, read when React attaches.
+      ref={(image) => {
+        if (image?.complete && image.naturalWidth === 0) setFailedSrc(src);
+      }}
       data-testid="lot-mark"
     />
   );
