@@ -231,7 +231,16 @@ export function Positions() {
     for (let index = 0; index < batchSaleLegs.length; index += 1) {
       const leg = batchSaleLegs[index];
       const prepared = leg.prepared!;
-      const signedId = signedSignature(signed[index].signatures[0]);
+      // A wallet can hand back a leg it did not sign. Uncaught here, that
+      // stalled the whole exit in "checking" with no message; the leg is now
+      // named and skipped, and nothing is sent for it.
+      let signedId: string;
+      try {
+        signedId = signedSignature(signed[index].signatures[0]);
+      } catch {
+        setBatchSaleProblem(`The wallet returned the ${leg.symbol} sale without a signature. Nothing was sent for ${leg.symbol}.`);
+        continue;
+      }
       const entry: LocalTrade = {
         signature: signedId,
         wallet,
