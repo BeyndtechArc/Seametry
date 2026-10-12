@@ -47,7 +47,8 @@ const stateLabels: Record<EvidenceState, string> = {
   empty: "No observation yet",
 };
 
-const gradeDefinitions: Record<GradeName, string> = {
+// Exported so the docs' Grade table reads the same sentence the badge shows on focus.
+export const gradeDefinitions: Record<GradeName, string> = {
   Entitlement: "Redeemable one to one into a security entitlement through a regulated broker.",
   Certificate: "A tracker certificate that settles to cash through its issuer.",
   Interest: "A proportional interest in a vehicle holding private shares.",

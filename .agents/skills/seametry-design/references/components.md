@@ -264,6 +264,14 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Data:** the heading list compiled from the page itself.
 **Rules:** text only, `text.secondary`, the hovered entry in primary. Never a progress bar or scroll-linked animation.
 
+### Docs artifact
+**Answers:** what does this actually do when I move it?
+**Anatomy:** a sunken well set into the prose (`surface.sheet`, ruled top and bottom), holding one working instrument: a bench of sliders and toggles with a live ledger and its arithmetic in the digest face, a comparison of two outcomes side by side, a picker over captured evidence, an evidence chart, or a diagram drawn from geometry. A caption names where every figure comes from.
+**Identity:** the reader is the operator. The first action in a well takes the touch fill; any others are quiet. Outcomes read by weight and a provenance rule, never by red or green.
+**States:** initial (the specification's or evidence's own starting state); moved; reset ("Start again"); for evidence pickers, any captured instrument including refused ones.
+**Data:** only what the product runs or reads: ported arithmetic replayed against the shared vectors in a test, or the committed evidence. Quantities chosen for an example are labelled as illustrative in the caption, and the behaviour they show is the product's, cited.
+**Rules:** charts and diagrams colour through classes, never style attributes (the nonce policy refuses them). No animation while idle. Every section of a docs page answers one question in the reader's words, in plain sentences first, then a worked example, a code block or an artifact.
+
 ### Docs search
 **Answers:** which page talks about this?
 **Anatomy:** a search Field at the top of the page tree; results replace the tree while a query is present, each a page title with the matching heading or sentence beneath it.

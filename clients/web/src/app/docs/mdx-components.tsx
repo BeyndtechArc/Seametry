@@ -3,7 +3,21 @@ import type { ComponentProps } from "react";
 import { ClaimLine, Digest, RouteAction, Stamp, TextAction } from "@seametry/ui";
 import { REGISTER_HALL_PROGRAM_ID } from "@/lib/hall/constants";
 import { readHallAuthority } from "@/lib/hall/authority";
+import recipeVectors from "../../../../../shared/spec/recipe/vectors.json";
+import { FreezeBench } from "./artifacts/freeze-bench";
+import { GradeTable, InstrumentExplorer, PowerCounts } from "./artifacts/evidence";
+import { LoopDiagram } from "./artifacts/loop-diagram";
+import { StrikeMeltBench } from "./artifacts/strike-melt-bench";
 import styles from "./docs.module.css";
+
+// The bench starts where the specification's rounding vector starts, so the
+// first numbers a reader moves are the ones the Hall is tested against.
+const roundingVector = recipeVectors.scenarios.find((scenario) => scenario.name === "strike and melt with rounding")!;
+
+function StrikeMelt() {
+  const [initial] = roundingVector.steps;
+  return <StrikeMeltBench scale={roundingVector.scale} initial={{ ledger: initial.ledger, unclaimed: initial.unclaimed, supply: initial.supply }} />;
+}
 
 // The register Hall, the one the product reads. The page this replaced showed
 // the scratch Hall from the demo transcript beside a link to the register
@@ -66,4 +80,10 @@ export const mdxComponents = {
   TextAction,
   KeyState,
   InspectHallProgram,
+  StrikeMelt,
+  FreezeBench,
+  GradeTable,
+  PowerCounts,
+  InstrumentExplorer,
+  LoopDiagram,
 };

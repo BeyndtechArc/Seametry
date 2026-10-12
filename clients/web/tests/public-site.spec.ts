@@ -92,9 +92,16 @@ test("the public narrative and Key pages keep their claims bounded", async ({ pa
   await page.goto("/docs/how-it-works");
   await expect(page.getByRole("heading", { level: 1, name: "How it works" })).toBeVisible();
   await expect(page.getByRole("main")).toContainText("The basket is a mechanism.");
-  await expect(page.getByRole("heading", { level: 2, name: "A claim is not the underlying." })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "A bundle stops at assembly." })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "The authorized participant set is everyone." })).toBeVisible();
+  // Each section answers one question a reader asks, in the reader's words.
+  await expect(page.getByRole("article").getByRole("heading", { level: 2 })).toHaveText([
+    "What do I actually hold when I buy a tokenized stock?",
+    "What can the issuer still do to my token?",
+    "Why is a bundle of tokens not an ETF?",
+    "How does a Strike turn constituents into shares?",
+    "What happens when I Melt, and what if an issuer freezes one constituent?",
+    "Who is allowed to Strike and Melt?",
+    "Does the Hall ever need a price?",
+  ]);
 
   await page.goto("/docs/the-key");
   await expect(page.getByRole("heading", { level: 1, name: "The Key" })).toBeVisible();
@@ -110,11 +117,48 @@ test("the public narrative and Key pages keep their claims bounded", async ({ pa
   await expect(page.getByRole("link", { name: "Inspect the program" })).toHaveAttribute("href", /GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE\?cluster=devnet$/);
 });
 
+test("How it works lets a reader run the Hall's arithmetic, a frozen leg and any assay record", async ({ page }) => {
+  await page.goto("/docs/how-it-works");
+
+  // The bench starts at the specification's rounding vector: 7 shares cost 7
+  // atoms and a straight Melt credits 6, as shared/spec/recipe/vectors.json says.
+  const bench = page.getByRole("figure", { name: "Strike and Melt bench" });
+  // A value set before hydration stays in the DOM while React's state does
+  // not, and refilling the same value fires no change. Each retry moves
+  // through another value first, so a live page always sees a change.
+  await expect(async () => {
+    await bench.getByRole("slider").fill("6");
+    await bench.getByRole("slider").fill("7");
+    await expect(bench.getByLabel("The arithmetic for this many shares")).toContainText("Strike pays  7 atoms", { timeout: 1000 });
+  }).toPass();
+  await expect(bench.getByLabel("The arithmetic for this many shares")).toContainText("Melt credits 6 atoms");
+  await expect(bench.getByText(/you pay 7, your Claim gets 6\. 1 atom stays with the Hall/)).toBeVisible();
+  await bench.getByRole("button", { name: "Strike 7" }).click();
+  await expect(bench.getByText("1,000,010", { exact: true })).toBeVisible();
+
+  // One frozen leg: the obvious redemption reverts everything; the Hall delivers the rest.
+  const freeze = page.getByRole("figure", { name: "One frozen leg, two exits" });
+  await expect(freeze.getByRole("checkbox", { name: "NVDAx" })).toBeChecked();
+  await expect(freeze.getByRole("region", { name: "The obvious redemption" }).getByText("Reverts", { exact: true })).toHaveCount(3);
+  await freeze.getByRole("button", { name: "Melt 10 shares" }).click();
+  await freeze.getByRole("button", { name: "Withdraw each leg" }).click();
+  await expect(freeze.getByText(/^2 of 3 legs delivered\./)).toBeVisible();
+  await freeze.getByRole("checkbox", { name: "NVDAx" }).uncheck();
+  await expect(freeze.getByRole("region", { name: "The obvious redemption" }).getByText("Reverts", { exact: true })).toHaveCount(0);
+
+  // Any captured instrument's record, as the policy engine wrote it.
+  const explorer = page.getByRole("figure", { name: "Read any captured instrument" });
+  await explorer.getByRole("combobox").selectOption("IREN");
+  await expect(explorer.getByLabel("IREN assay record")).toContainText("decision  BLOCK");
+  await expect(explorer.getByText(/realises a rate 254 basis points worse/)).toBeVisible();
+});
+
 test("the docs carry one page tree, search with stated states, and a contents rail", async ({ page }) => {
   await page.goto("/docs/the-key");
   const tree = page.getByRole("navigation", { name: "Docs" });
   await expect(tree.getByRole("link", { name: "The Key" })).toHaveAttribute("aria-current", "page");
-  await expect(tree.getByRole("link", { name: "The thesis" })).toHaveAttribute("href", "/thesis");
+  // The thesis has its own page and is not part of the docs tree (Storm, 12 October 2026).
+  await expect(tree.getByRole("link", { name: "The thesis" })).toHaveCount(0);
   await expect(tree.getByRole("link", { name: "The exit" })).toHaveAttribute("href", "/docs/papers/the-exit");
   await expect(tree.getByText("Papers", { exact: true })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "On this page" }).getByRole("link")).toHaveText(["What the final Hall must preserve", "What final means"]);
@@ -594,6 +638,21 @@ test("no page scrolls sideways on a 320px phone", async ({ page }) => {
     // which stops a scrollbar but not a finger dragging the page sideways.
     const width = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(width, `${path} is ${width}px wide`).toBe(320);
+  }
+});
+
+test("no docs content is clipped at the right edge of a 320px phone", async ({ page }) => {
+  // scrollWidth cannot see this: the root hides horizontal overflow, so a
+  // grid item wider than the screen is cut off without the page widening.
+  await page.setViewportSize({ width: 320, height: 780 });
+  for (const path of ["/docs", "/docs/how-it-works", "/docs/the-key"]) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    const overhang = await page.evaluate(() =>
+      [...document.querySelectorAll("article, article > div > *, figure")]
+        .map((element) => ({ tag: element.tagName, label: element.getAttribute("aria-label") ?? "", right: Math.round(element.getBoundingClientRect().right) }))
+        .filter((box) => box.right > window.innerWidth),
+    );
+    expect(overhang, `${path} has content past the screen`).toEqual([]);
   }
 });
 

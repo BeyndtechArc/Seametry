@@ -1,49 +1,150 @@
 ---
 title: How it works
-description: Why a tokenized-stock bundle is not an ETF, and what the Hall changes.
+description: What a tokenized stock really is, why a bundle of them is not an ETF, and how the Hall turns constituents into shares and back.
 ---
 
 A bundle assembles tokens. An ETF adds a share whose creation and redemption
 loop remains open to participants on both sides of the market. The basket is a
-mechanism.
+mechanism. This page takes that apart one question at a time, and every
+instrument on it runs the same arithmetic and reads the same evidence as the
+product.
 
-## A claim is not the underlying.
+## What do I actually hold when I buy a tokenized stock?
 
-What does a tokenized stock put in the holder's wallet?
+A claim, not the share itself. The token in your wallet is a promise from
+whoever issued it, and different issuers make different promises under similar
+symbols.
 
-A token can represent a security entitlement, a certificate that settles to
-cash, an interest in a vehicle holding private shares, or a claim the Office
-has not classified.
+Think of a cloakroom ticket. The ticket is not the coat. What it gets you back,
+and from whom, depends on what is written on the ticket. A tokenized stock is
+the ticket; the Grade says what is written on it.
 
-Those legal shapes can trade under similar symbols while giving the holder
-different routes back to the thing named on screen.
+<GradeTable />
+
+The Grade describes the legal shape of the claim. It is never a score of
+quality, and Seametry does not turn it into one.
 
 <Stamp kind="warn" reason="Grade describes legal shape, never quality." />
 
-The issuer's on-chain controls travel beside the Grade. Seametry does not turn
-either one into a score.
+## What can the issuer still do to my token?
 
-## A bundle stops at assembly.
+More than most people expect. A token built on Solana's Token-2022 standard can
+carry powers its issuer keeps after you buy it: freezing it where it sits,
+pausing every transfer, taking it back from any wallet, changing how many you
+appear to hold. These powers are written into the token's mint account, so they
+can be read directly instead of taken on trust.
 
-What is missing after several tokens arrive in one transaction?
+Seametry reads them for every instrument it captures. Here is how often each
+power appears:
 
-The holder receives several constituent tokens. There is no separate share, no
-fixed Formula behind that share, and no mechanism that lets another participant
-close a gap between the parts and the whole.
+<PowerCounts />
 
-The loop begins at the Hall. A Strike deposits the Formula and issues shares. A
-Melt destroys shares and records a claim on every constituent. Delivery follows
-each issuer's current controls without undoing the claim.
+Pick any captured instrument to read its record exactly as the policy engine
+wrote it:
 
-## The authorized participant set is everyone.
+<InstrumentExplorer />
 
-Who can create shares or return them to the Formula?
+None of this says anything about what an issuer intends. It describes what the
+issuer is able to do, which is what decides whether a basket can still be
+redeemed on a bad day.
 
-No approval list exists. Any wallet holding the required constituents can Strike
-shares. Any wallet holding shares can Melt them without asking Seametry to
-approve the participant.
+## Why is a bundle of tokens not an ETF?
+
+Because a bundle stops when the tokens arrive. You hold several tokens, and
+that is all. There is no separate share, no fixed recipe behind that share, and
+no way for anyone else to close a gap between the price of the parts and the
+price of the whole.
+
+An ETF has a loop. Participants can turn the underlying assets into fund shares
+(creation) and fund shares back into the underlying assets (redemption). That
+loop is what keeps a share honest to its contents.
+
+<LoopDiagram />
+
+The Hall is that loop, on chain. A Strike deposits the recipe, which Seametry
+calls the Formula, and issues shares. A Melt destroys shares and records a
+Claim on every constituent.
+
+## How does a Strike turn constituents into shares?
+
+You choose how many shares you want, and the Hall works out exactly how much of
+each constituent that costs. You never choose an amount of money; you choose a
+number of shares. That rule exists so nobody can be rounded down to zero shares
+by a clever deposit, which is how a well-known kind of attack on shared vaults
+works.
+
+For each constituent the Hall computes:
+
+```text
+pay   = ceil( shares × held_by_the_hall ÷ shares_in_existence )
+```
+
+and when shares are melted:
+
+```text
+claim = floor( shares × held_by_the_hall ÷ shares_in_existence )
+```
+
+Paying rounds up. Receiving rounds down. Every rounding favours the Hall, so the
+people already holding shares can never be diluted by someone shaving
+fractions. Move the slider and watch what that means:
+
+<StrikeMelt />
+
+At the starting state, one share costs one atom to Strike, and Melting it
+straight back credits zero. That is not a fee; it is the fraction that rounding
+keeps in the Hall, so a round trip can never be used to take value for free.
+
+## What happens when I Melt, and what if an issuer freezes one constituent?
+
+This is the question the Hall was built to answer. The obvious way to redeem a
+basket is to burn the shares and send every constituent back in one
+transaction. If any single issuer has frozen its token, that one transfer fails,
+and because it is one transaction, everything fails with it. One issuer's power
+over one stock becomes a veto over your whole exit.
+
+The Hall splits the exit in two. Melt burns your shares and writes down what
+you are owed of every constituent; it touches no constituent at all, so no
+freeze, pause or hook can reach it. Then each constituent is withdrawn on its
+own. A frozen one stays yours as a named Claim, and the others arrive.
+
+Freeze a leg and try both:
+
+<FreezeBench />
+
+The same split shows in the program's own instructions:
+
+```text
+redeem    burns shares, credits a Claim on every leg     touches no constituent mint
+withdraw  delivers one leg of a Claim                    touches that one mint
+create    pulls exactly the required units, mints shares touches every mint
+```
+
+## Who is allowed to Strike and Melt?
+
+Anyone. There is no approval list. Any wallet holding the required constituents
+can Strike shares, and any wallet holding shares can Melt them, without asking
+Seametry or anyone else.
+
+In a traditional ETF only approved institutions, called authorized
+participants, may create and redeem. On the Hall the authorized participant set
+is everyone.
+
+<ClaimLine lead="Delivery stays explicit.">A constituent held back by its issuer remains a named Claim and can be withdrawn when delivery resumes.</ClaimLine>
+
+## Does the Hall ever need a price?
+
+No. Strike and Melt move quantities, not values. Neither instruction reads an
+oracle, a quote or a net asset value, so no stale or manipulated price can
+change what a Strike costs or what a Melt returns.
+
+```text
+Strike 10 shares   pays exact constituent quantities   price never read
+Melt 10 shares     credits exact constituent claims    price never read
+```
+
+Prices still matter to you as a buyer; they just never instruct the Hall.
 
 <ClaimLine lead="The Hall reads quantities.">Strike and Melt do not use an oracle, a quote or NAV as an instruction input.</ClaimLine>
-<ClaimLine lead="Delivery stays explicit.">A constituent held back by its issuer remains a named Claim and can be withdrawn when delivery resumes.</ClaimLine>
 
 <RouteAction href="/app/alloys">Inspect live Alloys</RouteAction>
