@@ -133,19 +133,23 @@ test("AI Cloud holds only admitted constituents and can be bought whole", async 
 
 test("the basket register narrows through the shared Filter bar and counts what it hides", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/app/baskets");
+  // Idle before acting: while the page streams, the loading boundary holds a
+  // second copy of the register, and on a slower runner (CI on 12 October
+  // 2026) an unscoped "Filters" matched both.
+  await page.goto("/app/baskets", { waitUntil: "networkidle" });
   // components.md, App shell: narrow layouts carry no menu button.
   await expect(page.getByRole("banner").getByRole("button", { name: /navigation/i })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Build a basket" })).toHaveAttribute("href", "/app/baskets/build");
-  const register = page.getByRole("list", { name: "Published basket register" });
-  await page.getByLabel("Filters").click();
-  await page.getByRole("radio", { name: "Global ETFs" }).check();
-  await expect(page.getByText("Showing 1 of 10.")).toBeVisible();
+  const baskets = page.getByRole("main").getByRole("region", { name: "Published baskets" });
+  await expect(baskets.getByRole("link", { name: "Build a basket" })).toHaveAttribute("href", "/app/baskets/build");
+  const register = baskets.getByRole("list", { name: "Published basket register" });
+  await baskets.getByLabel("Filters").click();
+  await baskets.getByRole("radio", { name: "Global ETFs" }).check();
+  await expect(baskets.getByText("Showing 1 of 10.")).toBeVisible();
   await expect(register.getByRole("link", { name: "Global Rotation" })).toBeVisible();
-  await page.getByRole("radio", { name: "Any theme" }).check();
-  await page.getByRole("searchbox", { name: "Search baskets or constituents" }).fill("NVDAx");
+  await baskets.getByRole("radio", { name: "Any theme" }).check();
+  await baskets.getByRole("searchbox", { name: "Search baskets or constituents" }).fill("NVDAx");
   await expect(register.getByRole("link", { name: "Prime Seven" })).toBeVisible();
   await expect(register.getByRole("link", { name: "Digital Capital" })).toHaveCount(0);
-  await page.getByRole("searchbox", { name: "Search baskets or constituents" }).fill("no such basket");
-  await expect(page.getByText("No basket matches this search and these filters.")).toBeVisible();
+  await baskets.getByRole("searchbox", { name: "Search baskets or constituents" }).fill("no such basket");
+  await expect(baskets.getByText("No basket matches this search and these filters.")).toBeVisible();
 });
