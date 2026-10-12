@@ -49,11 +49,13 @@
   line-height: 1.15;
 }
 
+/* One step under body and balanced, so four plates side by side end on even
+   lines instead of one leaving a single word below the rest. */
 .plate p {
-  max-width: 36ch;
   color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-body);
+  font-size: var(--sm-font-size-small);
   line-height: 1.55;
+  text-wrap: balance;
 }
 
 .drawing polygon,

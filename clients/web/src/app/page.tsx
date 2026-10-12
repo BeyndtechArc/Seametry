@@ -30,9 +30,9 @@ const loop = [
 ] as const;
 
 const changes = [
-  ["keyless", "Formula", "Keyless by design.", "No instruction can alter a Formula, move a holder's assets, or stop a Melt."],
-  ["graded", "Grade", "Every claim graded.", "The legal shape leads before price, ticker or issuer language."],
-  ["powers", "Issuer powers", "Issuer powers named.", "Freeze, pause, seizure, recipient gates and multiplier controls appear as plain sentences."],
+  ["keyless", "Formula", "Keyless by design.", "No instruction can alter a Formula, move a holder's assets or stop a Melt."],
+  ["graded", "Grade", "Every claim graded.", "A claim's legal shape is read before its price, ticker or issuer language."],
+  ["powers", "Issuer powers", "Issuer powers named.", "Freeze, pause, seizure, recipient gates and multipliers, as plain sentences."],
   ["claims", "Melt", "Held legs remain claims.", "A Melt records the holder's entitlement before any constituent is delivered."],
 ] as const;
 

@@ -82,6 +82,7 @@
   font-family: var(--sm-font-family-digest);
   font-variant-numeric: tabular-nums lining-nums;
 }
+.stage :global(.iso-face-text[data-tone="mid"]) { fill: var(--sm-text-secondary); }
 
 /* State the live component writes as attributes; hidden parts stay in the
    painter's order, ready to show. */
@@ -100,3 +101,4 @@
 .stage [data-part^="padlock"] :global(.iso-shade),
 .stage [data-held] :global(.iso-shade) { fill: var(--press-frozen-shade); }
 .stage [data-part^="padlock"] :global(.iso-line[data-tone="hi"]) { stroke: var(--press-frozen-shade); }
+.stage [data-part^="frozen-note"] :global(.iso-face-text) { fill: var(--press-frozen-ink); }

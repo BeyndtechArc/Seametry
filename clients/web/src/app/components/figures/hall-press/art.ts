@@ -1,16 +1,17 @@
-import { HEIGHT, LEGS, STACK_MAX, STATIC, WALLET_DEPTH, WIDTH, chit, coin, freezeBand, gateBlade, padlock, ramLower, ramUpper, stackCoin, unit, walletIngot } from "./geometry";
+import { HEIGHT, LEGS, STACK_MAX, STATIC, WALLET_DEPTH, WIDTH, chit, coin, freezeBand, frozenNote, gateBlade, padlock, ramLower, ramUpper, stackCoin, unit, walletIngot } from "./geometry";
 
 const group = (part: string, body: string, extra = "") => `<g data-part="${part}"${extra}>${body}</g>`;
 const hidden = " data-hidden=\"\"";
 
 /**
- * The whole press as one SVG string, in painter's order: base, then each
- * leg's canister and channel from far to near, the press bed, the back
- * column, the moving share and ram, the front column, the crosshead and the
- * flywheel, then the output stack, the wallet with its delivered ingots, the
- * Claims rack and its chits. A chit is drawn last because it lifts out of the
- * rack and crosses the wallet on its way to delivery. Built on the server;
- * the client only moves the groups it names.
+ * The whole press as one SVG string, in painter's order: the base with its
+ * engraved notes, then each leg's vault canister and channel from far to
+ * near, the press bed, the back column, the moving share and ram, the front
+ * column, the crosshead and the flywheel, then the shares stack, the wallet
+ * with its ingots, the Claims rack and its chits. Chits and parcels are drawn
+ * last because they fly over the bench: a Claim from the die to the rack, a
+ * vault's payout from its spout to the wallet. Built on the server; the
+ * client only moves the groups it names.
  */
 export function pressSvg() {
   const legs = LEGS.map((leg, index) => [
@@ -30,10 +31,11 @@ export function pressSvg() {
   const ingots = LEGS.map((_, legIndex) =>
     Array.from({ length: WALLET_DEPTH }, (__, index) => group(`ingot-${legIndex}-${index}`, walletIngot(legIndex, index), hidden)).join(""),
   ).join("");
-  const chits = LEGS.map((_, legIndex) => group(`chit-${legIndex}`, chit(legIndex), hidden)).join("");
 
   const body = [
     STATIC.base,
+    STATIC.labels,
+    LEGS.map((leg, index) => group(`frozen-note-${index}`, frozenNote(leg.y), hidden)).join(""),
     legs,
     STATIC.bed,
     STATIC.columnBack,
@@ -47,8 +49,9 @@ export function pressSvg() {
     STATIC.wallet,
     ingots,
     STATIC.rack,
-    chits,
+    LEGS.map((_, index) => group(`chit-${index}`, chit(index), hidden)).join(""),
+    LEGS.map((leg, index) => group(`parcel-${index}`, unit(leg.y), hidden)).join(""),
   ].join("");
 
-  return `<svg viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-labelledby="press-title press-desc" xmlns="http://www.w3.org/2000/svg"><title id="press-title">The Hall's press</title><desc id="press-desc">Three constituent canisters feed a screw press through gated channels. A Strike pulls the Formula's quantities and stamps one Alloy share onto the output stack. A Melt returns a share and files a Claim on every constituent in the rack, and each Claim is delivered to the holder's wallet. An issuer's padlock closes one channel's gate: Strike is refused, and that leg's Claim is held in the rack, marked, while the others are delivered.</desc>${body}</svg>`;
+  return `<svg viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-labelledby="press-title press-desc" xmlns="http://www.w3.org/2000/svg"><title id="press-title">The Hall's press</title><desc id="press-desc">The Hall's vault holds one canister per constituent. A Strike takes one ingot of each constituent from any wallet, pushes the units down their channels into the vault, and stamps one Alloy share onto the holder's stack. A Melt returns a share, records a Claim on every constituent in the rack, and each vault pays its unit out to the wallet. An issuer's freeze locks one vault: a Strike stops at its closed gate and nothing moves, and that leg's Claim stays recorded, marked, until the freeze lifts.</desc>${body}</svg>`;
 }

@@ -43,12 +43,14 @@ export const STACK = [92, -14] as const;
 const TRAY: Plan = { x: 70, y: -36, w: 44, d: 44, r: 3 };
 const RACK_X = 150;
 const RACK: Plan = { x: RACK_X - 18, y: -66, w: 36, d: 132, r: 2 };
-const WALLET: Plan = { x: 70, y: 24, w: 46, d: 50, r: 3 };
+const WALLET: Plan = { x: 70, y: 20, w: 46, d: 48, r: 3 };
 const WALLET_FLOOR = 3.6;
-const WALLET_LANES = [35, 49, 63];
+const WALLET_LANES = [0, 1, 2].map((lane) => WALLET.y + 11 + lane * 14);
 const CHIT: Plan = { x: RACK.x + 9, y: -13, w: 2, d: 26, r: 0.3 };
 const CHIT_MID: Point3 = [RACK.x + 10, 0, 15];
 const INGOT_H = 3.6;
+/** The x and z of an ingot's centre at the bottom of a wallet lane. */
+const INGOT_MID = [WALLET.x + 23, WALLET_FLOOR + INGOT_H / 2] as const;
 export const WALLET_DEPTH = 3;
 export const STACK_MAX = 8;
 
@@ -80,20 +82,17 @@ function base() {
   const screws = k.corners(PLATE, 11);
   out.push(L(screws.map(([x, y]) => k.ring(x, y, 2.4, 0, P, 16)).join(""), { tone: "lo" }));
   out.push(D(screws.map(([x, y]) => [x, y, 0]), { size: 0.55 }));
-  // A ruler strip along the front edge, ticks every 5 units, every fifth long.
-  const strip: Plan = { x: -170, y: PLATE.y + PLATE.d - 16, w: 225, d: 8, r: 1 };
-  out.push(S(k.slabOf(strip, 0, 0.6, P, 3), { tone: "lo", crease: "none" }));
-  const ticks = k.topTicks(strip.x + 4, strip.x + strip.w - 4, 5, 5, strip.y + 0.8, 0.6, [2.2, 4], P);
-  out.push(L(ticks.minor, { tone: "lo" }), L(ticks.major, { tone: "mid" }));
-  // A label plate with its three rule lines and four screws.
+  // A ruler strip along the front edge was cut: the band now carries the
+  // bench's engraved notes, which say more than its ticks did.
+  // The label plate before the rack is engraved with what the rack holds.
   const label: Plan = { x: 120, y: PLATE.y + PLATE.d - 26, w: 54, d: 18, r: 1.5 };
   out.push(S(k.slabOf(label, 0, 0.8, P, 4, 0.3), { tone: "mid" }));
-  out.push(L([0, 1, 2].map((row) => k.lineOnTop([label.x + 6, label.y + 5 + row * 4], [label.x + label.w - (row === 2 ? 20 : 6), label.y + 5 + row * 4], 0.8, P)).join(""), { tone: "lo", free: true }));
+  out.push(k.faceTextSvg(k.topMatrix([label.x + label.w / 2, label.y + label.d - 3], 0.8, P), "claims recorded", { size: 5, tone: "mid", anchor: "middle" }));
   out.push(D(k.corners(label, 2.4).map(([x, y]) => [x, y, 0.8]), { size: 0.45 }));
   return out.join("");
 }
 
-function canister(y: number) {
+function canister(y: number, symbol: string) {
   const out: string[] = [];
   out.push(S(k.cylinder(CAN_X, y, CAN_R + 3, 0, 3, P, 40), { tone: "lo" }));
   out.push(S(k.cylinder(CAN_X, y, CAN_R, 3, CAN_TOP - 7, P, 44, 0.5), { tone: "mid" }));
@@ -101,6 +100,8 @@ function canister(y: number) {
   out.push(S(k.cylinder(CAN_X, y, CAN_R + 1.2, CAN_TOP - 4, 4, P, 44, 0.4), { tone: "mid" }));
   out.push(L(k.knurl(CAN_X, y, CAN_R + 1.2, CAN_TOP - 4, CAN_TOP, 40, P), { tone: "lo" }));
   out.push(L(k.ring(CAN_X, y, CAN_R - 3, CAN_TOP, P, 40), { tone: "lo" }));
+  // Each vault names its constituent on its lid, the one place no part covers.
+  out.push(k.faceTextSvg(k.topMatrix([CAN_X, y + 1.6], CAN_TOP, P), symbol, { size: 4.2, tone: "mid", anchor: "middle" }));
   // The spout where units leave toward the press.
   out.push(S(k.slabOf({ x: CAN_X + CAN_R - 3, y: y - 4, w: 7, d: 8, r: 1 }, 3, 6, P, 3, 0.4), { tone: "mid" }));
   return out.join("");
@@ -241,6 +242,7 @@ function tray() {
     S(k.slabOf(k.insetPlan(TRAY, 1), 2, 2, P, 6), { tone: "mid", crease: "none" }),
     L(k.planOutline(k.insetPlan(TRAY, 4), 4, P, 6), { tone: "faint" }),
     D(k.corners(TRAY, 3).map(([x, y]) => [x, y, 4]), { size: 0.45 }),
+    k.faceTextSvg(k.topMatrix([STACK[0], TRAY.y + TRAY.d - 5], 4, P), "shares", { size: 5, tone: "mid", anchor: "middle" }),
   ].join("");
 }
 
@@ -278,7 +280,7 @@ function wallet() {
     S(k.slabOf(WALLET, 0, 2, P, 6, 0.4), { tone: "lo" }),
     S(k.slabOf(k.insetPlan(WALLET, 1), 2, WALLET_FLOOR - 2, P, 6), { tone: "mid", crease: "none" }),
     L(k.planOutline(k.insetPlan(WALLET, 3), WALLET_FLOOR, P, 6), { tone: "faint" }),
-    L([42, 56].map((y) => k.lineOnTop([WALLET.x + 3, y], [WALLET.x + WALLET.w - 3, y], WALLET_FLOOR, P)).join(""), { tone: "faint" }),
+    L(WALLET_LANES.slice(1).map((lane) => lane - 7).map((y) => k.lineOnTop([WALLET.x + 3, y], [WALLET.x + WALLET.w - 3, y], WALLET_FLOOR, P)).join(""), { tone: "faint" }),
     D(k.corners(WALLET, 1.8).map(([x, y]) => [x, y, WALLET_FLOOR]), { size: 0.45 }),
   ].join("");
 }
@@ -293,9 +295,32 @@ export function walletIngot(legIndex: number, index: number) {
   ].join("");
 }
 
+// Engraved on the plate like the mechanism plates' notes: what each part of
+// the bench is, in the register's words, never a sentence.
+const note = (at: [number, number], text: string, z = 0) =>
+  k.faceTextSvg(k.topMatrix(at, z, P), text, { size: 6, tone: "mid" });
+
+// The camera looks from the front right, so a note sits in front of its part
+// (larger y): behind it, the part's own height covers the words. The front
+// band and the shares tray's own top are clear.
+function labels() {
+  return [
+    note([-178, 74], "Hall vault"),
+    note([GATE_X - 6, 74], "gate"),
+    note([-34, 74], "strike / melt"),
+    note([WALLET.x + 4, 82.6], "any wallet"),
+  ].join("");
+}
+
+/** Engraved on the floor between a frozen leg's channel and the next, past its gate. */
+export function frozenNote(y: number) {
+  return k.faceTextSvg(k.topMatrix([GATE_X + 10, y + 24], 0, P), "frozen leg", { size: 5.2, tone: "hi" });
+}
+
 export const STATIC = {
+  labels: labels(),
   base: base(),
-  canisters: LEGS.map((leg) => canister(leg.y)),
+  canisters: LEGS.map((leg) => canister(leg.y, leg.symbol)),
   channels: LEGS.map((leg) => channel(leg.y)),
   bed: bed(),
   columnBack: column(-COLUMN_Y),
@@ -317,10 +342,14 @@ export const MOVES = {
   stackStep: k.axisVector(P, [0, 0, COIN_H]),
   strokeUnits: RAM_REST - 3 - DIE_TOP - COIN_H,
   channelUnits: CHANNEL_TO - CHANNEL_FROM - 8,
-  // A unit bound for a frozen leg stops against its lowered gate blade.
-  gateStopUnits: GATE_X - 0.8 - UNIT_FRONT - 0.4,
+  // A deposit runs from the press back down its channel; a frozen leg's unit
+  // stops with its back edge against the lowered gate blade.
+  gateStopFromPress: GATE_X + 0.8 - (UNIT_FRONT - 7) + 0.4,
   // A melted share leaves the die as one Claim per leg, each flying to its slot in the rack.
   dieToChit: LEGS.map((leg) => k.axisVector(P, [CHIT_MID[0], leg.y, CHIT_MID[2] - DIE_TOP])),
-  chitToWallet: LEGS.map((leg, legIndex) =>
-    k.axisVector(P, [WALLET.x + 23 - CHIT_MID[0], WALLET_LANES[legIndex] - leg.y, WALLET_FLOOR + INGOT_H - CHIT_MID[2]])),
+  // A Strike's deposit: the top ingot in each wallet lane flies into the die.
+  walletToDie: LEGS.map((_, legIndex) => k.axisVector(P, [-INGOT_MID[0], -WALLET_LANES[legIndex], DIE_TOP - INGOT_MID[1]])),
+  ingotStep: k.axisVector(P, [0, 0, INGOT_H]),
+  // A delivery: the vault pays one unit from its spout into the wallet lane.
+  vaultToWallet: LEGS.map((leg, legIndex) => k.axisVector(P, [INGOT_MID[0] - (UNIT_FRONT - 3.5), WALLET_LANES[legIndex] - leg.y, INGOT_MID[1] - 4.6])),
 };

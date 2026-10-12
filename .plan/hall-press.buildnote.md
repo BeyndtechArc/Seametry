@@ -1,7 +1,7 @@
 Surface:     Explorer (the public landing, clients/web)
 Template:    Landing, hero
 Question:    What does an open creation and redemption loop actually do, and what happens when an issuer freezes one constituent?
-Sections:    The hero's left column: kicker, title, lead, "Open app" (Route action) and "Read mechanism" (Quiet link with its glyph in an ink cell). The right column: the Hall's press alone, playing its story.
+Sections:    The hero's left column: kicker, title, lead, "Open app" (Route action) and "Read mechanism" (Quiet link with its glyph in an ink cell). The right column: the Hall's press alone, playing its story, with engraved notes naming its parts (Hall vault, tickers on the lids, gate, strike / melt, shares, any wallet, claims recorded, frozen leg). Below the hero, the four mechanism plates' descriptions are evened to 74 to 77 characters at a smaller, balanced size so each sits on two lines.
 Components:  Hero instrument (components.md); built with the vendored anatomy kit in clients/web/src/lib/iso.
 Data:        lib/hall/recipe.ts (replays shared/spec/recipe/vectors.json) decides what each Melt credits; an illustrative Formula of 2 AAPLx, 1.5 NVDAx and 0.25 TSLAx per share, the same one the docs' frozen-leg bench uses, where its quantities are stated.
 States:      playing (strike, strike, melt delivering every leg, freeze, refused strike halting at the closed gate, melt delivering all but the frozen leg, freeze lifted and the held Claim delivered); offscreen (the loop rests); reduced motion (a still of the freeze and the Melt that delivered around it).

@@ -511,9 +511,12 @@ test("under reduced motion the press holds still on a Melt that delivered around
   await expect(held).not.toHaveAttribute("data-hidden");
   await expect(press.locator("[data-part='band-1']")).not.toHaveAttribute("data-hidden");
   await expect(press.locator("[data-part='padlock-1']")).not.toHaveAttribute("data-hidden");
-  await expect(ingots(0)).toHaveCount(1);
-  await expect(ingots(1)).toHaveCount(0);
-  await expect(ingots(2)).toHaveCount(1);
+  // The wallet began with two of each; the frozen vault has not paid its leg back.
+  await expect(ingots(0)).toHaveCount(2);
+  await expect(ingots(1)).toHaveCount(1);
+  await expect(ingots(2)).toHaveCount(2);
+  await expect(press.locator("[data-part='frozen-note-1']")).not.toHaveAttribute("data-hidden");
+  await expect(press.locator("[data-part^='frozen-note-']:not([data-hidden])")).toHaveCount(1);
   await expect(press.locator("[data-part^='chit-']:not([data-hidden])")).toHaveCount(1);
 });
 
