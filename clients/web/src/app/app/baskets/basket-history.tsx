@@ -18,7 +18,7 @@ type UnavailableSeries = {
   reason?: string;
 };
 
-export function BasketSparkline({ id, compact = false }: { id: string; compact?: boolean }) {
+export function BasketSparkline({ id }: { id: string }) {
   const [series, setSeries] = useState<AvailableSeries>();
   const [unavailable, setUnavailable] = useState(false);
 
@@ -61,14 +61,14 @@ export function BasketSparkline({ id, compact = false }: { id: string; compact?:
 
   if (!drawing || !series) {
     return (
-      <div className={styles.sparkUnavailable} data-compact={compact || undefined}>
+      <div className={styles.sparkUnavailable}>
         <span>{unavailable ? "No routed history yet" : "Reading quote history"}</span>
       </div>
     );
   }
 
   return (
-    <figure className={styles.basketSpark} data-compact={compact || undefined}>
+    <figure className={styles.basketSpark}>
       <svg viewBox="0 0 160 48" role="img" aria-label="Indicative 25 USDC routed acquisition quote index, not investment returns">
         <path d="M0 42H160" className={styles.sparkBaseline} />
         <path d={drawing.path} className={styles.sparkLine} />

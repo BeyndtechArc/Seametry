@@ -8,10 +8,19 @@ export type AppGroup = { group: string; icon: IconName; routes: AppRoute[] };
 
 const exactly = (href: string) => (pathname: string) => pathname === href;
 const within = (href: string) => (pathname: string) => pathname === href || pathname.startsWith(`${href}/`);
+const buildHref = "/app/baskets/build";
 
 export const appGroups: AppGroup[] = [
   { group: "Desk", icon: "desk", routes: [{ label: "Overview", href: "/app", isActive: exactly("/app") }, { label: "Holdings", href: "/app/positions", isActive: within("/app/positions") }] },
-  { group: "Allocation", icon: "buy", routes: [{ label: "Baskets", href: "/app/baskets", isActive: (pathname: string) => within("/app/baskets")(pathname) || within("/app/allocation")(pathname) }] },
+  {
+    group: "Allocation",
+    icon: "buy",
+    routes: [
+      { label: "Baskets", href: "/app/baskets", isActive: (pathname: string) => within("/app/baskets")(pathname) && !within(buildHref)(pathname) },
+      // /app/allocation is the builder's original address; old links still land on it.
+      { label: "Build a basket", href: buildHref, isActive: (pathname: string) => within(buildHref)(pathname) || within("/app/allocation")(pathname) },
+    ],
+  },
   {
     group: "Hall",
     icon: "hall",
@@ -25,8 +34,8 @@ export const appGroups: AppGroup[] = [
 
 /** The reading pages, kept out of the product tabs: explanation lives there, not in the product. */
 export const readingRoutes = [
-  { label: "How it works", href: "/how-it-works", icon: "read" as const },
-  { label: "The Key", href: "/the-key", icon: "key" as const },
+  { label: "How it works", href: "/docs/how-it-works", icon: "read" as const },
+  { label: "The Key", href: "/docs/the-key", icon: "key" as const },
 ];
 
 export const mobileRoutes = [

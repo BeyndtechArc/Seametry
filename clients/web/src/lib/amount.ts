@@ -58,6 +58,27 @@ export function splitEvenly(total: bigint, parts: number): bigint[] {
 }
 
 /**
+ * Splits total atoms by whole-number weights, exactly. Each share takes the
+ * floor of its weighted portion; the atoms that flooring leaves over go one
+ * each to the largest remainders, earlier shares first on a tie, so the
+ * shares always sum to the total and no share moves by more than one atom.
+ */
+export function splitByWeights(total: bigint, weights: bigint[]): bigint[] {
+  const sum = weights.reduce((acc, weight) => acc + weight, 0n);
+  if (weights.length === 0 || sum <= 0n) return [];
+  const shares = weights.map((weight) => (total * weight) / sum);
+  const remainders = weights.map((weight, index) => ({ index, rest: (total * weight) % sum }));
+  let left = total - shares.reduce((acc, share) => acc + share, 0n);
+  remainders.sort((a, b) => (b.rest > a.rest ? 1 : b.rest < a.rest ? -1 : a.index - b.index));
+  for (const { index } of remainders) {
+    if (left === 0n) break;
+    shares[index] += 1n;
+    left -= 1n;
+  }
+  return shares;
+}
+
+/**
  * One line for a splitEvenly result, in list order. Naming every share made a
  * 23-way split a paragraph; each share's exact amount is still stated where
  * that purchase is reviewed. Exact: the remainder atoms are named, not rounded.

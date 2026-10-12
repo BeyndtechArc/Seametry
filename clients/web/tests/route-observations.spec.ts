@@ -88,12 +88,12 @@ test("the catalogue is a compact single-link register; unavailable history stays
   );
   await page.goto("/app/baskets");
   await expect(page.getByRole("heading", { level: 1, name: "Baskets" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Published baskets" })).toBeVisible();
   const register = page.getByRole("list", { name: "Published basket register" });
   await expect(register.locator("li")).toHaveCount(10);
   const prime = register.getByRole("link", { name: "Prime Seven" });
   await expect(prime).toHaveAttribute("href", "/app/baskets/prime-seven");
   await expect(prime.getByText("Megacap technology")).toBeVisible();
+  await expect(prime.getByText("All 7 admitted")).toBeVisible();
   await expect(register.getByText("Open basket")).toHaveCount(0);
   await expect(register.getByText("No routed history yet")).toHaveCount(0);
   await prime.click();
@@ -111,19 +111,41 @@ test("published baskets stay on their details page for checkout, without repeati
   await expect(order.getByRole("list", { name: "Allocation steps" })).toHaveCount(0);
   await expect(order.getByRole("region", { name: "Choose the constituents" })).toHaveCount(0);
   await expect(order.getByText("Ready to assemble")).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Build a different basket" })).toHaveAttribute("href", "/app/baskets/build");
+  await expect(page.getByRole("link", { name: "Remix this basket" })).toHaveAttribute("href", "/app/baskets/build?basket=prime-seven");
 });
 
-test("on mobile the overflow navigation and filter categories stay behind controls", async ({ page }) => {
+test("a part-admitted basket can be remixed from what is admitted, naming what was left out", async ({ page }) => {
+  // Private Frontier: SPCX admitted, VCXx refused at assay, OPAIPon never captured.
+  await page.goto("/app/baskets/private-frontier");
+  await expect(page.getByRole("link", { name: "Buy basket" })).toHaveCount(0);
+  await page.getByRole("link", { name: "Remix this basket" }).click();
+  await expect(page).toHaveURL(/\/app\/baskets\/build\?basket=private-frontier/);
+  await expect(page.getByRole("note").filter({ hasText: "Remixing Private Frontier" })).toContainText("OPAIPon, VCXx are left out");
+  await expect(page.getByRole("checkbox", { name: /Add SPCX to the basket/ })).toBeChecked();
+  await expect(page.getByRole("checkbox", { checked: true })).toHaveCount(1);
+});
+
+test("AI Cloud holds only admitted constituents and can be bought whole", async ({ page }) => {
+  await page.goto("/app/baskets/ai-cloud");
+  await expect(page.getByRole("link", { name: "Buy basket" })).toBeVisible();
+  for (const symbol of ["ARM", "IREN"]) await expect(page.getByRole("main").getByText(symbol, { exact: true })).toHaveCount(0);
+});
+
+test("the basket register narrows through the shared Filter bar and counts what it hides", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app/baskets");
-  const menuButton = page.getByRole("button", { name: "Open more navigation" });
-  await expect(menuButton).toBeVisible();
-  await menuButton.click();
-  await expect(page.getByRole("complementary", { name: "More navigation" })).toBeVisible();
-  await page.getByRole("button", { name: "Close navigation" }).last().click();
-  await page.getByRole("button", { name: "Filters" }).click();
-  await expect(page.getByRole("dialog", { name: "Basket filters" })).toBeVisible();
-  await page.getByRole("button", { name: "Backpack" }).click();
-  await expect(page.getByText(/Showing \d+ of \d+ baskets · Backpack/)).toBeVisible();
+  // components.md, App shell: narrow layouts carry no menu button.
+  await expect(page.getByRole("banner").getByRole("button", { name: /navigation/i })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Build a basket" })).toHaveAttribute("href", "/app/baskets/build");
+  const register = page.getByRole("list", { name: "Published basket register" });
+  await page.getByLabel("Filters").click();
+  await page.getByRole("radio", { name: "Global ETFs" }).check();
+  await expect(page.getByText("Showing 1 of 10.")).toBeVisible();
+  await expect(register.getByRole("link", { name: "Global Rotation" })).toBeVisible();
+  await page.getByRole("radio", { name: "Any theme" }).check();
+  await page.getByRole("searchbox", { name: "Search baskets or constituents" }).fill("NVDAx");
+  await expect(register.getByRole("link", { name: "Prime Seven" })).toBeVisible();
+  await expect(register.getByRole("link", { name: "Digital Capital" })).toHaveCount(0);
+  await page.getByRole("searchbox", { name: "Search baskets or constituents" }).fill("no such basket");
+  await expect(page.getByText("No basket matches this search and these filters.")).toBeVisible();
 });

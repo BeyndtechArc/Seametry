@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import { admissions } from "@/lib/allocation/admissions";
@@ -9,7 +10,6 @@ import { formatAmount } from "@/lib/amount";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import { PageHeader } from "../_shell/page-header";
 import { AllocationFlow } from "./flow";
-import { BasketSectionNav } from "../baskets/section-nav";
 import styles from "./allocation.module.css";
 
 export const metadata: Metadata = {
@@ -17,18 +17,26 @@ export const metadata: Metadata = {
   description: "Build a direct-wallet Allocation from admitted tokenized equities, with every constituent checked before you sign.",
 };
 
-export default async function AllocationPage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string; amount?: string; index?: string; basket?: string }> }) {
+export default async function AllocationPage({ searchParams }: { searchParams: Promise<{ selected?: string; add?: string; amount?: string; weights?: string; index?: string; basket?: string }> }) {
   await connection();
-  const { selected, add, amount, index: legacyIndexId, basket: basketId } = await searchParams;
+  const { selected, add, amount, weights, index: legacyIndexId, basket: basketId } = await searchParams;
   const indexId = basketId ?? legacyIndexId;
   const unavailable = purchasesUnavailable(await headers());
   const { offered, refused: refusedLots } = allocationOffer();
   const activeIndex = findAllocationIndex(indexId);
-  const indexMints = activeIndex
-    ? activeIndex.members.map((member) => offered.find((lot) => lot.symbol === member.symbol)?.mint).filter((mint): mint is string => Boolean(mint))
+  const indexLots = activeIndex
+    ? activeIndex.members.map((member) => offered.find((lot) => lot.symbol === member.symbol)).filter((lot): lot is (typeof offered)[number] => Boolean(lot))
     : [];
-  const explicitMints = offered.filter((lot) => (selected?.split(",") ?? []).includes(lot.mint) || add === lot.mint).map((lot) => lot.mint);
-  const initialSelected = activeIndex && indexMints.length === activeIndex.members.length ? indexMints : explicitMints;
+  const leftOut = activeIndex ? activeIndex.members.filter((member) => !indexLots.some((lot) => lot.symbol === member.symbol)).map((member) => member.symbol) : [];
+  const selectedMints = selected?.split(",") ?? [];
+  const explicitMints = offered.filter((lot) => selectedMints.includes(lot.mint) || add === lot.mint).map((lot) => lot.mint);
+  // The flow writes selected back to the URL as the reader edits a remix, so
+  // an explicit selection is the newer intent and wins over the basket it began from.
+  const initialSelected = explicitMints.length > 0 ? explicitMints : indexLots.map((lot) => lot.mint);
+  const weightList = weights?.split(",") ?? [];
+  const initialWeights = weightList.length > 0 && weightList.length === selectedMints.length
+    ? Object.fromEntries(selectedMints.map((mint, index) => [mint, weightList[index]]))
+    : undefined;
 
   return (
     <div className={styles.page}>
@@ -52,15 +60,22 @@ export default async function AllocationPage({ searchParams }: { searchParams: P
             </>
           }
         />
-        <BasketSectionNav current="build" />
+        {activeIndex ? (
+          <p className={styles.remixNote} role="note">
+            Remixing <Link href={`/app/baskets/${encodeURIComponent(activeIndex.id)}`}>{activeIndex.name}</Link>.{" "}
+            {leftOut.length > 0
+              ? `${leftOut.join(", ")} ${leftOut.length === 1 ? "is" : "are"} left out: the current snapshot does not admit ${leftOut.length === 1 ? "it" : "them"}, and the basket record names why.`
+              : "Every constituent starts chosen at equal weight; change either before you buy."}
+          </p>
+        ) : null}
         <AllocationFlow
           offered={offered}
           refused={refusedLots}
           unavailable={unavailable}
           initialSelected={initialSelected}
           initialAmount={amount ?? ""}
-          allocationName={activeIndex?.name ?? "Custom allocation"}
-          allocationTemplateId={activeIndex?.id}
+          initialWeights={initialWeights}
+          template={activeIndex ? { id: activeIndex.id, name: activeIndex.name, complete: !activeIndex.researchOnly && leftOut.length === 0 } : undefined}
         />
     </div>
   );

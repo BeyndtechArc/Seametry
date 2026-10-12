@@ -4,10 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepTrack, Stamp, StepRegister, type RegisterStep } from "@seametry/ui";
-import { ProcessDialog, ProcessOutcome } from "@seametry/ui/modal-sheet";
+import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepTrack, Stamp } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
-import { describeSplit, formatAmount, parseAmount, splitEvenly } from "@/lib/amount";
+import { describeSplit, formatAmount, parseAmount, splitByWeights, splitEvenly } from "@/lib/amount";
 import { patchLocalTrade, recordLocalTrade } from "@/lib/allocation/activity";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
@@ -32,10 +31,6 @@ type Leg = {
   walletBlocked?: boolean;
 };
 
-type PurchaseStage = "prepare" | "sign" | "confirm";
-type PurchaseOutcome = "unsent" | "blocked" | "uncertain" | "failed";
-type PurchaseRun = { mint: string; symbol: string; stage: PurchaseStage; state: "running" | "stopped" | "settled"; outcome?: PurchaseOutcome; problem?: { plain: string; technical?: string }; retryable?: boolean; signature?: string };
-
 class ApiError extends Error {
   constructor(message: string, readonly status: number, readonly code?: string, readonly sent?: boolean) { super(message); }
 }
@@ -50,16 +45,36 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(text);
 }
 
-function keepUnsignedPlanInUrl(mints: string[], amount: string) {
+type UnsignedPlan = { mints: string[]; amount: string; weights?: Record<string, string> };
+
+// weights is written in the same order as selected, one entry per mint, so the
+// page that reads it back can pair them without trusting any other order.
+function keepUnsignedPlanInUrl({ mints, amount, weights }: UnsignedPlan) {
   const url = new URL(window.location.href);
   if (mints.length) url.searchParams.set("selected", mints.join(","));
   else url.searchParams.delete("selected");
   if (amount.trim()) url.searchParams.set("amount", amount.trim());
   else url.searchParams.delete("amount");
+  if (weights && mints.length) url.searchParams.set("weights", mints.map((mint) => weights[mint]?.trim() || "0").join(","));
+  else url.searchParams.delete("weights");
   url.searchParams.delete("add");
   if (url.href === window.location.href) return;
   window.history.replaceState(window.history.state, "", url);
   window.dispatchEvent(new Event("seametry:plan-url"));
+}
+
+// The custom form opens on the equal split, in whole percents, the leftover
+// percents going to the first constituents as splitEvenly does with atoms.
+function evenWeights(mints: string[]): Record<string, string> {
+  const shares = splitEvenly(100n, mints.length);
+  return Object.fromEntries(mints.map((mint, index) => [mint, shares[index].toString()]));
+}
+
+function describeWeightedSplit(legs: { atoms: bigint }[]) {
+  const amounts = legs.map((leg) => leg.atoms);
+  const least = amounts.reduce((a, b) => (b < a ? b : a));
+  const most = amounts.reduce((a, b) => (b > a ? b : a));
+  return `${legs.length} purchases by weight, from ${formatAmount(least, USDC_SCALE)} to ${formatAmount(most, USDC_SCALE)} USDC. Each purchase states its exact amount below.`;
 }
 
 function secondsUntil(iso: string, now: number) {
@@ -87,22 +102,6 @@ function changedMessage(before: Uint8Array, originalBlockhash: string, signed: V
   if (before.length === after.length && before.every((byte, index) => byte === after[index])) return undefined;
   if (originalBlockhash !== signed.message.recentBlockhash) return "The wallet changed the recent blockhash.";
   return "The wallet changed the accounts, instructions, or lookup tables.";
-}
-
-function purchaseSteps(run: PurchaseRun | undefined): RegisterStep[] {
-  const stages: { stage: PurchaseStage; title: string; glyph: RegisterStep["glyph"]; note: string }[] = [
-    { stage: "prepare", title: "Prepare the purchase", glyph: "hall", note: "Checking the quote and simulating on mainnet" },
-    { stage: "sign", title: "Sign in your wallet", glyph: "wallet", note: "Waiting for your wallet" },
-    { stage: "confirm", title: "Confirm on mainnet", glyph: "confirm", note: "Waiting for the transaction status" },
-  ];
-  const reached = run ? stages.findIndex((stage) => stage.stage === run.stage) : -1;
-  return stages.map((stage, index) => {
-    const item = { title: stage.title, glyph: stage.glyph };
-    if (run?.state === "settled" || (reached >= 0 && index < reached)) return { ...item, state: "done" };
-    if (!run || index > reached) return { ...item, state: "waiting" };
-    if (run.state === "stopped") return { ...item, state: "stopped", problem: run.problem };
-    return { ...item, state: "now", note: stage.note };
-  });
 }
 
 const phaseLabel: Record<Phase, string> = {
@@ -186,8 +185,8 @@ export function AllocationFlow({
   unavailable,
   initialSelected,
   initialAmount,
-  allocationName,
-  allocationTemplateId,
+  initialWeights,
+  template,
   fixedTemplate = false,
 }: {
   offered: OfferedLot[];
@@ -195,21 +194,22 @@ export function AllocationFlow({
   unavailable?: string;
   initialSelected: string[];
   initialAmount: string;
-  allocationName: string;
-  allocationTemplateId?: string;
+  /** Whole-percent weights by mint; absent means an equal split. */
+  initialWeights?: Record<string, string>;
+  /** The published basket this plan starts from. Complete when every constituent is admitted. */
+  template?: { id: string; name: string; complete: boolean };
   /** A published, admitted basket: skip custom constituent selection. */
   fixedTemplate?: boolean;
 }) {
-  const { publicKey, connected, signTransaction, signAllTransactions, disconnect } = useWallet();
+  const { publicKey, connected, signTransaction, signAllTransactions } = useWallet();
   const walletAddress = publicKey?.toBase58();
   const currentWallet = useRef(walletAddress);
   // Nothing starts chosen: choosing is the first step's whole question.
   const [selected, setSelected] = useState<string[]>(initialSelected);
   const [step, setStep] = useState(fixedTemplate || (initialAmount && initialSelected.length > 0) ? 1 : 0);
   const [typed, setTyped] = useState(initialAmount);
+  const [weights, setWeights] = useState<Record<string, string> | undefined>(initialWeights);
   const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
-  const [purchaseRun, setPurchaseRun] = useState<PurchaseRun>();
-  const [purchaseOpen, setPurchaseOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [batchPhase, setBatchPhase] = useState<"idle" | "preflight" | "approval" | "settling">("idle");
   const allocationId = useRef<string | undefined>(undefined);
@@ -232,29 +232,58 @@ export function AllocationFlow({
   const chosen = preferred.filter((lot) => selected.includes(lot.mint));
   const chosenMints = chosen.map((lot) => lot.mint).join(",");
   const hiddenChosen = offered.filter((lot) => selected.includes(lot.mint)).length - chosen.length;
-  const split = parsed && "atoms" in parsed ? splitEvenly(parsed.atoms, chosen.length) : [];
+  // Whole percents only, so the split stays exact integer arithmetic.
+  const weightOf = (mint: string) => (/^\d{1,3}$/.test(weights?.[mint]?.trim() ?? "") ? BigInt(weights![mint].trim()) : undefined);
+  const chosenWeights = weights ? chosen.map((lot) => weightOf(lot.mint)) : undefined;
+  const weightTotal = chosenWeights?.reduce<bigint>((sum, weight) => sum + (weight ?? 0n), 0n) ?? 100n;
+  const weightProblem = !chosenWeights
+    ? undefined
+    : chosenWeights.some((weight) => weight === undefined || weight < 1n)
+      ? "Give every constituent a whole-number weight of at least 1%."
+      : weightTotal !== 100n
+        ? `The weights add to ${weightTotal}%. They must add to 100%.`
+        : undefined;
+  const split =
+    parsed && "atoms" in parsed && !weightProblem
+      ? chosenWeights
+        ? splitByWeights(parsed.atoms, chosenWeights as bigint[])
+        : splitEvenly(parsed.atoms, chosen.length)
+      : [];
   const overCapacity = split.findIndex((atoms, index) => atoms > lotCapAtoms(chosen[index]?.capacityUsdc ?? 0));
+  const belowMinimum = split.findIndex((atoms) => atoms < minimumPlanAtoms(1));
   const amountProblem =
     parsed && "refused" in parsed
       ? parsed.refused
+      : weightProblem
+        ? weightProblem
       : parsed && "atoms" in parsed && chosen.length > 0 && parsed.atoms < minimumPlanAtoms(chosen.length)
         ? `Spend at least ${formatAmount(minimumPlanAtoms(chosen.length), USDC_SCALE)} USDC for ${chosen.length} ${chosen.length === 1 ? "constituent" : "constituents"}. The minimum is 1 USDC each.`
       : overCapacity >= 0
         ? `${chosen[overCapacity].symbol} may take at most ${formatAmount(BigInt(chosen[overCapacity].capacityUsdc), 0)} USDC under this captured capacity decision.`
-        : split.some((atoms) => atoms === 0n) && split.length > 0
-          ? "The amount is too small to fund every selected constituent."
+        : belowMinimum >= 0
+          ? `At these weights ${chosen[belowMinimum].symbol} would receive ${formatAmount(split[belowMinimum], USDC_SCALE)} USDC. Each constituent needs at least 1 USDC; raise the amount or its weight.`
           : undefined;
 
   // The plan is derived from the inputs on every render. Progress is kept as
   // each leg's changes, and only while it belongs to the same plan; the
   // inputs lock once a leg has started, so progress never lands on another.
-  const plan = `${walletAddress ?? "no-wallet"}|${typed}|${chosen.map((lot) => lot.mint).join(",")}`;
+  const plan = `${walletAddress ?? "no-wallet"}|${typed}|${chosen.map((lot) => `${lot.mint}:${weights?.[lot.mint] ?? "="}`).join(",")}`;
   const changes = progress.plan === plan ? progress.changes : {};
   const legs: Leg[] =
     amountProblem || split.length === 0
       ? []
       : chosen.map((lot, i) => ({ mint: lot.mint, symbol: lot.symbol, atoms: split[i], phase: "idle", ...changes[lot.mint] }));
   const started = legs.some((leg) => leg.phase !== "idle" || leg.note);
+  // Holdings group a purchase under its basket only when it is that basket as
+  // published: every constituent, equal weights. Anything else started from a
+  // basket is a remix of it, and is named so rather than passed off as it.
+  const asPublished = Boolean(template?.complete) && !weights &&
+    initialSelected.length === chosen.length && initialSelected.every((mint) => chosen.some((lot) => lot.mint === mint));
+  const identity = !template
+    ? { name: "Custom allocation", templateId: undefined }
+    : asPublished
+      ? { name: template.name, templateId: template.id }
+      : { name: `${template.name} remix`, templateId: undefined };
 
   useEffect(() => {
     currentWallet.current = walletAddress;
@@ -268,8 +297,8 @@ export function AllocationFlow({
   // freshly prepared after the receiving wallet connects.
   useEffect(() => {
     if (started) return;
-    keepUnsignedPlanInUrl(chosenMints ? chosenMints.split(",") : [], typed);
-  }, [chosenMints, typed, started]);
+    keepUnsignedPlanInUrl({ mints: chosenMints ? chosenMints.split(",") : [], amount: typed, weights });
+  }, [chosenMints, typed, weights, started]);
 
   const anyPrepared = legs.some((leg) => leg.phase === "signing" || leg.phase === "sending");
   useEffect(() => {
@@ -289,13 +318,11 @@ export function AllocationFlow({
   );
 
   const startOver = () => {
-    setPurchaseOpen(false);
-    setPurchaseRun(undefined);
     setProgress({ plan: "", changes: {} });
     setBatchPhase("idle");
     allocationId.current = undefined;
     setTyped("");
-    keepUnsignedPlanInUrl(chosen.map((lot) => lot.mint), "");
+    keepUnsignedPlanInUrl({ mints: chosen.map((lot) => lot.mint), amount: "", weights });
     setStep(fixedTemplate ? 1 : 0);
   };
 
@@ -316,12 +343,10 @@ export function AllocationFlow({
                 settledScale: status.tokenDeltaScale,
               });
             }
-            setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "settled", stage: "confirm", signature } : current);
             return;
           }
           if (status.state === "failed") {
-            update(mint, { phase: "failed", note: "Mainnet rejected this purchase. Review the transaction before trying again.", retryable: false });
-            setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "stopped", stage: "confirm", outcome: "failed", problem: { plain: "Mainnet rejected this purchase. The network fee may have been charged.", technical: status.detail } } : current);
+            update(mint, { phase: "failed", note: "Mainnet rejected this purchase. The network fee may have been charged. Review the transaction before trying again.", retryable: false });
             return;
           }
         } catch {
@@ -329,7 +354,6 @@ export function AllocationFlow({
         }
       }
       update(mint, { note: "No confirmation within a minute. The signature below shows where it stands." });
-      setPurchaseRun((current) => current?.mint === mint ? { ...current, state: "stopped", stage: "confirm", outcome: "uncertain", problem: { plain: "Confirmation has not arrived. Check the transaction signature before taking another action." } } : current);
     },
     [update, walletAddress],
   );
@@ -340,73 +364,6 @@ export function AllocationFlow({
   const nextLeg = walletBlocked ? undefined : legs.find((leg) => leg.phase === "idle" || (leg.phase === "failed" && leg.retryable));
   const inFlight = legs.find((leg) => leg.phase === "preparing" || leg.phase === "signing" || leg.phase === "sending");
   const buying = useRef(false);
-
-  const buy = async () => {
-    const leg = nextLeg;
-    if (!leg || !publicKey || !signTransaction || inFlight || buying.current) return;
-    buying.current = true;
-    setPurchaseOpen(true);
-    setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "prepare", state: "running" });
-    const signingWallet = walletAddress;
-    update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined, signature: undefined, retryable: false, uncertain: false, walletBlocked: false });
-    let prepared: PreparedLeg;
-    try {
-      // The plan's size sets the server-charged fee tier. A failed simulation
-      // never reaches the wallet prompt.
-      prepared = await postJson<PreparedLeg>("/api/allocation/prepare", {
-        wallet: signingWallet,
-        mint: leg.mint,
-        usdcAtoms: leg.atoms.toString(),
-        planMints: chosen.map((lot) => lot.mint),
-      });
-    } catch (error) {
-      update(leg.mint, { phase: "idle", note: reasonFrom(error) });
-      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "prepare", state: "stopped", outcome: "unsent", retryable: true, problem: { plain: "The quote or mainnet check did not pass. Nothing was sent. A new quote can be requested.", technical: reasonFrom(error) } });
-      buying.current = false;
-      return;
-    }
-    if (currentWallet.current !== signingWallet) {
-      buying.current = false;
-      return;
-    }
-    update(leg.mint, { phase: "signing", prepared });
-    setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "sign", state: "running" });
-    let signed: VersionedTransaction;
-    try {
-      const original = VersionedTransaction.deserialize(fromBase64(prepared.transaction));
-      const messageBeforeSigning = original.message.serialize().slice();
-      const blockhashBeforeSigning = original.message.recentBlockhash;
-      signed = await signTransaction(original);
-      const change = changedMessage(messageBeforeSigning, blockhashBeforeSigning, signed);
-      if (change) throw new ApiError(change, 409, "SIGNED_MESSAGE_CHANGED", false);
-    } catch (error) {
-      const changed = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED";
-      update(leg.mint, { phase: "failed", prepared: undefined, retryable: !changed, walletBlocked: changed, note: changed ? "Not sent. This wallet returned a different transaction. No USDC was spent." : "Not signed. Nothing was sent." });
-      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "sign", state: "stopped", outcome: changed ? "blocked" : "unsent", retryable: !changed, problem: { plain: changed ? "This wallet returned a different transaction from the purchase Seametry checked. Nothing was sent. No USDC was spent. Use another wallet to continue this plan." : "The wallet did not sign this purchase. Nothing was sent or spent.", technical: reasonFrom(error) } });
-      buying.current = false;
-      return;
-    }
-    if (currentWallet.current !== signingWallet) {
-      buying.current = false;
-      return;
-    }
-    update(leg.mint, { phase: "sending" });
-    setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "confirm", state: "running" });
-    try {
-      const { signature } = await postJson<{ signature: string }>("/api/allocation/submit", {
-        transaction: toBase64(signed.serialize()),
-        approval: prepared.approval,
-      });
-      recordLocalTrade({ signature, wallet: publicKey.toBase58(), mint: leg.mint, symbol: leg.symbol, direction: "buy", inputAtoms: leg.atoms.toString(), inputScale: USDC_SCALE, submittedAt: new Date().toISOString() });
-      update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
-      void watch(leg.mint, signature);
-    } catch (error) {
-      const changed = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED" && error.sent === false;
-      update(leg.mint, { phase: "failed", retryable: false, walletBlocked: changed, uncertain: !changed, note: changed ? "Not sent. This wallet returned a different transaction. No USDC was spent." : "Submission could not be verified. Check this wallet's activity before buying again." });
-      setPurchaseRun({ mint: leg.mint, symbol: leg.symbol, stage: "confirm", state: "stopped", outcome: changed ? "blocked" : "uncertain", problem: { plain: changed ? "This wallet returned a different transaction from the purchase Seametry checked. Nothing was sent. No USDC was spent. Use another wallet to continue this plan." : "Seametry could not verify whether this purchase reached mainnet. Check your wallet activity before trying again.", technical: reasonFrom(error) } });
-    }
-    buying.current = false;
-  };
 
   const buyAll = async () => {
     const pending = legs.filter((leg) => leg.phase === "idle" || (leg.phase === "failed" && leg.retryable));
@@ -496,9 +453,6 @@ export function AllocationFlow({
           transaction: toBase64(signed[index].serialize()),
           approval: prepared.approval,
         });
-        const templateIntact = Boolean(allocationTemplateId) &&
-          initialSelected.length === chosen.length &&
-          initialSelected.every((mint) => chosen.some((lot) => lot.mint === mint));
         recordLocalTrade({
           signature,
           wallet: signingWallet,
@@ -509,8 +463,8 @@ export function AllocationFlow({
           inputScale: USDC_SCALE,
           submittedAt: new Date().toISOString(),
           allocationId: runId,
-          allocationName: templateIntact ? allocationName : "Custom allocation",
-          allocationTemplateId: templateIntact ? allocationTemplateId : undefined,
+          allocationName: identity.name,
+          allocationTemplateId: identity.templateId,
         });
         update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
         void watch(leg.mint, signature);
@@ -525,6 +479,9 @@ export function AllocationFlow({
         });
       }
     }));
+    // The batch is over: each leg's own phase now says where it stands. Left in
+    // "settling", the Key would read busy the moment any leg became retryable.
+    setBatchPhase("idle");
     buying.current = false;
   };
 
@@ -578,24 +535,6 @@ export function AllocationFlow({
 
   return (
     <div className={styles.flow}>
-      <ProcessDialog
-        open={purchaseOpen}
-        onClose={() => setPurchaseOpen(false)}
-        title={purchaseRun?.symbol ? `${purchaseRun.symbol} purchase` : "Purchase"}
-        register="Mainnet"
-        closeLabel="Close purchase status"
-        footer={purchaseRun?.state === "stopped" && purchaseRun.retryable ? <QuietAction type="button" onClick={() => void buy()}>Prepare {purchaseRun.symbol} again</QuietAction> : purchaseRun?.outcome === "blocked" ? <QuietAction type="button" onClick={() => { setPurchaseOpen(false); void disconnect(); }}>Disconnect wallet</QuietAction> : undefined}
-      >
-        {purchaseRun?.state === "running" ? <StepRegister label={`Purchase ${purchaseRun.symbol}`} steps={purchaseSteps(purchaseRun)} /> : purchaseRun ? (
-          <ProcessOutcome kind={purchaseRun.state === "settled" ? "success" : purchaseRun.outcome === "uncertain" ? "pending" : "error"} title={purchaseRun.state === "settled" ? "Purchase settled" : purchaseRun.outcome === "blocked" ? "Purchase not sent" : purchaseRun.outcome === "uncertain" ? "Check wallet activity" : purchaseRun.outcome === "failed" ? "Purchase failed on mainnet" : purchaseRun.stage === "sign" ? "Purchase not signed" : "Purchase not prepared"}>
-            <div className={styles.outcomeBody}>
-              <p>{purchaseRun.state === "settled" ? "Mainnet confirmed this transaction." : purchaseRun.problem?.plain}</p>
-              {purchaseRun.problem?.technical ? <details><summary>Technical detail</summary><pre>{purchaseRun.problem.technical}</pre></details> : null}
-              {purchaseRun.signature ? <a className={styles.signature} href={`https://explorer.solana.com/tx/${purchaseRun.signature}`} rel="noreferrer" target="_blank">View transaction</a> : null}
-            </div>
-          </ProcessOutcome>
-        ) : null}
-      </ProcessDialog>
       {unavailable ? (
         <p className={styles.unavailable} role="note">
           {unavailable}
@@ -678,7 +617,7 @@ export function AllocationFlow({
                               onChange={(event) => {
                                 const next = event.target.checked ? [...selected, lot.mint] : selected.filter((mint) => mint !== lot.mint);
                                 setSelected(next);
-                                keepUnsignedPlanInUrl(preferred.filter((entry) => next.includes(entry.mint)).map((entry) => entry.mint), typed);
+                                keepUnsignedPlanInUrl({ mints: preferred.filter((entry) => next.includes(entry.mint)).map((entry) => entry.mint), amount: typed, weights });
                               }}
                             />
                           </label>
@@ -717,12 +656,53 @@ export function AllocationFlow({
                 value={typed}
                 disabled={started}
                 invalid={Boolean(amountProblem)}
-                message={amountProblem ?? (legs.length > 0 ? describeSplit(legs, USDC_SCALE, "USDC") : "Seametry divides one total evenly across what you chose.")}
+                message={amountProblem ?? (legs.length === 0 ? (weights ? "Seametry divides one total by the weights you set." : "Seametry divides one total evenly across what you chose.") : weights ? describeWeightedSplit(legs) : describeSplit(legs, USDC_SCALE, "USDC"))}
                 onChange={(event) => {
                   setTyped(event.target.value);
-                  keepUnsignedPlanInUrl(chosen.map((lot) => lot.mint), event.target.value);
+                  keepUnsignedPlanInUrl({ mints: chosen.map((lot) => lot.mint), amount: event.target.value, weights });
                 }}
               />
+              {!fixedTemplate && chosen.length > 1 ? (
+                <fieldset className={styles.weighting} disabled={started}>
+                  <legend>Weighting</legend>
+                  <div className={styles.weightingModes}>
+                    <label>
+                      <input type="radio" name="weighting" checked={!weights} onChange={() => setWeights(undefined)} />
+                      <span>Equal</span>
+                    </label>
+                    <label>
+                      <input type="radio" name="weighting" checked={Boolean(weights)} onChange={() => setWeights(evenWeights(chosen.map((lot) => lot.mint)))} />
+                      <span>Custom weights</span>
+                    </label>
+                  </div>
+                  {weights ? (
+                    <>
+                      <ol className={styles.weightRows}>
+                        {chosen.map((lot) => (
+                          <li key={lot.mint}>
+                            <LotMark symbol={lot.symbol} src={lot.logo} />
+                            <label htmlFor={`weight-${lot.mint}`}>{lot.symbol}</label>
+                            <span className={styles.weightInput}>
+                              <input
+                                id={`weight-${lot.mint}`}
+                                inputMode="numeric"
+                                autoComplete="off"
+                                value={weights[lot.mint] ?? ""}
+                                aria-invalid={weightOf(lot.mint) === undefined || weightOf(lot.mint)! < 1n}
+                                onChange={(event) => setWeights({ ...weights, [lot.mint]: event.target.value })}
+                              />
+                              <span aria-hidden="true">%</span>
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                      <p className={styles.weightTotal} data-complete={weightTotal === 100n || undefined}>
+                        {weightTotal.toString()}% of 100% assigned
+                      </p>
+                    </>
+                  ) : null}
+                </fieldset>
+              ) : null}
             </section>
           ) : null}
 
@@ -825,7 +805,7 @@ export function AllocationFlow({
                 disabled={Boolean(keyDisabledReason) && !inFlight}
                 onClick={() => void buyAll()}
               >
-                Buy allocation
+                {fixedTemplate ? "Buy basket" : "Buy allocation"}
               </Key>
             ) : (
               <span>{uncertainCount ? "Check wallet activity" : settledCount === legs.length ? "Purchases settled" : "Review purchase status"}</span>

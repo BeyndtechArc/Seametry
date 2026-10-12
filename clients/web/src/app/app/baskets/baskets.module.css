@@ -2,239 +2,22 @@
   min-width: 0;
 }
 
-.sectionSwitch {
-  display: inline-grid;
-  grid-template-columns: repeat(2, minmax(calc(var(--sm-space-13) * 1.35), auto));
-  gap: var(--sm-space-1);
-  margin-top: var(--sm-space-6);
-  padding: var(--sm-space-2);
-  border: 0.5px solid var(--sm-line-strong);
-  background: var(--sm-surface-ground);
-  box-shadow:
-    inset 0 1px 0 var(--sm-line-rule),
-    inset 0 0 0 var(--sm-space-1) color-mix(in srgb, var(--sm-surface-tray) 72%, transparent);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-3)) 0, 100% var(--sm-space-3), 100% 100%, 0 100%);
-}
-
-.sectionSwitch a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--sm-size-target);
-  padding: 0 var(--sm-space-5);
-  border: 0.5px solid transparent;
-  color: var(--sm-text-secondary);
-  background: transparent;
-  font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-medium);
-  text-decoration: none;
-}
-
-.sectionSwitch a[aria-current="page"] {
-  border-color: var(--sm-line-strong);
-  color: var(--sm-text-primary);
-  background: var(--sm-surface-raised);
-}
-
-.sectionSwitch a:focus-visible,
-.filterButton:focus-visible,
-.filterMenu button:focus-visible,
-.search input:focus-visible,
-.basketRow:focus-visible {
-  outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-2);
-}
-
 .register {
   display: grid;
   gap: var(--sm-space-5);
-  margin-top: var(--sm-space-10);
+  margin-top: var(--sm-space-8);
 }
 
-.registerHead {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(calc(var(--sm-space-13) * 2.4), 0.8fr);
-  align-items: end;
-  gap: var(--sm-space-8);
-}
-
-.registerHead > div {
-  display: grid;
-  gap: var(--sm-space-2);
-}
-
-.registerHead h2,
-.detailIdentity h1,
-.detailSection h2 {
-  margin: 0;
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-weight: var(--sm-font-weight-light);
-  letter-spacing: var(--sm-font-tracking-display);
-}
-
-.registerHead h2 {
-  font-size: var(--sm-font-size-figure);
-}
-
-.registerHead p,
-.detailIdentity p,
-.detailSection > p {
-  max-width: var(--sm-size-readable);
+.registerClose {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sm-space-2) var(--sm-space-4);
   margin: 0;
   color: var(--sm-text-secondary);
-  line-height: 1.55;
-}
-
-.registerTools {
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-end;
-  gap: var(--sm-space-2);
-  min-width: 0;
-}
-
-.search {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex: 1 1 auto;
-  min-width: 0;
-  border: 0.5px solid var(--sm-line-rule);
-  background: var(--sm-surface-sheet);
-}
-
-.search svg {
-  flex: 0 0 auto;
-  width: var(--sm-space-5);
-  height: var(--sm-space-5);
-  margin-left: var(--sm-space-4);
-  color: var(--sm-text-tertiary);
-}
-
-.search input {
-  width: 100%;
-  min-height: var(--sm-size-target);
-  padding: 0 var(--sm-space-4);
-  border: 0;
-  color: var(--sm-text-primary);
-  background: transparent;
-  font: inherit;
-}
-
-.search input::placeholder {
-  color: var(--sm-text-tertiary);
-}
-
-.visuallyHidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.filterControl {
-  position: relative;
-  flex: 0 0 auto;
-}
-
-.filterButton {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sm-space-2);
-  min-height: var(--sm-size-target);
-  padding: 0 var(--sm-space-4);
-  border: 0.5px solid var(--sm-line-strong);
-  color: var(--sm-text-secondary);
-  background: var(--sm-surface-raised);
-  font: inherit;
   font-size: var(--sm-font-size-small);
-  cursor: pointer;
 }
 
-.filterButton svg {
-  width: var(--sm-space-5);
-  height: var(--sm-space-5);
-}
-
-.filterButton b {
-  display: grid;
-  place-items: center;
-  min-width: var(--sm-space-5);
-  height: var(--sm-space-5);
-  color: var(--sm-text-onTouch);
-  background: var(--sm-accent-touch);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.filterMenu {
-  position: absolute;
-  top: calc(100% + var(--sm-space-2));
-  right: 0;
-  z-index: 4;
-  display: grid;
-  width: min(80vw, calc(var(--sm-space-13) * 3.5));
-  padding: var(--sm-space-4);
-  border: 0.5px solid var(--sm-line-strong);
-  background: var(--sm-surface-sheet);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-4)) 0, 100% var(--sm-space-4), 100% 100%, 0 100%);
-}
-
-.filterMenuHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sm-space-4);
-  padding-bottom: var(--sm-space-3);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.filterMenuHead button {
-  display: grid;
-  place-items: center;
-  width: var(--sm-size-target);
-  height: var(--sm-size-target);
-  border: 0;
-  color: var(--sm-text-primary);
-  background: var(--sm-surface-raised);
-}
-
-.filterOptions {
-  display: grid;
-}
-
-.filterOptions button {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--sm-space-5);
-  align-items: center;
-  gap: var(--sm-space-4);
-  min-height: var(--sm-size-target);
-  padding: var(--sm-space-2) var(--sm-space-3);
-  border: 0;
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-text-secondary);
-  background: transparent;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.filterOptions button[aria-pressed="true"] {
-  color: var(--sm-text-primary);
-  background: var(--sm-surface-raised);
-}
-
-.resultCount,
 .registerNote {
   margin: 0;
   color: var(--sm-text-tertiary);
@@ -254,14 +37,15 @@
   border-bottom: 0.5px solid var(--sm-line-rule);
 }
 
+/* The Alloy register's columns (desk.module.css .alloyRows), with the
+   trailing arrow cell in place of its "Open Alloy" link: here the whole row is the link. */
 .basketRow {
   display: grid;
-  grid-template-columns: minmax(0, 2.25fr) minmax(0, 1.35fr) minmax(0, 0.85fr) minmax(0, 0.85fr) var(--sm-size-target);
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) var(--sm-size-target);
   align-items: center;
   gap: var(--sm-space-7);
   min-width: 0;
-  min-height: calc(var(--sm-size-target) + var(--sm-space-8));
-  padding: var(--sm-space-5);
+  padding: var(--sm-space-6) var(--sm-space-5);
   color: inherit;
   background: var(--sm-surface-sheet);
   text-decoration: none;
@@ -284,30 +68,14 @@
   min-width: 0;
 }
 
-.basketAvatar {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: var(--sm-space-11);
-  height: var(--sm-space-11);
-  color: var(--sm-accent-touchText);
-  background: var(--sm-surface-ground);
-}
-
-.basketAvatar svg {
-  width: 100%;
-  height: 100%;
-}
-
 .basketIdentityText {
   display: grid;
-  gap: var(--sm-space-1);
+  gap: var(--sm-space-2);
   min-width: 0;
 }
 
 .basketIdentityText b,
-.basketIdentityText small,
-.basketIdentityText > span {
+.basketIdentityText span {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -321,52 +89,48 @@
   line-height: 1.1;
 }
 
-.basketIdentityText small {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
+.basketRow:hover .basketIdentityText b {
+  color: var(--sm-accent-touchText);
 }
 
-.basketIdentityText > span {
+.basketIdentityText span {
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
 }
 
-.basketComposition,
-.basketAccess,
-.basketState {
+.basketCell {
   display: grid;
   gap: var(--sm-space-2);
   min-width: 0;
+  color: var(--sm-text-primary);
 }
 
-.basketComposition small,
-.basketAccess small,
-.basketState small {
+.basketCell small {
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
 }
 
-.basketAccess b,
-.basketState b {
+.basketCell > span:last-child {
   overflow: hidden;
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-medium);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
+/* The Alloy register's sunken round stack, so a basket's constituents read
+   the same way an Alloy's legs do. */
 .basketLotStack {
   display: inline-flex;
   justify-self: start;
-  min-width: 0;
-  padding: var(--sm-space-1) var(--sm-space-2);
+  padding: var(--sm-space-2) var(--sm-space-3);
+  border-radius: var(--sm-radius-data);
   background: var(--sm-surface-tray);
 }
 
 .basketLotStack > * {
   width: var(--sm-space-8);
   height: var(--sm-space-8);
+  border-radius: 50%;
   outline: 2px solid var(--sm-surface-tray);
 }
 
@@ -380,13 +144,84 @@
   justify-self: end;
   width: var(--sm-size-target);
   height: var(--sm-size-target);
+  color: var(--sm-text-secondary);
+}
+
+.basketRow:hover .basketRowArrow {
   color: var(--sm-accent-touchText);
-  background: var(--sm-surface-tray);
 }
 
 .basketRowArrow svg {
   width: var(--sm-space-5);
   height: var(--sm-space-5);
+}
+
+/* The plate is illustration, so it takes two steps of scale.touch, the
+   Fortune Five artwork's lime ground and olive-black ink (foundations.md 5b),
+   and keeps them in both modes as a printed plate would. */
+.plate {
+  display: block;
+  flex: none;
+  width: var(--sm-space-11);
+  height: var(--sm-space-11);
+}
+
+/* The Alloy record's artwork size, so a basket record and an Alloy record
+   carry their marks at one scale. */
+.plate[data-size="header"] {
+  width: var(--sm-space-12);
+  height: var(--sm-space-12);
+}
+
+.plate svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.plateGround {
+  fill: var(--sm-scale-touch-500);
+}
+
+.plateInk {
+  fill: var(--sm-scale-touch-50);
+}
+
+.plateHairline {
+  fill: none;
+  stroke: var(--sm-scale-touch-50);
+  stroke-width: 0.6;
+}
+
+.plateEngraving {
+  fill: none;
+  stroke: var(--sm-scale-touch-500);
+  stroke-width: 0.45;
+  opacity: 0.55;
+}
+
+.plateSpoke {
+  stroke: var(--sm-scale-touch-500);
+  stroke-width: 1.6;
+}
+
+.plateCentre {
+  fill: var(--sm-scale-touch-500);
+  stroke: var(--sm-scale-touch-50);
+  stroke-width: 1;
+}
+
+.plateNode {
+  fill: var(--sm-scale-touch-50);
+  stroke: var(--sm-scale-touch-500);
+  stroke-width: 1.4;
+}
+
+.plateSocket {
+  fill: var(--sm-scale-touch-500);
+  stroke: var(--sm-scale-touch-50);
+  stroke-width: 1.2;
+  stroke-dasharray: 2 1.6;
 }
 
 .basketSpark {
@@ -489,14 +324,44 @@
   gap: var(--sm-space-4);
 }
 
-.detailIdentity > span {
-  color: var(--sm-text-tertiary);
-  font-family: var(--sm-font-family-digest);
-  font-size: var(--sm-font-size-micro);
+.detailTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-6);
+  min-width: 0;
+}
+
+.detailTitle > div {
+  display: grid;
+  gap: var(--sm-space-2);
+  min-width: 0;
+}
+
+.detailTitle span {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.detailIdentity h1,
+.detailSection h2 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-weight: var(--sm-font-weight-light);
+  letter-spacing: var(--sm-font-tracking-display);
 }
 
 .detailIdentity h1 {
   font-size: var(--sm-font-size-figure-l);
+}
+
+.detailIdentity p,
+.detailSection > p {
+  max-width: var(--sm-size-readable);
+  margin: 0;
+  color: var(--sm-text-secondary);
+  line-height: 1.55;
 }
 
 .detailActions {
@@ -506,15 +371,17 @@
   gap: var(--sm-space-4);
 }
 
-.detailAction {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--sm-size-target);
-  padding: 0 var(--sm-space-5);
-  color: var(--sm-text-onTouch);
-  background: var(--sm-accent-touch);
-  font-weight: var(--sm-font-weight-medium);
-  text-decoration: none;
+.remix {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-2);
+}
+
+.remix p {
+  max-width: calc(var(--sm-size-readable) / 2);
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
 }
 
 .detailBoundary {
@@ -523,7 +390,6 @@
   color: var(--sm-text-secondary);
   line-height: 1.55;
 }
-
 
 .detailPurchase {
   display: grid;
@@ -568,21 +434,6 @@
   line-height: 1.55;
 }
 
-.detailCustomLink {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--sm-size-target);
-  border-top: 0.5px solid var(--sm-line-rule);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  text-decoration: none;
-}
-
-.detailCustomLink:hover {
-  color: var(--sm-text-primary);
-}
-
 .detailSection {
   display: grid;
   gap: var(--sm-space-5);
@@ -608,6 +459,12 @@
   gap: var(--sm-space-5);
   padding: var(--sm-space-4) 0;
   border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.constituentRows li > div {
+  display: grid;
+  gap: var(--sm-space-1);
+  min-width: 0;
 }
 
 .constituentRows b {
@@ -660,54 +517,87 @@
   font-size: var(--sm-font-size-small);
 }
 
+/* Access is the first fact to give way: the stack already shows whose stocks they are. */
 @media (max-width: 1050px) {
   .basketRow {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 0.8fr) var(--sm-size-target);
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) minmax(0, 1fr) var(--sm-size-target);
   }
 
-  .basketAccess {
+  .basketCell[data-cell="access"] {
     display: none;
   }
 }
 
+/* A phone row is one reading line: the plate, then name, category and
+   admission stacked beside it. The stack and access step aside because the
+   plate already shows the composition and the record names every issuer. */
 @media (max-width: 760px) {
-  .registerHead,
+  .basketRow {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--sm-space-1) var(--sm-space-4);
+    padding: var(--sm-space-4) var(--sm-space-3);
+  }
+
+  .basketIdentity {
+    display: contents;
+  }
+
+  .basketIdentity > .plate {
+    grid-row: 1 / span 2;
+    width: var(--sm-space-10);
+    height: var(--sm-space-10);
+  }
+
+  .basketIdentityText {
+    gap: var(--sm-space-1);
+    align-self: end;
+  }
+
+  .basketIdentityText b {
+    font-size: var(--sm-font-size-title-s);
+  }
+
+  .basketCell[data-cell="holds"],
+  .basketCell[data-cell="access"] {
+    display: none;
+  }
+
+  .basketCell {
+    grid-column: 2;
+    align-self: start;
+  }
+
+  .basketCell small {
+    display: none;
+  }
+
+  .basketCell > span:last-child {
+    color: var(--sm-text-secondary);
+    font-size: var(--sm-font-size-small);
+  }
+
+  .basketRowArrow {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  .registerClose {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .detailHead {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .basketRow {
-    grid-template-columns: minmax(0, 1fr) var(--sm-size-target);
+  .detailTitle {
     gap: var(--sm-space-4);
-    padding: var(--sm-space-4) var(--sm-space-2);
   }
 
-  .basketIdentity,
-  .basketComposition,
-  .basketState {
-    grid-column: 1;
-  }
-
-  .basketRowArrow {
-    grid-column: 2;
-    grid-row: 1 / span 3;
-    align-self: center;
-  }
-
-  .basketComposition {
-    display: flex;
-    align-items: center;
-    gap: var(--sm-space-4);
-    padding-left: calc(var(--sm-space-11) + var(--sm-space-5));
-  }
-
-  .basketState {
-    display: block;
-    padding-left: calc(var(--sm-space-11) + var(--sm-space-5));
-  }
-
-  .basketState small {
-    margin-right: var(--sm-space-2);
+  .plate[data-size="header"] {
+    width: var(--sm-space-11);
+    height: var(--sm-space-11);
   }
 
   .detailFacts {
@@ -725,33 +615,5 @@
 
   .constituentRows li > :last-child {
     grid-column: 2 / -1;
-  }
-}
-
-
-@media (max-width: 760px) {
-  .sectionSwitch {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-  }
-
-  .registerTools {
-    width: 100%;
-  }
-
-  .filterButton > span {
-    display: none;
-  }
-
-  .filterMenu {
-    position: fixed;
-    right: var(--sm-space-3);
-    bottom: calc(var(--sm-space-13) + env(safe-area-inset-bottom));
-    left: var(--sm-space-3);
-    top: auto;
-    width: auto;
-    max-height: 64vh;
-    overflow: auto;
   }
 }

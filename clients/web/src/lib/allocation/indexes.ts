@@ -94,20 +94,24 @@ export const allocationIndexes: readonly AllocationIndex[] = [
     code: "AIC",
     name: "AI Cloud",
     category: "AI infrastructure",
-    description: "GPU clouds, data-center operators, compute silicon and architecture around AI workloads.",
+    description: "GPU clouds, accelerators, custom silicon and memory around AI workloads.",
     thesis: "A research basket for the companies selling the infrastructure required to train and serve models, rather than the model layer itself.",
+    // ARM and IREN were the original architecture and data-center picks. The
+    // 12 October 2026 assay refused both on execution impact at 10,000 USDC
+    // (depth-2026-10-12.md), so Broadcom (custom silicon, networking) and
+    // Micron (memory), both admitted, hold those places (Storm, 12 October 2026).
     members: [
       { symbol: "NBIS", oracleTicker: "NBIS" },
       { symbol: "CRWV", oracleTicker: "CRWV" },
-      { symbol: "IREN", oracleTicker: "IREN" },
       { symbol: "NVDAx", oracleTicker: "NVDA" },
-      { symbol: "ARM", oracleTicker: "ARM" },
+      { symbol: "AVGOx", oracleTicker: "AVGO" },
+      { symbol: "MU", oracleTicker: "MU" },
     ],
     weighting: "equal",
     methodologyVersion: "seametry-theme-ew-0.1",
     review: "Quarterly membership review; admission must be recaptured before an incomplete basket becomes executable.",
     driftBandPp: 5,
-    filters: ["ai-compute", "cloud-software", "backpack", "mixed"],
+    filters: ["ai-compute", "cloud-software", "backpack", "xstocks", "mixed"],
     literature: [
       { label: "Backpack: Nebius", href: "https://learn.backpack.exchange/blog/tokenized-nebius-group-nbis" },
       { label: "Backpack: CoreWeave", href: "https://learn.backpack.exchange/blog/tokenized-coreweave-crwv" },

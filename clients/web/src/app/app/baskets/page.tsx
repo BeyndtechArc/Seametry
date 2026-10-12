@@ -4,7 +4,6 @@ import { allocationIndexes } from "@/lib/allocation/indexes";
 import { allocationOffer } from "@/lib/allocation/offer";
 import { PageHeader } from "../_shell/page-header";
 import { BasketRegister } from "./basket-register";
-import { BasketSectionNav } from "./section-nav";
 import styles from "./baskets.module.css";
 
 export const metadata: Metadata = {
@@ -29,7 +28,6 @@ export default async function BasketsPage() {
           </>
         }
       />
-      <BasketSectionNav current="baskets" />
       <BasketRegister baskets={allocationIndexes} offered={offered} />
     </div>
   );

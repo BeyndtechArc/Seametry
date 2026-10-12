@@ -46,6 +46,115 @@
   gap: var(--sm-space-10);
 }
 
+.remixNote {
+  max-width: var(--sm-size-readable);
+  margin: var(--sm-space-6) 0 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.55;
+}
+
+.remixNote a {
+  color: var(--sm-accent-touchText);
+}
+
+.weighting {
+  display: grid;
+  gap: var(--sm-space-4);
+  margin: var(--sm-space-6) 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.weighting legend {
+  margin-bottom: var(--sm-space-3);
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.weightingModes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sm-space-2) var(--sm-space-6);
+}
+
+.weightingModes label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-2);
+  min-height: var(--sm-size-target);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  cursor: pointer;
+}
+
+.weightingModes input {
+  accent-color: var(--sm-accent-touch);
+}
+
+.weightRows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border-top: 0.5px solid var(--sm-line-strong);
+  list-style: none;
+}
+
+.weightRows li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-2) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.weightRows label {
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.weightInput {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-2);
+  color: var(--sm-text-secondary);
+}
+
+.weightInput input {
+  width: calc(var(--sm-space-10) + var(--sm-space-2));
+  min-height: var(--sm-size-target);
+  padding: 0 var(--sm-space-3);
+  border: 0;
+  border-bottom: 0.5px solid var(--sm-line-strong);
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-sheet);
+  font: inherit;
+  font-variant-numeric: tabular-nums lining-nums;
+  text-align: right;
+}
+
+.weightInput input:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}
+
+.weightInput input[aria-invalid="true"] {
+  border-bottom-color: var(--sm-accent-provenance);
+}
+
+.weightTotal {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.weightTotal[data-complete] {
+  color: var(--sm-text-primary);
+}
+
 .unavailable {
   display: grid;
   gap: var(--sm-space-3);
@@ -248,37 +357,6 @@
   color: var(--sm-accent-touchText);
   text-decoration: underline;
   text-underline-offset: 0.2em;
-}
-
-.outcomeBody {
-  display: grid;
-  gap: var(--sm-space-3);
-  min-width: 0;
-}
-
-.outcomeBody p {
-  margin: 0;
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-}
-
-.outcomeBody details {
-  min-width: 0;
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-}
-
-.outcomeBody summary {
-  width: fit-content;
-  padding: var(--sm-space-2) 0;
-  cursor: pointer;
-}
-
-.outcomeBody pre {
-  margin: 0;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  font-size: var(--sm-font-size-small);
 }
 
 .orderRail {

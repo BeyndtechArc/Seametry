@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { describeSplit, formatAmount, formatBalance, parseAmount, splitEvenly } from "../src/lib/amount";
+import { describeSplit, formatAmount, formatBalance, parseAmount, splitByWeights, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
+import { findAllocationIndex } from "../src/lib/allocation/indexes";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
 import { countryGate, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
 import { listedPositions } from "../src/lib/allocation/positions";
@@ -40,6 +41,20 @@ test("an even split sums to the total exactly, remainder to the first shares", (
   const parts = splitEvenly(1_000_000_001n, 7);
   expect(parts.reduce((sum, part) => sum + part, 0n)).toBe(1_000_000_001n);
   expect(splitEvenly(5n, 0)).toEqual([]);
+});
+
+test("a weighted split sums to the total exactly, leftover atoms to the largest remainders", () => {
+  expect(splitByWeights(100_000_000n, [40n, 30n, 30n])).toEqual([40_000_000n, 30_000_000n, 30_000_000n]);
+  // 10 atoms at 1/3 each: 3.33 floors to 3, and the one atom left goes to the
+  // first of three equal remainders.
+  expect(splitByWeights(10n, [1n, 1n, 1n])).toEqual([4n, 3n, 3n]);
+  // 7 atoms at 50/25/25: 3.5, 1.75, 1.75 floor to 3, 1, 1; the two left go to
+  // the .75 remainders before the .5.
+  expect(splitByWeights(7n, [50n, 25n, 25n])).toEqual([3n, 2n, 2n]);
+  const parts = splitByWeights(1_000_000_001n, [13n, 17n, 19n, 23n, 28n]);
+  expect(parts.reduce((sum, part) => sum + part, 0n)).toBe(1_000_000_001n);
+  expect(splitByWeights(5n, [])).toEqual([]);
+  expect(splitByWeights(5n, [0n, 0n])).toEqual([]);
 });
 
 test("a split reads as one line however many constituents share it, naming the remainder exactly", () => {
@@ -206,14 +221,25 @@ test("the allocation catalogue exposes policy-issued capacity per offered lot", 
   const offered = admissions.instruments.filter(isAdmitted);
   // The policy engine's output after the 4 October 2026 capture of eighteen
   // more xStocks (shared/evidence/depth-2026-10-04.md) and the 7 October 2026
-  // capture of eight Backpack Securities twins (depth-2026-10-07.md), in
-  // snapshot order.
+  // capture of eight Backpack Securities twins (depth-2026-10-07.md), and the
+  // 12 October 2026 capture of the basket constituents never assayed before
+  // (depth-2026-10-12.md; ARM, IREN and VCXx were refused), in snapshot order.
   expect(offered.map((lot) => [lot.instrument.symbol, lot.capacity_usdc])).toEqual([
     ["AMD", 10000],
     ["BE", 1000],
+    ["BLK", 1000],
+    ["CRWV", 1000],
+    ["COPX", 1000],
+    ["EWY", 1000],
+    ["EWZ", 1000],
+    ["FWDI", 1000],
+    ["HOOD", 1000],
     ["MRNA", 10000],
+    ["MSTR", 10000],
     ["MU", 10000],
+    ["NBIS", 1000],
     ["NFLX", 10000],
+    ["PUSA", 1000],
     ["SNDK", 10000],
     ["SPCX", 10000],
     ["AMZNx", 10000],
@@ -429,6 +455,102 @@ test("a confirmed Allocation shows settlement state and transaction evidence", a
   await expect(page.getByText("Allocation assembled")).toBeVisible({ timeout: 10_000 });
   await expect(page.getByRole("region", { name: "Buy allocation" }).getByRole("link", { name: "test-signature" })).toHaveAttribute("href", /test-signature/);
   await expect(page.getByText("1 of 1 purchase settled.")).toBeVisible();
+});
+
+test("a published basket buys every constituent from its record with one Key press and one batch", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true });
+  const basket = findAllocationIndex("prime-seven")!;
+  const mints = basket.members.map((member) => admissions.instruments.find((lot) => lot.instrument.symbol === member.symbol)!.instrument.mint);
+  const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
+  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: wallet, recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
+  const prepared = {
+    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
+    expiresAt: new Date(Date.now() + 60_000).toISOString(), floorAtoms: "1", outAtoms: "1", outScale: 6,
+    routingFeeBps: 20, routingFeeAtoms: "2000", priorityFeeLamports: "0", route: ["Test route"],
+    contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
+  };
+  const batches: { legs: { mint: string; usdcAtoms: string }[]; planMints: string[] }[] = [];
+  let submits = 0;
+  await page.route("**/api/allocation/prepare-batch", async (route) => {
+    batches.push(route.request().postDataJSON());
+    await route.fulfill({ json: mints.map(() => prepared) });
+  });
+  await page.route("**/api/allocation/submit", (route) => {
+    submits += 1;
+    return route.fulfill({ json: { signature: `basket-signature-${submits}` } });
+  });
+  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed", tokenDeltaAtoms: "1", tokenDeltaScale: 6 } }));
+
+  await page.goto("/app/baskets/prime-seven?amount=7");
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  const order = page.getByRole("region", { name: "Buy Prime Seven" });
+  // The amount came from the URL a wallet's in-app browser would open.
+  await expect(order.getByLabel("USDC to spend")).toHaveValue("7");
+  await order.getByRole("button", { name: "Buy basket" }).click();
+
+  await expect(page.getByText("Allocation assembled")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText("7 of 7 purchases settled.")).toBeVisible();
+  expect(batches).toHaveLength(1);
+  expect(batches[0].legs.map((leg) => leg.mint).sort()).toEqual([...mints].sort());
+  expect(batches[0].legs.every((leg) => leg.usdcAtoms === "1000000")).toBe(true);
+  expect(submits).toBe(7);
+  // Every leg has ended, so nothing may still read as in progress.
+  await expect(order.getByRole("button", { name: "Buy basket" })).toHaveCount(0);
+  await expect(page.getByText("Purchases settled", { exact: true })).toBeVisible();
+});
+
+test("a remix buys at the weights the reader set, exactly, and is recorded as a remix", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true });
+  const basket = findAllocationIndex("prime-seven")!;
+  const mintOf = (symbol: string) => admissions.instruments.find((lot) => lot.instrument.symbol === symbol)!.instrument.mint;
+  const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
+  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: wallet, recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
+  const prepared = {
+    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
+    expiresAt: new Date(Date.now() + 60_000).toISOString(), floorAtoms: "1", outAtoms: "1", outScale: 6,
+    routingFeeBps: 20, routingFeeAtoms: "2000", priorityFeeLamports: "0", route: ["Test route"],
+    contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
+  };
+  const batches: { legs: { mint: string; usdcAtoms: string }[] }[] = [];
+  let submits = 0;
+  await page.route("**/api/allocation/prepare-batch", async (route) => {
+    batches.push(route.request().postDataJSON());
+    await route.fulfill({ json: basket.members.map(() => prepared) });
+  });
+  // Holdings keep only what has a signature's shape, so the fixture answers with one.
+  await page.route("**/api/allocation/submit", (route) => {
+    submits += 1;
+    return route.fulfill({ json: { signature: Keypair.generate().publicKey.toBase58() + Keypair.generate().publicKey.toBase58() } });
+  });
+  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed", tokenDeltaAtoms: "1", tokenDeltaScale: 6 } }));
+
+  await page.goto("/app/baskets/build?basket=prime-seven");
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await page.getByRole("button", { name: "Set amount" }).click();
+  await page.getByLabel("USDC to spend").fill("100");
+  await page.getByRole("radio", { name: "Custom weights" }).check();
+  // The custom form opens on the equal split in whole percents.
+  await expect(page.getByText("100% of 100% assigned")).toBeVisible();
+  await page.getByLabel("AAPLx", { exact: true }).fill("40");
+  await expect(page.getByText(/The weights add to \d+%\. They must add to 100%\./)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Buy allocation" })).toHaveCount(0);
+  for (const member of basket.members.filter((member) => member.symbol !== "AAPLx")) {
+    await page.getByLabel(member.symbol, { exact: true }).fill("10");
+  }
+  await expect(page.getByText("7 purchases by weight, from 10.000000 to 40.000000 USDC.", { exact: false })).toBeVisible();
+  expect(new URL(page.url()).searchParams.get("weights")).toBeTruthy();
+
+  await page.getByRole("button", { name: "Buy allocation" }).click();
+  await expect(page.getByText("7 of 7 purchases settled.")).toBeVisible({ timeout: 10_000 });
+  expect(batches).toHaveLength(1);
+  expect(submits).toBe(7);
+  const atomsBySymbol = Object.fromEntries(basket.members.map((member) => [member.symbol, batches[0].legs.find((leg) => leg.mint === mintOf(member.symbol))?.usdcAtoms]));
+  expect(atomsBySymbol).toEqual({ AAPLx: "40000000", MSFTx: "10000000", AMZNx: "10000000", GOOGLx: "10000000", METAx: "10000000", NVDAx: "10000000", TSLAx: "10000000" });
+  const recorded = await page.evaluate(() => JSON.parse(localStorage.getItem("seametry:mainnet-allocation-activity:v1") ?? "[]") as { allocationName?: string; allocationTemplateId?: string }[]);
+  expect(recorded).toHaveLength(7);
+  expect(recorded.every((trade) => trade.allocationName === "Prime Seven remix" && trade.allocationTemplateId === undefined)).toBe(true);
 });
 
 test("the amount step names and enforces the funding floor before wallet signing", async ({ page }) => {
