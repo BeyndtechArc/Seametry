@@ -7,12 +7,12 @@ import { ThemeControl } from "@seametry/ui/theme-control";
 import { BrandMark } from "../../brand-mark";
 import styles from "./house-rail.module.css";
 
-export type PublicDestination = "home" | "how" | "key" | "sign-in";
+export type PublicDestination = "home" | "docs" | "thesis" | "sign-in";
 
 const primaryLinks: Array<{ id: PublicDestination; label: string; href: string }> = [
   { id: "home", label: "Home", href: "/" },
-  { id: "how", label: "How it works", href: "/how-it-works" },
-  { id: "key", label: "The Key", href: "/the-key" },
+  { id: "docs", label: "Docs", href: "/docs" },
+  { id: "thesis", label: "Thesis", href: "/thesis" },
 ];
 
 export function HouseRail({ current }: { current?: PublicDestination }) {

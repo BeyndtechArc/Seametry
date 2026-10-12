@@ -1,11 +1,11 @@
-> **Living document. Owns:** the business pages: landing, how it works, the Key, and later pricing and legal.
-> **Does not own:** the world's canon, naming, liturgy, and outward lines (`../BRAND_AND_WORLD.md`), the copy process for writing them (`../STORM-VOICE-SYSTEM.md`), the Explorer's evidence pages (`EXPLORER.md`), or the Terminal (`TERMINAL.md`). This document cites those rather than restating them.
+> **Living document. Owns:** the business pages: landing, and later pricing and legal.
+> **Does not own:** the docs and the pages that explain the mechanism (how it works, the Key, the exit), which `DOCS.md` owns since 12 October 2026; the world's canon, naming, liturgy, and outward lines (`../BRAND_AND_WORLD.md`), the copy process for writing them (`../STORM-VOICE-SYSTEM.md`), the Explorer's evidence pages (`EXPLORER.md`), or the Terminal (`TERMINAL.md`). This document cites those rather than restating them.
 > **Phase 1.** Ships in `clients/web`, alongside the Terminal, linking to the Explorer as its own separately hosted site rather than sharing a deployment with it. Pricing and legal are gated separately, below.
 
 # Site
 
-These are the pages a visitor who has never heard of Seametry lands on:
-what it is, why an ETF and not a bundle, and what the Key means. They are the
+These are the pages a visitor who has never heard of Seametry lands on: what
+it is, and where to read why an ETF and not a bundle (`DOCS.md`). They are the
 front door to the Explorer for the same audience `PRODUCT_ARCHITECTURE.md`
 section 6 names for it: the public, researchers, press, judges. They are not a
 fifth surface with their own users or phase; they are how that audience
@@ -48,35 +48,6 @@ template lays them out.
 canonical, word for word, from `../BRAND_AND_WORLD.md` section 10. Nothing
 here paraphrases them. Any copy this page adds beyond those lines follows
 `../STORM-VOICE-SYSTEM.md`.
-
-### How it works (`/how-it-works`)
-
-Answers, in order: what a tokenized stock actually is (a claim, not the
-underlying), why a bundle of them is not an ETF, and how the Hall's open
-authorized participant set differs from a closed one. Each claim in the Claim
-grid pattern must be literally true of the shipped product, per
-`foundations.md` section 1, law 5.
-
-### The exit (`/papers/the-exit`)
-
-Answers what happens to a basket's exit when an issuer exercises a power over
-one constituent, and how the Hall settles redemption into claims so one leg
-cannot revert the rest. It is Storm's paper, made canon on 5 October 2026.
-Every figure in it, the survey counts, the depth captures, the admission
-counts and the recorded devnet freeze run, is read from `shared/evidence/`
-through `clients/web/src/lib/papers/the-exit.ts`; the prose types no number of
-its own, so a new capture changes the figure and leaves the argument standing.
-Earlier captures stay dated beside newer ones rather than being replaced.
-
-### The Key (`/the-key`)
-
-The Key template from `patterns.md` section 2: a still page, no motion at all,
-naming the program ID, the upgrade authority, and either the transaction that
-made the program final or the words "Key still in hand." The Hall's three
-guarantees are stated word for word from `HALL.md` section 1, matching how
-`MOBILE.md` section 10 requires the same sentence to appear in the app's own
-About screen. One sentence, the same everywhere it appears, is what makes it
-a guarantee rather than a claim that drifts by surface.
 
 ---
 

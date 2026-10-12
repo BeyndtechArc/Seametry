@@ -13,7 +13,7 @@ export default async function ThesisPage() {
   await connection();
 
   return (
-    <PublicShell>
+    <PublicShell current="thesis">
       <header className={styles.storyHero}>
         <div className={styles.mechanismMark} aria-hidden="true">
           <span />

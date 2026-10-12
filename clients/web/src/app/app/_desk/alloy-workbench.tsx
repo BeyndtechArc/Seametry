@@ -63,7 +63,7 @@ function AlloyBoundary({ problem }: { problem: TerminalProblem }) {
         <code>HTTP {problem.status}</code>
       </div>
       <div className={styles.boundaryActions}>
-        <RouteAction href="/how-it-works">Read how the Hall works</RouteAction>
+        <RouteAction href="/docs/how-it-works">Read how the Hall works</RouteAction>
       </div>
     </section>
   );

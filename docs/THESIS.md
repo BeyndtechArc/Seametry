@@ -1,7 +1,8 @@
 # Seametry thesis
 
 **Status:** living research note.  
-**Last substantive change:** 11 October 2026.
+**Last substantive change:** 11 October 2026.  
+**Owns:** the economic and product thesis, and its public page at `/thesis` (`clients/web/src/app/thesis/page.tsx`). The page states nothing this document does not; the docs link to it from Papers rather than restating it (`prd/DOCS.md`).
 
 This document preserves the current economic and product thesis behind Seametry so the same market-structure questions do not have to be reconstructed from conversation history.
 

@@ -18,11 +18,12 @@ const routes = [
   "/app/compose",
   "/app/instruments",
   "/app/instruments/XsTockMint111111111111111111111111111111111",
-  "/how-it-works",
-  "/papers/the-exit",
+  "/docs",
+  "/docs/how-it-works",
+  "/docs/papers/the-exit",
+  "/docs/the-key",
   "/patterns",
   "/sign-in",
-  "/the-key",
 ];
 
 test("a shared link previews with the meta flyer, served from this app", async ({ page, request }) => {

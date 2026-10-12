@@ -3,8 +3,8 @@ import { connection } from "next/server";
 import { ClaimLine, LotMark, TextAction } from "@seametry/ui";
 import { logoFor } from "@/lib/instrument-logos";
 import { theExit } from "@/lib/papers/the-exit";
-import { PublicShell, SectionHeading } from "../../public-shell";
-import styles from "../../site.module.css";
+import { SectionHeading } from "../../../public-shell";
+import styles from "../../../site.module.css";
 
 export const metadata: Metadata = {
   title: "The exit | Seametry",
@@ -21,8 +21,7 @@ export default async function TheExitPage() {
   await connection();
   const [firstSplit, ...otherSplits] = survey.splits;
   return (
-    <PublicShell>
-      <article className={styles.paper}>
+    <article className={styles.paper}>
         <header className={styles.storyHero}>
           <span>Permissionless creation and redemption for baskets of issuer-controlled tokenized equities</span>
           <h1>The exit.</h1>
@@ -244,11 +243,10 @@ export default async function TheExitPage() {
             <aside className={styles.boundary}>
               <ClaimLine lead="Open AP removes institutional permission.">It does not remove issuer control from the assets being created and redeemed.</ClaimLine>
               <ClaimLine lead="Minting the share is no longer the difficult part.">The exit is.</ClaimLine>
-              <TextAction href="/the-key">Read the upgrade authority</TextAction>
+              <TextAction href="/docs/the-key">Read the upgrade authority</TextAction>
             </aside>
           </div>
         </section>
       </article>
-    </PublicShell>
   );
 }

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { createMDX } from "fumadocs-mdx/next";
 
 // Security headers, including the Content-Security-Policy, are set in
 // proxy.ts, not here: every route in this app is dynamically rendered (see
@@ -22,6 +23,12 @@ const nextConfig: NextConfig = {
       { source: "/terminal/instruments/:mint", destination: "/app/instruments/:mint", permanent: false },
       { source: "/terminal/alloys", destination: "/app/alloys", permanent: false },
       { source: "/terminal/alloys/:address", destination: "/app/alloys/:address", permanent: false },
+      // The explanation pages moved into the docs on 12 October 2026
+      // (.plan/docs-site.plan.md). Temporary until Storm's read-through, for
+      // the same reason as above.
+      { source: "/how-it-works", destination: "/docs/how-it-works", permanent: false },
+      { source: "/the-key", destination: "/docs/the-key", permanent: false },
+      { source: "/papers/the-exit", destination: "/docs/papers/the-exit", permanent: false },
     ];
   },
   experimental: {
@@ -31,4 +38,8 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Compiles the MDX under content/docs at build time (.plan/docs-site.plan.md).
+// Only the content pipeline comes from Fumadocs; every element on a docs page
+// is drawn by @seametry/ui, because a packaged docs theme writes inline style
+// attributes the nonce policy in proxy.ts refuses.
+export default createMDX()(nextConfig);

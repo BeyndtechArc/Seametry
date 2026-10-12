@@ -55,7 +55,8 @@ Read all three before writing code. They are short on purpose.
 | [prd/HALL.md](prd/HALL.md) | The Hall on-chain program: guarantees, instructions, arithmetic, prerogative handling, the devnet demonstration | Live. **The product.** Devnet is phase 1, mainnet is phase 3 |
 | [prd/BASKET_DOMAIN.md](prd/BASKET_DOMAIN.md) | Off chain basket valuation, weighting and drift, whole-alloy delivery evaluation, acquisition planning | Live. Recipe arithmetic is in the core; the web now executes the direct-Allocation subset and curated equal-weight templates, while reusable core NAV/drift/path planning remains open |
 | [prd/MOBILE.md](prd/MOBILE.md) | Mobile holding, monitoring, and approval surface | Live. Phase 2. Deliberately not a consumer brokerage |
-| [prd/SITE.md](prd/SITE.md) | The business pages: landing, how it works, the Key, and later pricing and legal | Live. Phase 1. Front door to the Explorer by link, not a fifth surface, not its deployment |
+| [prd/SITE.md](prd/SITE.md) | The business pages: landing, and later pricing and legal | Live. Phase 1. Front door to the Explorer by link, not a fifth surface, not its deployment |
+| [prd/DOCS.md](prd/DOCS.md) | The public docs at `/docs`: how they are built, the page tree, search, and the pages that explain the mechanism (how it works, the Key, the exit) | Live. Phase 1. Shell, search and the three migrated pages built 12 October 2026; the rest of the tree is specified, not written |
 | [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the catalogue, the verification ritual, instrument pages, evidence pages, the Hall demonstration, hallmarks | Live. Phase 1. Evidence only, since 27 September 2026 |
 | [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Allocation execution and optional routed-quote history exist in the web app; the professional Alloy NAV/share-price workbench does not |
 | [prd/API.md](prd/API.md) | The public API: contract, response model, resources, sign-in and keys, entitlements and metering, streaming, the storage behind it, and the order the server is built in | Live. Step A0 (the contract, its Go and TypeScript generation, the drift check, and the service boundary test) is built; the rest is specified, not built. Serves the Explorer from phase 1; the metered product is phase 3 |
@@ -72,6 +73,7 @@ Read all three before writing code. They are short on purpose.
 |---|---|
 | [`.claude/skills/seametry-design/`](../.claude/skills/seametry-design/SKILL.md) | **Every executable design decision.** Tokens, colour, type, space, radius, motion values, component contracts, page templates, interface voice, and the linter that enforces them. Invoked automatically for any work that creates or changes UI |
 | [BRAND_AND_WORLD.md](BRAND_AND_WORLD.md) | The world and its canon, the naming register, the world to code name map, the liturgy, which moments are ceremonies, the canonical outward lines (the one-liner, the pitch, the judges' answers). Holds no executable design value |
+| [THESIS.md](THESIS.md) | The economic and product thesis, and its public page at `/thesis`, which states nothing this document does not |
 | [CRAFT.md](CRAFT.md) | Library evaluations and the reasoning behind them |
 | [STORM-VOICE-SYSTEM.md](STORM-VOICE-SYSTEM.md) | The process for writing and checking outward copy: a pitch line, a deck, a tweet, an email. Extends `voice.md`'s register to longer forms; does not restate it or the canonical lines in `BRAND_AND_WORLD.md` |
 

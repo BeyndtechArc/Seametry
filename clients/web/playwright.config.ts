@@ -36,6 +36,9 @@ export default defineConfig({
         JUPITER_API_URL: "http://127.0.0.1:3846/jupiter",
         JUPITER_API_KEY: "fixture",
         MAINNET_RPC_URL: "http://127.0.0.1:3846/mainnet-rpc",
+        // The Key reads the Hall's upgrade authority live; the fixture answers
+        // in the loader's byte layout so no test depends on public devnet.
+        HALL_DEVNET_RPC_URL: "http://127.0.0.1:3846/devnet-rpc",
         ALLOCATION_APPROVAL_SECRET: "fixture-only-not-a-production-secret-00000000",
         ALLOCATION_FEE_WALLET: "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d",
         ALLOCATION_BLOCKED_COUNTRIES: "US,GB",

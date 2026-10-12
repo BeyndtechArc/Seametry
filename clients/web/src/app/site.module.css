@@ -327,8 +327,7 @@
 .plateLabel,
 .storyHero > span,
 .chapterLabel,
-.accessPanel > span,
-.keyState > span {
+.accessPanel > span {
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
 }
@@ -562,8 +561,7 @@
 .sectionHeading h2,
 .storyHero h1,
 .chapter h2,
-.accessPanel h1,
-.keyState h1 {
+.accessPanel h1 {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-weight: var(--sm-font-weight-light);
@@ -578,7 +576,6 @@
 .storyHero p,
 .chapter p,
 .accessPanel p,
-.keyState p,
 .boundary p {
   max-width: var(--sm-size-readable);
   color: var(--sm-text-secondary);
@@ -699,7 +696,6 @@
 .fragmentGrid,
 .comparison,
 .chapterGrid,
-.guaranteeGrid,
 .accessGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -737,8 +733,7 @@
 .fragmentIdentity h3,
 .comparison article h3,
 .unavailablePanel h3,
-.loopStep h3,
-.guarantee h2 {
+.loopStep h3 {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title);
@@ -749,8 +744,7 @@
 .fragmentIdentity p,
 .comparison article p,
 .unavailablePanel p,
-.loopStep p,
-.guarantee p {
+.loopStep p {
   color: var(--sm-text-secondary);
   line-height: 1.6;
 }
@@ -821,7 +815,6 @@
 }
 
 .storyHero,
-.keyState,
 .accessPanel {
   position: relative;
   display: grid;
@@ -895,7 +888,6 @@
 }
 
 .storyHero h1,
-.keyState h1,
 .accessPanel h1 {
   max-width: calc(var(--sm-space-13) * 5);
   font-size: clamp(var(--sm-font-size-figure-l), 7vw, var(--sm-font-size-display-l));
@@ -995,76 +987,6 @@
   color: var(--sm-accent-touchText);
 }
 
-.keyState {
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  align-items: end;
-}
-
-.keyState::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("/sponsor-mark.svg") left center / auto 140% no-repeat;
-  opacity: 0.055;
-  pointer-events: none;
-}
-
-.keyMonument {
-  position: absolute;
-  top: var(--sm-space-7);
-  right: var(--sm-space-7);
-  width: var(--sm-space-12);
-  height: var(--sm-space-12);
-  border: var(--sm-space-2) double var(--sm-line-strong);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-4)) 0, 100% var(--sm-space-4), 100% 100%, 0 100%);
-  opacity: 0.42;
-}
-
-.keyState > div {
-  display: grid;
-  gap: var(--sm-space-6);
-}
-
-.keyFacts {
-  display: grid;
-  gap: var(--sm-space-5);
-  padding: var(--sm-space-7);
-  border-left: 0.5px solid var(--sm-line-strong);
-}
-
-.keyFact {
-  display: grid;
-  gap: var(--sm-space-2);
-}
-
-.keyFact span {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.keyFact b {
-  color: var(--sm-text-primary);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.guaranteeGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.guarantee {
-  display: grid;
-  align-content: start;
-  gap: var(--sm-space-6);
-  padding: var(--sm-space-7);
-  border-right: 0.5px solid var(--sm-line-rule);
-}
-
-.guarantee:last-child {
-  border-right: 0;
-}
-
 .accessPanel {
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   align-items: end;
@@ -1157,7 +1079,6 @@
 
 @media (max-width: 900px) {
   .hero,
-  .keyState,
   .accessPanel {
     grid-template-columns: 1fr;
   }
@@ -1173,16 +1094,6 @@
   .apField {
     padding-top: var(--sm-space-7);
     border-top: 0.5px solid var(--sm-feature-raised);
-  }
-
-  .keyFacts {
-    padding-top: var(--sm-space-7);
-    padding-left: 0;
-    border-left: 0;
-  }
-
-  .keyFacts {
-    border-top-color: var(--sm-line-strong);
   }
 
   .agentSection {
@@ -1297,7 +1208,6 @@
   .fragmentGrid,
   .comparison,
   .chapterGrid,
-  .guaranteeGrid,
   .accessGrid,
   .loop {
     grid-template-columns: 1fr;
@@ -1309,14 +1219,12 @@
     border-left: 0;
   }
 
-  .loopStep,
-  .guarantee {
+  .loopStep {
     border-right: 0;
     border-bottom: 0.5px solid var(--sm-line-rule);
   }
 
-  .loopStep:last-child,
-  .guarantee:last-child {
+  .loopStep:last-child {
     border-bottom: 0;
   }
 }

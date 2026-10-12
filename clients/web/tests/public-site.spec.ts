@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
+import { PublicKey } from "@solana/web3.js";
 
 test("saved to a home screen, the site opens on Baskets with icons at the sizes it names", async ({ page, request }) => {
   await page.goto("/");
@@ -62,7 +63,7 @@ test("The exit states the figures the committed evidence holds", async ({ page }
   const admissions = evidence("admissions.json");
   const freeze = evidence("hall-demo/transcript-devnet.json").scenarios.find((scenario: { id: string }) => scenario.id === "freeze");
 
-  await page.goto("/papers/the-exit");
+  await page.goto("/docs/papers/the-exit");
   const main = page.getByRole("main");
   await expect(main.getByRole("heading", { level: 1, name: "The exit." })).toBeVisible();
   await expect(main).toContainText(`we decoded all ${survey.mints_decoded.toLocaleString("en-GB")} xStocks mints`);
@@ -88,16 +89,52 @@ test("The exit states the figures the committed evidence holds", async ({ page }
 });
 
 test("the public narrative and Key pages keep their claims bounded", async ({ page }) => {
-  await page.goto("/how-it-works");
-  await expect(page.getByRole("heading", { level: 1, name: "The basket is a mechanism." })).toBeVisible();
+  await page.goto("/docs/how-it-works");
+  await expect(page.getByRole("heading", { level: 1, name: "How it works" })).toBeVisible();
+  await expect(page.getByRole("main")).toContainText("The basket is a mechanism.");
   await expect(page.getByRole("heading", { level: 2, name: "A claim is not the underlying." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A bundle stops at assembly." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "The authorized participant set is everyone." })).toBeVisible();
 
-  await page.goto("/the-key");
-  await expect(page.getByRole("heading", { level: 1, name: "The Key is still in hand." })).toBeVisible();
+  await page.goto("/docs/the-key");
+  await expect(page.getByRole("heading", { level: 1, name: "The Key" })).toBeVisible();
+  // Read live from the fixture devnet, which lays the programdata out with an
+  // authority present: the state comes from those bytes, not from the page.
+  await expect(page.getByRole("main")).toContainText("The Key is still in hand.");
   await expect(page.getByText("Devnet Hall. Key still in hand.", { exact: true })).toBeVisible();
+  await expect(page.getByLabel(new PublicKey(Buffer.alloc(32, 7)).toBase58())).toBeVisible();
+  await expect(page.getByRole("main")).toContainText("Observed at slot 455,000,000");
   await expect(page.getByText("The melt always works. Delivery is each issuer's.", { exact: true })).toBeVisible();
+  // The fact and the link name one program: the register Hall the product reads.
+  await expect(page.getByLabel("GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Inspect the program" })).toHaveAttribute("href", /GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE\?cluster=devnet$/);
+});
+
+test("the docs carry one page tree, search with stated states, and a contents rail", async ({ page }) => {
+  await page.goto("/docs/the-key");
+  const tree = page.getByRole("navigation", { name: "Docs" });
+  await expect(tree.getByRole("link", { name: "The Key" })).toHaveAttribute("aria-current", "page");
+  await expect(tree.getByRole("link", { name: "The thesis" })).toHaveAttribute("href", "/thesis");
+  await expect(tree.getByRole("link", { name: "The exit" })).toHaveAttribute("href", "/docs/papers/the-exit");
+  await expect(tree.getByText("Papers", { exact: true })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "On this page" }).getByRole("link")).toHaveText(["What the final Hall must preserve", "What final means"]);
+
+  const search = page.getByRole("searchbox", { name: "Search the docs" });
+  await search.fill("melt");
+  await expect(page.getByRole("list", { name: "Search results" }).getByRole("link").first()).toBeVisible();
+  await search.fill("zzqqxx");
+  await expect(page.getByText('Nothing in the docs matches "zzqqxx". Try a shorter word.')).toBeVisible();
+  await search.press("Escape");
+  await expect(tree.getByRole("link", { name: "How it works" })).toBeVisible();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/docs/how-it-works");
+  const toggle = page.getByRole("button", { name: "Docs pages" });
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(tree.getByRole("link", { name: "The Key" })).toBeHidden();
+  await toggle.click();
+  await tree.getByRole("link", { name: "The Key" }).click();
+  await expect(page).toHaveURL(/\/docs\/the-key$/);
 });
 
 test("sign in distinguishes an account from its wallet while setup is unavailable", async ({ page }) => {
@@ -225,8 +262,8 @@ test("the public rail carries reading pages and one way into the app", async ({ 
 
   const navigation = page.getByRole("navigation", { name: "Primary" });
   await expect(navigation.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
-  await expect(navigation.getByRole("link", { name: "How it works" })).toHaveAttribute("href", "/how-it-works");
-  await expect(navigation.getByRole("link", { name: "The Key" })).toHaveAttribute("href", "/the-key");
+  await expect(navigation.getByRole("link", { name: "Docs" })).toHaveAttribute("href", "/docs");
+  await expect(navigation.getByRole("link", { name: "Thesis" })).toHaveAttribute("href", "/thesis");
   for (const product of ["Hall demo", "Allocation", "Terminal"]) {
     await expect(navigation.getByRole("link", { name: product })).toHaveCount(0);
   }
@@ -260,7 +297,7 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   await page.getByRole("button", { name: "Open navigation" }).click();
   const publicMenu = page.getByRole("navigation", { name: "Mobile primary" });
   await expect(publicMenu).toBeVisible();
-  await expect(publicMenu.getByRole("link")).toHaveText(["01Home", "02How it works", "03The Key"]);
+  await expect(publicMenu.getByRole("link")).toHaveText(["01Home", "02Docs", "03Thesis"]);
   const openApp = page.getByRole("banner").getByRole("link", { name: "Open app", exact: true });
   await expect(openApp).toBeVisible();
   // The full label must fit the narrow rail: one line, inside the header.
@@ -427,10 +464,38 @@ test("the app header connects a wallet and keeps the mode control beside it", as
     "Overview",
     "Holdings",
     "Baskets",
+    "Build a basket",
     "Alloys",
     "Sponsor",
     "Instruments",
   ]);
+});
+
+test("the docs render compiled MDX with its contents, and search answers from those pages", async ({ page, request }) => {
+  await page.goto("/docs");
+  await expect(page.getByRole("heading", { level: 1, name: "Docs" })).toBeVisible();
+  const contents = page.getByRole("navigation", { name: "On this page" });
+  await expect(contents.getByRole("link", { name: "Where to start" })).toHaveAttribute("href", "#where-to-start");
+  await expect(page.getByRole("main").getByRole("article").getByRole("link", { name: "The Key" })).toHaveAttribute("href", "/docs/the-key");
+  const found = await request.get("/api/docs/search?query=evidence");
+  expect(found.status()).toBe(200);
+  const results = (await found.json()) as { url: string }[];
+  expect(results.some((result) => result.url.startsWith("/docs"))).toBe(true);
+  expect((await request.get("/docs/no-such-page")).status()).toBe(404);
+});
+
+test("Baskets and Build a basket are sibling shell routes, never a switch the page draws", async ({ page }) => {
+  for (const [path, current] of [
+    ["/app/baskets", "Baskets"],
+    ["/app/baskets/prime-seven", "Baskets"],
+    ["/app/baskets/build", "Build a basket"],
+    ["/app/allocation", "Build a basket"],
+  ] as const) {
+    await page.goto(path);
+    const product = page.getByRole("banner").getByRole("navigation", { name: "Product" });
+    await expect(product.locator("a[aria-current='page']"), path).toHaveText(current);
+    await expect(page.getByRole("navigation", { name: "Basket view" })).toHaveCount(0);
+  }
 });
 
 test("every app page names its network, and the top bar and mobile register share one route list", async ({ page }) => {
@@ -494,26 +559,36 @@ test("the desk reads as one numbered institutional folio", async ({ page }) => {
   await expect(lead.locator("figure")).toContainText("Seametry Gateway, devnet Hall");
 });
 
-test("secondary actions carry the ink cell, primary actions stay green", async ({ page }) => {
+// foundations.md, Ink: the ink icon cell on secondary actions was removed
+// (Storm, 12 October 2026); a secondary glyph takes its label's colour.
+test("secondary action glyphs carry no ink block, primary actions keep their pressed-green cell", async ({ page }) => {
   await page.goto("/app");
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  const ink = await page.evaluate(() => {
+  // Resolves any CSS colour value as the browser computes it.
+  const colour = (value: string) => page.evaluate((css) => {
     const probe = document.createElement("span");
-    probe.style.background = "var(--sm-surface-inverse)";
+    probe.style.background = css;
     document.body.append(probe);
     const value = getComputedStyle(probe).backgroundColor;
     probe.remove();
     return value;
-  });
+  }, value);
   const cellOf = (name: string) =>
-    page.getByRole("link", { name }).locator(":scope > span").last().evaluate((cell) => getComputedStyle(cell).backgroundColor);
-  expect(await cellOf("Open the assay")).toBe(ink);
-  expect(await cellOf("Open the register")).not.toBe(ink);
+    page.getByRole("link", { name }).locator(":scope > span").last().evaluate((cell) => ({
+      background: getComputedStyle(cell).backgroundColor,
+      color: getComputedStyle(cell).color,
+      label: getComputedStyle(cell.parentElement!).color,
+    }));
+  const secondary = await cellOf("Open the assay");
+  expect(secondary.background).not.toBe(await colour("var(--sm-surface-inverse)"));
+  expect(secondary.background).toBe(await colour("transparent"));
+  expect(secondary.color).toBe(secondary.label);
+  expect((await cellOf("Open the register")).background).toBe(await colour("var(--sm-accent-touchPressed)"));
 });
 
 test("no page scrolls sideways on a 320px phone", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 780 });
-  for (const path of ["/", "/app", "/app/baskets", "/app/baskets/build", "/app/allocation", "/app/alloys", "/app/alloys/storm", "/app/instruments", "/how-it-works", "/papers/the-exit", "/sign-in", "/the-key"]) {
+  for (const path of ["/", "/app", "/app/baskets", "/app/baskets/build", "/app/allocation", "/app/alloys", "/app/alloys/storm", "/app/instruments", "/docs", "/docs/how-it-works", "/docs/papers/the-exit", "/sign-in", "/docs/the-key"]) {
     await page.goto(path, { waitUntil: "networkidle" });
     // scrollWidth, not a visible scrollbar: the root hides horizontal overflow,
     // which stops a scrollbar but not a finger dragging the page sideways.
@@ -531,6 +606,10 @@ test("links shared before the move still arrive", async ({ page }) => {
     ["/terminal", "/app/instruments"],
     ["/terminal/alloys", "/app/alloys"],
     ["/terminal/alloys/storm", "/app/alloys/storm"],
+    // The explanation pages moved into the docs on 12 October 2026.
+    ["/how-it-works", "/docs/how-it-works"],
+    ["/the-key", "/docs/the-key"],
+    ["/papers/the-exit", "/docs/papers/the-exit"],
   ] as const) {
     await page.goto(from);
     await expect(page, `${from} arrives at ${to}`).toHaveURL(to);

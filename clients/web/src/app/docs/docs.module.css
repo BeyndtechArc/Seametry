@@ -1,0 +1,381 @@
+/* components.md, Docs page tree, Docs contents rail and Docs search. Wide:
+   tree | page | contents. Narrow: one column, the tree folded behind a button. */
+.layout {
+  display: grid;
+  grid-template-columns: calc(var(--sm-space-13) * 2) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sm-space-10);
+  margin-top: var(--sm-space-10);
+}
+
+.main {
+  min-width: 0;
+}
+
+.nav {
+  position: sticky;
+  top: calc(var(--sm-size-target) * 2);
+  display: grid;
+  gap: var(--sm-space-5);
+  max-height: calc(100vh - var(--sm-size-target) * 3);
+  overflow-y: auto;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+  padding: 0 var(--sm-space-3);
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-tertiary);
+  background: var(--sm-surface-sheet);
+}
+
+.search svg {
+  flex: none;
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+}
+
+.search input {
+  width: 100%;
+  min-height: var(--sm-size-target);
+  border: 0;
+  color: var(--sm-text-primary);
+  background: transparent;
+  font: inherit;
+  font-size: var(--sm-font-size-small);
+}
+
+.search input::placeholder {
+  color: var(--sm-text-tertiary);
+}
+
+.search:focus-within {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}
+
+.search input:focus {
+  outline: none;
+}
+
+.searchState {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.5;
+}
+
+.results {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 0.5px solid var(--sm-line-strong);
+}
+
+.results li {
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.results a {
+  display: block;
+  padding: var(--sm-space-3) var(--sm-space-2);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.45;
+  text-decoration: none;
+}
+
+.results li[data-type="page"] a {
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.results a:hover,
+.results a:focus-visible {
+  background: var(--sm-surface-raised);
+}
+
+.results mark {
+  color: var(--sm-text-primary);
+  background: transparent;
+  font-weight: var(--sm-font-weight-medium);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.treeToggle {
+  display: none;
+}
+
+.tree {
+  display: grid;
+  gap: var(--sm-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree a {
+  display: block;
+  padding: var(--sm-space-2) var(--sm-space-3);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  text-decoration: none;
+}
+
+.tree a:hover {
+  color: var(--sm-text-primary);
+}
+
+/* The App shell's current-tab treatment: raised tone, primary text. */
+.tree a[aria-current="page"] {
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-raised);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.treeSeparator {
+  padding: var(--sm-space-5) var(--sm-space-3) var(--sm-space-2);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.tree a:focus-visible,
+.results a:focus-visible,
+.treeToggle:focus-visible,
+.contents a:focus-visible,
+.prose a:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}
+
+.reading {
+  display: grid;
+  grid-template-columns: minmax(0, var(--sm-size-readable)) calc(var(--sm-space-13) * 1.6);
+  align-items: start;
+  gap: var(--sm-space-10);
+}
+
+.page {
+  display: grid;
+  gap: var(--sm-space-8);
+  min-width: 0;
+}
+
+.head {
+  display: grid;
+  gap: var(--sm-space-4);
+  padding-bottom: var(--sm-space-6);
+  border-bottom: 0.5px solid var(--sm-line-strong);
+}
+
+.head h1 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-figure-l);
+  font-weight: var(--sm-font-weight-light);
+  letter-spacing: var(--sm-font-tracking-display);
+}
+
+.head p {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-lead);
+  line-height: 1.5;
+}
+
+.contents {
+  position: sticky;
+  top: calc(var(--sm-size-target) * 2);
+  display: grid;
+  gap: var(--sm-space-3);
+}
+
+.contents > span {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.contents ol {
+  display: grid;
+  gap: var(--sm-space-2);
+  margin: 0;
+  padding: 0 0 0 var(--sm-space-4);
+  border-left: 0.5px solid var(--sm-line-rule);
+  list-style: none;
+}
+
+.contents li[data-depth="3"] {
+  padding-left: var(--sm-space-4);
+}
+
+.contents a {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  text-decoration: none;
+}
+
+.contents a:hover {
+  color: var(--sm-text-primary);
+}
+
+.prose {
+  color: var(--sm-text-secondary);
+  line-height: 1.65;
+}
+
+.prose h2 {
+  margin: var(--sm-space-9) 0 var(--sm-space-4);
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-l);
+  font-weight: var(--sm-font-weight-light);
+  letter-spacing: var(--sm-font-tracking-display);
+  scroll-margin-top: calc(var(--sm-size-target) * 2);
+}
+
+/* The line under a heading is its question, set as the lead. */
+.prose h2 + p {
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-lead);
+}
+
+.prose p,
+.prose ul {
+  margin: 0 0 var(--sm-space-5);
+}
+
+.prose ul {
+  display: grid;
+  gap: var(--sm-space-3);
+  padding-left: var(--sm-space-6);
+}
+
+.prose strong {
+  color: var(--sm-text-primary);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.prose a {
+  color: var(--sm-accent-touchText);
+  text-underline-offset: 0.2em;
+}
+
+/* Components placed in prose keep their own anatomy; they only take the
+   prose rhythm around them. */
+.prose > :is(div, aside, figure, dl, a) {
+  margin-bottom: var(--sm-space-6);
+}
+
+.keyState {
+  display: grid;
+  gap: var(--sm-space-4);
+}
+
+.keyLead {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-light);
+}
+
+.provenance {
+  margin: 0;
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 0 var(--sm-space-6);
+  border-top: 0.5px solid var(--sm-line-strong);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.facts > div {
+  display: grid;
+  gap: var(--sm-space-2);
+  min-width: 0;
+  padding: var(--sm-space-4);
+}
+
+.facts > div + div {
+  border-left: 0.5px solid var(--sm-line-rule);
+}
+
+.facts dt {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.facts dd {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+}
+
+/* Below this width the rail would sit above the page title and be read
+   before it; the page is short enough to scroll, so the rail steps aside. */
+@media (max-width: 1180px) {
+  .reading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contents {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sm-space-6);
+  }
+
+  .nav {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .treeToggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--sm-size-target);
+    padding: 0 var(--sm-space-3);
+    border: 0;
+    border-top: 0.5px solid var(--sm-line-rule);
+    border-bottom: 0.5px solid var(--sm-line-rule);
+    color: var(--sm-text-primary);
+    background: var(--sm-surface-sheet);
+    font: inherit;
+    font-size: var(--sm-font-size-small);
+    cursor: pointer;
+  }
+
+  .treeToggle svg {
+    width: var(--sm-space-5);
+    height: var(--sm-space-5);
+  }
+
+  .treeHolder:not([data-open]) {
+    display: none;
+  }
+
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .facts > div + div {
+    border-top: 0.5px solid var(--sm-line-rule);
+    border-left: 0;
+  }
+}

@@ -55,7 +55,8 @@ export function PublicShell({
           {
             title: "Product",
             links: [
-              { label: "How it works", href: "/how-it-works" },
+              { label: "Docs", href: "/docs" },
+              { label: "How it works", href: "/docs/how-it-works" },
               { label: "Thesis", href: "/thesis" },
               { label: "Open the app", href: "/app" },
               { label: "Allocation", href: "/app/allocation" },
@@ -65,8 +66,8 @@ export function PublicShell({
           {
             title: "The house",
             links: [
-              { label: "The Key", href: "/the-key" },
-              { label: "The exit", href: "/papers/the-exit" },
+              { label: "The Key", href: "/docs/the-key" },
+              { label: "The exit", href: "/docs/papers/the-exit" },
               { label: "Pattern Register", href: "/patterns" },
             ],
           },

@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { PublicKey } from "@solana/web3.js";
 import admissions from "../../../shared/evidence/admissions.json" with { type: "json" };
 
 // Jupiter quotes recorded on mainnet, 4 October 2026, for 100 USDC, in each
@@ -73,9 +74,67 @@ function writeJson(response, status, body) {
   response.end(JSON.stringify(body));
 }
 
+// Devnet as the upgradeable loader lays out the register Hall: a Program
+// account pointing at its programdata, whose authority is still present.
+// Bytes, not a summary, so the page is tested against the parsing it runs live.
+const loader = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
+const hallProgram = new PublicKey("GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE");
+const [hallProgramData] = PublicKey.findProgramAddressSync([hallProgram.toBuffer()], loader);
+const fixtureHallAuthority = new PublicKey(Buffer.alloc(32, 7));
+const devnetSlot = 455000000;
+function devnetAccount(key) {
+  if (key === hallProgram.toBase58()) {
+    const data = Buffer.alloc(36);
+    data.writeUInt32LE(2, 0);
+    hallProgramData.toBuffer().copy(data, 4);
+    return { data, owner: loader, executable: true };
+  }
+  if (key === hallProgramData.toBase58()) {
+    const data = Buffer.alloc(45);
+    data.writeUInt32LE(3, 0);
+    data.writeBigUInt64LE(450000000n, 4);
+    data[12] = 1;
+    fixtureHallAuthority.toBuffer().copy(data, 13);
+    return { data, owner: loader, executable: false };
+  }
+  return null;
+}
+
+function devnetRpc(request, response) {
+  let body = "";
+  request.on("data", (chunk) => { body += chunk; });
+  request.on("end", () => {
+    const call = JSON.parse(body);
+    if (call.method !== "getAccountInfo") {
+      writeJson(response, 200, { jsonrpc: "2.0", id: call.id, error: { code: -32601, message: `Fixture devnet answers getAccountInfo only, not ${call.method}` } });
+      return;
+    }
+    const account = devnetAccount(call.params[0]);
+    writeJson(response, 200, {
+      jsonrpc: "2.0",
+      id: call.id,
+      result: {
+        context: { slot: devnetSlot, apiVersion: "2.2.0" },
+        value: account && {
+          data: [account.data.toString("base64"), "base64"],
+          executable: account.executable,
+          lamports: 1,
+          owner: account.owner.toBase58(),
+          rentEpoch: 0,
+          space: account.data.length,
+        },
+      },
+    });
+  });
+}
+
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? "/", "http://127.0.0.1:3846");
   const path = url.pathname;
+  if (path === "/devnet-rpc") {
+    devnetRpc(request, response);
+    return;
+  }
   if (path === "/jupiter/arrivals") {
     writeJson(response, 200, quoteArrivals);
     return;
