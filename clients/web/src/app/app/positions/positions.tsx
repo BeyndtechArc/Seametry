@@ -15,7 +15,7 @@ import { AllocationMotion, type AllocationMotionState } from "../allocation/allo
 import styles from "./positions.module.css";
 
 type Reading = { wallet: string; network: "mainnet"; source: string; observedAt: string; positions: ListedPosition[]; outsideRegister: number };
-type TradeState = "idle" | "preparing" | "review" | "signing" | "checking" | "settled" | "failed" | "unavailable";
+type TradeState = "idle" | "preparing" | "review" | "signing" | "checking" | "settled" | "failed" | "expired" | "unavailable";
 type ActivityStatus = { signature: string; state: string; detail?: string };
 type BatchSaleState = "idle" | "preparing" | "review" | "signing" | "checking" | "success" | "partial" | "failed";
 type BatchSaleLeg = { mint: string; symbol: string; atoms: string; scale: number; prepared?: PreparedLeg };
@@ -75,7 +75,7 @@ export function Positions() {
 
   const check = useCallback(async (entry: LocalTrade) => {
     try {
-      const query = new URLSearchParams({ signature: entry.signature, wallet: entry.wallet, mint: entry.mint });
+      const query = new URLSearchParams({ signature: entry.signature, wallet: entry.wallet, mint: entry.mint, sent: entry.submittedAt });
       const response = await fetch("/api/allocation/status?" + query.toString(), { cache: "no-store" });
       const status = await responseJson<{ state: string; detail?: string; tokenDeltaAtoms?: string; tokenDeltaScale?: number }>(response);
       setStatuses((current) => ({ ...current, [entry.signature]: { signature: entry.signature, ...status } }));
@@ -102,6 +102,7 @@ export function Positions() {
         setTradeState("failed");
         setTradeProblem(status.detail ?? "Mainnet rejected this sale. Read the transaction before another attempt.");
       }
+      if (entry.signature === signature && status.state === "expired") setTradeState("expired");
     } catch (error) {
       setStatuses((current) => ({ ...current, [entry.signature]: { signature: entry.signature, state: "unavailable", detail: error instanceof Error ? error.message : String(error) } }));
       if (entry.signature === signature) {
@@ -137,7 +138,7 @@ export function Positions() {
     if (!wallet) return;
     const pending = activity.filter((entry) => {
       const state = statuses[entry.signature]?.state;
-      return state !== "confirmed" && state !== "finalized" && state !== "failed";
+      return state !== "confirmed" && state !== "finalized" && state !== "failed" && state !== "expired";
     });
     if (pending.length === 0) return;
     const timer = setInterval(() => pending.forEach((entry) => { void check(entry); }), 3000);
@@ -456,7 +457,7 @@ export function Positions() {
                 {batchSaleProblem ? <p className={styles.problem} role="alert">{batchSaleProblem}</p> : null}
                 {batchSaleSignatures.length > 0 ? (
                   <div className={styles.batchSignatures}>
-                    {batchSaleSignatures.map((id) => <a key={id} href={"https://explorer.solana.com/tx/" + id} target="_blank" rel="noreferrer">{statuses[id]?.state ?? "pending"} · {id.slice(0, 8)}…</a>)}
+                    {batchSaleSignatures.map((id) => <a key={id} href={"https://explorer.solana.com/tx/" + id} target="_blank" rel="noreferrer">{statuses[id]?.state === "expired" ? "not landed, nothing moved" : statuses[id]?.state ?? "pending"} · {id.slice(0, 8)}…</a>)}
                   </div>
                 ) : null}
               </div>
@@ -497,7 +498,7 @@ export function Positions() {
               <p>Simulated on mainnet for this wallet: {prepared.simulated.map((change) => `${change.atoms.startsWith("-") ? "" : "+"}${formatAmount(change.atoms, change.scale)} ${change.unit}`).join("; ")}.</p>
             </div> : null}
             {tradeProblem ? <p className={styles.problem} role="alert">{tradeProblem}</p> : null}
-            {signature ? <ProcessOutcome kind={tradeState === "settled" ? "success" : tradeState === "failed" ? "error" : "pending"} title={tradeState === "settled" ? "Sale settled" : tradeState === "failed" ? "Sale failed" : tradeState === "unavailable" ? "Check transaction" : "Checking sale"}><p>{tradeState === "settled" ? "Mainnet confirmed this sale." : tradeState === "failed" ? "Mainnet rejected this sale." : tradeState === "unavailable" ? "Confirmation is unavailable. Check before another sale." : "Waiting for mainnet confirmation."}</p><a href={`https://explorer.solana.com/tx/${signature}`} target="_blank" rel="noreferrer">Open transaction</a></ProcessOutcome> : null}
+            {signature ? <ProcessOutcome kind={tradeState === "settled" ? "success" : tradeState === "failed" || tradeState === "expired" ? "error" : "pending"} title={tradeState === "settled" ? "Sale settled" : tradeState === "failed" ? "Sale failed" : tradeState === "expired" ? "Sale did not land" : tradeState === "unavailable" ? "Check transaction" : "Checking sale"}><p>{tradeState === "settled" ? "Mainnet confirmed this sale." : tradeState === "failed" ? "Mainnet rejected this sale." : tradeState === "expired" ? "The network never included this sale and it can no longer land. Nothing moved: the tokens are still in your wallet. Request current terms to sell again." : tradeState === "unavailable" ? "Confirmation is unavailable. Check before another sale." : "Waiting for mainnet confirmation."}</p><a href={`https://explorer.solana.com/tx/${signature}`} target="_blank" rel="noreferrer">Open transaction</a></ProcessOutcome> : null}
             </div>}
           </div> : null}
           </ModalSheet>

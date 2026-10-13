@@ -35,6 +35,23 @@ export function quoteParams(mint: string, inAtoms: bigint, feeBps: number): URLS
   });
 }
 
+/**
+ * The priority fee every swap asks Jupiter for. With none, Jupiter returned 0
+ * lamports (measured 13 October 2026, a 1 USDC HOOD swap), and two legs of a
+ * live Sell All never landed. "veryHigh" capped at 0.0005 SOL returned 215,264
+ * lamports for the same swap. The figure is the route's, shown on the order
+ * sheet and simulated with the leg; the cap bounds what a leg can cost.
+ */
+export const PRIORITY_FEE = { priorityLevelWithMaxLamports: { maxLamports: 500_000, priorityLevel: "veryHigh" } } as const;
+
+/**
+ * How long after submission a signature the cluster has never seen is
+ * declared dropped. Its blockhash came from the quote taken just before
+ * signing and stays valid for about 150 slots, 60 to 90 seconds, so a
+ * transaction unseen five minutes after it was sent can never land.
+ */
+export const DROPPED_AFTER_MS = 5 * 60_000;
+
 /** A sale spends token atoms and receives USDC; the USDC output pays the disclosed routing fee. */
 export function sellQuoteParams(mint: string, inAtoms: bigint, feeBps: number): URLSearchParams {
   return new URLSearchParams({

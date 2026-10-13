@@ -6,7 +6,7 @@ import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { MIN_LEG_USDC_ATOMS, QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
+import { DROPPED_AFTER_MS, MIN_LEG_USDC_ATOMS, PRIORITY_FEE, QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 
@@ -156,7 +156,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
 
   const swap = await jupiter<{ swapTransaction: string; prioritizationFeeLamports?: number }>(config.jupiterApiKey, "/swap", {
     method: "POST",
-    body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58() }),
+    body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58(), prioritizationFeeLamports: PRIORITY_FEE }),
   });
   const transaction = VersionedTransaction.deserialize(Buffer.from(swap.swapTransaction, "base64"));
 
@@ -304,7 +304,7 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
   const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
   const swap = await jupiter<{ swapTransaction: string; prioritizationFeeLamports?: number }>(config.jupiterApiKey, "/swap", {
     method: "POST",
-    body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58() }),
+    body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58(), prioritizationFeeLamports: PRIORITY_FEE }),
   });
   const transaction = VersionedTransaction.deserialize(Buffer.from(swap.swapTransaction, "base64"));
   const unlisted = unlistedProgram(transaction);
@@ -397,7 +397,8 @@ export async function submitLeg(config: AllocationConfig, signedBase64: string, 
 }
 
 export type LegStatus = {
-  state: "pending" | "confirmed" | "finalized" | "failed";
+  /** expired: never seen by the cluster and now past landing; nothing moved. */
+  state: "pending" | "confirmed" | "finalized" | "failed" | "expired";
   detail?: string;
   tokenDeltaAtoms?: string;
   tokenDeltaScale?: number;
@@ -414,11 +415,16 @@ export async function legStatus(
   signature: string,
   walletText?: string,
   mint?: string,
+  sentAt?: Date,
 ): Promise<LegStatus> {
   const connection = new Connection(config.mainnetRpcUrl, "confirmed");
   const { value } = await connection.getSignatureStatuses([signature], { searchTransactionHistory: true });
   const status = value[0];
-  if (!status) return { state: "pending" };
+  if (!status) {
+    return sentAt && Date.now() - sentAt.getTime() > DROPPED_AFTER_MS
+      ? { state: "expired", detail: "The network never included this transaction and it can no longer land. Nothing moved." }
+      : { state: "pending" };
+  }
   if (status.err) return { state: "failed", detail: JSON.stringify(status.err) };
 
   const state = status.confirmationStatus === "finalized" ? "finalized" : status.confirmationStatus === "confirmed" ? "confirmed" : "pending";

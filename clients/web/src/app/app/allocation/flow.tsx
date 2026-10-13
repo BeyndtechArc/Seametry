@@ -339,11 +339,14 @@ export function AllocationFlow({
   };
 
   const watch = useCallback(
-    async (mint: string, signature: string) => {
-      for (let attempt = 0; attempt < 30; attempt += 1) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+    async (mint: string, signature: string, sentAt: string) => {
+      // Watched until the leg lands, fails, or is declared dropped, which the
+      // status route does once DROPPED_AFTER_MS has passed unseen; the attempt
+      // cap only guards against a status route that never answers.
+      for (let attempt = 0; attempt < 120; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         try {
-          const query = new URLSearchParams({ signature, ...(walletAddress ? { wallet: walletAddress } : {}), mint });
+          const query = new URLSearchParams({ signature, ...(walletAddress ? { wallet: walletAddress } : {}), mint, sent: sentAt });
           const response = await fetch(`/api/allocation/status?${query.toString()}`);
           const status = (await response.json()) as { state?: string; detail?: string; error?: string; tokenDeltaAtoms?: string; tokenDeltaScale?: number };
           if (status.state === "confirmed" || status.state === "finalized") {
@@ -361,6 +364,11 @@ export function AllocationFlow({
             update(mint, { phase: "failed", note: "Mainnet rejected this purchase. The network fee may have been charged. Review the transaction before trying again.", retryable: false });
             return;
           }
+          if (status.state === "expired") {
+            // Unseen past its blockhash, so it can never land: buying again is safe.
+            update(mint, { phase: "failed", retryable: true, uncertain: false, note: "The network never included this purchase and it can no longer land. Nothing moved. Buy again prepares a fresh quote." });
+            return;
+          }
         } catch {
           // A missed poll is retried; the signature stays on screen either way.
         }
@@ -371,7 +379,7 @@ export function AllocationFlow({
         phase: "failed",
         retryable: false,
         uncertain: true,
-        note: "No confirmation within a minute. It may still settle; check wallet activity and the signature below before buying this again.",
+        note: "Mainnet status could not be read for six minutes. Check wallet activity and the signature below before buying this again.",
       });
     },
     [update, walletAddress],
@@ -479,6 +487,7 @@ export function AllocationFlow({
           transaction: toBase64(signed[index].serialize()),
           approval: prepared.approval,
         });
+        const submittedAt = new Date().toISOString();
         recordLocalTrade({
           signature,
           wallet: signingWallet,
@@ -487,13 +496,13 @@ export function AllocationFlow({
           direction: "buy",
           inputAtoms: leg.atoms.toString(),
           inputScale: USDC_SCALE,
-          submittedAt: new Date().toISOString(),
+          submittedAt,
           allocationId: runId,
           allocationName: identity.name,
           allocationTemplateId: identity.templateId,
         });
         update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
-        void watch(leg.mint, signature);
+        void watch(leg.mint, signature, submittedAt);
       } catch (error) {
         const changed = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED" && error.sent === false;
         update(leg.mint, {
