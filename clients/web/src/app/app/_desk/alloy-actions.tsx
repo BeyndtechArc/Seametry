@@ -235,6 +235,12 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
     });
 
   const notConnected = connected ? undefined : "Log in with a devnet wallet: it signs the Strike or Melt.";
+  // Read live from chain by the Gateway: a frozen Hall account refuses every
+  // Strike (HALL.md 4.6), so the Key says so instead of asking for a signature.
+  const heldBack = alloy.legs.filter((leg) => leg.held_back).map((leg) => legIdentity(alloy, leg.mint).symbol ?? leg.mint);
+  const strikeHeld = heldBack.length
+    ? `Strike refused: ${heldBack.join(", ")} ${heldBack.length === 1 ? "is" : "are"} held back by ${heldBack.length === 1 ? "its issuer" : "their issuers"}, so the Hall cannot take ${heldBack.length === 1 ? "it" : "them"} in. Melt still works.`
+    : undefined;
   const meltReason =
     notConnected ??
     unreadable ??
@@ -262,7 +268,7 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
         footer={sheetStep === 0 ? (
           <ContinueAction type="button" onClick={() => setSheetStep(1)}>Set {side === "strike" ? "Strike" : "Melt"} amount</ContinueAction>
         ) : side === "strike" ? (
-          <Key type="button" disabled={Boolean(notConnected) || !("atoms" in strikeAmount) || strikeAmount.atoms === 0n || ("atoms" in strikeAmount && strikeReady !== strikeAmount.atoms.toString())} disabledReason={notConnected ?? "Reading the current deposit quantities."} busy={busy} busyLabel="Working" onClick={() => "atoms" in strikeAmount && void strike(strikeAmount.atoms)}>Strike shares</Key>
+          <Key type="button" disabled={Boolean(strikeHeld) || Boolean(notConnected) || !("atoms" in strikeAmount) || strikeAmount.atoms === 0n || ("atoms" in strikeAmount && strikeReady !== strikeAmount.atoms.toString())} disabledReason={strikeHeld ?? notConnected ?? "Reading the current deposit quantities."} busy={busy} busyLabel="Working" onClick={() => "atoms" in strikeAmount && void strike(strikeAmount.atoms)}>Strike shares</Key>
         ) : (
           <Key type="button" disabled={Boolean(meltReason) || !("atoms" in meltAmount) || meltAmount.atoms === 0n || ("atoms" in meltAmount && meltReady !== meltAmount.atoms.toString())} disabledReason={meltReason ?? "Reading the current return quantities."} busy={busy} busyLabel="Working" onClick={() => "atoms" in meltAmount && void melt(meltAmount.atoms)}>Melt shares</Key>
         )}

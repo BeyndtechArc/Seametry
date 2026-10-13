@@ -8,7 +8,7 @@ import {
   getMint,
 } from "@solana/spl-token";
 import { decodeAlloy, requiredIn } from "../hall/decode";
-import { ownerTokenAccount } from "../hall/pda";
+import { hallTokenAccount, ownerTokenAccount } from "../hall/pda";
 import { Refusal } from "../refusal";
 
 // Receives already-loaded Keypairs and reads no secret itself, like
@@ -71,6 +71,18 @@ export async function prepareStrike(
   if (!account) throw new Refusal(404, `No Alloy account exists at ${alloyAddress.toBase58()} on devnet.`);
   if (!account.owner.equals(hall)) throw new Refusal(400, `${alloyAddress.toBase58()} is owned by ${account.owner.toBase58()}, not the register's Hall ${hall.toBase58()}.`);
   const alloy = decodeAlloy(account.data);
+
+  // An issuer freeze on the Hall's own account refuses every Strike on chain
+  // (HALL.md 4.6). Refusing here first means no stand-in is minted and no
+  // wallet is asked to sign a transaction that cannot land.
+  const frozen = [];
+  for (const leg of alloy.legs.slice(0, alloy.constituentCount)) {
+    const vault = await getAccount(connection, hallTokenAccount(alloyAddress, leg.mint), "confirmed", TOKEN_2022_PROGRAM_ID);
+    if (vault.isFrozen) frozen.push(leg.mint.toBase58());
+  }
+  if (frozen.length) {
+    throw new Refusal(409, `Strike refused: the issuer of ${frozen.join(", ")} has frozen the Hall's account for it, so the Hall cannot take it in. Nothing was minted or signed. Melt still works.`);
+  }
 
   const legs = await Promise.all(
     alloy.legs.slice(0, alloy.constituentCount).map(async (leg) => {

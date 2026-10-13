@@ -188,7 +188,8 @@ test("Strike and Melt are held, with their reasons, until a wallet logs in", asy
   await expect(actions.getByRole("radio", { name: "Strike" })).toBeChecked();
   await actions.getByRole("button", { name: "Set Strike amount" }).click();
   await expect(actions.getByRole("button", { name: "Strike shares" })).toBeDisabled();
-  await expect(actions.getByText("Log in with a devnet wallet: it signs the Strike or Melt.").first()).toBeVisible();
+  // The fixture's second leg is held back, which refuses Strike whoever logs in, so that reason leads.
+  await expect(actions.getByText("is held back by its issuer, so the Hall cannot take it in. Melt still works.", { exact: false }).first()).toBeVisible();
   await expect(actions.getByRole("list", { name: "Strike quantities" })).toContainText("5.000000");
   await actions.getByRole("textbox", { name: "Shares to Strike" }).fill("2");
   await expect(actions.getByRole("list", { name: "Strike quantities" })).toContainText("10.000000");
@@ -198,6 +199,39 @@ test("Strike and Melt are held, with their reasons, until a wallet logs in", asy
   await actions.getByRole("radio", { name: "Melt" }).click();
   await actions.getByRole("button", { name: "Set Melt amount" }).click();
   await expect(actions.getByRole("button", { name: "Melt shares" })).toBeDisabled();
+  await expect(actions.getByText("Log in with a devnet wallet: it signs the Strike or Melt.").first()).toBeVisible();
+});
+
+test("a held-back leg refuses Strike before any signature, and leaves Melt open", async ({ page }) => {
+  const record = JSON.parse(readFileSync("../../shared/evidence/alloys/stoic-crew/founding.json", "utf8"));
+  const amount = (atoms: string) => ({ atoms, scale: 8 });
+  const alloy = {
+    address: record.alloy, sponsor: record.sponsor, share_mint: record.share_mint, id: record.id,
+    supply: record.supply_atoms, locked_genesis: record.locked_genesis_atoms, cluster: "devnet",
+    legs: record.legs.map((leg: { stand_in: string; atoms_per_share: string }, index: number) => ({
+      mint: leg.stand_in, ledger: amount(leg.atoms_per_share), pending: amount("0"), unclaimed: amount("0"), held_back: index === 1,
+    })),
+  };
+  const terms = { shares: "1000000", legs: alloy.legs.map((leg: { mint: string; ledger: object }) => ({ stock: leg.mint, amount: leg.ledger, kept: amount("0") })) };
+  const meta = { served_at: servedAt, as_of: servedAt, completeness: "complete", cluster: "devnet" };
+  await page.route(`**/api/terminal/alloys/${record.alloy}`, (route) =>
+    route.fulfill({ json: { alloy: { data: alloy, meta }, strike: { data: terms, meta }, melt: { data: terms, meta } } }),
+  );
+  await page.route(`**/api/terminal/alloys/${record.alloy}/terms?**`, (route) => route.fulfill({ json: { data: terms, meta } }));
+  let strikeRequests = 0;
+  await page.route("**/api/alloys/strike", (route) => { strikeRequests += 1; return route.fulfill({ status: 500, json: { error: "must not be called" } }); });
+
+  await page.goto(`/app/alloys/${record.alloy}`);
+  await page.getByRole("button", { name: "Strike or Melt" }).click();
+  const actions = page.getByRole("dialog", { name: "Strike or Melt" });
+  await actions.getByRole("button", { name: "Set Strike amount" }).click();
+  await expect(actions.getByRole("button", { name: "Strike shares" })).toBeDisabled();
+  await expect(actions.getByText(`Strike refused: ${record.legs[1].symbol} is held back by its issuer, so the Hall cannot take it in. Melt still works.`).first()).toBeVisible();
+  expect(strikeRequests).toBe(0);
+  await actions.getByRole("list", { name: "Alloy action steps" }).getByRole("button").click();
+  await actions.getByRole("radio", { name: "Melt" }).click();
+  await actions.getByRole("button", { name: "Set Melt amount" }).click();
+  await expect(actions.getByRole("list", { name: "Melt quantities" })).toContainText("held as Claim");
 });
 
 test("Alloy terms reject an invalid share amount before reaching the Gateway", async ({ request }) => {
@@ -210,6 +244,13 @@ test("a Strike opens its steps and stops at the first with what did not happen",
   // The page reads the wallet's shares and Claim from devnet; answering with
   // an RPC error keeps the test off the public network, and reads as none.
   await page.route("https://api.devnet.solana.com/**", (route) => route.fulfill({ json: { jsonrpc: "2.0", id: 1, error: { code: -32000, message: "fixture" } } }));
+  // The fixture holds one leg back, which refuses Strike before any step;
+  // this test is about the steps, so the page sees every leg released.
+  await page.route(`**/api/terminal/alloys/${alloyAddress}`, async (route) => {
+    const body = await (await route.fetch()).json();
+    body.alloy.data.legs = body.alloy.data.legs.map((leg: object) => ({ ...leg, held_back: false }));
+    await route.fulfill({ json: body });
+  });
   await registerTestWallet(page, { trusted: true });
   await page.goto(`/app/alloys/${alloyAddress}`);
   await page.getByText("Connect", { exact: true }).click();
