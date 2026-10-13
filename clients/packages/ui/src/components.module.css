@@ -942,10 +942,21 @@
   background: var(--sm-accent-touchPressed);
 }
 
-.key:disabled {
+/* A blocked Key looks unavailable but still answers a press with its reason,
+   so it keeps the pointer a disabled Key gives up. */
+.key:disabled,
+.key[aria-disabled="true"] {
   color: var(--sm-text-secondary);
   background: transparent;
+}
+
+.key:disabled {
   cursor: default;
+}
+
+.key[aria-disabled="true"]:active {
+  transform: none;
+  background: transparent;
 }
 
 .quietAction {

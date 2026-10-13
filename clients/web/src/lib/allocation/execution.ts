@@ -53,7 +53,8 @@ const SIGNATURE_FEE_LAMPORTS = 5_000n;
  * the leg needs. The SOL floor is the rent to open the wallet's account for
  * this lot when it has none yet, sized from the mint's own extensions, plus
  * the signature and priority fees; the rent comes back if that account is
- * ever closed.
+ * ever closed. Returns that SOL floor, so a batch can check the sum: each
+ * leg passing alone does not mean the wallet can pay for all of them.
  */
 async function refuseUnfunded(
   connection: Connection,
@@ -62,7 +63,7 @@ async function refuseUnfunded(
   inAtoms: bigint,
   priorityFeeLamports: bigint,
   [walletAccount, usdcAccount, lotAccount]: Awaited<ReturnType<Connection["getMultipleAccountsInfo"]>>,
-): Promise<void> {
+): Promise<bigint> {
   const symbol = lot.instrument.symbol ?? mint;
   const usdcHeld = tokenAmount(usdcAccount?.data);
   if (usdcHeld < inAtoms) {
@@ -79,6 +80,7 @@ async function refuseUnfunded(
     const opening = rent > 0n ? `${formatAmount(rent, 9)} SOL to open its ${symbol} account, returned if that account is closed, and ` : "";
     throw new Refusal(402, `This wallet holds ${formatAmount(held, 9)} SOL; buying ${symbol} needs ${opening}${formatAmount(needed - rent, 9)} SOL in network fees. Add SOL to the wallet and buy again.`);
   }
+  return needed;
 }
 
 export type BalanceChange = { atoms: string; scale: number; unit: string };
@@ -95,6 +97,11 @@ export type PreparedLeg = {
   receivedAt: string;
   expiresAt: string;
   priorityFeeLamports: string;
+  /**
+   * Set on purchases only, where a batch sums it: SOL this leg spends or
+   * locks, rent for a new holding account plus signature and priority fees.
+   */
+  solNeededLamports?: string;
   /** The tier this leg was quoted at, from the plan's size. */
   routingFeeBps: number;
   /** USDC atoms the simulation moved into Seametry's fee account. */
@@ -172,7 +179,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
   // Checked before simulating because simulation reports a short wallet as
   // the System program's error 0x1 inside the account opening instruction,
   // which names neither the shortfall nor what to do about it.
-  await refuseUnfunded(connection, lot, mint, inAtoms, BigInt(swap.prioritizationFeeLamports ?? 0), before);
+  const solNeeded = await refuseUnfunded(connection, lot, mint, inAtoms, BigInt(swap.prioritizationFeeLamports ?? 0), before);
   const simulation = await connection.simulateTransaction(transaction, {
     sigVerify: false,
     replaceRecentBlockhash: false,
@@ -228,6 +235,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     receivedAt: receivedAt.toISOString(),
     expiresAt: expiresAt.toISOString(),
     priorityFeeLamports: String(swap.prioritizationFeeLamports ?? 0),
+    solNeededLamports: solNeeded.toString(),
     routingFeeBps: feeBps,
     routingFeeAtoms: feeAtoms.toString(),
     simulated,
@@ -265,7 +273,15 @@ export async function prepareBatch(
     throw new Refusal(402, "This wallet holds " + formatAmount(held, 6) + " USDC; the Allocation requires " + formatAmount(requested, 6) + " USDC.");
   }
 
-  return Promise.all(legs.map((leg) => prepareLeg(config, walletText, leg.mint, leg.inAtoms, planMints)));
+  const prepared = await Promise.all(legs.map((leg) => prepareLeg(config, walletText, leg.mint, leg.inAtoms, planMints)));
+  // Each leg checked the SOL it needs alone. Signed together they need the
+  // sum, and a wallet short of it would settle some legs and fail the rest.
+  const solNeeded = prepared.reduce((sum, leg) => sum + BigInt(leg.solNeededLamports ?? "0"), 0n);
+  const solHeld = BigInt(await connection.getBalance(wallet, "confirmed"));
+  if (solHeld < solNeeded) {
+    throw new Refusal(402, `This wallet holds ${formatAmount(solHeld, 9)} SOL; the ${prepared.length} purchases need ${formatAmount(solNeeded, 9)} SOL together, for new token accounts (returned if closed) and network fees. Add SOL to the wallet or buy fewer constituents.`);
+  }
+  return prepared;
 }
 
 /** Builds an exact-input reverse swap. A current admission block does not hide a holder's exit route. */

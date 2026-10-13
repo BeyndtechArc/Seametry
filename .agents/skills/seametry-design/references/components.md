@@ -79,7 +79,7 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 **Answers:** what happens if I press this?
 **Anatomy:** cornerless `accent.touch` plate, label and a separate icon cell in `accent.touchPressed` with no rule between them, seated in a square `surface.tray` housing, height `size.key`.
 **Identity:** short registration rules protrude from both horizontal edges. The tray remains when the action is disabled, like an empty keyway.
-**States:** default, pressed (drops 1px, `accent.touchPressed`), disabled (tray only, label in `text.tertiary`, reason available), busy (label becomes the action in progress: "Signing").
+**States:** default, pressed (drops 1px, `accent.touchPressed`), blocked (reads as unavailable, reason shown beside it, and still answers a press: a Process dialog names the reason and offers the action that resolves it, such as "Adjust amount" or "Melt instead"; a Key that goes dead without explaining was removed, Storm, 13 October 2026), busy (truly disabled; label becomes the action in progress: "Signing"). A Key with no reason to give is never disabled.
 **Rules:** verb plus object ("Approve and sign"). One key per view. Quieter than the figures above it.
 
 ### Route action
@@ -359,7 +359,7 @@ Amount, plan, Quote block, path, approval Key, expiry. Occludes the page behind;
 
 ### Modal sheet
 **Answers:** which focused task or summary can I inspect without losing the page that produced it?
-**Anatomy:** native dialog; quiet register label; title; caller-owned body; explicit close action; optional footer. The body uses registered atoms and molecules only.
+**Anatomy:** native dialog; quiet register label; title; caller-owned body; a close icon in its square wrapper, named by `aria-label`, never a written "Close" (Storm, 13 October 2026: an action inside a sheet or list is an icon in its wrapper unless the icon cannot carry the meaning alone); optional footer. The body uses registered atoms and molecules only.
 **Identity:** a full-height registration-cut plate at the inline end on wide screens and a `radius.sheet` plate rising from the bottom on narrow screens. One top highlight rule and tonal elevation establish occlusion; there is no shadow, blur or glow.
 **States:** closed; open. Loading, empty, stale, unavailable and error belong to the caller's content and retain the sheet's measure.
 **Data:** accessible title, close label and caller-owned content. The component owns no product data.

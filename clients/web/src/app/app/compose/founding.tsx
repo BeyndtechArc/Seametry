@@ -123,7 +123,7 @@ export function useFounding(legs: { mint: string; atomsPerShare: bigint }[], nam
 /** The founding's Key, for the step bar. */
 export function FoundingKey({ founding, disabled }: { founding: Founding; disabled: boolean }) {
   return (
-    <Key type="button" onClick={() => void founding.found()} disabled={disabled || Boolean(founding.reason)} busy={founding.running} busyLabel="Founding">
+    <Key type="button" onClick={() => void founding.found()} disabled={disabled || Boolean(founding.reason)} disabledReason={founding.reason ?? (disabled ? "Choose at least one constituent for the Formula first." : undefined)} reasonBeside={false} busy={founding.running} busyLabel="Founding">
       Found on devnet
     </Key>
   );

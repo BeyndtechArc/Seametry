@@ -4,6 +4,7 @@ import type {
   InputHTMLAttributes,
   ReactNode,
 } from "react";
+import { BlockedKey } from "./blocked-key";
 import { Icon, type IconName } from "./icons";
 import { LotMarkImage } from "./lot-mark-image";
 import styles from "./components.module.css";
@@ -320,14 +321,28 @@ export function Key({
   busyLabel,
   busy = false,
   disabledReason,
+  blockedTitle = "Why this is not available",
+  resolve,
+  reasonBeside = true,
   ...buttonProps
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
   busy?: boolean;
   busyLabel?: string;
   disabledReason?: string;
+  /** The blocked dialog's heading, when the reason has a better name than the default. */
+  blockedTitle?: string;
+  /** Actions that resolve the reason, shown in the blocked dialog's footer. */
+  resolve?: (close: () => void) => ReactNode;
+  /** False where the surrounding bar already states the reason; the press still explains. */
+  reasonBeside?: boolean;
 }) {
   const disabled = buttonProps.disabled || busy;
+  // A reason means the Key can explain itself, so it stays pressable. Busy
+  // stays truly disabled: the work it names is already under way.
+  if (buttonProps.disabled && !busy && disabledReason) {
+    return <BlockedKey reason={disabledReason} title={blockedTitle} resolve={resolve} reasonBeside={reasonBeside}>{children}</BlockedKey>;
+  }
   return (
     <span className={styles.keyGroup}>
       <span className={styles.keyTray}>

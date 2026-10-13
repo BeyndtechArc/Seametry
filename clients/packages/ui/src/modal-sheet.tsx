@@ -65,8 +65,8 @@ export function ModalSheet({
           <span>{register}</span>
           <h2 id={titleId}>{title}</h2>
         </div>
-        <button className={styles.close} type="button" onClick={close}>
-          {closeLabel}
+        <button className={styles.iconClose} type="button" onClick={close} aria-label={closeLabel}>
+          <Icon name="close" />
         </button>
       </header>
       <div className={styles.body}>{children}</div>

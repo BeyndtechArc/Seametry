@@ -410,12 +410,10 @@ export function Positions() {
             closeLabel="Close Allocation exit"
             footer={selectedAllocation ? (
               batchSaleState === "review"
-                ? <Key type="button" onClick={() => void signAllocationSale()} disabled={!signAllTransactions && !signTransaction}>Approve sell all</Key>
-                : batchSaleState === "preparing" || batchSaleState === "signing" || batchSaleState === "checking"
+                ? <Key type="button" onClick={() => void signAllocationSale()} disabled={!signAllTransactions && !signTransaction} disabledReason="This wallet cannot sign transactions in this browser. Open Seametry in the wallet's own browser or connect another wallet.">Approve sell all</Key>
+                : batchSaleState === "preparing" || batchSaleState === "signing" || batchSaleState === "checking" || batchSaleState === "success"
                   ? undefined
-                  : batchSaleState === "success"
-                    ? <QuietAction type="button" onClick={() => setSelectedAllocation(undefined)}>Close</QuietAction>
-                    : <Key type="button" onClick={() => void prepareAllocationSale()} disabled={batchSaleLegs.length === 0}>Review sell all</Key>
+                  : <Key type="button" onClick={() => void prepareAllocationSale()} disabled={batchSaleLegs.length === 0} disabledReason="Nothing in this Allocation can be sold from this wallet right now.">Review sell all</Key>
             ) : undefined}
           >
             {selectedAllocation ? (
@@ -476,9 +474,9 @@ export function Positions() {
             ) : signature ? (
               tradeState === "unavailable" && currentTrade ? <QuietAction type="button" onClick={() => void check(currentTrade)}>Check status</QuietAction> : null
             ) : !prepared ? (
-              <Key type="button" onClick={() => void prepare()} disabled={!validAtoms || tradeState === "preparing" || tradeState === "checking" || tradeState === "signing" || !signTransaction} busy={tradeState === "preparing"} busyLabel="Checking sale" disabledReason={!signTransaction ? "This wallet cannot sign transactions in this browser." : undefined}>Review sale</Key>
+              <Key type="button" onClick={() => void prepare()} disabled={!validAtoms || tradeState === "preparing" || tradeState === "checking" || tradeState === "signing" || !signTransaction} busy={tradeState === "preparing"} busyLabel="Checking sale" disabledReason={!signTransaction ? "This wallet cannot sign transactions in this browser." : !validAtoms ? "Enter an amount to sell, up to what this route can take." : tradeState === "checking" ? "Checking the sale." : tradeState === "signing" ? "Waiting for your wallet." : undefined}>Review sale</Key>
             ) : (
-              <><Key type="button" onClick={() => void signSale()} disabled={remaining === 0 || tradeState === "signing" || tradeState === "checking"} busy={tradeState === "signing"} busyLabel="Signing sale" disabledReason={remaining === 0 ? "This quote expired. Request current terms before signing." : undefined}>Sign sale</Key>{remaining === 0 ? <QuietAction type="button" onClick={() => void prepare()}>Request current terms</QuietAction> : null}</>
+              <><Key type="button" onClick={() => void signSale()} disabled={remaining === 0 || tradeState === "signing" || tradeState === "checking"} busy={tradeState === "signing"} busyLabel="Signing sale" disabledReason={remaining === 0 ? "This quote expired. Request current terms before signing." : tradeState === "checking" ? "Checking the signed sale." : undefined}>Sign sale</Key>{remaining === 0 ? <QuietAction type="button" onClick={() => void prepare()}>Request current terms</QuietAction> : null}</>
             ) : undefined}
           >
             {position ? <div className={styles.sale}>

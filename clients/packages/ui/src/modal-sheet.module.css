@@ -67,24 +67,6 @@
   letter-spacing: var(--sm-font-tracking-title);
 }
 
-.close {
-  min-height: var(--sm-size-target);
-  padding: 0 var(--sm-space-4);
-  border: 0;
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  border-radius: 0;
-  color: var(--sm-text-secondary);
-  background: var(--sm-surface-sheet);
-  font: inherit;
-  cursor: pointer;
-}
-
-.close:focus-visible {
-  outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-2);
-}
-
 .body {
   min-width: 0;
   overflow: auto;

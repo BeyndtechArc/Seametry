@@ -6,6 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
 import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepTrack, Stamp } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
+import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitByWeights, splitEvenly } from "@/lib/amount";
 import { patchLocalTrade, recordLocalTrade } from "@/lib/allocation/activity";
 import type { PreparedLeg } from "@/lib/allocation/execution";
@@ -212,6 +213,8 @@ export function AllocationFlow({
   const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
   const [now, setNow] = useState(() => Date.now());
   const [batchPhase, setBatchPhase] = useState<"idle" | "preflight" | "approval" | "settling">("idle");
+  const [shortfall, setShortfall] = useState<string>();
+  const [copied, setCopied] = useState(false);
   const allocationId = useRef<string | undefined>(undefined);
 
   const [query, setQuery] = useState("");
@@ -317,10 +320,19 @@ export function AllocationFlow({
     [plan],
   );
 
-  const startOver = () => {
+  const clearProgress = () => {
     setProgress({ plan: "", changes: {} });
     setBatchPhase("idle");
     allocationId.current = undefined;
+  };
+
+  const adjustAmount = () => {
+    setShortfall(undefined);
+    requestAnimationFrame(() => document.getElementById("allocation-usdc")?.focus());
+  };
+
+  const startOver = () => {
+    clearProgress();
     setTyped("");
     keepUnsignedPlanInUrl({ mints: chosen.map((lot) => lot.mint), amount: "", weights });
     setStep(fixedTemplate ? 1 : 0);
@@ -397,11 +409,18 @@ export function AllocationFlow({
       ready = pending.map((leg, index) => ({ leg, prepared: prepared[index] }));
       ready.forEach(({ leg, prepared: item }) => update(leg.mint, { phase: "signing", prepared: item }));
     } catch (error) {
-      pending.forEach((leg) => update(leg.mint, {
-        phase: "failed",
-        note: "Allocation preflight stopped before signing. " + reasonFrom(error),
-        retryable: true,
-      }));
+      if (error instanceof ApiError && error.status === 402) {
+        // Not enough USDC or SOL: nothing was prepared, so no leg failed. The
+        // reader is asked to fund the wallet or lower the amount instead.
+        clearProgress();
+        setShortfall(reasonFrom(error));
+      } else {
+        pending.forEach((leg) => update(leg.mint, {
+          phase: "failed",
+          note: "Allocation preflight stopped before signing. " + reasonFrom(error),
+          retryable: true,
+        }));
+      }
       setBatchPhase("idle");
       buying.current = false;
       return;
@@ -810,6 +829,7 @@ export function AllocationFlow({
                 busy={Boolean(inFlight) || batchPhase !== "idle"}
                 busyLabel={batchPhase === "preflight" ? "Checking every leg" : batchPhase === "approval" ? "Waiting for wallet" : inFlight ? "Settling allocation" : undefined}
                 disabled={Boolean(keyDisabledReason) && !inFlight}
+                disabledReason={keyDisabledReason}
                 onClick={() => void buyAll()}
               >
                 {fixedTemplate ? "Buy basket" : "Buy allocation"}
@@ -820,6 +840,23 @@ export function AllocationFlow({
           }
         />
       )}
+      <ProcessDialog
+        open={Boolean(shortfall)}
+        onClose={() => setShortfall(undefined)}
+        title="Fund the wallet or lower the amount"
+        register="Nothing was signed"
+        closeLabel="Close"
+        footer={<>
+          <QuietAction type="button" icon="wallet" onClick={() => {
+            if (!walletAddress) return;
+            void navigator.clipboard.writeText(walletAddress).then(() => setCopied(true));
+          }}>{copied ? "Wallet address copied" : "Copy wallet address"}</QuietAction>
+          <ContinueAction type="button" onClick={adjustAmount}>Adjust amount</ContinueAction>
+        </>}
+      >
+        <p>{shortfall}</p>
+        <p>Send USDC or SOL to {walletAddress ? <b>{walletAddress}</b> : "this wallet"} and buy again, or lower the amount so it fits what the wallet holds. Seametry prepared nothing and nothing left the wallet.</p>
+      </ProcessDialog>
     </div>
   );
 }

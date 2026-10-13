@@ -227,10 +227,14 @@ test("a held-back leg refuses Strike before any signature, and leaves Melt open"
   await actions.getByRole("button", { name: "Set Strike amount" }).click();
   await expect(actions.getByRole("button", { name: "Strike shares" })).toBeDisabled();
   await expect(actions.getByText(`Strike refused: ${record.legs[1].symbol} is held back by its issuer, so the Hall cannot take it in. Melt still works.`).first()).toBeVisible();
+  // The blocked Key still answers a press: it explains, and offers the way out.
+  await actions.getByRole("button", { name: "Strike shares" }).click({ force: true });
+  const why = page.getByRole("dialog", { name: "Strike refused while a leg is held back" });
+  await expect(why).toBeVisible();
+  await expect(why).toContainText(`${record.legs[1].symbol} is held back by its issuer`);
+  await why.getByRole("button", { name: "Melt instead" }).click();
+  await expect(why).toHaveCount(0);
   expect(strikeRequests).toBe(0);
-  await actions.getByRole("list", { name: "Alloy action steps" }).getByRole("button").click();
-  await actions.getByRole("radio", { name: "Melt" }).click();
-  await actions.getByRole("button", { name: "Set Melt amount" }).click();
   await expect(actions.getByRole("list", { name: "Melt quantities" })).toContainText("held as Claim");
 });
 

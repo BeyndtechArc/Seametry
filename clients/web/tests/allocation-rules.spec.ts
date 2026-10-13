@@ -500,6 +500,32 @@ test("a published basket buys every constituent from its record with one Key pre
   await expect(page.getByText("Purchases settled", { exact: true })).toBeVisible();
 });
 
+test("a wallet short of funds is asked to fund or adjust, and no purchase is marked failed", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true });
+  let submits = 0;
+  await page.route("**/api/allocation/prepare-batch", (route) =>
+    route.fulfill({ status: 402, json: { error: "This wallet holds 3.000000 USDC; the Allocation requires 7.000000 USDC." } }));
+  await page.route("**/api/allocation/submit", (route) => { submits += 1; return route.fulfill({ status: 500, json: { error: "must not be called" } }); });
+
+  await page.goto("/app/baskets/prime-seven?amount=7");
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  const order = page.getByRole("region", { name: "Buy Prime Seven" });
+  await order.getByRole("button", { name: "Buy basket" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Fund the wallet or lower the amount" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("This wallet holds 3.000000 USDC; the Allocation requires 7.000000 USDC.");
+  await expect(dialog.getByRole("button", { name: "Copy wallet address" })).toBeVisible();
+  await expect(page.getByText("Allocation preflight stopped before signing")).toHaveCount(0);
+  await dialog.getByRole("button", { name: "Adjust amount" }).click();
+  await expect(dialog).toHaveCount(0);
+  const amount = order.getByLabel("USDC to spend");
+  await expect(amount).toBeEditable();
+  await expect(amount).toBeFocused();
+  expect(submits).toBe(0);
+});
+
 test("a basket purchase that mainnet never confirms ends as a wallet check, not a purchase stuck sending", async ({ page }) => {
   await page.clock.install();
   await registerTestWallet(page, { trusted: true });
