@@ -64,6 +64,87 @@ test("a bought Allocation is sold whole with one review and one approval", async
   await expect(sheet.getByRole("alert")).toHaveCount(0);
 });
 
+test("a sale steps from amount to review in the sheet, then signs and settles in centre dialogs", async ({ page }) => {
+  const wallet = "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d";
+  await registerTestWallet(page, { trusted: true, signs: true });
+  const lot = admissions.instruments.find((entry) => entry.instrument.symbol === "AMZNx")!;
+  await page.route("**/api/allocation/positions?**", (route) => route.fulfill({ json: {
+    wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
+    positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
+  } }));
+  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: new PublicKey(wallet), recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
+  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: {
+    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
+    expiresAt: new Date(Date.now() + 60_000).toISOString(), floorAtoms: "990000", outAtoms: "1000000", outScale: 6,
+    inAtoms: "5000000", routingFeeBps: 25, routingFeeAtoms: "2500", priorityFeeLamports: "215264", route: ["Test route"], contextSlot: 1, receivedAt: new Date().toISOString(),
+    simulated: [{ atoms: "1000000", scale: 6, unit: "USDC" }],
+  } }));
+  await page.route("**/api/allocation/submit", async (route) => {
+    const bytes = Buffer.from((route.request().postDataJSON() as { transaction: string }).transaction, "base64");
+    await route.fulfill({ json: { signature: signedSignature(new Uint8Array(bytes.subarray(1, 65))) } });
+  });
+  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed" } }));
+
+  await page.goto("/app/positions");
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await page.getByRole("button", { name: "Sell AMZNx" }).click();
+  const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
+  const steps = sheet.getByRole("list", { name: "Sale steps" });
+  await expect(steps).toContainText("Amount");
+  await sheet.getByRole("button", { name: "Use 50%" }).click();
+  // The quote waits for the review step; the amount step holds only the amount.
+  await expect(sheet.getByText("You receive no less than", { exact: false })).toHaveCount(0);
+  await sheet.getByRole("button", { name: "Review sale" }).click();
+  await expect(sheet.getByLabel("Amount of AMZNx to sell")).toHaveCount(0);
+  await expect(sheet.getByText("Simulated on mainnet for this wallet: +1.000000 USDC.")).toBeVisible();
+  await sheet.getByRole("button", { name: "Sign sale" }).click();
+
+  await expect(sheet).toHaveCount(0);
+  const outcome = page.getByRole("dialog", { name: "Sale settled" });
+  await expect(outcome).toBeVisible({ timeout: 10_000 });
+  await expect(outcome).toContainText("Sold AMZNx");
+  await expect(outcome.getByRole("link", { name: "Open transaction" })).toBeVisible();
+  await outcome.getByRole("button", { name: "Close sale outcome" }).click();
+  await expect(outcome).toHaveCount(0);
+});
+
+test("a sale the network dropped says nothing moved and offers to sell again", async ({ page }) => {
+  const wallet = "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d";
+  await registerTestWallet(page, { trusted: true, signs: true });
+  const lot = admissions.instruments.find((entry) => entry.instrument.symbol === "AMZNx")!;
+  await page.route("**/api/allocation/positions?**", (route) => route.fulfill({ json: {
+    wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
+    positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
+  } }));
+  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: new PublicKey(wallet), recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
+  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: {
+    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
+    expiresAt: new Date(Date.now() + 60_000).toISOString(), floorAtoms: "990000", outAtoms: "1000000", outScale: 6,
+    inAtoms: "5000000", routingFeeBps: 25, routingFeeAtoms: "2500", priorityFeeLamports: "0", route: ["Test route"], contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
+  } }));
+  await page.route("**/api/allocation/submit", async (route) => {
+    const bytes = Buffer.from((route.request().postDataJSON() as { transaction: string }).transaction, "base64");
+    await route.fulfill({ json: { signature: signedSignature(new Uint8Array(bytes.subarray(1, 65))) } });
+  });
+  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "expired", detail: "never included" } }));
+
+  await page.goto("/app/positions");
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await page.getByRole("button", { name: "Sell AMZNx" }).click();
+  const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
+  await sheet.getByRole("button", { name: "Use 50%" }).click();
+  await sheet.getByRole("button", { name: "Review sale" }).click();
+  await sheet.getByRole("button", { name: "Sign sale" }).click();
+  const outcome = page.getByRole("dialog", { name: "Sale did not land" });
+  await expect(outcome).toBeVisible({ timeout: 10_000 });
+  await expect(outcome).toContainText("Your AMZNx is still in the wallet.");
+  await outcome.getByRole("button", { name: "Sell again" }).click();
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByLabel("Amount of AMZNx to sell")).toHaveValue("0.05");
+});
+
 test("holdings names the exit route without presenting it as redemption", async ({ page }) => {
   await registerTestWallet(page, { trusted: true });
   const lot = admissions.instruments.find((entry) => entry.instrument.symbol === "AMZNx")!;

@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepTrack, Stamp } from "@seametry/ui";
+import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, RouteAction, SelectionCount, StepBar, StepTrack, Stamp } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
-import { ProcessDialog } from "@seametry/ui/modal-sheet";
+import { ProcessDialog, ProcessOutcome } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitByWeights, splitEvenly } from "@/lib/amount";
 import { patchLocalTrade, recordLocalTrade } from "@/lib/allocation/activity";
 import type { PreparedLeg } from "@/lib/allocation/execution";
@@ -214,6 +214,7 @@ export function AllocationFlow({
   const [now, setNow] = useState(() => Date.now());
   const [batchPhase, setBatchPhase] = useState<"idle" | "preflight" | "approval" | "settling">("idle");
   const [shortfall, setShortfall] = useState<string>();
+  const [outcomeClosed, setOutcomeClosed] = useState(false);
   const [copied, setCopied] = useState(false);
   const allocationId = useRef<string | undefined>(undefined);
 
@@ -396,6 +397,7 @@ export function AllocationFlow({
     const pending = legs.filter((leg) => leg.phase === "idle" || (leg.phase === "failed" && leg.retryable));
     if (!pending.length || !publicKey || (!signAllTransactions && !signTransaction) || inFlight || buying.current) return;
     buying.current = true;
+    setOutcomeClosed(false);
     const signingWallet = walletAddress;
     if (!signingWallet) {
       buying.current = false;
@@ -546,6 +548,10 @@ export function AllocationFlow({
     settledCount > 0 && failedCount > 0 ? "partial" :
     failedCount > 0 && settledCount === 0 ? "failure" :
     "idle";
+  const summaryLine = `${settledCount} of ${legs.length} ${legs.length === 1 ? "purchase" : "purchases"} settled.${walletBlocked ? " This wallet could not sign this purchase. The remaining purchases are paused." : uncertainCount ? ` ${uncertainCount} ${uncertainCount === 1 ? "submission needs" : "submissions need"} a wallet activity check.` : attempted.length === legs.length && settledCount < legs.length ? " The remaining purchases were not sent or did not settle." : ""}`;
+  // The result opens as a centre dialog once every leg has ended, as Strike's
+  // outcome does; the inline record below stays as the lasting account.
+  const ended = (motionState === "success" || motionState === "partial" || motionState === "failure") && !inFlight && batchPhase === "idle" && attempted.length > 0;
   const total = parsed && "atoms" in parsed ? `${formatAmount(parsed.atoms, USDC_SCALE)} USDC` : "Not set";
   // Per leg, as Jupiter rounds each swap's fee, then summed; the prepared leg
   // later shows the exact fee its simulation moved.
@@ -795,10 +801,7 @@ export function AllocationFlow({
                   })}
                 </ol>
                 {attempted.length > 0 ? (
-                  <p className={styles.summary} role={uncertainCount ? "alert" : "status"}>
-                    {settledCount} of {legs.length} {legs.length === 1 ? "purchase" : "purchases"} settled.
-                    {walletBlocked ? " This wallet could not sign this purchase. The remaining purchases are paused." : uncertainCount ? ` ${uncertainCount} ${uncertainCount === 1 ? "submission needs" : "submissions need"} a wallet activity check.` : attempted.length === legs.length && settledCount < legs.length ? " The remaining purchases were not sent or did not settle." : ""}
-                  </p>
+                  <p className={styles.summary} role={uncertainCount ? "alert" : "status"}>{summaryLine}</p>
                 ) : null}
                 {settledCount > 0 ? <Link href="/app/positions" className={styles.holdingsLink}>View holdings and sell</Link> : null}
                 {started && !inFlight && !walletBlocked ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
@@ -849,6 +852,31 @@ export function AllocationFlow({
           }
         />
       )}
+      {ended && !outcomeClosed ? (
+        <ProcessDialog
+          open
+          onClose={() => setOutcomeClosed(true)}
+          title={motionState === "success" ? "Allocation assembled" : motionState === "partial" ? "Allocation partly assembled" : "Purchase stopped"}
+          register="Mainnet"
+          closeLabel="Close purchase outcome"
+          footer={<>
+            {settledCount > 0 ? <RouteAction href="/app/positions">View holdings and sell</RouteAction> : null}
+            {!walletBlocked ? <QuietAction type="button" onClick={() => { setOutcomeClosed(true); startOver(); }}>Start new allocation</QuietAction> : null}
+          </>}
+        >
+          <ProcessOutcome kind={motionState === "success" ? "success" : "error"} title={summaryLine}>
+            <ul className={styles.outcomeLegs} aria-label="Purchases">
+              {legs.map((leg) => (
+                <li key={leg.mint}>
+                  <b>{leg.symbol}</b>
+                  <span>{leg.walletBlocked ? "Not sent" : leg.phase === "failed" && leg.retryable ? "Prepare again" : leg.uncertain ? "Check wallet" : phaseLabel[leg.phase]}</span>
+                  {leg.signature ? <a href={`https://explorer.solana.com/tx/${leg.signature}`} rel="noreferrer" target="_blank">{leg.signature.slice(0, 8)}…</a> : null}
+                </li>
+              ))}
+            </ul>
+          </ProcessOutcome>
+        </ProcessDialog>
+      ) : null}
       <ProcessDialog
         open={Boolean(shortfall)}
         onClose={() => setShortfall(undefined)}

@@ -452,9 +452,9 @@ test("a confirmed Allocation shows settlement state and transaction evidence", a
   await page.route("**/api/allocation/submit", (route) => route.fulfill({ json: { signature: "test-signature" } }));
   await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed", tokenDeltaAtoms: "1", tokenDeltaScale: 6 } }));
   await page.getByRole("button", { name: "Buy allocation" }).click();
-  await expect(page.getByText("Allocation assembled")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("dialog", { name: "Allocation assembled" })).toBeVisible({ timeout: 10_000 });
   await expect(page.getByRole("region", { name: "Buy allocation" }).getByRole("link", { name: "test-signature" })).toHaveAttribute("href", /test-signature/);
-  await expect(page.getByText("1 of 1 purchase settled.")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText("1 of 1 purchase settled.")).toBeVisible();
 });
 
 test("a published basket buys every constituent from its record with one Key press and one batch", async ({ page }) => {
@@ -489,8 +489,8 @@ test("a published basket buys every constituent from its record with one Key pre
   await expect(order.getByLabel("USDC to spend")).toHaveValue("7");
   await order.getByRole("button", { name: "Buy basket" }).click();
 
-  await expect(page.getByText("Allocation assembled")).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByText("7 of 7 purchases settled.")).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Allocation assembled" })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText("7 of 7 purchases settled.")).toBeVisible();
   expect(batches).toHaveLength(1);
   expect(batches[0].legs.map((leg) => leg.mint).sort()).toEqual([...mints].sort());
   expect(batches[0].legs.every((leg) => leg.usdcAtoms === "1000000")).toBe(true);
@@ -558,7 +558,8 @@ test("a basket purchase that mainnet never confirms ends as a wallet check, not 
     await page.clock.runFor(3000);
     await page.waitForTimeout(20);
   }
-  await expect(page.getByText(`${basket.members.length} submissions need a wallet activity check.`)).toBeVisible();
+  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText(`${basket.members.length} submissions need a wallet activity check.`)).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Purchase stopped" })).toBeVisible();
   await expect(page.getByText("Check wallet activity", { exact: true })).toBeVisible();
   await expect(page.getByText(/Sending/)).toHaveCount(0);
 });
@@ -641,7 +642,7 @@ test("a remix buys at the weights the reader set, exactly, and is recorded as a 
   expect(new URL(page.url()).searchParams.get("weights")).toBeTruthy();
 
   await page.getByRole("button", { name: "Buy allocation" }).click();
-  await expect(page.getByText("7 of 7 purchases settled.")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText("7 of 7 purchases settled.")).toBeVisible({ timeout: 10_000 });
   expect(batches).toHaveLength(1);
   expect(submits).toBe(7);
   const atomsBySymbol = Object.fromEntries(basket.members.map((member) => [member.symbol, batches[0].legs.find((leg) => leg.mint === mintOf(member.symbol))?.usdcAtoms]));
