@@ -8,3 +8,4 @@ States:      Default shows exact per-leg atoms; loading says terms are being rea
 Ceremony:    Existing Strike or Melt signature; no extra ceremony.
 Names:       Alloy, Strike, Melt, Claim, shares, devnet stand-ins.
 Assumptions: The Hall moves exact quantities, not USDC. This order sheet does not claim a market price or automatic purchase.
+Fix (13 October 2026): the Strike or Melt Key reopened a finished action's outcome on every press, so after one Strike the sheet and Melt were unreachable. Only a running action reopens its progress now; a finished one is cleared and the sheet opens.

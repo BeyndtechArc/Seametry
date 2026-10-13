@@ -277,6 +277,13 @@ test("a Strike opens its steps and stops at the first with what did not happen",
   await expect(dialog).toBeVisible();
   await expect(dialog.getByRole("alert")).toContainText("Action stopped");
   await expect(dialog.getByRole("alert")).toContainText("HALL_DEMO_FUNDER_SECRET_KEY is not set");
+  // A finished action does not trap the Key: it opens the sheet again, so Melt is reachable.
+  await dialog.getByRole("button", { name: "Close Alloy outcome" }).click();
+  await page.getByRole("button", { name: "Strike or Melt" }).click();
+  await expect(page.getByRole("dialog", { name: "Strike or Melt" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Action stopped" })).toHaveCount(0);
+  await page.getByRole("dialog", { name: "Strike or Melt" }).getByRole("radio", { name: "Melt" }).click();
+  await expect(page.getByRole("dialog", { name: "Strike or Melt" }).getByRole("button", { name: "Set Melt amount" })).toBeVisible();
 });
 
 test("the Strike route refuses what it cannot prepare before it spends anything", async ({ request }) => {

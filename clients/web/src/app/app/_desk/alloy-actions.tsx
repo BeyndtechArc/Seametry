@@ -255,9 +255,13 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
   return (
     <>
       <Key type="button" onClick={() => {
-        if (run?.state === "running") setProgressOpen(true);
-        else if (run) setOutcomeOpen(true);
-        else { setSheetStep(0); setSheetOpen(true); }
+        // Only a running action reopens its progress. A finished one reopened
+        // its outcome on every press, so after a Strike Melt was unreachable.
+        if (run?.state === "running") { setProgressOpen(true); return; }
+        setRun(undefined);
+        setOutcomeOpen(false);
+        setSheetStep(0);
+        setSheetOpen(true);
       }}>Strike or Melt</Key>
       <ModalSheet
         open={sheetOpen}
