@@ -52,6 +52,29 @@ export const PRIORITY_FEE = { priorityLevelWithMaxLamports: { maxLamports: 500_0
  */
 export const DROPPED_AFTER_MS = 5 * 60_000;
 
+// Programs every route invokes; a failure inside them is not a venue's.
+const ROUTE_PLUMBING = new Set([
+  "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+  "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+  "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL",
+  "ComputeBudget111111111111111111111111111111",
+  "11111111111111111111111111111111",
+]);
+
+/**
+ * The program of the trading venue that failed in a simulation's logs, if
+ * the failure was a venue's rather than Jupiter's or the token programs'.
+ * Logs list the innermost failure first, which is the venue that refused.
+ */
+export function failedVenueProgram(logs: string[]): string | undefined {
+  for (const line of logs) {
+    const id = /^Program (\w+) failed/.exec(line)?.[1];
+    if (id && !ROUTE_PLUMBING.has(id)) return id;
+  }
+  return undefined;
+}
+
 /** A sale spends token atoms and receives USDC; the USDC output pays the disclosed routing fee. */
 export function sellQuoteParams(mint: string, inAtoms: bigint, feeBps: number): URLSearchParams {
   return new URLSearchParams({

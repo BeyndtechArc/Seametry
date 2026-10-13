@@ -4,7 +4,7 @@ import { describeSplit, formatAmount, formatBalance, parseAmount, splitByWeights
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { findAllocationIndex } from "../src/lib/allocation/indexes";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
-import { countryGate, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
+import { countryGate, failedVenueProgram, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
 import { listedPositions } from "../src/lib/allocation/positions";
 import { signedSignature } from "../src/lib/allocation/activity";
 import { registerTestWallet } from "./test-wallet";
@@ -498,6 +498,23 @@ test("a published basket buys every constituent from its record with one Key pre
   // Every leg has ended, so nothing may still read as in progress.
   await expect(order.getByRole("button", { name: "Buy basket" })).toHaveCount(0);
   await expect(page.getByText("Purchases settled", { exact: true })).toBeVisible();
+});
+
+test("a simulation failure inside a venue names that venue, and one inside Jupiter names none", () => {
+  // The two failure lines of a live NBIS, NVDAx and AVGOx preflight, 13 October 2026.
+  const goonfi = [
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [1]",
+    "Program goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE invoke [2]",
+    "Program goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE failed: custom program error: 0x15",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 failed: custom program error: 0x15",
+  ];
+  expect(failedVenueProgram(goonfi)).toBe("goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE");
+  // Slippage or a token program refusing is not a venue's moment, so nothing is routed around.
+  expect(failedVenueProgram([
+    "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb failed: custom program error: 0x1",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 failed: custom program error: 0x1771",
+  ])).toBeUndefined();
+  expect(failedVenueProgram([])).toBeUndefined();
 });
 
 test("a wallet short of funds is asked to fund or adjust, and no purchase is marked failed", async ({ page }) => {

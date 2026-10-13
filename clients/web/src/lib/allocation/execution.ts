@@ -6,7 +6,7 @@ import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { DROPPED_AFTER_MS, MIN_LEG_USDC_ATOMS, PRIORITY_FEE, QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
+import { DROPPED_AFTER_MS, MIN_LEG_USDC_ATOMS, PRIORITY_FEE, failedVenueProgram, QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 
@@ -83,6 +83,77 @@ async function refuseUnfunded(
   return needed;
 }
 
+type JupiterSwap = { swapTransaction: string; prioritizationFeeLamports?: number };
+type Routed = { quote: JupiterQuote; swap: JupiterSwap; transaction: VersionedTransaction; simulation: Awaited<ReturnType<Connection["simulateTransaction"]>>; receivedAt: Date };
+
+let venueLabels: Promise<Record<string, string>> | undefined;
+
+/** The trading venue whose program failed in these logs, by Jupiter's own label for it. */
+async function refusingVenue(config: AllocationConfig, logs: string[]): Promise<string | undefined> {
+  const failed = failedVenueProgram(logs);
+  if (!failed) return undefined;
+  venueLabels ??= jupiter<Record<string, string>>(config.jupiterApiKey, "/program-id-to-label").catch(() => ({}));
+  return (await venueLabels)[failed];
+}
+
+/**
+ * Quotes, builds, checks and simulates one swap. When the simulation fails
+ * inside one trading venue, the swap is quoted once more with that venue
+ * excluded: on 13 October 2026 GoonFi V2 refused three legs at once with
+ * custom error 0x15 while the same route simulated cleanly minutes later,
+ * so one venue's moment is not a reason to refuse the leg. A second
+ * failure is refused in plain words, with the program's account kept as
+ * technical detail. `beforeSimulating` runs the caller's funding checks on
+ * each built swap, since its priority fee is part of what the wallet pays.
+ */
+async function routeAndSimulate(
+  config: AllocationConfig,
+  connection: Connection,
+  wallet: PublicKey,
+  query: URLSearchParams,
+  feeAccount: PublicKey,
+  watched: PublicKey[],
+  subject: string,
+  beforeSimulating: (swap: JupiterSwap) => Promise<void>,
+): Promise<Routed> {
+  let avoided: string | undefined;
+  for (;;) {
+    const quote = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${query}`);
+    const receivedAt = new Date();
+    const swap = await jupiter<JupiterSwap>(config.jupiterApiKey, "/swap", {
+      method: "POST",
+      body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58(), prioritizationFeeLamports: PRIORITY_FEE }),
+    });
+    const transaction = VersionedTransaction.deserialize(Buffer.from(swap.swapTransaction, "base64"));
+    const unlisted = unlistedProgram(transaction);
+    if (unlisted) throw new Refusal(502, `The route Jupiter built for ${subject} invokes ${unlisted}, which is not on this deployment's program allowlist, so it was not offered for signing.`);
+    if (!transaction.message.staticAccountKeys[0]?.equals(wallet)) throw new Refusal(502, `The route Jupiter built for ${subject} is not paid for by the connected wallet, so it was not offered for signing.`);
+    await beforeSimulating(swap);
+    const simulation = await connection.simulateTransaction(transaction, {
+      sigVerify: false,
+      replaceRecentBlockhash: false,
+      commitment: "confirmed",
+      accounts: { encoding: "base64", addresses: watched.map((key) => key.toBase58()) },
+    });
+    if (!simulation.value.err) return { quote, swap, transaction, simulation, receivedAt };
+
+    const logs = simulation.value.logs ?? [];
+    const venue = await refusingVenue(config, logs);
+    if (venue && !avoided) {
+      avoided = venue;
+      query.set("excludeDexes", venue);
+      continue;
+    }
+    const technical = `${JSON.stringify(simulation.value.err)}${logs.filter((line) => /error|failed/i.test(line)).slice(-2).map((line) => ` | ${line}`).join("")}`;
+    const plain = avoided
+      ? `${avoided} refused ${subject} when Seametry tested it on mainnet, and the route around it failed too.`
+      : venue
+        ? `${venue} refused ${subject} when Seametry tested it on mainnet.`
+        : `${subject[0].toUpperCase()}${subject.slice(1)} failed when Seametry tested it on mainnet.`;
+    throw new Refusal(422, `${plain} Nothing was signed or spent; try again in a minute. Technical detail: ${technical}`);
+  }
+}
+
 export type BalanceChange = { atoms: string; scale: number; unit: string };
 
 export type PreparedLeg = {
@@ -149,47 +220,22 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     throw new Refusal(503, `Seametry's routing fee account ${feeAccount.toBase58()} is not open on mainnet, so no leg can be prepared; Seametry has to open it.`);
   }
 
-  const query = quoteParams(mint, inAtoms, feeBps);
-  const quote = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${query}`);
-  const receivedAt = new Date();
-  const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
-
-  const swap = await jupiter<{ swapTransaction: string; prioritizationFeeLamports?: number }>(config.jupiterApiKey, "/swap", {
-    method: "POST",
-    body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58(), prioritizationFeeLamports: PRIORITY_FEE }),
-  });
-  const transaction = VersionedTransaction.deserialize(Buffer.from(swap.swapTransaction, "base64"));
-
-  const unlisted = unlistedProgram(transaction);
-  if (unlisted) {
-    throw new Refusal(502, `The swap Jupiter built invokes ${unlisted}, which is not on this deployment's program allowlist, so it was not offered for signing.`);
-  }
-  const feePayer = transaction.message.staticAccountKeys[0];
-  if (!feePayer?.equals(wallet)) {
-    throw new Refusal(502, "The swap Jupiter built is not paid for by the connected wallet, so it was not offered for signing.");
-  }
-
   const usdcAccount = getAssociatedTokenAddressSync(new PublicKey(USDC_MINT), wallet, false, new PublicKey(USDC_TOKEN_PROGRAM));
   const lotAccount = getAssociatedTokenAddressSync(new PublicKey(mint), wallet, false, new PublicKey(lot.token_program));
   // The fee account is watched too: the fee shown is what simulation moves
   // into it, not a figure computed beside the transaction.
   const watched = [wallet, usdcAccount, lotAccount, feeAccount];
-
   const before = await connection.getMultipleAccountsInfo(watched, "confirmed");
-  // Checked before simulating because simulation reports a short wallet as
-  // the System program's error 0x1 inside the account opening instruction,
-  // which names neither the shortfall nor what to do about it.
-  const solNeeded = await refuseUnfunded(connection, lot, mint, inAtoms, BigInt(swap.prioritizationFeeLamports ?? 0), before);
-  const simulation = await connection.simulateTransaction(transaction, {
-    sigVerify: false,
-    replaceRecentBlockhash: false,
-    commitment: "confirmed",
-    accounts: { encoding: "base64", addresses: watched.map((key) => key.toBase58()) },
-  });
-  if (simulation.value.err) {
-    const logs = (simulation.value.logs ?? []).filter((line) => /error|failed/i.test(line)).slice(-3).join(" | ");
-    throw new Refusal(422, `Simulation on mainnet refused this leg: ${JSON.stringify(simulation.value.err)}${logs ? `. ${logs}` : ""}`);
-  }
+
+  let solNeeded = 0n;
+  const { quote, swap, transaction, simulation, receivedAt } = await routeAndSimulate(
+    config, connection, wallet, quoteParams(mint, inAtoms, feeBps), feeAccount, watched, `buying ${lot.instrument.symbol ?? mint}`,
+    // Checked before simulating because simulation reports a short wallet as
+    // the System program's error 0x1 inside the account opening instruction,
+    // which names neither the shortfall nor what to do about it.
+    async (built) => { solNeeded = await refuseUnfunded(connection, lot, mint, inAtoms, BigInt(built.prioritizationFeeLamports ?? 0), before); },
+  );
+  const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
   const after = simulation.value.accounts ?? [];
   const accountData = (index: number) => {
     const data = after[index]?.data;
@@ -299,40 +345,23 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
   if (!(await connection.getAccountInfo(feeAccount, "confirmed"))) throw new Refusal(503, "Seametry's USDC fee account is not open on mainnet. Seametry must open it before selling here is available.");
 
   const feeBps = routingFeeBps(1);
-  const quote = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${sellQuoteParams(mint, inAtoms, feeBps)}`);
-  const receivedAt = new Date();
-  const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
-  const swap = await jupiter<{ swapTransaction: string; prioritizationFeeLamports?: number }>(config.jupiterApiKey, "/swap", {
-    method: "POST",
-    body: JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58(), prioritizationFeeLamports: PRIORITY_FEE }),
-  });
-  const transaction = VersionedTransaction.deserialize(Buffer.from(swap.swapTransaction, "base64"));
-  const unlisted = unlistedProgram(transaction);
-  if (unlisted) throw new Refusal(502, `The sale route invokes ${unlisted}, which is not on this deployment's program allowlist. It was not offered for signing.`);
-  if (!transaction.message.staticAccountKeys[0]?.equals(wallet)) throw new Refusal(502, "The sale route does not name the connected wallet as fee payer. It was not offered for signing.");
-
   const usdcAccount = getAssociatedTokenAddressSync(new PublicKey(USDC_MINT), wallet, false, new PublicKey(USDC_TOKEN_PROGRAM));
   const lotAccount = getAssociatedTokenAddressSync(new PublicKey(mint), wallet, false, new PublicKey(lot.token_program));
   const watched = [wallet, usdcAccount, lotAccount, feeAccount];
   const before = await connection.getMultipleAccountsInfo(watched, "confirmed");
   const held = tokenAmount(before[2]?.data);
   if (held < inAtoms) throw new Refusal(402, `This wallet holds ${formatAmount(held, lot.decimals)} ${lot.instrument.symbol ?? mint}; the sale asks for ${formatAmount(inAtoms, lot.decimals)}.`);
-  let rent = 0n;
-  if (!before[1]) rent = BigInt(await connection.getMinimumBalanceForRentExemption(165));
-  const needed = rent + SIGNATURE_FEE_LAMPORTS + BigInt(swap.prioritizationFeeLamports ?? 0);
-  const solHeld = BigInt(before[0]?.lamports ?? 0);
-  if (solHeld < needed) throw new Refusal(402, `This wallet holds ${formatAmount(solHeld, 9)} SOL; the sale needs ${formatAmount(needed, 9)} SOL for network fees${rent ? " and a USDC token account" : ""}. Add SOL before selling.`);
+  const rent = before[1] ? 0n : BigInt(await connection.getMinimumBalanceForRentExemption(165));
 
-  const simulation = await connection.simulateTransaction(transaction, {
-    sigVerify: false,
-    replaceRecentBlockhash: false,
-    commitment: "confirmed",
-    accounts: { encoding: "base64", addresses: watched.map((key) => key.toBase58()) },
-  });
-  if (simulation.value.err) {
-    const logs = (simulation.value.logs ?? []).filter((line) => /error|failed/i.test(line)).slice(-3).join(" | ");
-    throw new Refusal(422, `Simulation on mainnet refused this sale: ${JSON.stringify(simulation.value.err)}${logs ? `. ${logs}` : ""}`);
-  }
+  const { quote, swap, transaction, simulation, receivedAt } = await routeAndSimulate(
+    config, connection, wallet, sellQuoteParams(mint, inAtoms, feeBps), feeAccount, watched, `selling ${lot.instrument.symbol ?? mint}`,
+    async (built) => {
+      const needed = rent + SIGNATURE_FEE_LAMPORTS + BigInt(built.prioritizationFeeLamports ?? 0);
+      const solHeld = BigInt(before[0]?.lamports ?? 0);
+      if (solHeld < needed) throw new Refusal(402, `This wallet holds ${formatAmount(solHeld, 9)} SOL; the sale needs ${formatAmount(needed, 9)} SOL for network fees${rent ? " and a USDC token account" : ""}. Add SOL before selling.`);
+    },
+  );
+  const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
   const after = simulation.value.accounts ?? [];
   const accountData = (index: number) => {
     const data = after[index]?.data;
