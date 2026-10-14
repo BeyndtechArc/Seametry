@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepRegister, StepTrack, Stamp, type RegisterStep } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
+import { Callout } from "@seametry/ui/callout";
 import { Identity } from "@seametry/ui/list";
 import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitByWeights, splitEvenly } from "@/lib/amount";
@@ -386,11 +387,7 @@ export function AllocationFlow({
 
   return (
     <div className={styles.flow}>
-      {unavailable ? (
-        <p className={styles.unavailable} role="note">
-          {unavailable}
-        </p>
-      ) : null}
+      {unavailable ? <Callout tone="blocked" title="Purchases are closed here">{unavailable}</Callout> : null}
 
       {!fixedTemplate ? <StepTrack label="Allocation steps" steps={steps} current={step} onStep={(index) => !started && setStep(index)} /> : null}
 

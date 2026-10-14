@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Digest, FilterBar, IconButton, LotMark, RouteAction, Rule, Stamp, TextAction, type GradeName } from "@seametry/ui";
 import { Identity, List, ListCell, ListRow } from "@seametry/ui/list";
 import { Tabs } from "@seametry/ui/tabs";
+import { Callout } from "@seametry/ui/callout";
+import { DepthChart } from "./depth-chart";
 import { Icon } from "@seametry/ui/icons";
 import type { Admission } from "@/lib/allocation/admissions";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
@@ -12,7 +14,6 @@ import type {
   InstrumentAssayResponse,
   TerminalProblem,
 } from "@/lib/terminal-contract";
-import { formatAmount } from "@/lib/amount";
 import type { CatalogueInstrument, CatalogueResponse, CatalogueState } from "@/lib/instrument-catalogue-contract";
 import { shortIssuer } from "@/lib/issuers";
 import { PageHeader } from "../_shell/page-header";
@@ -55,20 +56,14 @@ export function useTerminalResource<T>(path: string) {
 
 function Boundary({ problem }: { problem: TerminalProblem }) {
   return (
-    <section className={styles.boundary} role="status">
-      <div className={styles.boundaryTitle}>
-        <span>Gateway boundary</span>
-        <h2>{problem.title}</h2>
-      </div>
-      <div className={styles.boundaryCopy}>
-        <p>{problem.detail}</p>
-        <code>HTTP {problem.status}</code>
-      </div>
-      <div className={styles.boundaryActions}>
-        <RouteAction href="/app/alloys">Inspect live Alloys</RouteAction>
-        <TextAction href="/app">Return to the desk</TextAction>
-      </div>
-    </section>
+    <Callout
+      tone="blocked"
+      title={problem.title}
+      action={<><RouteAction href="/app/alloys">Inspect live Alloys</RouteAction><TextAction href="/app">Return to the desk</TextAction></>}
+    >
+      <p>{problem.detail}</p>
+      <p>The Gateway answered HTTP {problem.status}.</p>
+    </Callout>
   );
 }
 
@@ -90,14 +85,6 @@ function captureLabel(capturedAt?: string) {
     timeStyle: "short",
     timeZone: "UTC",
   }).format(captured);
-}
-
-function sourceAge(ageSeconds?: number) {
-  if (ageSeconds === undefined) return "Age unavailable";
-  if (ageSeconds < 60) return `${ageSeconds}s old`;
-  const minutes = Math.floor(ageSeconds / 60);
-  if (minutes < 60) return `${minutes}m old`;
-  return `${Math.floor(minutes / 60)}h old`;
 }
 
 const STATE_WORDS: Record<CatalogueState, string> = { available: "Available", assayed: "Assayed", listed: "Not assayed" };
@@ -123,21 +110,23 @@ export function InstrumentRegister() {
       <PageHeader
         title="Instruments"
         network="Mainnet evidence"
+        tabs={
+          <Tabs
+            label="Assay state"
+            controls="instrument-register"
+            value={state}
+            onChange={(next) => { setState(next); setPage(1); }}
+            items={[
+              { value: "available", label: "Available", count: meta?.states.available },
+              { value: "assayed", label: "Not admitted", count: meta?.states.assayed },
+              { value: "listed", label: "Not assayed", count: meta?.states.listed },
+              { value: "any", label: "All", count: meta ? meta.states.available + meta.states.assayed + meta.states.listed : undefined },
+            ]}
+          />
+        }
         info={<><p>Every listing each issuer publishes, named as the issuer wrote it into the mint. Assayed instruments carry decoded issuer powers and a policy verdict from Seametry; only Available ones can enter an Allocation.</p><p>Search does not imply an instrument passed an assay.</p></>}
       />
-      <Tabs
-        label="Assay state"
-        controls="instrument-register"
-        value={state}
-        onChange={(next) => { setState(next); setPage(1); }}
-        items={[
-          { value: "available", label: "Available", count: meta?.states.available },
-          { value: "assayed", label: "Assayed, not admitted", count: meta?.states.assayed },
-          { value: "listed", label: "Not assayed", count: meta?.states.listed },
-          { value: "any", label: "All", count: meta ? meta.states.available + meta.states.assayed + meta.states.listed : undefined },
-        ]}
-      />
-      <p className={styles.registerMeta}>{meta ? `${meta.total.toLocaleString()} listings published by Backpack Securities and Backed Finance, read from their mints on ${captureLabel(meta.capturedAt)} UTC.` : "Reading the captured issuer listings."}</p>
+      <div className={styles.registerToolbar}>
       <FilterBar
         searchLabel="Search symbol, name or mint"
         query={query}
@@ -152,9 +141,10 @@ export function InstrumentRegister() {
           options: [{ value: "any", label: "Both issuers" }, ...(meta?.issuers ?? []).map((name) => ({ value: name, label: name }))],
         }]}
       />
+      </div>
       {catalogue.loading ? <LoadingRegister /> : null}
       {catalogue.problem ? <Boundary problem={catalogue.problem} /> : null}
-      {catalogue.value && catalogue.value.data.length === 0 ? <p className={styles.quietState} role="status">{query.trim() ? `Nothing in this view matches "${query.trim()}".` : "No listing is in this state."}</p> : null}
+      {catalogue.value && catalogue.value.data.length === 0 ? <Callout title={query.trim() ? `Nothing in this view matches "${query.trim()}"` : "No listing is in this state"}>Search covers symbol, company name and mint. Try All, or the other issuer.</Callout> : null}
       {catalogue.value && catalogue.value.data.length > 0 ? (
         <div id="instrument-register">
           <List label="Instruments" head={head} className={columns}>
@@ -167,6 +157,7 @@ export function InstrumentRegister() {
               </ListRow>
             ))}
           </List>
+          <p className={styles.registerMeta}>{meta ? `${meta.total.toLocaleString()} listings published by Backpack Securities and Backed Finance, read from their mints on ${captureLabel(meta.capturedAt)} UTC.` : null}</p>
           {meta && meta.pages > 1 ? (
             <nav className={styles.cataloguePager} aria-label="Instrument pages">
               <IconButton icon="back" label="Previous page" disabled={meta.page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))} />
@@ -191,18 +182,15 @@ function ListedAssay({ listing }: { listing: CatalogueInstrument }) {
       </div>
       <dl className={styles.assayFacts}>
         <div><dt>Issuer</dt><dd>{listing.issuer}</dd></div>
-        <div><dt>Assay state</dt><dd>Pending</dd></div>
         <div><dt>Listing captured</dt><dd><time dateTime={listing.capturedAt}>{captureLabel(listing.capturedAt)} UTC</time></dd></div>
         <div><dt>Solana slot</dt><dd>{listing.slot}</dd></div>
       </dl>
     </section>
-    <section className={styles.assaySection}>
-      <header className={styles.sectionHeading}>
-        <span>Listing boundary</span>
-        <h2>Not assayed yet</h2>
-        <p>This instrument appears in the captured issuer catalogue, but Seametry has not persisted its registry powers, policy verdict and executable depth. It cannot enter an Allocation until those records exist.</p>
-      </header>
-    </section>
+    <div className={styles.assayNotice}>
+      <Callout tone="caution" title="Not assayed yet">
+        The issuer lists this instrument, but Seametry has not decoded its issuer powers, judged it under policy, or measured its depth. It cannot enter an Allocation until it has.
+      </Callout>
+    </div>
   </>;
 }
 
@@ -212,7 +200,6 @@ function CapturedAssay({ admission, grade, identity }: { admission: Admission; g
   const instrument = admission.instrument;
   const decision = admission.capacity_decision;
   const capturedAt = instrument.capture.captured_at;
-  const knownDecision = decision.decision === "ALLOW" || decision.decision === "WARN" || decision.decision === "BLOCK";
 
   return (
     <>
@@ -234,22 +221,55 @@ function CapturedAssay({ admission, grade, identity }: { admission: Admission; g
         </dl>
       </section>
 
+      <PolicyAndPowers
+        decision={decision}
+        stampReason="Decision from the captured Allocation inputs."
+        powers={instrument.prerogatives.map((prerogative) => prerogative.sentence)}
+        policyLead={`From the Allocation evidence under policy ${decision.policy_version}. This is not a live Gateway assay; a purchase preview takes a fresh quote, policy check and simulation.`}
+        provenance={`Decoded from the captured instrument at slot ${instrument.capture.slot}. The Gateway holds no newer observation.`}
+      />
+    </>
+  );
+}
+
+type Reason = { code: string; fact: string };
+type Decision = { decision: string; policy_version: string; input_digest: string; reasons: Reason[] };
+
+/**
+ * The policy's verdict and the issuer's powers, each stated once. The policy
+ * cites every issuer power as a reason in the same words as the decoded
+ * power, so the verdict lists only the reasons beyond them, and each power
+ * carries the code the policy filed it under.
+ */
+function PolicyAndPowers({ decision, stampReason, powers, unknownExtensions, provenance, policyLead }: {
+  decision: Decision;
+  stampReason: string;
+  powers: string[];
+  unknownExtensions?: number[];
+  provenance: string;
+  policyLead: string;
+}) {
+  const codeOf = new Map(decision.reasons.map((reason) => [reason.fact, reason.code]));
+  const beyond = decision.reasons.filter((reason) => !powers.includes(reason.fact));
+  const known = decision.decision === "ALLOW" || decision.decision === "WARN" || decision.decision === "BLOCK";
+  return (
+    <>
       <section className={styles.assaySection}>
         <header className={styles.sectionHeading}>
           <span>01 / Policy</span>
-          <h2>Captured decision</h2>
-          <p>From the Allocation evidence under policy {decision.policy_version}. This is not a live Gateway assay. Preview a purchase for a fresh quote, policy check and simulation.</p>
+          <h2>Admissibility</h2>
+          <p>{policyLead}</p>
         </header>
         <div className={styles.decisionPanel}>
           <div>
-            {knownDecision ? <Stamp kind={decision.decision.toLowerCase() as "allow" | "warn" | "block"} reason="Decision from the captured Allocation inputs." /> : <span>{decision.decision}</span>}
+            {known ? <Stamp kind={decision.decision.toLowerCase() as "allow" | "warn" | "block"} reason={stampReason} /> : <span>{decision.decision}</span>}
           </div>
           <dl>
             <div><dt>Policy</dt><dd>{decision.policy_version}</dd></div>
             <div><dt>Input digest</dt><dd><Digest value={decision.input_digest} /></dd></div>
           </dl>
           <ul>
-            {decision.reasons.map((reason) => (
+            {beyond.length === 0 ? <li><p>No reason beyond the issuer powers below.</p></li> : beyond.map((reason) => (
               <li key={`${reason.code}-${reason.fact}`}>
                 <code>{reason.code}</code>
                 <p>{reason.fact}</p>
@@ -263,13 +283,23 @@ function CapturedAssay({ admission, grade, identity }: { admission: Admission; g
         <header className={styles.sectionHeading}>
           <span>02 / Registry</span>
           <h2>Issuer powers</h2>
-          <p>Decoded from the captured instrument at slot {instrument.capture.slot}. A newer issuer observation is not available from the Gateway.</p>
+          <p>{provenance}</p>
         </header>
         <ol className={styles.powerRegister}>
-          {instrument.prerogatives.map((prerogative, index) => (
-            <li key={`${index}-${prerogative.sentence}`}><span>{String(index + 1).padStart(2, "0")}</span><p>{prerogative.sentence}</p></li>
+          {powers.map((sentence, index) => (
+            <li key={`${index}-${sentence}`}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <p>{sentence}</p>
+              {codeOf.get(sentence) ? <code>{codeOf.get(sentence)}</code> : null}
+            </li>
           ))}
         </ol>
+        {unknownExtensions ? (
+          <div className={styles.unknownRegister}>
+            <span>Unknown extensions</span>
+            <p>{unknownExtensions.length ? unknownExtensions.join(", ") : "None in this capture"}</p>
+          </div>
+        ) : null}
       </section>
     </>
   );
@@ -333,77 +363,31 @@ export function InstrumentAssay({ mint, identity, listing, admission, grade, can
             </div>
           ) : null}
 
-          <section className={styles.assaySection}>
-            <header className={styles.sectionHeading}>
-              <span>01 / Policy</span>
-              <h2>Admissibility</h2>
-              <p>Produced by policy {decision.policy_version} from the recorded instrument inputs.</p>
-            </header>
-            <div className={styles.decisionPanel}>
-              <div>
-                <Stamp kind={decision.decision.toLowerCase() as "allow" | "warn" | "block"} reason="Decision produced from the recorded input digest." />
-                <b>{decision.decision}</b>
-              </div>
-              <dl>
-                <div><dt>Policy</dt><dd>{decision.policy_version}</dd></div>
-                <div><dt>Input digest</dt><dd><Digest value={decision.input_digest} /></dd></div>
-              </dl>
-              <ul>
-                {decision.reasons.map((reason) => (
-                  <li key={`${reason.code}-${reason.fact}`}>
-                    <code>{reason.code}</code>
-                    <p>{reason.fact}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
+          <PolicyAndPowers
+            decision={decision}
+            stampReason="Decision produced from the recorded input digest."
+            powers={instrument.prerogatives.map((prerogative) => prerogative.sentence)}
+            unknownExtensions={instrument.unknown_extensions}
+            policyLead={`Produced by policy ${decision.policy_version} from the recorded instrument inputs.`}
+            provenance={`Decoded from the instrument captured at slot ${instrument.capture.slot}. Unknown extension numbers stay visible.`}
+          />
 
           <section className={styles.assaySection}>
             <header className={styles.sectionHeading}>
-              <span>02 / Liquidity</span>
+              <span>03 / Liquidity</span>
               <h2>Buy depth</h2>
-              <p>Stored input sizes from the Gateway. Sell depth remains named in the response boundary.</p>
+              <p>What a buy gives up at each stored USDC size, as the Gateway measured it.</p>
             </header>
-            <div className={styles.tableViewport}>
-              <table className={styles.depthTable}>
-                <thead><tr><th>USDC input size</th><th>State</th><th>Shortfall</th><th>Source and age</th></tr></thead>
-                <tbody>
-                  {value.depth.data.points.map((point) => (
-                    <tr key={`${point.size.atoms}-${point.size.scale}`}>
-                      <td>{formatAmount(point.size.atoms, point.size.scale)} USDC</td>
-                      <td>{point.availability === "available" ? "Available" : "No route"}</td>
-                      <td>{point.shortfall_bps === undefined ? "Not measured" : `${point.shortfall_bps} bps`}</td>
-                      <td>{point.provider_code ?? "Source unavailable"}, {sourceAge(point.age_seconds)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DepthChart points={value.depth.data.points} />
             {value.depth.meta.missing?.length ? (
-              <div className={styles.missingRegister}>
-                {value.depth.meta.missing.map((missing) => (
-                  <p key={`${missing.part}-${missing.reason}`}><b>{missing.part}</b><code>{missing.reason}</code></p>
-                ))}
+              <div className={styles.assayNotice}>
+                <Callout title="Not measured">
+                  {value.depth.meta.missing.map((missing) => (
+                    <p key={`${missing.part}-${missing.reason}`}>{missing.part === "depth.sell" ? "Sell depth" : missing.part}: <code>{missing.reason}</code></p>
+                  ))}
+                </Callout>
               </div>
             ) : null}
-          </section>
-
-          <section className={styles.assaySection}>
-            <header className={styles.sectionHeading}>
-              <span>03 / Registry</span>
-              <h2>Issuer powers</h2>
-              <p>Decoded sentences from the instrument capture. Unknown extension numbers remain visible.</p>
-            </header>
-            <ol className={styles.powerRegister}>
-              {instrument.prerogatives.map((prerogative, index) => (
-                <li key={`${index}-${prerogative.sentence}`}><span>{String(index + 1).padStart(2, "0")}</span><p>{prerogative.sentence}</p></li>
-              ))}
-            </ol>
-            <div className={styles.unknownRegister}>
-              <span>Unknown extensions</span>
-              <p>{instrument.unknown_extensions.length ? instrument.unknown_extensions.join(", ") : "None in this capture"}</p>
-            </div>
           </section>
         </>
       ) : null}

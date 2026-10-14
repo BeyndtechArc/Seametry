@@ -8,6 +8,7 @@ import { Id, solscan } from "@seametry/ui/id";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { StatusMark, Timeline, TimelineItem, type MarkState } from "@seametry/ui/timeline";
 import { Toast, ToastRegion } from "@seametry/ui/toast";
+import { Callout } from "@seametry/ui/callout";
 import { formatAmount } from "@/lib/amount";
 import { logoSrc } from "@/lib/logo-src";
 import { deriveState, endedAt, hasSignature, headline, isTerminal, LEG_WORDS, nextAction, outcomeLine, progressLine, retryWeights, type Execution, type ExecutionState, type Leg, type Quantity } from "@/lib/execution/record";
@@ -84,7 +85,7 @@ export function ActivityList({ records, focus }: { records: Execution[]; focus?:
   useEffect(() => {
     focused.current?.scrollIntoView({ block: "nearest" });
   }, [focus]);
-  if (records.length === 0) return <p className={styles.empty}>Nothing bought or sold from this browser yet.</p>;
+  if (records.length === 0) return <Callout title="Nothing bought or sold from this browser yet">Each purchase and sale you sign here is kept with what it spent, what it received and its signature.</Callout>;
   return (
     <div className={styles.list}>
       {records.map((execution) => {

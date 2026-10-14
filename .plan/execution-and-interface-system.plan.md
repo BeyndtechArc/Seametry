@@ -348,9 +348,16 @@ commit read from GitHub, each job reported.
 - Phases 1 to 3 (engine, Toast, Activity; buys, trades and Sell All on it): PR #27.
 - Phase 7 (identity and logos), and phase 6 for Instruments, Holdings and the
   builder rows, with List, Identity, Tabs and Icon button: PR #28, stacked on #27.
+- Also in #28: Callout (inline alerts with a tone cell) for every condition
+  that was a bare paragraph, the Depth chart on an instrument's assay, issuer
+  powers stated once, and view Tabs drawn as the page header's edge.
 - Left: Strike, Melt and Delivery on the engine (phase 4); Sheet, Dialog and
   the Button family merged as section 4 sets out (phase 5); Baskets, Alloys,
-  Sponsor and Overview onto the shared parts (phase 6).
+  Sponsor and Overview onto the shared parts (phase 6); empty-state
+  illustrations drawn as small engraved figures with the anatomy skill (a
+  Figure each, 30 to 90 minutes), starting with an empty Activity, an empty
+  Holdings and an unassayed instrument (phase 8, suggested by Storm on 14
+  October 2026).
 
 ## 7. Decisions
 

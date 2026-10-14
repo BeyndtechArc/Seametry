@@ -64,14 +64,6 @@
   line-height: 1.5;
 }
 
-.problem {
-  margin: 0;
-  padding: var(--sm-space-3) 0;
-  border-top: 0.5px solid var(--sm-line-strong);
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-small);
-}
-
 .quote a,
 .notice a {
   color: var(--sm-accent-touchText);
@@ -191,4 +183,10 @@
 
 .allocationName small {
   color: var(--sm-text-secondary);
+}
+
+.footnote {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
 }

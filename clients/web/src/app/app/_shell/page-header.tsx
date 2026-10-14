@@ -24,6 +24,7 @@ export function PageHeader({
   titleId,
   info,
   network,
+  tabs,
   children,
 }: {
   title: string;
@@ -31,10 +32,12 @@ export function PageHeader({
   /** What the page holds or assumes, behind an Info note beside the title. */
   info?: ReactNode;
   network: Network;
+  /** The page's view Tabs, drawn as the header's bottom edge so one rule closes both. */
+  tabs?: ReactNode;
   children?: ReactNode;
 }) {
   return (
-    <header className={styles.pageHeader}>
+    <header className={styles.pageHeader} data-tabs={tabs ? "" : undefined}>
       <div className={styles.titleLine}>
         <div className={styles.titleRow}>
           <h1 id={titleId}>{title}</h1>
@@ -43,6 +46,7 @@ export function PageHeader({
       </div>
       <NetworkBadge network={network} />
       {children ? <div className={styles.links}>{children}</div> : null}
+      {tabs ? <div className={styles.tabs}>{tabs}</div> : null}
     </header>
   );
 }

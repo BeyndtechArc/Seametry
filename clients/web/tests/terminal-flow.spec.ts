@@ -42,7 +42,8 @@ test("the instrument register is one list that opens one assay", async ({ page }
         admissibility: {
           data: {
             decision: "BLOCK",
-            reasons: [{ code: "UNKNOWN_EXTENSION", severity: "BLOCK", fact: "Extension 91 is not decoded." }],
+            // The policy cites each issuer power in the power's own words, as the live engine does.
+            reasons: [{ code: "UNKNOWN_EXTENSION", severity: "BLOCK", fact: "Extension 91 is not decoded." }, { code: "ISSUER_CAN_FREEZE", severity: "WARN", fact: "The issuer can freeze an account holding this instrument." }],
             policy_version: "policy-2026.09.2",
             input_digest: "047d10ac031522499c5743457489566932288415e96009e380b2fb18a981e109",
           },
@@ -89,12 +90,19 @@ test("the instrument register is one list that opens one assay", async ({ page }
   await expect(page).toHaveURL(`/app/instruments/${aapl.instrument.mint}`);
   await expect(page.getByRole("heading", { level: 1, name: "AAPLx" })).toBeVisible();
   await expect(page.getByText("Apple", { exact: true })).toBeVisible();
-  await expect(page.getByText("BLOCK", { exact: true })).toBeVisible();
+  // The decision is stated once, by its stamp.
+  await expect(page.getByText("Block", { exact: true })).toHaveCount(1);
+  await expect(page.getByText("BLOCK", { exact: true })).toHaveCount(0);
   await expect(page.getByText("policy-2026.09.2", { exact: true })).toBeVisible();
   await expect(page.getByText("Extension 91 is not decoded.", { exact: true })).toBeVisible();
-  await expect(page.getByRole("row", { name: /10\.000000 USDC/ })).toContainText("35 bps");
-  await expect(page.getByRole("row", { name: /25\.000000 USDC/ })).toContainText("No route");
-  await expect(page.getByText("SELL_DEPTH_NOT_MEASURED", { exact: true })).toBeVisible();
+  // Each issuer power appears once, under Issuer powers, with the code the policy filed it under.
+  await expect(page.getByText("The issuer can freeze an account holding this instrument.", { exact: true })).toHaveCount(1);
+  await expect(page.getByRole("listitem").filter({ hasText: "The issuer can freeze an account" })).toContainText("ISSUER_CAN_FREEZE");
+  const depth = page.getByRole("list", { name: "Shortfall by buy size" }).getByRole("listitem");
+  await expect(depth.filter({ hasText: "10 USDC" })).toContainText("35 bps");
+  await expect(depth.filter({ hasText: "25 USDC" })).toContainText("No route");
+  await expect(page.getByRole("figure")).toContainText("Jupiter quotes, 17s old");
+  await expect(page.getByRole("note").filter({ hasText: "Sell depth" })).toContainText("SELL_DEPTH_NOT_MEASURED");
   expect(browserErrors).toEqual([]);
 });
 
@@ -108,6 +116,15 @@ test("the instrument catalogue names every listing from its mint and calls none 
   expect(agilent).toMatchObject({ name: "Agilent Technologies", state: "listed" });
   const everything = await (await request.get("/api/instruments/catalogue?state=bogus")).json();
   expect(everything.detail).toContain("Expected ?state= one of any, available, assayed, listed");
+});
+
+test("every assay tab fits a phone without hiding one off the edge", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/app/instruments");
+  const tabs = page.getByRole("tablist", { name: "Assay state" });
+  await expect(tabs.getByRole("tab")).toHaveCount(4);
+  const [scroll, client] = await tabs.evaluate((element) => [element.scrollWidth, element.clientWidth]);
+  expect(scroll).toBeLessThanOrEqual(client);
 });
 
 test("the tabs count each assay state and drop a column that would repeat on every row", async ({ page }) => {

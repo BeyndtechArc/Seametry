@@ -101,8 +101,7 @@
   line-height: 1.6;
 }
 
-.boundary code,
-.missingRegister code {
+.boundary code {
   color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-micro);
@@ -128,38 +127,6 @@
 .sectionHeading p {
   color: var(--sm-text-secondary);
   line-height: 1.55;
-}
-
-.tableViewport {
-  /* The containing block for .srOnly labels inside a cell. Without it they
-     position against the page, escape this scroller, and widen a phone
-     viewport to the table's full width. */
-  position: relative;
-  overflow-x: auto;
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.depthTable {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--sm-text-secondary);
-  text-align: left;
-}
-
-.depthTable th {
-  padding: var(--sm-space-4) var(--sm-space-5);
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.depthTable td {
-  min-width: var(--sm-space-12);
-  padding: var(--sm-space-6) var(--sm-space-5);
-  border-top: 0.5px solid var(--sm-line-rule);
-  background: var(--sm-surface-sheet);
-  vertical-align: top;
 }
 
 /* The Alloys register: one balanced row per Alloy, identity first, then the
@@ -305,11 +272,6 @@
   font-size: var(--sm-font-size-small);
   color: var(--sm-text-secondary);
   font-variant-numeric: tabular-nums lining-nums;
-}
-
-.quietState {
-  margin-top: var(--sm-space-6);
-  color: var(--sm-text-secondary);
 }
 
 .backLink {
@@ -822,21 +784,6 @@
   line-height: 1.55;
 }
 
-.missingRegister {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sm-space-5) var(--sm-space-8);
-  padding: var(--sm-space-5) 0;
-}
-
-.missingRegister p {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sm-space-4);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-}
-
 .powerRegister {
   border-top: 0.5px solid var(--sm-line-strong);
   border-bottom: 0.5px solid var(--sm-line-rule);
@@ -844,7 +791,8 @@
 
 .powerRegister li {
   display: grid;
-  grid-template-columns: var(--sm-space-9) minmax(0, 1fr);
+  grid-template-columns: var(--sm-space-9) minmax(0, 1fr) auto;
+  align-items: baseline;
   gap: var(--sm-space-6);
   padding: var(--sm-space-5) 0;
   border-top: 0.5px solid var(--sm-line-rule);
@@ -905,8 +853,34 @@
   .registerFour { grid-template-columns: minmax(0, 1fr) auto auto; }
 }
 
+.registerToolbar {
+  margin: var(--sm-space-7) 0 var(--sm-space-5);
+}
+
 .registerMeta {
-  margin: var(--sm-space-5) 0 0;
+  margin: var(--sm-space-4) 0 0;
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
+}
+
+/* The policy code a power was filed under, quiet beside its sentence. */
+.powerRegister code {
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+  letter-spacing: var(--sm-font-tracking-serial);
+}
+
+@media (max-width: 768px) {
+  .powerRegister li {
+    grid-template-columns: var(--sm-space-9) minmax(0, 1fr);
+  }
+
+  .powerRegister code {
+    grid-column: 2;
+  }
+}
+
+.assayNotice {
+  margin-top: var(--sm-space-6);
 }

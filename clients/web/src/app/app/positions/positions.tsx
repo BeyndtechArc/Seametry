@@ -6,6 +6,8 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { ContinueAction, Field, IconButton, Key, LotMark, QuietAction, QuoteBlock, StepTrack } from "@seametry/ui";
 import { Identity, List, ListCell, ListRow } from "@seametry/ui/list";
 import { Tabs } from "@seametry/ui/tabs";
+import { Callout } from "@seametry/ui/callout";
+import { PageHeader } from "../_shell/page-header";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { formatAmount, formatBalance, parseAmount } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
@@ -178,8 +180,11 @@ export function Positions() {
   const held = reading?.wallet === wallet ? reading : undefined;
   return (
     <div className={styles.workspace}>
-      {!wallet ? <p className={styles.notice}>Connect the wallet that holds your instruments. Connecting buys or sells nothing.</p> : (
-        <>
+      <PageHeader
+        title="Holdings"
+        network="Mainnet"
+        info={<p>These quantities are read from your connected wallet on mainnet. A sale is a separate swap into USDC, not an Alloy Melt or an issuer redemption.</p>}
+        tabs={wallet ? (
           <Tabs
             label="Holdings"
             controls="holdings-view"
@@ -191,6 +196,10 @@ export function Positions() {
               { value: "activity", label: "Activity", count: records.length },
             ]}
           />
+        ) : undefined}
+      />
+      {!wallet ? <Callout title="No wallet connected">Connect the wallet that holds your instruments from the header. Connecting buys or sells nothing.</Callout> : (
+        <>
           <div id="holdings-view" role="tabpanel" aria-label={VIEW_NAMES[view]} className={styles.view}>
             {view === "positions" ? <>
               <div className={styles.viewMeta}>
@@ -198,8 +207,8 @@ export function Positions() {
                 <IconButton icon="refresh" label="Read holdings again" onClick={() => void refresh(wallet)} disabled={readingBusy} />
               </div>
               {readingBusy && !held ? <p className={styles.notice} role="status">Reading mainnet token accounts for this wallet.</p> : null}
-              {readingProblem ? <p className={styles.problem} role="alert">{readingProblem}</p> : null}
-              {held && held.positions.length === 0 ? <p className={styles.notice}>This wallet holds no instruments from the Seametry register. Other wallet tokens are not shown here.</p> : null}
+              {readingProblem ? <Callout tone="blocked" title="Holdings could not be read" announce action={<QuietAction type="button" icon="refresh" onClick={() => void refresh(wallet)}>Read again</QuietAction>}>{readingProblem}</Callout> : null}
+              {held && held.positions.length === 0 ? <Callout title="Nothing from the register in this wallet">Other tokens the wallet holds are not shown here. Buy a basket or an Allocation to hold instruments Seametry has assayed.</Callout> : null}
               {held && held.positions.length > 0 ? (
                 <List label="Instruments in this wallet" head={["Instrument", "Held", "Sellable here"]} className={styles.positionColumns}>
                   {held.positions.map((item) => (
@@ -211,10 +220,10 @@ export function Positions() {
                   ))}
                 </List>
               ) : null}
-              {held && held.outsideRegister > 0 ? <p className={styles.notice}>This wallet also holds {held.outsideRegister} {held.outsideRegister === 1 ? "token" : "tokens"} outside this register, not shown here.</p> : null}
+              {held && held.outsideRegister > 0 ? <p className={styles.footnote}>This wallet also holds {held.outsideRegister} {held.outsideRegister === 1 ? "token" : "tokens"} outside this register, not shown here.</p> : null}
             </> : view === "allocations" ? <>
               <p className={styles.viewMeta}>Grouped on this device from purchases made here, capped by what the wallet holds when you sell.</p>
-              {allocations.length === 0 ? <p className={styles.notice}>No Allocation bought from this browser for this wallet.</p> : (
+              {allocations.length === 0 ? <Callout title="No Allocation bought from this browser">Allocations are grouped from purchases made on this device. A basket bought here appears with a way to sell it whole.</Callout> : (
                 <List label="Allocations" head={["Allocation", "Holds", "Bought"]} className={styles.allocationColumns}>
                   {allocations.map((allocation) => (
                     <ListRow key={allocation.id} onSelect={() => setSale({ allocation, legs: saleLegs(allocation), stage: "idle" })} label={`Sell ${allocation.name}`}>
@@ -255,7 +264,7 @@ export function Positions() {
                     );
                   })}
                 </ol>
-                {sale.problem ? <p className={styles.problem} role="alert">{sale.problem}</p> : null}
+                {sale.problem ? <Callout tone="blocked" announce>{sale.problem}</Callout> : null}
               </div>
             ) : null}
           </ModalSheet>
@@ -295,7 +304,7 @@ export function Positions() {
                   <QuoteBlock floor={formatAmount(prepared.floorAtoms, 6)} expected={formatAmount(prepared.outAtoms, 6)} unit="USDC" fees={[{ label: `Seametry routing fee, ${formatAmount(BigInt(prepared.routingFeeBps), 2)}%`, value: `${formatAmount(prepared.routingFeeAtoms, 6)} USDC` }, { label: "Priority fee set by the route", value: `${formatAmount(prepared.priorityFeeLamports, 9)} SOL` }, { label: "Venue fees", value: "Included in expected output" }]} route={`Jupiter through ${prepared.route.join(", ")}, slot ${prepared.contextSlot}`} received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(prepared.receivedAt)) / 1000))}s`, absolute: prepared.receivedAt }} secondsLeft={remaining} />
                   <p>Simulated on mainnet for this wallet: {prepared.simulated.map((change) => `${change.atoms.startsWith("-") ? "" : "+"}${formatAmount(change.atoms, change.scale)} ${change.unit}`).join("; ")}.</p>
                 </div> : null}
-                {tradeProblem ? <p className={styles.problem} role="alert">{tradeProblem}</p> : null}
+                {tradeProblem ? <Callout tone="blocked" announce>{tradeProblem}</Callout> : null}
               </div>}
             </div> : null}
           </ModalSheet>

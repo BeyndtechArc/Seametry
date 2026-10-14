@@ -47,11 +47,6 @@
   gap: var(--sm-space-5);
 }
 
-.empty {
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-}
-
 .record {
   display: grid;
   gap: var(--sm-space-5);

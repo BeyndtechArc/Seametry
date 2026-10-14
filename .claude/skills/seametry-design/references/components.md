@@ -219,6 +219,17 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Data:** caller-owned state.
 **Rules:** the only moving mark in the system, and it moves only for a request the user started and is waiting on. Never the only carrier of meaning: a word beside it always states the same thing. `@seametry/ui/timeline`.
 
+### Callout
+**Answers:** what must I weigh before going on, and how serious is it?
+**Anatomy:** a bordered raised plate; a full-height icon cell on the left that carries the tone (note: info on the tray; caution: info on `status.warning`; blocked: X on `surface.inverse`, the BLOCK stamp's inversion; done: check on `status.success`); a title and one or two sentences filling the rest of the line; at most one action below.
+**States:** note, caution, blocked, done; announced (role alert) when the user's own action caused it, otherwise a note.
+**Rules:** every condition that changes what the reader can do (purchases closed, nothing to sell, not yet assayed, a read that failed, an empty view) is a Callout, never a bare paragraph. Never stacked more than two in one place. `@seametry/ui/callout`.
+
+### Depth chart
+**Answers:** how much does a buy give up at each size Seametry measured?
+**Anatomy:** one bar per stored USDC size on an unbroken baseline, each labelled with its exact basis points above and its size below; a size with no route is a dashed frame the full height. The caption names the source and age. Bars come in twentieths of the frame (the style policy refuses inline heights); the label carries the exact figure.
+**Rules:** neutral ink only; a shortfall is not a loss to colour. The scale never tops out below 50 bps. Used on an instrument's assay.
+
 ### Timeline
 **Answers:** what happened to each part of this request, in order, and what did each part move?
 **Anatomy:** an ordered list; each item is a Status mark joined to the next by a connector rule, a title (the constituent), a right-aligned figure (what it spent, and what it received once known), and detail below: the phase in words, the plain problem when it did not land with the raw error behind a "Technical detail" disclosure, and its Id.
