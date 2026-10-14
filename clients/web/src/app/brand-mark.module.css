@@ -7,9 +7,10 @@
   text-decoration: none;
 }
 
-/* The name over what it is. At these sizes the serial tracking makes the
-   two lines nearly one width, so they read as one block; the mark is as
-   tall as the block, never shorter than the text beside it. */
+/* The name over what it is, both quiet beside the mark, which leads: the
+   mark stands taller than the two lines together (Storm, 14 October 2026).
+   The tagline sits below the smallest type token, so it is derived from it,
+   with half the serial tracking. */
 .words {
   display: grid;
   gap: var(--sm-space-1);
@@ -18,7 +19,7 @@
 
 .words b {
   font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-s);
+  font-size: var(--sm-font-size-lead);
   font-weight: var(--sm-font-weight-regular);
   letter-spacing: var(--sm-font-tracking-title);
 }
@@ -26,14 +27,14 @@
 .words small {
   color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-ui);
-  font-size: var(--sm-font-size-micro);
+  font-size: calc(var(--sm-font-size-micro) * 0.875);
   font-weight: var(--sm-font-weight-medium);
-  letter-spacing: var(--sm-font-tracking-serial);
+  letter-spacing: calc(var(--sm-font-tracking-serial) / 2);
 }
 
 .mark {
-  width: var(--sm-space-9);
-  height: var(--sm-space-9);
+  width: calc(var(--sm-space-8) * 1.5);
+  height: calc(var(--sm-space-8) * 1.5);
 }
 
 .brand:focus-visible {
