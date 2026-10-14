@@ -410,13 +410,15 @@ test("a leg Seametry refuses to send is recorded as not sent, and nothing moved"
 
   const toasts = page.getByRole("region", { name: "Requests in progress" });
   await expect(toasts).toContainText("Nothing bought: Custom allocation");
-  await expect(toasts).toContainText("Nothing changed hands and nothing was charged.");
+  // Both legs share one reason, so the toast says it rather than pointing elsewhere.
+  await expect(toasts).toContainText("Nothing changed hands. The transaction was changed after it was approved");
   // A refused leg is final, so the chain is never asked about it.
   expect(asked).toHaveLength(0);
   await toasts.getByRole("button", { name: /show in Activity/ }).click();
   const activity = page.getByRole("dialog", { name: "Activity" });
   await expect(activity.getByText("Not sent", { exact: true })).toHaveCount(2);
-  await expect(activity.getByText("The transaction was changed after it was approved", { exact: false })).toHaveCount(2);
+  // Once on each leg; the record's outcome sentence states it once more for both.
+  await expect(activity.getByRole("listitem").getByText("The transaction was changed after it was approved", { exact: false })).toHaveCount(2);
   await expect(page.getByRole("button", { name: "Buy allocation" })).toBeEnabled();
 });
 

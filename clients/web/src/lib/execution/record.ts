@@ -176,13 +176,35 @@ export function outcomeLine(execution: Execution, now: number): string {
     case "settled":
       return execution.legs.length === 1 ? `The ${leg} landed.` : `All ${execution.legs.length} ${leg}s landed.`;
     case "partly-settled":
-      return `${landed} landed. ${missed} did not, and moved nothing but any network fee shown below.`;
+      return `${landed} landed; ${missed} did not. ${missedAccount(execution)}`;
     case "nothing-moved":
-      return execution.legs.some((entry) => entry.phase === "failed")
-        ? "Nothing changed hands. A rejected transaction still paid its network fee."
-        : "Nothing changed hands and nothing was charged.";
+      return `Nothing changed hands. ${missedAccount(execution)}`;
   }
 }
+
+/**
+ * Why the legs that did not land did not, in one sentence when they share a
+ * reason, and what that cost. Only a leg that failed on chain paid anything:
+ * one never sent, or never included, cost nothing.
+ */
+function missedAccount(execution: Execution): string {
+  const missed = execution.legs.filter((leg) => leg.phase !== "landed");
+  const charged = missed.some((leg) => leg.phase === "failed");
+  const cost = charged ? "A rejected transaction still paid its network fee." : "Nothing was charged for them.";
+  const reasons = [...new Set(missed.map((leg) => leg.problem?.plain).filter(Boolean))];
+  if (reasons.length === 1 && missed.every((leg) => leg.problem)) return `${reasons[0]} ${charged ? cost : ""}`.trim();
+  const ways = [...new Set(missed.map((leg) => MISSED_WAYS[leg.phase]))];
+  return `${ways.length === 1 ? `${missed.length === 1 ? "It" : "They"} ${ways[0]}` : "Each ended its own way"}; Activity has each reason. ${cost}`;
+}
+
+const MISSED_WAYS: Record<LegPhase, string> = {
+  signed: "were still sending",
+  sent: "were still confirming",
+  landed: "landed",
+  failed: "were rejected on chain",
+  dropped: "never landed before their deadline",
+  refused: "were not sent",
+};
 
 export type NextAction =
   | { kind: "view-holdings" }

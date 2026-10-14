@@ -199,7 +199,7 @@ test("a sale the network dropped says nothing moved and offers to sell again", a
   await sheet.getByRole("button", { name: "Sign sale" }).click();
   const toasts = page.getByRole("region", { name: "Requests in progress" });
   await expect(toasts).toContainText("Nothing sold: AMZNx", { timeout: 10_000 });
-  await expect(toasts).toContainText("Nothing changed hands and nothing was charged.");
+  await expect(toasts).toContainText("Nothing changed hands. Its deadline passed before mainnet included it");
   await expect(toasts.getByRole("link", { name: "Sell again" })).toHaveAttribute("href", "/app/positions");
   await page.getByRole("tab", { name: /^Activity/ }).click();
   await expect(page.getByRole("tabpanel", { name: "Activity" })).toContainText("Its deadline passed before mainnet included it");
