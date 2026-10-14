@@ -16,7 +16,7 @@ export function preparedLeg(overrides: Record<string, unknown> = {}) {
     mint: "unset", symbol: "unset",
     transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
     expiresAt: new Date(Date.now() + 60_000).toISOString(), receivedAt: new Date().toISOString(),
-    inAtoms: "1000000", inScale: 6, outAtoms: "1", floorAtoms: "1", outScale: 6, lastValidBlockHeight: 1_000,
+    inAtoms: "1000000", inScale: 6, outAtoms: "1", floorAtoms: "1", outScale: 6, lastValidBlockHeight: 1_000, landing: "rpc", tipLamports: "0",
     routingFeeBps: 20, routingFeeAtoms: "2000", priorityFeeLamports: "0", route: ["Test route"], contextSlot: 1, simulated: [],
     ...overrides,
   };

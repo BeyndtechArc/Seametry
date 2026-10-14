@@ -72,7 +72,7 @@ test("a sale steps from amount to review in the sheet, then hands over to the to
   } }));
   await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: preparedLeg({
     inAtoms: "5000000", inScale: lot.decimals, outAtoms: "1000000", floorAtoms: "990000", routingFeeBps: 25, routingFeeAtoms: "2500", priorityFeeLamports: "215264",
-    simulated: [{ atoms: "1000000", scale: 6, unit: "USDC" }],
+    simulated: [{ atoms: "1000000", scale: 6, unit: "USDC" }], landing: "sender", tipLamports: "5000",
   }) }));
   await acceptSubmits(page);
   await answerChain(page, () => ({ phase: "landed", changes: [{ mint: USDC_MINT, atoms: "1000000", scale: 6 }] }));
@@ -89,6 +89,9 @@ test("a sale steps from amount to review in the sheet, then hands over to the to
   await sheet.getByRole("button", { name: "Review sale" }).click();
   await expect(sheet.getByLabel("Amount of AMZNx to sell")).toHaveCount(0);
   await expect(sheet.getByText("Simulated on mainnet for this wallet: +1.000000 USDC.")).toBeVisible();
+  // A Sender leg names its tip, and that Seametry pays it.
+  await expect(sheet.getByText("Landing tip, paid by Seametry")).toBeVisible();
+  await expect(sheet.getByText("0.000005000 SOL")).toBeVisible();
   await sheet.getByRole("button", { name: "Sign sale" }).click();
 
   await expect(sheet).toHaveCount(0);

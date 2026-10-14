@@ -1,5 +1,9 @@
 import "server-only";
 
+import bs58 from "bs58";
+import { Keypair } from "@solana/web3.js";
+import { senderEndpoint } from "./sender";
+
 export type AllocationConfig = {
   jupiterApiKey: string;
   mainnetRpcUrl: string;
@@ -7,7 +11,34 @@ export type AllocationConfig = {
   blockedCountries: string | undefined;
   /** The wallet whose USDC account receives the routing fee. */
   feeWallet: string;
+  /**
+   * Set together or not at all: the wallet that pays each leg's Sender tip
+   * and the Sender endpoint. Without them a leg is built by Jupiter's /swap
+   * and sent through the RPC, as before Sender.
+   */
+  sender?: { tipPayer: Keypair; url: string };
 };
+
+/**
+ * Helius Sender's endpoint for the RPC's own API key, which lifts Sender's
+ * rate limit from one send a second to fifty (helius.dev Sender docs, 14
+ * October 2026). HELIUS_SENDER_URL overrides it. swqos_only selects the
+ * route whose minimum tip is SENDER_TIP_LAMPORTS.
+ */
+function senderUrl(rpcUrl: string): string | undefined {
+  return senderEndpoint(rpcUrl, process.env.HELIUS_SENDER_URL);
+}
+
+/** The tip wallet from ALLOCATION_TIP_PAYER_SECRET_KEY, a base58 secret key; a malformed one is named, never echoed. */
+function tipPayer(): Keypair | undefined {
+  const secret = process.env.ALLOCATION_TIP_PAYER_SECRET_KEY?.trim();
+  if (!secret) return undefined;
+  try {
+    return Keypair.fromSecretKey(bs58.decode(secret));
+  } catch {
+    throw new Error("ALLOCATION_TIP_PAYER_SECRET_KEY is set but is not a base58 Solana secret key.");
+  }
+}
 
 /**
  * Every variable the Allocation needs, named when absent so deployment checks
@@ -33,8 +64,18 @@ export function allocationConfig(): { config: AllocationConfig } | { missing: st
       approvalSecret: required.ALLOCATION_APPROVAL_SECRET!,
       blockedCountries: process.env.ALLOCATION_BLOCKED_COUNTRIES,
       feeWallet: required.ALLOCATION_FEE_WALLET!,
+      ...sender(required.MAINNET_RPC_URL!),
     },
   };
+}
+
+function sender(rpcUrl: string): Pick<AllocationConfig, "sender"> {
+  const payer = tipPayer();
+  if (!payer && !process.env.HELIUS_SENDER_URL?.trim()) return {};
+  const url = senderUrl(rpcUrl);
+  if (!payer) throw new Error("HELIUS_SENDER_URL requires ALLOCATION_TIP_PAYER_SECRET_KEY.");
+  if (!url) throw new Error("ALLOCATION_TIP_PAYER_SECRET_KEY requires a keyed Helius MAINNET_RPC_URL or HELIUS_SENDER_URL.");
+  return { sender: { tipPayer: payer, url } };
 }
 
 /**

@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { Keypair, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { describeSplit, formatAmount, formatBalance, parseAmount, splitByWeights, splitEvenly } from "../src/lib/amount";
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { findAllocationIndex } from "../src/lib/allocation/indexes";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
-import { countryGate, failedVenueProgram, preflightRefusal, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
+import { carriesSenderTip, composeSwap, senderTipAccount } from "../src/lib/allocation/sender";
+import { SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, TRANSACTION_SIZE_LIMIT, countryGate, failedVenueProgram, preflightRefusal, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
 import { listedPositions } from "../src/lib/allocation/positions";
 import { registerTestWallet } from "./test-wallet";
 import { acceptSubmits, answerChain, preparedLeg } from "./execution-fixture";
@@ -453,7 +454,7 @@ test("a published basket buys every constituent from its record with one Key pre
   const batches: { legs: { mint: string; usdcAtoms: string }[]; planMints: string[] }[] = [];
   await page.route("**/api/allocation/prepare-batch", async (route) => {
     batches.push(route.request().postDataJSON());
-    await route.fulfill({ json: mints.map(() => preparedLeg()) });
+    await route.fulfill({ json: mints.map(() => preparedLeg({ landing: "sender", tipLamports: "5000" })) });
   });
   const submits = await acceptSubmits(page);
   await answerChain(page, () => ({ phase: "landed", changes: [] }));
@@ -498,6 +499,73 @@ test("an allocation shows its two waits before the wallet, then hands over", asy
   await expect(dialog.getByTestId("step-register")).toContainText("Approve in your wallet");
   releasePreflight();
   await expect(page.getByRole("dialog", { name: "Purchase stopped" })).toContainText("Nothing was signed or spent");
+});
+
+for (const landing of ["rpc", "sender"] as const) {
+  test(`legs landing through ${landing === "rpc" ? "the RPC are sent a second apart" : "Sender are sent together"}`, async ({ page }) => {
+    await registerTestWallet(page, { trusted: true, signs: true });
+    const symbols = ["AAPLx", "NVDAx", "AMZNx"];
+    const mints = symbols.map((symbol) => admissions.instruments.find((entry) => entry.instrument.symbol === symbol)!.instrument.mint);
+    await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: mints.map(() => preparedLeg({ landing, tipLamports: landing === "sender" ? "5000" : "0" })) }));
+    const arrivals: number[] = [];
+    await page.route("**/api/allocation/submit", (route) => {
+      arrivals.push(Date.now());
+      return route.fulfill({ json: { signature: "answered" } });
+    });
+    await answerChain(page, () => ({ phase: "sent" }));
+    await page.goto(`/app/allocation?selected=${mints.join(",")}&amount=3`);
+    await page.getByText("Connect", { exact: true }).click();
+    await page.getByRole("button", { name: "Connect Test wallet" }).click();
+    await page.getByRole("button", { name: "Buy allocation" }).click();
+    await expect.poll(() => arrivals.length, { timeout: 10_000 }).toBe(3);
+    const gaps = arrivals.slice(1).map((at, index) => at - arrivals[index]);
+    if (landing === "rpc") expect(Math.min(...gaps)).toBeGreaterThanOrEqual(1_000);
+    else expect(Math.max(...gaps)).toBeLessThan(500);
+  });
+}
+
+test("Sender's tip accounts are ten distinct mainnet addresses", () => {
+  expect(SENDER_TIP_ACCOUNTS).toHaveLength(10);
+  expect(new Set(SENDER_TIP_ACCOUNTS).size).toBe(10);
+  for (const account of SENDER_TIP_ACCOUNTS) expect(() => new PublicKey(account)).not.toThrow();
+});
+
+test("a Sender leg is the holder's transaction with Seametry's tip last, signed for by the tip wallet", () => {
+  const wallet = Keypair.generate().publicKey;
+  const tipPayer = Keypair.generate();
+  const tipAccount = senderTipAccount(3);
+  const jupiterIx = (programId: string, bytes: number) => ({ programId, accounts: [{ pubkey: wallet.toBase58(), isSigner: true, isWritable: true }], data: Buffer.alloc(bytes, 1).toString("base64") });
+  const parts = {
+    computeBudgetInstructions: [jupiterIx("ComputeBudget111111111111111111111111111111", 9)],
+    setupInstructions: [],
+    swapInstruction: jupiterIx("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4", 40),
+    addressLookupTableAddresses: [],
+  };
+  const blockhash = Keypair.generate().publicKey.toBase58();
+  const leg = composeSwap({ wallet, tipPayer: tipPayer.publicKey, tipAccount, parts, lookupTables: [], blockhash })!;
+  expect(leg).toBeDefined();
+  // The holder pays the network fee and signs first; the tip wallet is the only other signer.
+  expect(leg.message.staticAccountKeys[0].equals(wallet)).toBe(true);
+  expect(leg.message.header.numRequiredSignatures).toBe(2);
+  const keys = leg.message.staticAccountKeys;
+  const last = leg.message.compiledInstructions.at(-1)!;
+  expect(keys[last.programIdIndex].equals(SystemProgram.programId)).toBe(true);
+  expect(keys[last.accountKeyIndexes[0]].equals(tipPayer.publicKey)).toBe(true);
+  expect(keys[last.accountKeyIndexes[1]].equals(tipAccount)).toBe(true);
+  // SystemProgram transfer: a 4-byte instruction index, then the lamports as a little-endian u64.
+  expect(Buffer.from(last.data).readBigUInt64LE(4)).toBe(BigInt(SENDER_TIP_LAMPORTS));
+  expect(unlistedProgram(leg)).toBeUndefined();
+  expect(carriesSenderTip(leg, tipPayer.publicKey)).toBe(true);
+  expect(carriesSenderTip(leg, Keypair.generate().publicKey)).toBe(false);
+
+  // Partly signed for the tip wallet, the holder's slot stays empty for the wallet.
+  leg.sign([tipPayer]);
+  expect(leg.signatures[0].every((byte) => byte === 0)).toBe(true);
+  expect(leg.signatures[1].some((byte) => byte !== 0)).toBe(true);
+
+  // A route too big to carry the tip is not offered at all.
+  const oversized = { ...parts, swapInstruction: jupiterIx("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4", TRANSACTION_SIZE_LIMIT) };
+  expect(composeSwap({ wallet, tipPayer: tipPayer.publicKey, tipAccount, parts: oversized, lookupTables: [], blockhash })).toBeUndefined();
 });
 
 test("a preflight refusal is classified by what refused it", () => {
@@ -621,7 +689,7 @@ test("a remix buys at the weights the reader set, exactly, and is recorded as a 
   const batches: { legs: { mint: string; usdcAtoms: string }[] }[] = [];
   await page.route("**/api/allocation/prepare-batch", async (route) => {
     batches.push(route.request().postDataJSON());
-    await route.fulfill({ json: basket.members.map(() => preparedLeg()) });
+    await route.fulfill({ json: basket.members.map(() => preparedLeg({ landing: "sender", tipLamports: "5000" })) });
   });
   const submits = await acceptSubmits(page);
   await answerChain(page, () => ({ phase: "landed", changes: [] }));

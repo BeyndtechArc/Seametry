@@ -580,6 +580,7 @@ export function AllocationFlow({
                               fees={[
                                 { label: `Seametry routing fee, ${formatAmount(BigInt(quote.routingFeeBps), 2)}%`, value: `${formatAmount(quote.routingFeeAtoms, USDC_SCALE)} USDC` },
                                 { label: "Priority fee set by the route", value: `${formatAmount(quote.priorityFeeLamports, 9)} SOL` },
+                                ...(quote.landing === "sender" ? [{ label: "Landing tip, paid by Seametry", value: `${formatAmount(quote.tipLamports, 9)} SOL` }] : []),
                                 ...(quote.solNeededLamports ? [{ label: "SOL needed, including account opening", value: `${formatAmount(quote.solNeededLamports, 9)} SOL` }] : []),
                                 { label: "Venue fees", value: "Included in the expected output" },
                               ]}

@@ -94,6 +94,43 @@ export function preflightRefusal(message: string, logs: string[]): PreflightRefu
   return { kind: "other" };
 }
 
+/**
+ * Helius Sender's designated tip accounts on mainnet, read from the raw
+ * source of helius.dev/docs/sending-transactions/sender on 14 October 2026.
+ * A leg sent through Sender must transfer its tip to one of them.
+ */
+export const SENDER_TIP_ACCOUNTS = [
+  "4ACfpUFoaSD9bfPdeu6DBt89gB6ENTeHBXCAi87NhDEE",
+  "D2L6yPZ2FmmmTKPgzaMKdhu6EWZcTpLy1Vhx8uvZe7NZ",
+  "9bnz4RShgq1hAnLnZbP8kbgBg1kEmcJBYQq3gQbmnSta",
+  "5VY91ws6B2hMmBFRsXkoAAdsPHBJwRfBht4DXox3xkwn",
+  "2nyhqdwKcJZR2vcqCyrYsaPVdAnFoJjiksCXJ7hfEYgD",
+  "2q5pghRs6arqVjRvT5gfgWfWcHWmw1ZuCzphgd5KfWGJ",
+  "wyvPkWjVZz1M8fHQnMMCDTQDbkManefNNhweYk5WkcF",
+  "3KCKozbAaF75qEU33jtzozcJ29yJuaLJTy2jFdzUY8bT",
+  "4vieeGHPYPG2MmyPRcYjdiDmmhN3ww7hsFNap8pVN3Ey",
+  "4TQLFNWK8AovT1gFvda5jfw2oJeRMKEmw7aH6MGBJ3or",
+] as const;
+
+/**
+ * The tip each leg pays to land through Sender's SWQOS-only route, its
+ * documented minimum on 14 October 2026. Seametry's tip wallet pays it, not
+ * the holder, out of the routing fee (Storm, 14 October 2026), so it is a
+ * cost to Seametry and a disclosed line, never a charge to the wallet.
+ * Sender's other route needs 0.001 SOL a leg.
+ */
+export const SENDER_TIP_LAMPORTS = 5_000;
+
+/**
+ * Accounts a quote may use when the leg also carries the tip: the tip
+ * wallet's signature and two static keys cost 128 bytes, and a route at
+ * Jupiter's default of 64 accounts can then outgrow a transaction.
+ */
+export const SENDER_MAX_ACCOUNTS = 48;
+
+/** The packet limit a serialized transaction must fit, in bytes. */
+export const TRANSACTION_SIZE_LIMIT = 1_232;
+
 /** A sale spends token atoms and receives USDC; the USDC output pays the disclosed routing fee. */
 export function sellQuoteParams(mint: string, inAtoms: bigint, feeBps: number): URLSearchParams {
   return new URLSearchParams({

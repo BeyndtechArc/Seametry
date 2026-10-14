@@ -110,7 +110,7 @@ and CI checks for drift; this app decides nothing about admission itself.
 
 Execution runs in this app's route handlers (`src/app/api/allocation/*`,
 `src/lib/allocation/*`) under ENGINEERING_STANDARD section 11, until the Go
-Execution service exists (API.md step A7): no key held, quote expiry checked
+Execution service exists (API.md step A7): no customer key held, quote expiry checked
 when a leg is prepared and again when it is sent, a program allowlist before
 the wallet sees anything, a mainnet simulation shown before signing, and an
 approval that refuses any transaction other than the one simulated.
@@ -141,13 +141,62 @@ five are set the page says which are missing and nothing can be bought.
 - `ALLOCATION_ASSUME_COUNTRY`: local runs only, where no host sets the
   country header.
 
+### Optional Helius Sender delivery
+
+Purchases, single sales and Sell All share this delivery path. Configure
+these in the **web deployment's server environment** (Vercel for the current
+web app), not only the Go VM's `server/deploy/.env`. Never use `NEXT_PUBLIC_`.
+
+- `ALLOCATION_TIP_PAYER_SECRET_KEY`: a dedicated, low-balance Solana wallet's
+  base58 secret key. Fund it with SOL separately from the customer wallet.
+  Do not use a treasury or user key. The server signs only its fixed tip;
+  provider instructions are forbidden from accessing this wallet.
+- `HELIUS_SENDER_URL`: optional when `MAINNET_RPC_URL` is a keyed HTTPS Helius
+  RPC URL; the Sender endpoint is derived using that key. Otherwise set
+  `https://sender.helius-rpc.com/fast?api-key=YOUR_KEY&swqos_only=true`.
+  An override must be a keyed HTTPS Helius Sender `/fast` endpoint. The code
+  enforces `swqos_only=true` for its 5,000-lamport tip. Partial or malformed
+  Sender configuration fails rather than silently running without it.
+
+Redeploy the web app after setting the variables. Existing routing-fee tiers
+are unchanged. Seametry pays 0.000005 SOL per landed Sender leg from its tip
+wallet (0.000035 SOL for seven landed legs). This is an operating cost paid
+from margin, **not** an automatic conversion of USDC fees to SOL. Keep the
+wallet above its rent-exempt floor plus the tips for concurrent purchases;
+monitor and replenish it. A preparation checks one tip, not a reservation
+across all concurrent customers. A depleted wallet falls back to RPC at
+preparation; depletion after signing can still make a leg fail preflight.
+
+The customer still pays account-opening rent and Solana network fees.
+Sender legs require two signatures, a 10,000-lamport base fee rather than
+5,000, plus the quoted priority fee. Funding checks include both signatures;
+the sponsor's tip is disclosed separately and excluded from customer costs.
+
+No Sender configuration, insufficient tip balance, or a route too large for
+the 1,232-byte packet uses the existing RPC path. RPC legs in one execution
+are sent sequentially, at least 1.1 seconds apart; Sender legs can submit
+together. This pacing is per execution, not a project-wide rate limiter.
+Signed preflight, message approval, issuer policy and quote expiry remain
+enforced. Ambiguous responses keep watching the original signature; they do
+not authorize another purchase. Sender does not guarantee inclusion, make
+a basket atomic, or remove the wallet's signing requirements.
+
+Provider reference, checked 14 October 2026:
+[Helius Sender](https://www.helius.dev/docs/sending-transactions/sender).
+Offline regressions live in `tests/sender.spec.ts` and
+`tests/allocation-rules.spec.ts`. Run `npx playwright test` from this folder;
+its fixture blanks the sponsor secret and never sends a mainnet transaction.
+For the isolated Sender rules, run
+`npx playwright test --config=playwright.sender.config.ts` without a build
+or browser. Transport tests use injected responses, not a live Sender.
+
 What it can offer is whatever the snapshot admits; the snapshot is the
 record, so this file names no instruments. Offering another instrument needs
 it added to `shared/fixtures/mainnet/targets.json`, captured
 (`go run ./server/cmd/capture`), measured (`go run ./server/cmd/depth`, with
 a Jupiter key), and the snapshot regenerated.
 
-Not yet proven against mainnet from the environment that wrote it: Jupiter
-and mainnet RPC were unreachable there, so the first real prepare, sign and
-send is the first end to end run. The pure rules are tested in
-`tests/allocation-rules.spec.ts`.
+Sender delivery is verified with offline transaction and browser fixtures.
+A funded, user-approved mainnet smoke test is still required for this
+integration; these tests do not establish live inclusion rates or reproduce
+Phantom and Solflare's actual mobile signing screens.
