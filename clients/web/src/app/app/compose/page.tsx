@@ -4,7 +4,7 @@ import { admissions, blockingFact, gradeOf, isAdmitted } from "@/lib/allocation/
 import { quoteKey } from "@/lib/compose/quote-config";
 import { MAX_CONSTITUENTS } from "@/lib/hall/constants";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
-import { instrumentName } from "@/lib/instrument-names";
+import { identityOf } from "@/lib/instrument-identity";
 import { PageHeader } from "../_shell/page-header";
 import { Composer, type Candidate } from "./composer";
 
@@ -20,7 +20,8 @@ export default async function ComposePage({ searchParams }: { searchParams: Prom
   const candidates: Candidate[] = admissions.instruments.map((admission) => ({
     mint: admission.instrument.mint,
     symbol: admission.instrument.symbol ?? admission.instrument.mint,
-    name: instrumentName(admission.instrument.mint),
+    name: identityOf(admission.instrument.mint)?.name,
+    logo: identityOf(admission.instrument.mint)?.logo,
     issuer: admission.issuer,
     grade: gradeOf(admission),
     decimals: admission.decimals,
@@ -32,7 +33,6 @@ export default async function ComposePage({ searchParams }: { searchParams: Prom
   return (
     <>
       <PageHeader
-        group="Hall"
         title="Sponsor"
         network="Devnet"
         info={

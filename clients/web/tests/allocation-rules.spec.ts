@@ -255,15 +255,19 @@ test("the allocation catalogue exposes policy-issued capacity per offered lot", 
   expect(offered.every((lot) => lot.capacity_decision.input_digest.match(/^[0-9a-f]{64}$/))).toBe(true);
 });
 
-test("each stock row names its issuer and opens its own detail", async ({ page }) => {
+test("each stock row names the company once and its issuer once, and opens its own detail", async ({ page }) => {
   await page.goto("/app/allocation");
   const lots = page.getByRole("main").locator('[aria-label="Choose the constituents"] > ul > li');
   const backpack = lots.filter({ has: page.getByText("SPCX", { exact: true }) });
   const xstocks = lots.filter({ has: page.getByText("SPCXx", { exact: true }) });
-  await expect(backpack.getByText("Backpack Securities", { exact: true })).toBeVisible();
-  await expect(backpack.getByRole("link", { name: "Open SPCX assay" })).toHaveAttribute("href", /\/app\/instruments\//);
-  await expect(xstocks.getByText("Backed Finance (xStocks)", { exact: true })).toBeVisible();
-  await expect(xstocks.getByRole("link", { name: "Open SPCXx assay" })).toHaveAttribute("href", /\/app\/instruments\//);
+  // Names come from each mint's own metadata with the issuer's suffix removed.
+  await expect(backpack.getByText("SpaceX · Backpack", { exact: true })).toBeVisible();
+  await expect(xstocks.getByText("SpaceX · xStocks", { exact: true })).toBeVisible();
+  await expect(backpack.getByRole("link", { name: "SPCX assay" })).toHaveAttribute("href", /\/app\/instruments\//);
+  await expect(xstocks.getByRole("link", { name: "SPCXx assay" })).toHaveAttribute("href", /\/app\/instruments\//);
+  // Every offered row has a name, and none repeats its issuer inside it.
+  await expect(lots.getByText("No name in the mint's metadata")).toHaveCount(0);
+  await expect(lots.getByText(/Backpack Securities|xStock\b/)).toHaveCount(0);
   await expect(backpack.getByText("Warn", { exact: true })).toHaveCount(0);
 });
 
@@ -273,7 +277,7 @@ test("an allocation stock opens its captured assay when the live Gateway has no 
     route.fulfill({ status: 404, json: { title: "Not found", detail: "No live instrument record.", status: 404 } }),
   );
   await page.goto("/app/allocation");
-  const stock = page.getByRole("main").getByRole("link", { name: "Open AMD assay" });
+  const stock = page.getByRole("main").getByRole("link", { name: "AMD assay", exact: true });
   await stock.click();
   await expect(page.getByRole("heading", { level: 1, name: "AMD" })).toBeVisible();
   await expect(page.getByText("Captured allocation record", { exact: true })).toBeVisible();

@@ -14,7 +14,9 @@
     "./tokens": "./src/generated/tokens.ts",
     "./toast": "./src/toast.tsx",
     "./timeline": "./src/timeline.tsx",
-    "./id": "./src/id.tsx"
+    "./id": "./src/id.tsx",
+    "./list": "./src/list.tsx",
+    "./tabs": "./src/tabs.tsx"
   },
   "peerDependencies": {
     "react": "^19.3.0"

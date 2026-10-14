@@ -3,20 +3,22 @@ package main
 import (
 	"bytes"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"image"
+	"image/color"
+	_ "image/jpeg"
+	"image/png"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
-
-	"github.com/BeyndtechArc/Seametry/server/internal/registry"
 )
 
 // A logo is the issuer's picture of its instrument, named by the URI the
@@ -55,9 +57,14 @@ type Logo struct {
 	MetadataURI string    `json:"metadata_uri,omitempty"`
 	ImageURI    string    `json:"image_uri,omitempty"`
 	ContentType string    `json:"content_type,omitempty"`
-	Bytes       int       `json:"bytes,omitempty"`
-	SHA256      string    `json:"sha256,omitempty"`
-	Path        string    `json:"path,omitempty"`
+	// Bytes and SHA256 are of the file the issuer served, the evidence.
+	Bytes  int    `json:"bytes,omitempty"`
+	SHA256 string `json:"sha256,omitempty"`
+	// StoredBytes and StoredSHA256 are of the reduced copy kept at Path, set
+	// only when the issuer's raster was larger than the mirror keeps.
+	StoredBytes  int    `json:"stored_bytes,omitempty"`
+	StoredSHA256 string `json:"stored_sha256,omitempty"`
+	Path         string `json:"path,omitempty"`
 }
 
 // LogoManifest is the whole record, written to shared/evidence.
@@ -162,50 +169,6 @@ func plainSVG(body []byte) string {
 	}
 }
 
-// captureNames reads only the mint bytes already captured for the policy
-// snapshot. A remote metadata document cannot silently rename a listed lot.
-func captureNames(fixtureDir, manifestPath string) error {
-	targets, err := loadTargets(filepath.Join(fixtureDir, "targets.json"))
-	if err != nil {
-		return err
-	}
-	names := map[string]string{}
-	for _, target := range targets {
-		raw, err := os.ReadFile(filepath.Join(fixtureDir, target.Symbol+".json"))
-		if err != nil {
-			return fmt.Errorf("read %s fixture: %w", target.Symbol, err)
-		}
-		var fixture Fixture
-		if err := json.Unmarshal(raw, &fixture); err != nil {
-			return fmt.Errorf("parse %s fixture: %w", target.Symbol, err)
-		}
-		data, err := base64.StdEncoding.DecodeString(fixture.DataBase64)
-		if err != nil {
-			return fmt.Errorf("decode %s fixture: %w", target.Symbol, err)
-		}
-		mint, err := registry.DecodeMint(data)
-		if err != nil {
-			return fmt.Errorf("decode %s mint: %w", target.Symbol, err)
-		}
-		metadata, present, err := mint.TokenMetadata()
-		if err != nil {
-			return fmt.Errorf("read %s TokenMetadata: %w", target.Symbol, err)
-		}
-		if present && metadata.Name != "" {
-			names[fixture.Address] = metadata.Name
-		}
-	}
-	body, err := json.MarshalIndent(names, "", "  ")
-	if err != nil {
-		return err
-	}
-	if err := os.WriteFile(manifestPath, append(body, '\n'), 0o644); err != nil {
-		return fmt.Errorf("write captured names to %s: %w", manifestPath, err)
-	}
-	fmt.Printf("recorded %d captured mint names in %s\n", len(names), manifestPath)
-	return nil
-}
-
 func qualified(name xml.Name) string {
 	if name.Space == "" {
 		return name.Local
@@ -249,15 +212,27 @@ func fetchLimited(client *http.Client, uri string, limit int) ([]byte, error) {
 
 // resolveLogo follows a mint's metadata URI to the image it names and
 // returns the entry with the image bytes when one was captured.
-func resolveLogo(client *http.Client, symbol, mint string, metadata registry.TokenMetadata, hasMetadata bool) (Logo, []byte) {
-	entry := Logo{Symbol: symbol, Mint: mint}
-	if !hasMetadata || metadata.URI == "" {
+// listingToken is the part of a listing entry (go run ./server/cmd/survey
+// -listings) the mirror reads: the URI the issuer wrote into the mint.
+type listingToken struct {
+	Symbol          string `json:"symbol"`
+	Mint            string `json:"mint"`
+	MetadataURI     string `json:"metadata_uri"`
+	MetadataProblem string `json:"metadata_problem"`
+}
+
+func resolveLogo(client *http.Client, token listingToken) (Logo, []byte) {
+	entry := Logo{Symbol: token.Symbol, Mint: token.Mint}
+	if token.MetadataURI == "" {
 		entry.State, entry.Reason = LogoNoMetadata, "the mint carries no TokenMetadata URI"
+		if token.MetadataProblem != "" {
+			entry.Reason = token.MetadataProblem
+		}
 		return entry, nil
 	}
-	entry.MetadataURI = metadata.URI
+	entry.MetadataURI = token.MetadataURI
 
-	document, err := fetchLimited(client, metadata.URI, maxMetadataBytes)
+	document, err := fetchLimited(client, token.MetadataURI, maxMetadataBytes)
 	if err != nil {
 		entry.State, entry.Reason = LogoUnreachable, "metadata: "+err.Error()
 		return entry, nil
@@ -286,17 +261,101 @@ func resolveLogo(client *http.Client, symbol, mint string, metadata registry.Tok
 		return entry, nil
 	}
 	sum := sha256.Sum256(image)
-	entry.State = LogoCaptured
-	entry.ContentType = contentType
 	entry.Bytes = len(image)
 	entry.SHA256 = hex.EncodeToString(sum[:])
-	return entry, image
+	stored, reduced, err := fitRaster(image)
+	if err != nil {
+		entry.State, entry.Reason = LogoUnsupported, "the raster did not decode: "+err.Error()
+		return entry, nil
+	}
+	if reduced {
+		storedSum := sha256.Sum256(stored)
+		contentType = "image/png"
+		entry.StoredBytes = len(stored)
+		entry.StoredSHA256 = hex.EncodeToString(storedSum[:])
+	}
+	entry.State = LogoCaptured
+	entry.ContentType = contentType
+	return entry, stored
 }
 
-func mirrorLogos(fixtureDir, logoDir, manifestPath string) error {
-	targets, err := loadTargets(filepath.Join(fixtureDir, "targets.json"))
+// maxLogoPixels is the widest raster the mirror keeps. The largest mark the
+// interface draws is 56 CSS pixels, so 128 holds it sharp at twice the
+// density. xStocks serves 400 pixel PNGs of about 25 KB each; kept whole,
+// 1,451 of them measured 36 MB on 14 October 2026, more than the rest of
+// the repository's history together.
+const maxLogoPixels = 128
+
+// fitRaster reduces a raster wider than maxLogoPixels by the smallest whole
+// factor that fits, averaging each factor-by-factor block, and returns it as
+// a PNG. Whole factors keep every output pixel an exact average of the
+// issuer's, with no resampling filter to choose or explain. An SVG, or a
+// raster already small enough, comes back unchanged.
+func fitRaster(body []byte) ([]byte, bool, error) {
+	if _, _, ok := sniffRaster(body); !ok {
+		return body, false, nil
+	}
+	source, _, err := image.Decode(bytes.NewReader(body))
+	if err != nil {
+		if strings.Contains(err.Error(), "unknown format") {
+			return body, false, nil
+		}
+		return nil, false, err
+	}
+	bounds := source.Bounds()
+	if bounds.Dx() <= maxLogoPixels && bounds.Dy() <= maxLogoPixels {
+		return body, false, nil
+	}
+	factor := (max(bounds.Dx(), bounds.Dy()) + maxLogoPixels - 1) / maxLogoPixels
+	reduced := image.NewRGBA(image.Rect(0, 0, bounds.Dx()/factor, bounds.Dy()/factor))
+	area := uint32(factor * factor)
+	for y := 0; y < reduced.Bounds().Dy(); y++ {
+		for x := 0; x < reduced.Bounds().Dx(); x++ {
+			var r, g, b, a uint32
+			for dy := 0; dy < factor; dy++ {
+				for dx := 0; dx < factor; dx++ {
+					pr, pg, pb, pa := source.At(bounds.Min.X+x*factor+dx, bounds.Min.Y+y*factor+dy).RGBA()
+					r, g, b, a = r+pr, g+pg, b+pb, a+pa
+				}
+			}
+			reduced.SetRGBA(x, y, color.RGBA{R: uint8(r / area >> 8), G: uint8(g / area >> 8), B: uint8(b / area >> 8), A: uint8(a / area >> 8)})
+		}
+	}
+	var out bytes.Buffer
+	if err := (&png.Encoder{CompressionLevel: png.BestCompression}).Encode(&out, reduced); err != nil {
+		return nil, false, err
+	}
+	return out.Bytes(), true, nil
+}
+
+// mirrorWorkers bounds how many issuer requests run at once: enough that
+// every listing (2,621 on 14 October 2026) finishes in minutes, few enough
+// not to look like a flood.
+const mirrorWorkers = 6
+
+// mirrorLogos mirrors the logo of every listed instrument, from the metadata
+// URI each mint carries, as recorded by the listing survey.
+func mirrorLogos(listingDir, logoDir, manifestPath string) error {
+	files, err := filepath.Glob(filepath.Join(listingDir, "*.json"))
 	if err != nil {
 		return err
+	}
+	var tokens []listingToken
+	for _, path := range files {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		var listed struct {
+			Tokens []listingToken `json:"tokens"`
+		}
+		if err := json.Unmarshal(raw, &listed); err != nil {
+			return fmt.Errorf("parse %s: %w", path, err)
+		}
+		tokens = append(tokens, listed.Tokens...)
+	}
+	if len(tokens) == 0 {
+		return fmt.Errorf("no listed tokens under %s; run go run ./server/cmd/survey -listings first", listingDir)
 	}
 	if err := os.MkdirAll(logoDir, 0o755); err != nil {
 		return fmt.Errorf("create %s: %w", logoDir, err)
@@ -305,42 +364,46 @@ func mirrorLogos(fixtureDir, logoDir, manifestPath string) error {
 	manifest := LogoManifest{
 		Producer:   "go run ./server/cmd/capture -logos",
 		CapturedAt: time.Now().UTC().Format(time.RFC3339),
+		Logos:      make([]Logo, len(tokens)),
 	}
 
-	for _, target := range targets {
-		raw, err := os.ReadFile(filepath.Join(fixtureDir, target.Symbol+".json"))
-		if err != nil {
-			return fmt.Errorf("%s is in targets.json but has no fixture; run go run ./server/cmd/capture first: %w", target.Symbol, err)
-		}
-		var fixture Fixture
-		if err := json.Unmarshal(raw, &fixture); err != nil {
-			return fmt.Errorf("parse %s fixture: %w", target.Symbol, err)
-		}
-		data, err := base64.StdEncoding.DecodeString(fixture.DataBase64)
-		if err != nil {
-			return fmt.Errorf("%s fixture data: %w", target.Symbol, err)
-		}
-		mint, err := registry.DecodeMint(data)
-		if err != nil {
-			return fmt.Errorf("decode %s: %w", target.Symbol, err)
-		}
-		metadata, hasMetadata, err := mint.TokenMetadata()
-		if err != nil {
-			return fmt.Errorf("%s metadata: %w", target.Symbol, err)
-		}
-
-		entry, image := resolveLogo(client, fixture.Symbol, fixture.Address, metadata, hasMetadata)
-		if image != nil {
-			_, extension, _ := sniffImage(image)
-			name := fixture.Address + extension
-			if err := os.WriteFile(filepath.Join(logoDir, name), image, 0o644); err != nil {
-				return fmt.Errorf("write %s logo: %w", target.Symbol, err)
+	work := make(chan int)
+	failures := make(chan error, len(tokens))
+	var done sync.WaitGroup
+	for range mirrorWorkers {
+		done.Add(1)
+		go func() {
+			defer done.Done()
+			for index := range work {
+				token := tokens[index]
+				entry, image := resolveLogo(client, token)
+				if image != nil {
+					_, extension, _ := sniffImage(image)
+					name := token.Mint + extension
+					if err := os.WriteFile(filepath.Join(logoDir, name), image, 0o644); err != nil {
+						failures <- fmt.Errorf("write %s logo: %w", token.Symbol, err)
+						continue
+					}
+					entry.Path = "/instruments/" + name
+				}
+				manifest.Logos[index] = entry
 			}
-			entry.Path = "/instruments/" + name
-		}
-		fmt.Printf("  %-8s %-11s %s\n", entry.Symbol, entry.State, strings.TrimSpace(entry.Reason+" "+entry.Path))
-		manifest.Logos = append(manifest.Logos, entry)
+		}()
 	}
+	for index := range tokens {
+		work <- index
+	}
+	close(work)
+	done.Wait()
+	close(failures)
+	if err := <-failures; err != nil {
+		return err
+	}
+	counts := map[LogoState]int{}
+	for _, entry := range manifest.Logos {
+		counts[entry.State]++
+	}
+	fmt.Printf("  %v\n", counts)
 
 	// A logo the issuer withdrew must not outlive this run as a file the
 	// manifest no longer vouches for.

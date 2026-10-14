@@ -3,19 +3,23 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { ContinueAction, Field, Key, LotMark, QuietAction, QuoteBlock, StepTrack } from "@seametry/ui";
+import { ContinueAction, Field, IconButton, Key, LotMark, QuietAction, QuoteBlock, StepTrack } from "@seametry/ui";
+import { Identity, List, ListCell, ListRow } from "@seametry/ui/list";
+import { Tabs } from "@seametry/ui/tabs";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { formatAmount, formatBalance, parseAmount } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
-import type { ListedPosition } from "@/lib/allocation/positions";
+import type { HeldPosition } from "@/lib/allocation/positions";
 import { allocationHoldings, endedAt, type AllocationHolding } from "@/lib/execution/record";
 import { approveAndSend, NotSent, type Signer } from "@/lib/execution/run";
 import { useExecutions } from "@/lib/execution/store";
-import { logoFor } from "@/lib/instrument-logos";
+import { logoSrc } from "@/lib/logo-src";
 import { ActivityList } from "../_activity/activity";
 import styles from "./positions.module.css";
 
-type Reading = { wallet: string; network: "mainnet"; source: string; observedAt: string; positions: ListedPosition[]; outsideRegister: number };
+type Reading = { wallet: string; network: "mainnet"; source: string; observedAt: string; positions: HeldPosition[]; outsideRegister: number };
+type View = "positions" | "allocations" | "activity";
+const VIEW_NAMES: Record<View, string> = { positions: "Positions", allocations: "Allocations", activity: "Activity" };
 /** amount and review are the sheet's two steps; quoting and signing are the waits between them. */
 type Stage = "amount" | "quoting" | "review" | "signing";
 type SaleLeg = { mint: string; symbol: string; atoms: string; scale: number };
@@ -52,6 +56,7 @@ export function Positions() {
   const [tradeProblem, setTradeProblem] = useState<string>();
   const [now, setNow] = useState(() => Date.now());
   const [sale, setSale] = useState<AllocationSale>();
+  const [view, setView] = useState<View>("positions");
 
   const refresh = useCallback(async (address: string) => {
     setReadingBusy(true);
@@ -170,55 +175,58 @@ export function Positions() {
     }
   }
 
+  const held = reading?.wallet === wallet ? reading : undefined;
   return (
     <div className={styles.workspace}>
       {!wallet ? <p className={styles.notice}>Connect the wallet that holds your instruments. Connecting buys or sells nothing.</p> : (
         <>
-          {allocations.length > 0 ? (
-            <section className={styles.allocations} aria-labelledby="allocations-title">
-              <header className={styles.sectionHead}>
-                <div>
-                  <h2 id="allocations-title">Your Allocations</h2>
-                  <p>Device-local grouping of confirmed Seametry purchases. Current wallet balances remain the authority.</p>
-                </div>
-              </header>
-              <div className={styles.allocationCards}>
-                {allocations.map((allocation) => (
-                  <article key={allocation.id} className={styles.allocationCard}>
-                    <div>
-                      <span>{allocation.templateId ? "Published-rule Allocation" : "Custom Allocation"}</span>
-                      <h3>{allocation.name}</h3>
-                      <p>{allocation.legs.length} tracked constituents · opened {new Date(allocation.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    <div className={styles.allocationLegs}>
-                      {allocation.legs.map((leg) => <b key={leg.mint}>{leg.symbol} <small>{formatBalance(leg.atoms, leg.scale)}</small></b>)}
-                    </div>
-                    <QuietAction type="button" onClick={() => setSale({ allocation, legs: saleLegs(allocation), stage: "idle" })}>Sell allocation</QuietAction>
-                  </article>
-                ))}
+          <Tabs
+            label="Holdings"
+            controls="holdings-view"
+            value={view}
+            onChange={setView}
+            items={[
+              { value: "positions", label: "Positions", count: held?.positions.length },
+              { value: "allocations", label: "Allocations", count: allocations.length },
+              { value: "activity", label: "Activity", count: records.length },
+            ]}
+          />
+          <div id="holdings-view" role="tabpanel" aria-label={VIEW_NAMES[view]} className={styles.view}>
+            {view === "positions" ? <>
+              <div className={styles.viewMeta}>
+                <p>Exact token quantities from Solana mainnet RPC{held ? `, observed ${new Date(held.observedAt).toLocaleTimeString()}` : ""}. No price is observed, so no total is shown.</p>
+                <IconButton icon="refresh" label="Read holdings again" onClick={() => void refresh(wallet)} disabled={readingBusy} />
               </div>
-            </section>
-          ) : null}
-
-          <section className={styles.ledger} aria-labelledby="holdings-title">
-            <header className={styles.sectionHead}>
-              <div><h2 id="holdings-title">In this wallet</h2><p>Solana mainnet RPC. {reading?.wallet === wallet ? `Observed ${new Date(reading.observedAt).toLocaleString()}.` : "No observation yet."}</p><p>Total portfolio value: no price observation. Balances below are exact token quantities, not a sum in USDC.</p></div>
-              <QuietAction type="button" onClick={() => void refresh(wallet)} disabled={readingBusy}>Refresh holdings</QuietAction>
-            </header>
-            {readingBusy && !reading ? <p className={styles.notice}>Reading mainnet token accounts for this wallet.</p> : null}
-            {readingProblem ? <p className={styles.problem} role="alert">{readingProblem}</p> : null}
-            {reading?.wallet === wallet && reading.positions.length === 0 ? <p className={styles.notice}>This wallet holds no instruments from the Seametry register. Other wallet tokens are not shown here.</p> : null}
-            {reading?.wallet === wallet ? (
-              <ul className={styles.holdings}>
-                {reading.positions.map((item) => <li key={item.mint}>
-                  <LotMark symbol={item.symbol} src={logoFor(item.mint)} />
-                  <div className={styles.identity}><b>{item.symbol}</b><span>{formatBalance(item.atoms, item.scale)} held{item.atoms !== item.sellableAtoms ? `; ${formatBalance(item.sellableAtoms, item.scale)} available to this route` : ""}</span></div>
-                  <QuietAction type="button" onClick={() => openTrade(item.mint)}>Sell {item.symbol}</QuietAction>
-                </li>)}
-              </ul>
-            ) : null}
-            {reading?.wallet === wallet && reading.outsideRegister > 0 ? <p className={styles.notice}>This wallet also holds tokens outside this register. They are not included in these rows.</p> : null}
-          </section>
+              {readingBusy && !held ? <p className={styles.notice} role="status">Reading mainnet token accounts for this wallet.</p> : null}
+              {readingProblem ? <p className={styles.problem} role="alert">{readingProblem}</p> : null}
+              {held && held.positions.length === 0 ? <p className={styles.notice}>This wallet holds no instruments from the Seametry register. Other wallet tokens are not shown here.</p> : null}
+              {held && held.positions.length > 0 ? (
+                <List label="Instruments in this wallet" head={["Instrument", "Held", "Sellable here"]} className={styles.positionColumns}>
+                  {held.positions.map((item) => (
+                    <ListRow key={item.mint} onSelect={() => openTrade(item.mint)} label={`Trade ${item.symbol}`}>
+                      <Identity symbol={item.symbol} name={item.name} logo={item.logo} />
+                      <ListCell>{formatBalance(item.atoms, item.scale)}</ListCell>
+                      <ListCell wide>{formatBalance(item.sellableAtoms, item.scale)}</ListCell>
+                    </ListRow>
+                  ))}
+                </List>
+              ) : null}
+              {held && held.outsideRegister > 0 ? <p className={styles.notice}>This wallet also holds {held.outsideRegister} {held.outsideRegister === 1 ? "token" : "tokens"} outside this register, not shown here.</p> : null}
+            </> : view === "allocations" ? <>
+              <p className={styles.viewMeta}>Grouped on this device from purchases made here, capped by what the wallet holds when you sell.</p>
+              {allocations.length === 0 ? <p className={styles.notice}>No Allocation bought from this browser for this wallet.</p> : (
+                <List label="Allocations" head={["Allocation", "Holds", "Bought"]} className={styles.allocationColumns}>
+                  {allocations.map((allocation) => (
+                    <ListRow key={allocation.id} onSelect={() => setSale({ allocation, legs: saleLegs(allocation), stage: "idle" })} label={`Sell ${allocation.name}`}>
+                      <span className={styles.allocationName}><b>{allocation.name}</b><small>{allocation.templateId ? "Published basket" : "Custom"}</small></span>
+                      <ListCell>{allocation.legs.map((leg) => leg.symbol).join(", ")}</ListCell>
+                      <ListCell wide>{new Date(allocation.createdAt).toLocaleDateString()}</ListCell>
+                    </ListRow>
+                  ))}
+                </List>
+              )}
+            </> : <ActivityList records={records} />}
+          </div>
 
           <ModalSheet
             open={Boolean(sale)}
@@ -240,7 +248,7 @@ export function Positions() {
                     const quote = sale.prepared?.[index];
                     return (
                       <li key={leg.mint}>
-                        <LotMark symbol={leg.symbol} src={logoFor(leg.mint)} size="list" />
+                        <LotMark symbol={leg.symbol} src={logoSrc(leg.mint)} size="list" />
                         <div><b>{leg.symbol}</b><span>{formatBalance(leg.atoms, leg.scale)} to sell</span></div>
                         {quote ? <div className={styles.saleQuote}><strong>{formatAmount(quote.outAtoms, 6)} USDC</strong><small>expected, at least {formatAmount(quote.floorAtoms, 6)}</small></div> : null}
                       </li>
@@ -292,11 +300,6 @@ export function Positions() {
             </div> : null}
           </ModalSheet>
 
-          <section className={styles.activity} aria-labelledby="activity-title">
-            <div className={styles.sectionHead}><div><h2 id="activity-title">Activity</h2><p>What this browser bought and sold for this wallet.</p></div></div>
-            <ActivityList records={records} />
-          </section>
-          <Link className={styles.backLink} href="/app/baskets/build">Build another basket</Link>
         </>
       )}
     </div>

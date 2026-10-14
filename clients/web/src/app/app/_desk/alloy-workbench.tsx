@@ -92,7 +92,7 @@ export function AlloyRegister() {
 
   return (
     <div className={styles.alloyRegister}>
-      <PageHeader group="Hall" title="Alloys" network="Devnet" info={<p>Every Alloy account the Hall holds, read live, with its supply and any leg held back.</p>} />
+      <PageHeader title="Alloys" network="Devnet" info={<p>Every Alloy account the Hall holds, read live, with its supply and any leg held back.</p>} />
 
       {loading ? <AlloyLoading /> : null}
       {problem ? <AlloyBoundary problem={problem} /> : null}

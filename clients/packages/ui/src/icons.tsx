@@ -1,5 +1,5 @@
 import type { SVGProps } from "react";
-import { ArrowLeft, ArrowRight, ArrowSquareOut, ArrowUpRight, Bank, Basket, BookOpenText, CaretDown, Certificate, ChartPie, Check, CircleHalf, CircleNotch, ClockCounterClockwise, Copy, CurrencyDollar, Flask, FunnelSimple, Info, Key, MagnifyingGlass, Moon, Plus, Question, SealCheck, SquaresFour, Sun, Wallet, X } from "@phosphor-icons/react/ssr";
+import { ArrowClockwise, ArrowLeft, ArrowRight, ArrowSquareOut, ArrowUpRight, Bank, Basket, BookOpenText, CaretDown, Certificate, ChartPie, Check, CircleHalf, CircleNotch, ClockCounterClockwise, Copy, CurrencyDollar, Flask, FunnelSimple, Info, Key, MagnifyingGlass, Moon, Plus, Question, SealCheck, SquaresFour, Sun, Wallet, X } from "@phosphor-icons/react/ssr";
 
 // Phosphor supplies the generic interface symbols (foundations.md section 9).
 // The ssr entry needs no React context, so the same Icon renders in server
@@ -31,6 +31,7 @@ const glyphs = {
   next: ArrowRight,
   partial: CircleHalf,
   read: BookOpenText,
+  refresh: ArrowClockwise,
   running: CircleNotch,
   search: MagnifyingGlass,
   sun: Sun,

@@ -18,7 +18,6 @@ export default async function BasketsPage() {
   return (
     <div className={styles.page}>
       <PageHeader
-        group="Allocation"
         title="Baskets"
         network="Mainnet"
         info={

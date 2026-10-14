@@ -5,11 +5,11 @@ import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepRegister, StepTrack, Stamp, type RegisterStep } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
+import { Identity } from "@seametry/ui/list";
 import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitByWeights, splitEvenly } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
-import { logoFor } from "@/lib/instrument-logos";
 import { shortIssuer } from "@/lib/issuers";
 import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, minimumPlanAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
 import { approveAndSend, NotSent } from "@/lib/execution/run";
@@ -452,15 +452,8 @@ export function AllocationFlow({
                     {visible.map((lot) => (
                       <li key={lot.mint} className={styles.lot}>
                         <div className={styles.lotChoice}>
-                          <Link className={styles.lotDetail} href={`/app/instruments/${encodeURIComponent(lot.mint)}?from=allocation&selected=${encodeURIComponent(selected.join(","))}`} aria-label={`Open ${lot.symbol} assay`}>
-                            <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="list" />
-                            <span>
-                              <b>{lot.symbol}</b>
-                              <small className={styles.lotMeta} title={[lot.name, lot.issuer].filter(Boolean).join(" · ")}>
-                                {lot.name ? <span>{lot.name}</span> : null}
-                                <span>{lot.issuer}</span>
-                              </small>
-                            </span>
+                          <Link className={styles.lotDetail} href={`/app/instruments/${encodeURIComponent(lot.mint)}?from=allocation&selected=${encodeURIComponent(selected.join(","))}`} aria-label={`${lot.symbol} assay`}>
+                            <Identity symbol={lot.symbol} name={lot.name} logo={lot.logo} issuer={shortIssuer(lot.issuer)} />
                           </Link>
                           <label className={styles.lotToggle}>
                             <input
@@ -607,6 +600,41 @@ export function AllocationFlow({
               </section>
             </>
           ) : null}
+        {step === 0 ? (
+          <div className={styles.selectionBar} data-testid="selection-action-bar">
+            <SelectionCount current={chosen.length} total={offered.length} />
+            <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
+              Set amount
+            </ContinueAction>
+          </div>
+        ) : (
+          <StepBar
+            plan={planLine}
+            problem={false}
+            back={fixedTemplate ? undefined : (
+              <QuietAction icon="back" disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
+                Back
+              </QuietAction>
+            )}
+            next={
+              !connected ? (
+                <ContinueAction onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</ContinueAction>
+              ) : (
+                <Key
+                  busy={started}
+                  busyLabel={attempt?.stage === "checking" ? "Checking every leg" : "Waiting for wallet"}
+                  disabled={Boolean(keyDisabledReason)}
+                  disabledReason={keyDisabledReason}
+                  // The field already states an amount problem; the Key says it again only when pressed.
+                  reasonBeside={false}
+                  onClick={() => void buyAll()}
+                >
+                  {fixedTemplate ? "Buy basket" : "Buy allocation"}
+                </Key>
+              )
+            }
+          />
+        )}
         </div>
 
         <aside className={styles.orderRail} aria-label="Order sheet">
@@ -614,41 +642,6 @@ export function AllocationFlow({
         </aside>
       </div>
 
-      {step === 0 ? (
-        <div className={styles.selectionBar} data-testid="selection-action-bar">
-          <SelectionCount current={chosen.length} total={offered.length} />
-          <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
-            Set amount
-          </ContinueAction>
-        </div>
-      ) : (
-        <StepBar
-          plan={planLine}
-          problem={false}
-          back={fixedTemplate ? undefined : (
-            <QuietAction icon="back" disabled={Boolean(backReason)} title={backReason} onClick={() => setStep(0)}>
-              Back
-            </QuietAction>
-          )}
-          next={
-            !connected ? (
-              <ContinueAction onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</ContinueAction>
-            ) : (
-              <Key
-                busy={started}
-                busyLabel={attempt?.stage === "checking" ? "Checking every leg" : "Waiting for wallet"}
-                disabled={Boolean(keyDisabledReason)}
-                disabledReason={keyDisabledReason}
-                // The field already states an amount problem; the Key says it again only when pressed.
-                reasonBeside={false}
-                onClick={() => void buyAll()}
-              >
-                {fixedTemplate ? "Buy basket" : "Buy allocation"}
-              </Key>
-            )
-          }
-        />
-      )}
       {attempt && !(started && progressHidden) ? (
         <ProcessDialog
           open

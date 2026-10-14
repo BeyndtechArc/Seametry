@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function PositionsPage() {
   return (
     <div className={styles.page}>
-      <PageHeader group="Allocation" title="Your holdings" network="Mainnet" info={<p>These quantities are read from your connected wallet on mainnet. A sale is a separate swap into USDC, not an Alloy Melt or an issuer redemption.</p>} />
+      <PageHeader title="Holdings" network="Mainnet" info={<p>These quantities are read from your connected wallet on mainnet. A sale is a separate swap into USDC, not an Alloy Melt or an issuer redemption.</p>} />
       <Positions />
     </div>
   );

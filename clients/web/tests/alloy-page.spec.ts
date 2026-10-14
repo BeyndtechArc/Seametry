@@ -41,7 +41,7 @@ test("the Alloy surface carries the page-wide colour mode control", async ({ pag
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
 
-test("an Alloy founded after the founding record still draws each leg's logo from the symbol its stand-in states", () => {
+test("an Alloy founded after the founding record still draws each leg's logo from the symbol its stand-in states", async ({ request }) => {
   // Fortune Five on 8 October 2026 had no record, and every leg fell to a
   // lettered tile. A stand-in's own mint has no captured logo; its symbol does.
   const alloy = {
@@ -50,7 +50,13 @@ test("an Alloy founded after the founding record still draws each leg's logo fro
   } as unknown as Alloy;
   expect(legIdentity(alloy, "4YEHgM5SjppERHtU6P7LMgMRkFXb5MdYZXDvbuBiJjs1")).toEqual({
     symbol: "AAPLx",
-    logo: "/instruments/XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp.png",
+    logo: "/instruments/logo/AAPLx",
     realMint: undefined,
   });
+  // The route resolves the symbol to the real AAPLx's mirrored logo.
+  const answer = await request.get("/instruments/logo/AAPLx", { maxRedirects: 0 });
+  expect(answer.status()).toBe(307);
+  expect(new URL(answer.headers().location, "http://localhost").pathname).toBe("/instruments/XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp.png");
+  // Nothing captured is answered with nothing, so no row logs a failed load.
+  expect((await request.get("/instruments/logo/NOTLISTED", { maxRedirects: 0 })).status()).toBe(204);
 });

@@ -38,6 +38,26 @@ type listedToken struct {
 	Supply    string `json:"supply_atoms,omitempty"`
 	Decimals  *uint8 `json:"decimals,omitempty"`
 	KeysMatch bool   `json:"keys_match_issuer"`
+	// The name and metadata URI the issuer wrote into the mint itself, the
+	// source the web reads an instrument's name and logo from. A mint whose
+	// metadata did not decode says why rather than reading as having none.
+	MetadataName    string `json:"metadata_name,omitempty"`
+	MetadataURI     string `json:"metadata_uri,omitempty"`
+	MetadataProblem string `json:"metadata_problem,omitempty"`
+}
+
+// recordMetadata copies the mint's own TokenMetadata onto its listing entry.
+func recordMetadata(t *listedToken, mint *registry.Mint) {
+	metadata, present, err := mint.TokenMetadata()
+	switch {
+	case err != nil:
+		t.MetadataProblem = "TokenMetadata undecodable: " + err.Error()
+	case !present:
+		t.MetadataProblem = "the mint carries no TokenMetadata extension"
+	default:
+		t.MetadataName = metadata.Name
+		t.MetadataURI = metadata.URI
+	}
 }
 
 type listing struct {
@@ -122,6 +142,7 @@ func readBack(ctx context.Context, client *solana.Client, l *listing) error {
 				continue
 			}
 			t.OnChain = "decoded"
+			recordMetadata(t, mint)
 			t.Supply = fmt.Sprintf("%d", mint.Supply)
 			decimals := mint.Decimals
 			t.Decimals = &decimals

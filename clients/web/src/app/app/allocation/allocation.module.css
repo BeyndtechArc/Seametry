@@ -288,37 +288,6 @@
   cursor: default;
 }
 
-.lotChoice span {
-  display: grid;
-  gap: var(--sm-space-1);
-}
-
-.lotChoice b {
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-body);
-}
-
-.lotChoice small {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-small);
-}
-
-.lotChoice .lotMeta {
-  display: flex;
-  gap: var(--sm-space-2);
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.lotChoice .lotMeta span {
-  display: block;
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .refused {
   min-width: 0;
 }
@@ -454,7 +423,7 @@
 
 .selectionBar {
   position: sticky;
-  bottom: 0;
+  bottom: var(--shell-bottom-inset, 0px);
   z-index: 2;
   display: flex;
   align-items: center;

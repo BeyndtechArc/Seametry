@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { LotMark, QuietLink, RouteAction } from "@seametry/ui";
 import { findAllocationIndex } from "@/lib/allocation/indexes";
 import { allocationOffer, purchasesUnavailable } from "@/lib/allocation/offer";
-import { logoForSymbol } from "@/lib/instrument-logos";
+import { logoOfSymbol } from "@/lib/instrument-identity";
 import { BasketSparkline } from "../basket-history";
 import { BasketPlate } from "../basket-plate";
 import { AllocationFlow } from "../../allocation/flow";
@@ -112,7 +112,7 @@ export default async function BasketDetailPage({ params, searchParams }: { param
             const refusal = refusedBySymbol.get(member.symbol);
             return (
               <li key={member.symbol}>
-                <LotMark symbol={member.symbol} src={lot?.logo ?? logoForSymbol(member.symbol)} />
+                <LotMark symbol={member.symbol} src={lot?.logo ?? logoOfSymbol(member.symbol)} />
                 {lot ? (
                   <>
                     <div><b>{member.symbol}</b><small>{lot.issuer}</small></div>

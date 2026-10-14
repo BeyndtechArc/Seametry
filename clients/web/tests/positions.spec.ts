@@ -41,7 +41,8 @@ test("a bought Allocation kept from before the engine is sold whole with one rev
   await page.goto("/app/positions");
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
-  await page.getByRole("button", { name: "Sell allocation" }).click();
+  await page.getByRole("tab", { name: /^Allocations/ }).click();
+  await page.getByRole("button", { name: "Sell Prime Seven" }).click();
   const sheet = page.getByRole("dialog", { name: "Sell Prime Seven" });
   await sheet.getByRole("button", { name: "Review sell all" }).click();
   await sheet.getByRole("button", { name: "Approve sell all" }).click();
@@ -57,8 +58,9 @@ test("a bought Allocation kept from before the engine is sold whole with one rev
   );
   expect(submits()).toBe(2);
   // Sold whole, so the Allocation has nothing left to sell.
-  await expect(page.getByRole("button", { name: "Sell allocation" })).toHaveCount(0);
-  await expect(page.getByRole("region", { name: "Activity" })).toContainText("0.995000 USDC");
+  await expect(page.getByRole("button", { name: "Sell Prime Seven" })).toHaveCount(0);
+  await page.getByRole("tab", { name: /^Activity/ }).click();
+  await expect(page.getByRole("tabpanel", { name: "Activity" })).toContainText("0.995000 USDC");
 });
 
 test("a sale steps from amount to review in the sheet, then hands over to the toast on approval", async ({ page }) => {
@@ -78,7 +80,7 @@ test("a sale steps from amount to review in the sheet, then hands over to the to
   await page.goto("/app/positions");
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
-  await page.getByRole("button", { name: "Sell AMZNx" }).click();
+  await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
   await expect(sheet.getByRole("list", { name: "Sale steps" })).toContainText("Amount");
   await sheet.getByRole("button", { name: "Use 50%" }).click();
@@ -112,7 +114,7 @@ test("a sale the network dropped says nothing moved and offers to sell again", a
   await page.goto("/app/positions");
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
-  await page.getByRole("button", { name: "Sell AMZNx" }).click();
+  await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
   await sheet.getByRole("button", { name: "Use 50%" }).click();
   await sheet.getByRole("button", { name: "Review sale" }).click();
@@ -121,7 +123,8 @@ test("a sale the network dropped says nothing moved and offers to sell again", a
   await expect(toasts).toContainText("Nothing sold: AMZNx", { timeout: 10_000 });
   await expect(toasts).toContainText("Nothing changed hands and nothing was charged.");
   await expect(toasts.getByRole("link", { name: "Sell again" })).toHaveAttribute("href", "/app/positions");
-  await expect(page.getByRole("region", { name: "Activity" })).toContainText("never landed before its deadline", { ignoreCase: true });
+  await page.getByRole("tab", { name: /^Activity/ }).click();
+  await expect(page.getByRole("tabpanel", { name: "Activity" })).toContainText("never landed before its deadline", { ignoreCase: true });
 });
 
 test("a wallet that declines leaves the sheet open, saying nothing was sent", async ({ page }) => {
@@ -137,7 +140,7 @@ test("a wallet that declines leaves the sheet open, saying nothing was sent", as
   await page.goto("/app/positions");
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
-  await page.getByRole("button", { name: "Sell AMZNx" }).click();
+  await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
   await sheet.getByRole("button", { name: "Use 50%" }).click();
   await sheet.getByRole("button", { name: "Review sale" }).click();
@@ -154,13 +157,16 @@ test("holdings names the exit route without presenting it as redemption", async 
   await page.route("**/api/allocation/positions?**", (route) => route.fulfill({ json: {
     wallet,
     network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
-    positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "15000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
+    positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", name: "Amazon.com", atoms: "15000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
   } }));
   await page.goto("/app/positions");
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
-  await expect(page.getByText("0.15 held; 0.1 available to this route")).toBeVisible();
-  await page.getByRole("button", { name: "Sell AMZNx" }).click();
+  const row = page.getByRole("list", { name: "Instruments in this wallet" }).getByRole("listitem").filter({ hasText: "AMZNx" });
+  await expect(row).toContainText("Amazon.com");
+  await expect(row).toContainText("0.15");
+  await expect(row).toContainText("0.1");
+  await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByRole("tab", { name: "Sell" })).toHaveAttribute("aria-selected", "true");

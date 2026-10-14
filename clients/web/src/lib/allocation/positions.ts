@@ -3,6 +3,9 @@ import type { Admission } from "./admissions";
 export type TokenHolding = { mint: string; atoms: string; decimals: number; tokenProgram: string; account?: string };
 export type ListedPosition = { mint: string; symbol: string; atoms: string; sellableAtoms: string; scale: number; tokenProgram: string };
 
+/** A position as the holdings route serves it, named and pictured from the instrument identity. */
+export type HeldPosition = ListedPosition & { name?: string; logo?: string };
+
 /** A wallet can hold one mint in several accounts. Only the admissions register supplies its displayed identity. */
 export function listedPositions(holdings: TokenHolding[], register: Admission[], associatedAccounts?: ReadonlyMap<string, string>): ListedPosition[] {
   const listed = new Map(register.map((lot) => [lot.instrument.mint, lot]));

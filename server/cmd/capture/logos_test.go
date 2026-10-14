@@ -1,15 +1,17 @@
 package main
 
 import (
+	"bytes"
+	"image"
+	"image/color"
+	"image/png"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/BeyndtechArc/Seametry/server/internal/registry"
 )
 
 func TestResolveLogoRecordsEveryOutcome(t *testing.T) {
-	png := []byte("\x89PNG\r\n\x1a\nrest of a png")
+	logo := pngOf(t, 10, 10, color.RGBA{A: 255})
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	defer server.Close()
@@ -20,7 +22,7 @@ func TestResolveLogoRecordsEveryOutcome(t *testing.T) {
 		})
 	}
 	serve("/png.json", "application/json", []byte(`{"image":"`+server.URL+`/logo.png"}`))
-	serve("/logo.png", "image/png", png)
+	serve("/logo.png", "image/png", logo)
 	serve("/svg.json", "application/json", []byte(`{"image":"`+server.URL+`/logo.svg"}`))
 	// Served as image/png on purpose: the bytes decide, not the header.
 	serve("/logo.svg", "image/png", []byte(`<svg xmlns="http://www.w3.org/2000/svg"><script/></svg>`))
@@ -29,21 +31,25 @@ func TestResolveLogoRecordsEveryOutcome(t *testing.T) {
 	serve("/blank.json", "application/json", []byte(`{"name":"no image here"}`))
 
 	cases := []struct {
-		name        string
-		uri         string
-		hasMetadata bool
-		want        LogoState
+		name    string
+		uri     string
+		problem string
+		want    LogoState
 	}{
-		{"a png named by the metadata is captured", server.URL + "/png.json", true, LogoCaptured},
-		{"an svg carrying script is refused even when served as png", server.URL + "/svg.json", true, LogoUnsupported},
-		{"a plain drawing svg is captured", server.URL + "/plain.json", true, LogoCaptured},
-		{"metadata naming no image is recorded", server.URL + "/blank.json", true, LogoNoImage},
-		{"a missing metadata document is recorded", server.URL + "/gone.json", true, LogoUnreachable},
-		{"a mint without metadata is recorded", "", false, LogoNoMetadata},
+		{"a png named by the metadata is captured", server.URL + "/png.json", "", LogoCaptured},
+		{"an svg carrying script is refused even when served as png", server.URL + "/svg.json", "", LogoUnsupported},
+		{"a plain drawing svg is captured", server.URL + "/plain.json", "", LogoCaptured},
+		{"metadata naming no image is recorded", server.URL + "/blank.json", "", LogoNoImage},
+		{"a missing metadata document is recorded", server.URL + "/gone.json", "", LogoUnreachable},
+		{"a mint without metadata is recorded", "", "", LogoNoMetadata},
+		{"a mint whose metadata did not decode keeps the survey's reason", "", "TokenMetadata undecodable: short", LogoNoMetadata},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			entry, image := resolveLogo(server.Client(), "TESTx", "mint", registry.TokenMetadata{URI: c.uri}, c.hasMetadata)
+			entry, image := resolveLogo(server.Client(), listingToken{Symbol: "TESTx", Mint: "mint", MetadataURI: c.uri, MetadataProblem: c.problem})
+			if c.problem != "" && entry.Reason != c.problem {
+				t.Fatalf("reason %q, want the survey's %q", entry.Reason, c.problem)
+			}
 			if entry.State != c.want {
 				t.Fatalf("state %s (%s), want %s", entry.State, entry.Reason, c.want)
 			}
@@ -57,6 +63,49 @@ func TestResolveLogoRecordsEveryOutcome(t *testing.T) {
 				t.Fatal("an uncaptured logo carries no reason")
 			}
 		})
+	}
+}
+
+func pngOf(t *testing.T, width, height int, fill color.RGBA) []byte {
+	t.Helper()
+	picture := image.NewRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			picture.SetRGBA(x, y, fill)
+		}
+	}
+	var out bytes.Buffer
+	if err := png.Encode(&out, picture); err != nil {
+		t.Fatal(err)
+	}
+	return out.Bytes()
+}
+
+// xStocks serves 400 pixel PNGs; the mirror keeps them at 100, a whole
+// factor of four, and leaves anything already small enough byte for byte.
+func TestFitRasterReducesByAWholeFactorAndKeepsSmallOnes(t *testing.T) {
+	large := pngOf(t, 400, 400, color.RGBA{R: 200, G: 40, B: 10, A: 255})
+	stored, reduced, err := fitRaster(large)
+	if err != nil || !reduced {
+		t.Fatalf("a 400 pixel logo came back reduced=%v err=%v", reduced, err)
+	}
+	picture, _, err := image.Decode(bytes.NewReader(stored))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if picture.Bounds().Dx() != 100 || picture.Bounds().Dy() != 100 {
+		t.Fatalf("stored at %v, want 100 by 100", picture.Bounds())
+	}
+	if r, g, b, a := picture.At(50, 50).RGBA(); r>>8 != 200 || g>>8 != 40 || b>>8 != 10 || a>>8 != 255 {
+		t.Fatalf("a flat colour averaged to %d %d %d %d", r>>8, g>>8, b>>8, a>>8)
+	}
+
+	small := pngOf(t, 100, 100, color.RGBA{A: 255})
+	if kept, reduced, err := fitRaster(small); err != nil || reduced || !bytes.Equal(kept, small) {
+		t.Fatalf("a 100 pixel logo was changed: reduced=%v err=%v", reduced, err)
+	}
+	if kept, reduced, err := fitRaster([]byte(plainLogo)); err != nil || reduced || string(kept) != plainLogo {
+		t.Fatalf("an SVG was changed: reduced=%v err=%v", reduced, err)
 	}
 }
 

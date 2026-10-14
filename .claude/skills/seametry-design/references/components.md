@@ -346,14 +346,31 @@ Top of every constituent and alloy page. Lot number; name in display serif; tick
 **Data:** the published members, current admission, whole-percent weights split by `splitByWeights` in integer atoms. Weights travel in the URL with the rest of the unsigned plan, paired by position with `selected`.
 **Rules:** whole percents only, so the split is exact integer arithmetic. Holdings name a purchase after its basket only when it is that basket as published, every constituent at equal weight; anything else started from a basket is "<name> remix", never passed off as the published composition.
 
-### Catalogue table
-**Answers:** what is in this set, and which entries meet the standard?
-Columns: Lot, Name, Grade, Condition summary, Evidence, Stamp. Sortable. Rows are data: radius 0, rules between, no zebra fills heavier than one tone.
-Directly inspired by Infisical's certificate table, carrying our data.
+### List
+**Answers:** what is in this set, and where does each entry lead?
+**Anatomy:** a bordered raised plate with the single top highlight; a quiet column head; divided rows of one height, each row one target (a link, or a button that opens a sheet on the same page) ending in a next glyph. The page names its columns once as a grid template; rows take them by subgrid, so heads and cells align without the page styling either. A cell marked wide leaves below the tablet breakpoint, where a row keeps its identity and one value.
+**States:** default; empty (the page says why in one sentence above where the list would be); loading (a rule-line skeleton naming what is read).
+**Data:** caller-owned rows.
+**Rules:** a column whose value is the same on every visible row is not a column: drop it for that view. No "Open" or "View" text in a row; the row is the target. `@seametry/ui/list`. Used by Instruments and Holdings.
+
+### Identity
+**Answers:** which instrument is this, at a glance?
+**Anatomy:** the issuer's mirrored logo (or its lettered tile), the symbol, and one quiet line: the company from the mint's own metadata, then the issuer's short name when the view mixes issuers.
+**Rules:** the mark is never shorter than the text beside it: 40px beside two lines, 56px in a page header. The issuer's name never appears inside the company name; names come from `lib/instrument-identity.ts` only. `@seametry/ui/list`.
+
+### Tabs
+**Answers:** which view of this subject am I looking at, and how much is in each?
+**Anatomy:** labels on one rule, the current one underlined in ink, each with the count its view holds. Arrow keys move between them.
+**Rules:** for views of one subject (Holdings: Positions, Allocations, Activity; Instruments: by assay state). A control that changes a value rather than the view is a Segmented control. `@seametry/ui/tabs`.
+
+### Icon button
+**Answers:** an action whose glyph says it all: back, next, close, copy, refresh.
+**Anatomy:** a square of one target, rules above and below like a Quiet action, one glyph. Its label is required and becomes the accessible name and the tooltip; it is never drawn.
+**Rules:** never for the page's decision (Buy, Sell all, Strike, Melt), which is a Key with its words.
 
 ### Pagination
 **Answers:** which part of a long published register am I reading, and where can I continue?
-**Anatomy:** previous page when one exists; numbered page links; next page when one exists; current page stated with `aria-current`.
+**Anatomy:** previous page when one exists; numbered page links; next page when one exists; current page stated with `aria-current`. In the app, previous and next are Icon buttons either side of "Page n of m".
 **States:** first page; middle page; last page; one page, in which case the component is absent.
 **Data:** total rows, rows per generated page, current page and stable page URLs.
 **Rules:** use only when the register outgrows one useful reading surface. Every page remains a complete static document and every row remains reachable without JavaScript. Pagination never replaces a filter when the user's question is categorical.
@@ -433,12 +450,12 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **Identity:** a terminal's top bar on the sheet surface, aligned to the content width so its edges meet the page. The current tab is a raised tone behind primary text, led by its group's icon in the action green (Desk, Buy, Hall, Assay), so the icon marks where you are rather than decorating every route; the House rail uses only the action-green label because its destinations share one line with no tab. The reading links in the Status bar keep their icons, which distinguish an exit from the operational routes.
 **States:** current route; narrow; wallet disconnected or connected; each page's network.
 **Data:** one route list that drives the top bar tabs and the narrow navigation register, so they cannot disagree.
-**Rules:** the mobile tabs reference the same route records as the wide bar. Every route resolves. The current route is named by its tab; a page header appears only when it adds network or decision context that the shell cannot carry. Reading links remain on the public pages and wide Status bar.
+**Rules:** the phone tab bar takes its height from `--shell-bottom-inset`, which the shell publishes and every sticky bar and the Toast region sit above, so nothing pinned to the bottom hides behind it. The mobile tabs reference the same route records as the wide bar. Every route resolves. The current route is named by its tab; a page header appears only when it adds network or decision context that the shell cannot carry. Reading links remain on the public pages and wide Status bar.
 
 ### Page header
 **Answers:** what is this page, and what does it act on?
-**Anatomy:** group label; title, with an optional Info note beside it; Network badge; optional quiet links.
-**Rules:** no subtitle. The page's own components say what it is; what a reader may want first goes in the Info note, and explanation belongs on the reading pages, linked, not repeated here (Storm, 7 October 2026).
+**Anatomy:** title, with an optional Info note beside it; Network badge; optional quiet links. No group label: the product tabs already name it (Storm, 14 October 2026).
+**Rules:** one title per page; no section below restates it. No subtitle. The page's own components say what it is; what a reader may want first goes in the Info note, and explanation belongs on the reading pages, linked, not repeated here (Storm, 7 October 2026).
 
 ### Network badge
 **Answers:** which cluster does this page read or write?

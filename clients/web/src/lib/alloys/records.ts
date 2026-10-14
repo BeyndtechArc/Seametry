@@ -1,6 +1,6 @@
 import index from "../../../../../shared/evidence/alloys/index.json";
 import { METADATA_ORIGIN } from "../compose/identity";
-import { logoFor, logoForSymbol } from "../instrument-logos";
+import { logoSrc } from "../logo-src";
 import type { Alloy } from "../terminal-contract";
 
 // shared/evidence/alloys/index.json is written by scripts/record-founding.ts
@@ -45,9 +45,11 @@ export function legIdentity(alloy: Alloy, legMint: string): LegIdentity {
   // with no record, any Alloy founded after the record was written, finds
   // the logo by the symbol its stand-in states on chain; until 8 October
   // 2026 it fell to a lettered tile, so every new Alloy looked unfinished.
+  // The logo route resolves either, so this module stays free of the
+  // manifest that client pages must not download.
   return {
     symbol,
-    logo: (recorded ? logoFor(recorded.real_mint) : logoFor(legMint)) ?? logoForSymbol(symbol),
+    logo: logoSrc(recorded?.real_mint ?? symbol ?? legMint),
     realMint: recorded?.real_mint,
   };
 }

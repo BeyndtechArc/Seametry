@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Digest, FilterBar, LotMark, QuietAction, RouteAction, Rule, Stamp, TextAction, type GradeName } from "@seametry/ui";
+import { Digest, FilterBar, IconButton, LotMark, RouteAction, Rule, Stamp, TextAction, type GradeName } from "@seametry/ui";
+import { Identity, List, ListCell, ListRow } from "@seametry/ui/list";
+import { Tabs } from "@seametry/ui/tabs";
 import { Icon } from "@seametry/ui/icons";
 import type { Admission } from "@/lib/allocation/admissions";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import type {
   InstrumentAssayResponse,
-  InstrumentRegisterResponse,
   TerminalProblem,
 } from "@/lib/terminal-contract";
 import { formatAmount } from "@/lib/amount";
-import { logoFor } from "@/lib/instrument-logos";
-import { instrumentName } from "@/lib/instrument-names";
-import type { CatalogueInstrument, CatalogueResponse } from "@/lib/instrument-catalogue-contract";
+import type { CatalogueInstrument, CatalogueResponse, CatalogueState } from "@/lib/instrument-catalogue-contract";
+import { shortIssuer } from "@/lib/issuers";
 import { PageHeader } from "../_shell/page-header";
 import styles from "./desk.module.css";
 
@@ -81,25 +81,6 @@ function LoadingRegister() {
   );
 }
 
-function EmptyRegister({ asOf }: { asOf: string }) {
-  return (
-    <section className={styles.boundary} role="status">
-      <div className={styles.boundaryTitle}>
-        <span>Registry state</span>
-        <h2>No persisted instruments</h2>
-      </div>
-      <div className={styles.boundaryCopy}>
-        <p>The Gateway answered with an empty instrument register as of {captureLabel(asOf)} UTC.</p>
-        <code>0 records</code>
-      </div>
-      <div className={styles.boundaryActions}>
-        <RouteAction href="/app/alloys">Inspect live Alloys</RouteAction>
-        <TextAction href="/app">Return to the desk</TextAction>
-      </div>
-    </section>
-  );
-}
-
 function captureLabel(capturedAt?: string) {
   if (!capturedAt) return "Capture time unavailable";
   const captured = new Date(capturedAt);
@@ -119,110 +100,81 @@ function sourceAge(ageSeconds?: number) {
   return `${Math.floor(minutes / 60)}h old`;
 }
 
+const STATE_WORDS: Record<CatalogueState, string> = { available: "Available", assayed: "Assayed", listed: "Not assayed" };
+
+/**
+ * One register of every listed instrument. Tabs narrow it by assay state;
+ * a column whose value would be the same on every row of the tab is left out.
+ */
 export function InstrumentRegister() {
-  const { value, problem, loading } = useTerminalResource<InstrumentRegisterResponse>("/api/terminal/instruments");
-  const [catalogueQuery, setCatalogueQuery] = useState("");
-  const [catalogueIssuer, setCatalogueIssuer] = useState("any");
-  const [cataloguePage, setCataloguePage] = useState(1);
-  const cataloguePath = `/api/instruments/catalogue?q=${encodeURIComponent(catalogueQuery)}&issuer=${encodeURIComponent(catalogueIssuer)}&page=${cataloguePage}`;
-  const catalogue = useTerminalResource<CatalogueResponse>(cataloguePath);
+  const [query, setQuery] = useState("");
+  const [issuer, setIssuer] = useState("any");
+  const [state, setState] = useState<CatalogueState | "any">("available");
+  const [page, setPage] = useState(1);
+  const catalogue = useTerminalResource<CatalogueResponse>(`/api/instruments/catalogue?q=${encodeURIComponent(query)}&issuer=${encodeURIComponent(issuer)}&state=${state}&page=${page}`);
+  const meta = catalogue.value?.meta;
+  const showState = state === "any";
+  const showGrade = state !== "listed";
+  const head = ["Instrument", "Issuer", ...(showGrade ? ["Grade"] : []), ...(showState ? ["State"] : [])];
+  const columns = head.length === 4 ? styles.registerFour : head.length === 3 ? styles.registerThree : styles.registerTwo;
 
   return (
     <div className={styles.instrumentRegister}>
       <PageHeader
-        group="Assay"
         title="Instruments"
         network="Mainnet evidence"
-        info={<><p>Published listings show what each issuer advertised in the latest capture. Recorded assays show the smaller set Seametry has decoded and judged.</p><p>Only instruments marked Available can enter an Allocation.</p></>}
+        info={<><p>Every listing each issuer publishes, named as the issuer wrote it into the mint. Assayed instruments carry decoded issuer powers and a policy verdict from Seametry; only Available ones can enter an Allocation.</p><p>Search does not imply an instrument passed an assay.</p></>}
       />
-
-      <section className={styles.registerSection} aria-labelledby="catalogue-heading">
-        <header className={styles.sectionHeading}>
-          <span>Issuer captures</span>
-          <h2 id="catalogue-heading">Published instruments</h2>
-          <p>{catalogue.value ? `${catalogue.value.meta.total.toLocaleString()} listings captured from both issuers. Search does not imply an instrument passed an assay.` : "Reading the captured issuer listings."}</p>
-        </header>
-        {catalogue.value ? <FilterBar
-          searchLabel="Search symbol, name or mint"
-          query={catalogueQuery}
-          onQuery={(next) => { setCatalogueQuery(next); setCataloguePage(1); }}
-          shown={catalogue.value.data.length}
-          total={catalogue.value.meta.filtered}
-          groups={[{
-            name: "catalogue-issuer",
-            label: "Issuer",
-            value: catalogueIssuer,
-            onChange: (next) => { setCatalogueIssuer(next); setCataloguePage(1); },
-            options: [{ value: "any", label: "Both issuers" }, ...catalogue.value.meta.issuers.map((name) => ({ value: name, label: name }))],
-          }]}
-        /> : null}
-        {catalogue.loading ? <p className={styles.quietState} role="status">Reading published instruments.</p> : null}
-        {catalogue.problem ? <p className={styles.quietState} role="alert">Published listings could not be read. {catalogue.problem.detail}</p> : null}
-        {catalogue.value ? <>
-          <ul className={styles.catalogueRows}>
-            {catalogue.value.data.map((instrument) => <li key={instrument.mint}>
-              <Link className={styles.catalogueIdentity} href={`/app/instruments/${encodeURIComponent(instrument.mint)}`}>
-                <LotMark symbol={instrument.symbol} src={logoFor(instrument.mint)} size="list" />
-                <span><b>{instrument.symbol}</b><small title={instrument.name}>{instrument.name}</small><small>{instrument.issuer}</small></span>
-              </Link>
-              <span className={styles.catalogueState} data-state={instrument.state}>{instrument.state === "available" ? "Available" : instrument.state === "assayed" ? "Assayed" : "Assay pending"}</span>
-            </li>)}
-          </ul>
-          <nav className={styles.cataloguePager} aria-label="Published instrument pages">
-            <QuietAction type="button" icon="back" disabled={catalogue.value.meta.page <= 1} onClick={() => setCataloguePage((page) => Math.max(1, page - 1))}>Previous</QuietAction>
-            <span>{catalogue.value.meta.page} / {catalogue.value.meta.pages}</span>
-            <QuietAction type="button" icon="next" disabled={catalogue.value.meta.page >= catalogue.value.meta.pages} onClick={() => setCataloguePage((page) => page + 1)}>Next</QuietAction>
-          </nav>
-        </> : null}
-      </section>
-
-      {loading ? <LoadingRegister /> : null}
-      {problem ? <Boundary problem={problem} /> : null}
-      {value && value.data.length === 0 ? <EmptyRegister asOf={value.meta.as_of} /> : null}
-      {value && value.data.length > 0 ? (
-        <section className={styles.registerSection} aria-labelledby="register-heading">
-          <header className={styles.sectionHeading}>
-            <span>{value.meta.cluster ?? "Cluster unavailable"}</span>
-            <h2 id="register-heading">Recorded instruments</h2>
-            <p>Served {captureLabel(value.meta.served_at)} UTC. Completeness: {value.meta.completeness}.</p>
-          </header>
-          <div className={styles.tableViewport}>
-            <table className={styles.instrumentTable}>
-              <thead>
-                <tr>
-                  <th>Instrument</th>
-                  <th>Grade</th>
-                  <th>Issuer powers</th>
-                  <th>Capture</th>
-                  <th><span className={styles.srOnly}>Open</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                {value.data.map((instrument) => (
-                  <tr key={instrument.mint}>
-                    <td>
-                      <Link className={styles.lotIdentity} href={`/app/instruments/${encodeURIComponent(instrument.mint)}`}>
-                        <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} size="header" />
-                        <span>
-                          <b>{instrument.symbol ?? "Symbol unavailable"}</b>
-                          {instrumentName(instrument.mint) ? <small className={styles.instrumentName}>{instrumentName(instrument.mint)}</small> : null}
-                          <Digest value={instrument.mint} />
-                        </span>
-                      </Link>
-                    </td>
-                    <td>{instrument.grade}</td>
-                    <td>{instrument.prerogatives.length} recorded</td>
-                    <td>
-                      <span>Slot {instrument.capture.slot}</span>
-                      <small>{captureLabel(instrument.capture.captured_at)} UTC</small>
-                    </td>
-                    <td><Link href={`/app/instruments/${encodeURIComponent(instrument.mint)}`}>Open assay</Link></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+      <Tabs
+        label="Assay state"
+        controls="instrument-register"
+        value={state}
+        onChange={(next) => { setState(next); setPage(1); }}
+        items={[
+          { value: "available", label: "Available", count: meta?.states.available },
+          { value: "assayed", label: "Assayed, not admitted", count: meta?.states.assayed },
+          { value: "listed", label: "Not assayed", count: meta?.states.listed },
+          { value: "any", label: "All", count: meta ? meta.states.available + meta.states.assayed + meta.states.listed : undefined },
+        ]}
+      />
+      <p className={styles.registerMeta}>{meta ? `${meta.total.toLocaleString()} listings published by Backpack Securities and Backed Finance, read from their mints on ${captureLabel(meta.capturedAt)} UTC.` : "Reading the captured issuer listings."}</p>
+      <FilterBar
+        searchLabel="Search symbol, name or mint"
+        query={query}
+        onQuery={(next) => { setQuery(next); setPage(1); }}
+        shown={catalogue.value?.data.length ?? 0}
+        total={meta?.filtered ?? 0}
+        groups={[{
+          name: "catalogue-issuer",
+          label: "Issuer",
+          value: issuer,
+          onChange: (next) => { setIssuer(next); setPage(1); },
+          options: [{ value: "any", label: "Both issuers" }, ...(meta?.issuers ?? []).map((name) => ({ value: name, label: name }))],
+        }]}
+      />
+      {catalogue.loading ? <LoadingRegister /> : null}
+      {catalogue.problem ? <Boundary problem={catalogue.problem} /> : null}
+      {catalogue.value && catalogue.value.data.length === 0 ? <p className={styles.quietState} role="status">{query.trim() ? `Nothing in this view matches "${query.trim()}".` : "No listing is in this state."}</p> : null}
+      {catalogue.value && catalogue.value.data.length > 0 ? (
+        <div id="instrument-register">
+          <List label="Instruments" head={head} className={columns}>
+            {catalogue.value.data.map((instrument) => (
+              <ListRow key={instrument.mint} href={`/app/instruments/${encodeURIComponent(instrument.mint)}`} link={Link}>
+                <Identity symbol={instrument.symbol} name={instrument.name} logo={instrument.logo} />
+                <ListCell wide>{shortIssuer(instrument.issuer)}</ListCell>
+                {showGrade ? <ListCell wide={showState}>{instrument.grade ?? "Not assayed"}</ListCell> : null}
+                {showState ? <ListCell>{STATE_WORDS[instrument.state]}</ListCell> : null}
+              </ListRow>
+            ))}
+          </List>
+          {meta && meta.pages > 1 ? (
+            <nav className={styles.cataloguePager} aria-label="Instrument pages">
+              <IconButton icon="back" label="Previous page" disabled={meta.page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))} />
+              <span>Page {meta.page} of {meta.pages}</span>
+              <IconButton icon="next" label="Next page" disabled={meta.page >= meta.pages} onClick={() => setPage((current) => current + 1)} />
+            </nav>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );
@@ -233,8 +185,8 @@ function ListedAssay({ listing }: { listing: CatalogueInstrument }) {
     <section className={styles.assayHero}>
       <div className={styles.assayIdentity}>
         <span>Published listing</span>
-        <h1 className={styles.lotIdentity}><LotMark symbol={listing.symbol} src={logoFor(listing.mint)} size="header" />{listing.symbol}</h1>
-        <p className={styles.instrumentName}>{listing.name}</p>
+        <h1 className={styles.lotIdentity}><LotMark symbol={listing.symbol} src={listing.logo} size="header" />{listing.symbol}</h1>
+        {listing.name ? <p className={styles.instrumentName}>{listing.name}</p> : null}
         <Digest value={listing.mint} />
       </div>
       <dl className={styles.assayFacts}>
@@ -254,7 +206,9 @@ function ListedAssay({ listing }: { listing: CatalogueInstrument }) {
   </>;
 }
 
-function CapturedAssay({ admission, grade }: { admission: Admission; grade: GradeName }) {
+type Named = { name?: string; logo?: string };
+
+function CapturedAssay({ admission, grade, identity }: { admission: Admission; grade: GradeName; identity: Named }) {
   const instrument = admission.instrument;
   const decision = admission.capacity_decision;
   const capturedAt = instrument.capture.captured_at;
@@ -266,10 +220,10 @@ function CapturedAssay({ admission, grade }: { admission: Admission; grade: Grad
         <div className={styles.assayIdentity}>
           <span>Captured allocation record</span>
           <h1 className={styles.lotIdentity}>
-            <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} size="header" />
+            <LotMark symbol={instrument.symbol ?? "?"} src={identity.logo} size="header" />
             {instrument.symbol ?? "Symbol unavailable"}
           </h1>
-          {instrumentName(instrument.mint) ? <p className={styles.instrumentName}>{instrumentName(instrument.mint)}</p> : null}
+          {identity.name ? <p className={styles.instrumentName}>{identity.name}</p> : null}
           <Digest value={instrument.mint} />
         </div>
         <dl className={styles.assayFacts}>
@@ -321,7 +275,7 @@ function CapturedAssay({ admission, grade }: { admission: Admission; grade: Grad
   );
 }
 
-export function InstrumentAssay({ mint, listing, admission, grade, canAdd, from, selected }: { mint: string; listing?: CatalogueInstrument; admission?: Admission; grade?: GradeName; canAdd: boolean; from?: "compose" | "allocation"; selected: string }) {
+export function InstrumentAssay({ mint, identity, listing, admission, grade, canAdd, from, selected }: { mint: string; identity: Named; listing?: CatalogueInstrument; admission?: Admission; grade?: GradeName; canAdd: boolean; from?: "compose" | "allocation"; selected: string }) {
   const { value, problem, loading } = useTerminalResource<InstrumentAssayResponse>(
     `/api/terminal/instruments/${encodeURIComponent(mint)}`,
   );
@@ -344,7 +298,7 @@ export function InstrumentAssay({ mint, listing, admission, grade, canAdd, from,
       </div>
       {loading ? <LoadingRegister /> : null}
       {problem && !captured && !listed ? <Boundary problem={problem} /> : null}
-      {captured ? <CapturedAssay admission={captured.admission} grade={captured.grade} /> : null}
+      {captured ? <CapturedAssay admission={captured.admission} grade={captured.grade} identity={identity} /> : null}
       {listed ? <ListedAssay listing={listed} /> : null}
       {captured && canAdd ? (
         <div className={styles.assayActions}>
@@ -358,10 +312,10 @@ export function InstrumentAssay({ mint, listing, admission, grade, canAdd, from,
             <div className={styles.assayIdentity}>
               <span>Instrument assay</span>
               <h1 className={styles.lotIdentity}>
-                <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} size="header" />
+                <LotMark symbol={instrument.symbol ?? "?"} src={identity.logo} size="header" />
                 {instrument.symbol ?? "Symbol unavailable"}
               </h1>
-              {instrumentName(instrument.mint) ? <p className={styles.instrumentName}>{instrumentName(instrument.mint)}</p> : null}
+              {identity.name ? <p className={styles.instrumentName}>{identity.name}</p> : null}
               <Digest value={instrument.mint} />
             </div>
             <dl className={styles.assayFacts}>

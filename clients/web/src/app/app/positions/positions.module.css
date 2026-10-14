@@ -8,16 +8,6 @@
   margin-top: var(--sm-space-8);
 }
 
-.ledger,
-.activity {
-  display: grid;
-  gap: var(--sm-space-5);
-  min-width: 0;
-  padding: var(--sm-space-6);
-  border-top: 0.5px solid var(--sm-line-highlight);
-  background: var(--sm-surface-sheet);
-}
-
 .sale,
 .tradePanel {
   display: grid;
@@ -66,23 +56,6 @@
 }
 .sheetLink:focus-visible { outline: 2px solid var(--sm-accent-provenance); }
 
-.sectionHead {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--sm-space-4);
-}
-
-.sectionHead h2 {
-  margin: 0;
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-s);
-  font-weight: var(--sm-font-weight-regular);
-}
-
-.sectionHead p,
 .notice,
 .quote p {
   margin: var(--sm-space-2) 0 0;
@@ -99,61 +72,8 @@
   font-size: var(--sm-font-size-small);
 }
 
-.holdings,
-.activity ol {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.holdings li,
-.activity li {
-  display: flex;
-  align-items: center;
-  gap: var(--sm-space-4);
-  min-width: 0;
-  padding: var(--sm-space-4) 0;
-  border-top: 0.5px solid var(--sm-line-rule);
-}
-
-.identity,
-.activity li > div {
-  display: grid;
-  gap: var(--sm-space-1);
-  min-width: 0;
-}
-
-.identity {
-  flex: 1;
-}
-
-.identity b,
-.activity b {
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-body);
-}
-
-.identity span,
-.activity span {
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  font-variant-numeric: tabular-nums;
-}
-
-.activity li {
-  align-items: start;
-  justify-content: space-between;
-}
-
-.activity li > div:last-child {
-  justify-items: end;
-  text-align: right;
-}
-
-.activity a,
 .quote a,
-.notice a,
-.backLink {
+.notice a {
   color: var(--sm-accent-touchText);
   font-size: var(--sm-font-size-small);
 }
@@ -164,105 +84,10 @@
   gap: var(--sm-space-4);
 }
 
-.backLink {
-  justify-self: start;
-}
-
 @media (max-width: 640px) {
-  .ledger,
-  .sale,
-  .activity {
+  .sale {
     padding: var(--sm-space-4);
   }
-
-  .holdings li,
-  .activity li {
-    flex-wrap: wrap;
-  }
-
-  .activity li > div:last-child {
-    justify-items: start;
-    text-align: left;
-  }
-}
-
-
-.allocations {
-  display: grid;
-  gap: var(--sm-space-5);
-  min-width: 0;
-  padding: var(--sm-space-6);
-  border-top: 0.5px solid var(--sm-line-highlight);
-  background: var(--sm-surface-raised);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
-}
-
-.allocationCards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sm-space-5);
-}
-
-.allocationCard {
-  display: grid;
-  align-content: start;
-  gap: var(--sm-space-5);
-  min-width: 0;
-  padding: var(--sm-space-6);
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  background: var(--sm-surface-sheet);
-}
-
-.allocationCard > div:first-child {
-  display: grid;
-  gap: var(--sm-space-2);
-}
-
-.allocationCard > div:first-child > span {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.allocationCard h3 {
-  margin: 0;
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-l);
-  font-weight: var(--sm-font-weight-light);
-  letter-spacing: var(--sm-font-tracking-title);
-}
-
-.allocationCard p {
-  margin: 0;
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  line-height: 1.5;
-}
-
-.allocationLegs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sm-space-2);
-}
-
-.allocationLegs b {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--sm-space-2);
-  padding: var(--sm-space-2) var(--sm-space-3);
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-text-primary);
-  background: var(--sm-surface-ground);
-  font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.allocationLegs small {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-regular);
 }
 
 .batchSale {
@@ -313,9 +138,6 @@
 }
 
 @media (max-width: 760px) {
-  .allocationCards {
-    grid-template-columns: minmax(0, 1fr);
-  }
 
   .batchSaleLegs li {
     grid-template-columns: minmax(0, 1fr);
@@ -325,4 +147,48 @@
     justify-items: start;
     text-align: left;
   }
+}
+
+.view {
+  display: grid;
+  gap: var(--sm-space-5);
+  padding-top: var(--sm-space-6);
+}
+
+.viewMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sm-space-5);
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.viewMeta p {
+  margin: 0;
+}
+
+/* Instrument, held, sellable; the sellable column leaves on a phone. */
+.positionColumns { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+.allocationColumns { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) minmax(0, 1fr) auto; }
+
+@media (max-width: 768px) {
+  .positionColumns,
+  .allocationColumns { grid-template-columns: minmax(0, 1fr) auto auto; }
+}
+
+.allocationName {
+  display: grid;
+  gap: var(--sm-space-1);
+  min-width: 0;
+}
+
+.allocationName b {
+  font-size: var(--sm-font-size-body);
+  font-weight: var(--sm-font-weight-semibold);
+}
+
+.allocationName small {
+  color: var(--sm-text-secondary);
 }

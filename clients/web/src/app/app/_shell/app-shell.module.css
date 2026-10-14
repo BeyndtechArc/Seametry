@@ -4,6 +4,11 @@
    a ruled register behind an ink menu control. */
 
 .shell {
+  /* The phone tab bar's height, which the bar takes from here, so sticky
+     bars and the toast corner that sit above it cannot drift from it. The
+     tallest tab, Create with its padded mark and label, measured 63px of
+     the 72 held for it. Zero once the tab bar gives way. */
+  --shell-bottom-inset: calc(var(--sm-space-3) + var(--sm-space-11) + var(--sm-space-5) + env(safe-area-inset-bottom));
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-height: 100vh;
@@ -44,6 +49,8 @@
   bottom: 0;
   left: 0;
   z-index: 4;
+  box-sizing: border-box;
+  height: var(--shell-bottom-inset);
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: end;
@@ -111,6 +118,10 @@
 }
 
 @media (min-width: 900px) {
+  .shell {
+    --shell-bottom-inset: 0px;
+  }
+
   .topBarInner,
   .content,
   .statusInner {

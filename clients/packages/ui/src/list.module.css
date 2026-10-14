@@ -1,0 +1,117 @@
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 0.5px solid var(--sm-line-strong);
+  border-top-color: var(--sm-line-highlight);
+  border-radius: var(--sm-radius-surface);
+  background: var(--sm-surface-raised);
+}
+
+.head,
+.item,
+.row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.head {
+  align-items: center;
+  min-height: var(--sm-space-9);
+  padding: 0 var(--sm-space-5);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.item {
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.row {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  align-items: center;
+  column-gap: var(--sm-space-6);
+  min-height: var(--sm-space-11);
+  padding: var(--sm-space-3) var(--sm-space-5);
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+  text-decoration: none;
+}
+
+.head {
+  column-gap: var(--sm-space-6);
+}
+
+.row:hover {
+  background: var(--sm-surface-tray);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: -2px;
+}
+
+.trailing {
+  display: grid;
+  place-items: center;
+  color: var(--sm-text-tertiary);
+}
+
+.row:hover .trailing {
+  color: var(--sm-text-primary);
+}
+
+.trailing svg {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+}
+
+.cell,
+.wideOnly {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-4);
+  min-width: 0;
+}
+
+.identityText {
+  display: grid;
+  gap: var(--sm-space-1);
+  min-width: 0;
+}
+
+.identityText b {
+  font-size: var(--sm-font-size-body);
+  font-weight: var(--sm-font-weight-semibold);
+}
+
+.identityText small {
+  overflow: hidden;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .wideOnly {
+    display: none;
+  }
+
+  .head {
+    display: none;
+  }
+}

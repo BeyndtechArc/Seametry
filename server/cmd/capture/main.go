@@ -12,11 +12,12 @@
 //	go run ./server/cmd/capture                 # refresh every target in targets.json
 //	go run ./server/cmd/capture -rpc https://...
 //	go run ./server/cmd/capture -symbols SPCX,NFLX   # capture only these
-//	go run ./server/cmd/capture -logos          # mirror each fixture's issuer logo
+//	go run ./server/cmd/capture -logos          # mirror every listed instrument's issuer logo
 //
-// -logos reads the fixtures already committed and never refetches a mint, so
-// it cannot move the evidence the decoder and policy goldens are tested
-// against. See logos.go.
+// -logos reads the metadata URIs the listing survey (go run ./server/cmd/survey
+// -listings) recorded from each mint and never refetches a mint, so it cannot
+// move the evidence the decoder and policy goldens are tested against. See
+// logos.go.
 //
 // The default endpoint is the public one, which is rate limited and fine for a
 // few dozen accounts. It needs no credentials, which is deliberate: anyone
@@ -98,22 +99,15 @@ func main() {
 	rpc := flag.String("rpc", defaultRPC, "Solana JSON-RPC endpoint")
 	dir := flag.String("dir", filepath.Join("shared", "fixtures", "mainnet"), "fixture directory")
 	commitment := flag.String("commitment", "finalized", "commitment level")
-	logos := flag.Bool("logos", false, "mirror the logo each fixture's on-chain metadata names, instead of capturing mints")
-	names := flag.Bool("names", false, "record the names stored in the captured mints without making a network request")
-	nameManifest := flag.String("name-manifest", filepath.Join("shared", "evidence", "instrument-names.json"), "the captured mint names for the web interface")
+	logos := flag.Bool("logos", false, "mirror the logo every listed mint's on-chain metadata names, instead of capturing mints")
+	listingDir := flag.String("listings", filepath.Join("shared", "evidence", "listings"), "the issuer listings the survey wrote, read by -logos")
 	logoDir := flag.String("logo-dir", filepath.Join("clients", "web", "public", "instruments"), "where mirrored logos are written")
 	logoManifest := flag.String("logo-manifest", filepath.Join("shared", "evidence", "instrument-logos.json"), "the record of every logo, captured or not")
 	symbols := flag.String("symbols", "", "comma separated symbols from targets.json to capture; empty captures every target")
 	flag.Parse()
 
 	if *logos {
-		if err := mirrorLogos(*dir, *logoDir, *logoManifest); err != nil {
-			fail(err)
-		}
-		return
-	}
-	if *names {
-		if err := captureNames(*dir, *nameManifest); err != nil {
+		if err := mirrorLogos(*listingDir, *logoDir, *logoManifest); err != nil {
 			fail(err)
 		}
 		return

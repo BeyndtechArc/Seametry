@@ -400,6 +400,19 @@ export function TextAction({
   );
 }
 
+/**
+ * components.md, Icon button: an action whose glyph says it all (back,
+ * next, close, copy, refresh). The label is required and becomes the
+ * accessible name and the tooltip; it is never drawn.
+ */
+export function IconButton({ icon, label, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { icon: IconName; label: string }) {
+  return (
+    <button type="button" {...buttonProps} className={classes(styles.iconButton, buttonProps.className)} aria-label={label} title={label}>
+      <Icon name={icon} />
+    </button>
+  );
+}
+
 /** components.md, Route action: a step forward inside one page is navigation, so it wears the Route action as a button. */
 export function ContinueAction({ children, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
   return (

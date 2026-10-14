@@ -41,7 +41,6 @@ export default async function AllocationPage({ searchParams }: { searchParams: P
   return (
     <div className={styles.page}>
         <PageHeader
-          group="Allocation"
           title="Allocation"
           network="Mainnet"
           info={

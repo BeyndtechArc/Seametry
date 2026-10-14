@@ -14,11 +14,6 @@
   min-width: 0;
 }
 
-.titleLine span {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-small);
-}
-
 .titleRow {
   position: relative;
   display: block;
