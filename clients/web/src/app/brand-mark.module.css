@@ -9,11 +9,14 @@
 
 /* The name over what it is, both quiet beside the mark, which leads: the
    mark stands taller than the two lines together (Storm, 14 October 2026).
-   The tagline sits below the smallest type token, so it is derived from it,
-   with half the serial tracking. */
+   The tagline sits below the smallest type token, so it is derived from it
+   (9.6px), with half the serial tracking. */
+/* The two lines sit low, on the mark's foot, rather than centred on it. */
 .words {
   display: grid;
-  gap: var(--sm-space-1);
+  align-self: flex-end;
+  gap: var(--sm-space-2);
+  padding-bottom: var(--sm-space-1);
   line-height: 1;
 }
 
@@ -27,7 +30,7 @@
 .words small {
   color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-ui);
-  font-size: calc(var(--sm-font-size-micro) * 0.875);
+  font-size: calc(var(--sm-font-size-micro) * 0.8);
   font-weight: var(--sm-font-weight-medium);
   letter-spacing: calc(var(--sm-font-tracking-serial) / 2);
 }
