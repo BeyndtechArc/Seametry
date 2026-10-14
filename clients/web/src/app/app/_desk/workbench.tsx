@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Digest, LotMark, RouteAction, Rule, Stamp, TextAction, type GradeName } from "@seametry/ui";
+import { Digest, FilterBar, LotMark, QuietAction, RouteAction, Rule, Stamp, TextAction, type GradeName } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
 import type { Admission } from "@/lib/allocation/admissions";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
@@ -13,6 +13,8 @@ import type {
 } from "@/lib/terminal-contract";
 import { formatAmount } from "@/lib/amount";
 import { logoFor } from "@/lib/instrument-logos";
+import { instrumentName } from "@/lib/instrument-names";
+import type { CatalogueInstrument, CatalogueResponse } from "@/lib/instrument-catalogue-contract";
 import { PageHeader } from "../_shell/page-header";
 import styles from "./desk.module.css";
 
@@ -33,6 +35,7 @@ export function useTerminalResource<T>(path: string) {
           setProblem(body as TerminalProblem);
           return;
         }
+        setProblem(undefined);
         setValue(body as T);
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") return;
@@ -118,6 +121,11 @@ function sourceAge(ageSeconds?: number) {
 
 export function InstrumentRegister() {
   const { value, problem, loading } = useTerminalResource<InstrumentRegisterResponse>("/api/terminal/instruments");
+  const [catalogueQuery, setCatalogueQuery] = useState("");
+  const [catalogueIssuer, setCatalogueIssuer] = useState("any");
+  const [cataloguePage, setCataloguePage] = useState(1);
+  const cataloguePath = `/api/instruments/catalogue?q=${encodeURIComponent(catalogueQuery)}&issuer=${encodeURIComponent(catalogueIssuer)}&page=${cataloguePage}`;
+  const catalogue = useTerminalResource<CatalogueResponse>(cataloguePath);
 
   return (
     <div className={styles.instrumentRegister}>
@@ -125,8 +133,48 @@ export function InstrumentRegister() {
         group="Assay"
         title="Instruments"
         network="Mainnet evidence"
-        info={<p>Every captured instrument with its grade, issuer powers and the slot it was read at.</p>}
+        info={<><p>Published listings show what each issuer advertised in the latest capture. Recorded assays show the smaller set Seametry has decoded and judged.</p><p>Only instruments marked Available can enter an Allocation.</p></>}
       />
+
+      <section className={styles.registerSection} aria-labelledby="catalogue-heading">
+        <header className={styles.sectionHeading}>
+          <span>Issuer captures</span>
+          <h2 id="catalogue-heading">Published instruments</h2>
+          <p>{catalogue.value ? `${catalogue.value.meta.total.toLocaleString()} listings captured from both issuers. Search does not imply an instrument passed an assay.` : "Reading the captured issuer listings."}</p>
+        </header>
+        {catalogue.value ? <FilterBar
+          searchLabel="Search symbol, name or mint"
+          query={catalogueQuery}
+          onQuery={(next) => { setCatalogueQuery(next); setCataloguePage(1); }}
+          shown={catalogue.value.data.length}
+          total={catalogue.value.meta.filtered}
+          groups={[{
+            name: "catalogue-issuer",
+            label: "Issuer",
+            value: catalogueIssuer,
+            onChange: (next) => { setCatalogueIssuer(next); setCataloguePage(1); },
+            options: [{ value: "any", label: "Both issuers" }, ...catalogue.value.meta.issuers.map((name) => ({ value: name, label: name }))],
+          }]}
+        /> : null}
+        {catalogue.loading ? <p className={styles.quietState} role="status">Reading published instruments.</p> : null}
+        {catalogue.problem ? <p className={styles.quietState} role="alert">Published listings could not be read. {catalogue.problem.detail}</p> : null}
+        {catalogue.value ? <>
+          <ul className={styles.catalogueRows}>
+            {catalogue.value.data.map((instrument) => <li key={instrument.mint}>
+              <Link className={styles.catalogueIdentity} href={`/app/instruments/${encodeURIComponent(instrument.mint)}`}>
+                <LotMark symbol={instrument.symbol} src={logoFor(instrument.mint)} size="list" />
+                <span><b>{instrument.symbol}</b><small title={instrument.name}>{instrument.name}</small><small>{instrument.issuer}</small></span>
+              </Link>
+              <span className={styles.catalogueState} data-state={instrument.state}>{instrument.state === "available" ? "Available" : instrument.state === "assayed" ? "Assayed" : "Assay pending"}</span>
+            </li>)}
+          </ul>
+          <nav className={styles.cataloguePager} aria-label="Published instrument pages">
+            <QuietAction type="button" icon="back" disabled={catalogue.value.meta.page <= 1} onClick={() => setCataloguePage((page) => Math.max(1, page - 1))}>Previous</QuietAction>
+            <span>{catalogue.value.meta.page} / {catalogue.value.meta.pages}</span>
+            <QuietAction type="button" icon="next" disabled={catalogue.value.meta.page >= catalogue.value.meta.pages} onClick={() => setCataloguePage((page) => page + 1)}>Next</QuietAction>
+          </nav>
+        </> : null}
+      </section>
 
       {loading ? <LoadingRegister /> : null}
       {problem ? <Boundary problem={problem} /> : null}
@@ -157,6 +205,7 @@ export function InstrumentRegister() {
                         <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} size="header" />
                         <span>
                           <b>{instrument.symbol ?? "Symbol unavailable"}</b>
+                          {instrumentName(instrument.mint) ? <small className={styles.instrumentName}>{instrumentName(instrument.mint)}</small> : null}
                           <Digest value={instrument.mint} />
                         </span>
                       </Link>
@@ -179,6 +228,32 @@ export function InstrumentRegister() {
   );
 }
 
+function ListedAssay({ listing }: { listing: CatalogueInstrument }) {
+  return <>
+    <section className={styles.assayHero}>
+      <div className={styles.assayIdentity}>
+        <span>Published listing</span>
+        <h1 className={styles.lotIdentity}><LotMark symbol={listing.symbol} src={logoFor(listing.mint)} size="header" />{listing.symbol}</h1>
+        <p className={styles.instrumentName}>{listing.name}</p>
+        <Digest value={listing.mint} />
+      </div>
+      <dl className={styles.assayFacts}>
+        <div><dt>Issuer</dt><dd>{listing.issuer}</dd></div>
+        <div><dt>Assay state</dt><dd>Pending</dd></div>
+        <div><dt>Listing captured</dt><dd><time dateTime={listing.capturedAt}>{captureLabel(listing.capturedAt)} UTC</time></dd></div>
+        <div><dt>Solana slot</dt><dd>{listing.slot}</dd></div>
+      </dl>
+    </section>
+    <section className={styles.assaySection}>
+      <header className={styles.sectionHeading}>
+        <span>Listing boundary</span>
+        <h2>Not assayed yet</h2>
+        <p>This instrument appears in the captured issuer catalogue, but Seametry has not persisted its registry powers, policy verdict and executable depth. It cannot enter an Allocation until those records exist.</p>
+      </header>
+    </section>
+  </>;
+}
+
 function CapturedAssay({ admission, grade }: { admission: Admission; grade: GradeName }) {
   const instrument = admission.instrument;
   const decision = admission.capacity_decision;
@@ -194,6 +269,7 @@ function CapturedAssay({ admission, grade }: { admission: Admission; grade: Grad
             <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} size="header" />
             {instrument.symbol ?? "Symbol unavailable"}
           </h1>
+          {instrumentName(instrument.mint) ? <p className={styles.instrumentName}>{instrumentName(instrument.mint)}</p> : null}
           <Digest value={instrument.mint} />
         </div>
         <dl className={styles.assayFacts}>
@@ -245,13 +321,14 @@ function CapturedAssay({ admission, grade }: { admission: Admission; grade: Grad
   );
 }
 
-export function InstrumentAssay({ mint, admission, grade, canAdd, from, selected }: { mint: string; admission?: Admission; grade?: GradeName; canAdd: boolean; from?: "compose" | "allocation"; selected: string }) {
+export function InstrumentAssay({ mint, listing, admission, grade, canAdd, from, selected }: { mint: string; listing?: CatalogueInstrument; admission?: Admission; grade?: GradeName; canAdd: boolean; from?: "compose" | "allocation"; selected: string }) {
   const { value, problem, loading } = useTerminalResource<InstrumentAssayResponse>(
     `/api/terminal/instruments/${encodeURIComponent(mint)}`,
   );
   const instrument = value?.instrument.data;
   const decision = value?.admissibility.data;
   const captured = problem?.status === 404 && admission && grade ? { admission, grade } : undefined;
+  const listed = problem?.status === 404 && !captured ? listing : undefined;
   const origin = from === "compose" ? "/app/compose" : from === "allocation" ? "/app/allocation" : "/app/instruments";
   const returnPath = from ? `${origin}?selected=${encodeURIComponent(selected)}` : origin;
   const destination = from === "compose" ? "/app/compose" : "/app/allocation";
@@ -266,8 +343,9 @@ export function InstrumentAssay({ mint, admission, grade, canAdd, from, selected
         </Link>
       </div>
       {loading ? <LoadingRegister /> : null}
-      {problem && !captured ? <Boundary problem={problem} /> : null}
+      {problem && !captured && !listed ? <Boundary problem={problem} /> : null}
       {captured ? <CapturedAssay admission={captured.admission} grade={captured.grade} /> : null}
+      {listed ? <ListedAssay listing={listed} /> : null}
       {captured && canAdd ? (
         <div className={styles.assayActions}>
           <RouteAction href={addPath}>{from === "compose" ? "Add to Formula" : "Add to basket"}</RouteAction>
@@ -283,6 +361,7 @@ export function InstrumentAssay({ mint, admission, grade, canAdd, from, selected
                 <LotMark symbol={instrument.symbol ?? "?"} src={logoFor(instrument.mint)} size="header" />
                 {instrument.symbol ?? "Symbol unavailable"}
               </h1>
+              {instrumentName(instrument.mint) ? <p className={styles.instrumentName}>{instrumentName(instrument.mint)}</p> : null}
               <Digest value={instrument.mint} />
             </div>
             <dl className={styles.assayFacts}>

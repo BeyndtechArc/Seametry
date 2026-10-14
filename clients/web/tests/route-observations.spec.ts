@@ -140,7 +140,7 @@ test("the basket register narrows through the shared Filter bar and counts what 
   // components.md, App shell: narrow layouts carry no menu button.
   await expect(page.getByRole("banner").getByRole("button", { name: /navigation/i })).toHaveCount(0);
   const baskets = page.getByRole("main").getByRole("region", { name: "Published baskets" });
-  await expect(baskets.getByRole("link", { name: "Build a basket" })).toHaveAttribute("href", "/app/baskets/build");
+  await expect(baskets.getByRole("link", { name: "Allocation" })).toHaveAttribute("href", "/app/baskets/build");
   const register = baskets.getByRole("list", { name: "Published basket register" });
   await baskets.getByLabel("Filters").click();
   await baskets.getByRole("radio", { name: "Global ETFs" }).check();

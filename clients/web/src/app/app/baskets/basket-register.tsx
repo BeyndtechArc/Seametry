@@ -117,10 +117,10 @@ export function BasketRegister({ baskets, offered }: { baskets: readonly Allocat
         </ol>
       )}
 
-      {/* On phones this is the way into the builder: the bottom tabs carry Baskets, not Build a basket. */}
+      {/* The same Allocation destination appears in the app navigation. */}
       <p className={styles.registerClose}>
         <span>A different composition from admitted instruments.</span>
-        <TextAction href="/app/baskets/build" icon="next">Build a basket</TextAction>
+        <TextAction href="/app/baskets/build" icon="next">Allocation</TextAction>
       </p>
     </section>
   );

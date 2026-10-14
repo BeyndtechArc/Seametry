@@ -267,10 +267,10 @@ test("the Allocation keeps its terms behind an info note, and the order sheet st
   // Scoped to main: while the page streams, the loading boundary holds a
   // hidden copy of the same text outside it, and an unscoped lookup matches twice.
   const main = page.getByRole("main");
-  await expect(main.getByRole("heading", { level: 1, name: "Build a basket" })).toBeVisible();
+  await expect(main.getByRole("heading", { level: 1, name: "Allocation" })).toBeVisible();
   const terms = main.getByText("You remain bound by each issuer's terms of eligibility.", { exact: true });
   await expect(terms).toBeHidden();
-  await main.getByLabel("About Build a basket").click();
+  await main.getByLabel("About Allocation").click();
   await expect(terms).toBeVisible();
   // components.md, Info note: what the note says about cost is never only there.
   const sheet = main.getByRole("complementary", { name: "Order sheet" });
@@ -397,7 +397,7 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   await expect(page.getByRole("banner").getByText("Seametry", { exact: true })).toBeHidden();
   const appTabs = page.getByRole("navigation", { name: "Mobile product" });
   await expect(appTabs.getByRole("link")).toHaveCount(5);
-  await expect(appTabs.getByRole("link", { name: "Baskets" })).toHaveAttribute("href", "/app/baskets");
+  await expect(appTabs.getByRole("link", { name: "Allocation" })).toHaveAttribute("href", "/app/baskets/build");
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("button", { name: "Use light mode" })).toBeVisible();
   const appOrder = await page.evaluate(() => ({
@@ -554,7 +554,7 @@ test("the app header connects a wallet and keeps the mode control beside it", as
     "Overview",
     "Holdings",
     "Baskets",
-    "Build a basket",
+    "Allocation",
     "Alloys",
     "Sponsor",
     "Instruments",
@@ -574,12 +574,12 @@ test("the docs render compiled MDX with its contents, and search answers from th
   expect((await request.get("/docs/no-such-page")).status()).toBe(404);
 });
 
-test("Baskets and Build a basket are sibling shell routes, never a switch the page draws", async ({ page }) => {
+test("Baskets and Allocation are sibling shell routes, never a switch the page draws", async ({ page }) => {
   for (const [path, current] of [
     ["/app/baskets", "Baskets"],
     ["/app/baskets/prime-seven", "Baskets"],
-    ["/app/baskets/build", "Build a basket"],
-    ["/app/allocation", "Build a basket"],
+    ["/app/baskets/build", "Allocation"],
+    ["/app/allocation", "Allocation"],
   ] as const) {
     await page.goto(path);
     const product = page.getByRole("banner").getByRole("navigation", { name: "Product" });

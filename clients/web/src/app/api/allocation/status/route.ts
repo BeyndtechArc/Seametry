@@ -15,12 +15,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Expected ?signature= a base58 transaction signature." }, { status: 400 });
   }
   const sent = request.nextUrl.searchParams.get("sent");
+  const blockhash = request.nextUrl.searchParams.get("blockhash") ?? undefined;
   const sentAt = sent ? new Date(sent) : undefined;
   if (sentAt && Number.isNaN(sentAt.getTime())) {
     return NextResponse.json({ error: `Expected ?sent= an ISO time the transaction was submitted, received ${JSON.stringify(sent)}.` }, { status: 400 });
   }
   try {
-    return NextResponse.json(await legStatus(configured.config, signature, wallet, mint, sentAt));
+    return NextResponse.json(await legStatus(configured.config, signature, wallet, mint, sentAt, blockhash));
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Reading the status failed." }, { status: 502 });
   }

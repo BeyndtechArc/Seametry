@@ -67,7 +67,6 @@ test("Compose stops at the twelve legs an Alloy can hold", async ({ page }) => {
   expect(await admitted.count()).toBeGreaterThan(12);
   for (let i = 0; i < 12; i++) await admitted.nth(i).check();
   await expect(main.locator("output")).toHaveText("12/12");
-  await expect(main.getByText("Remove one to choose another.", { exact: true })).toBeVisible();
   await expect(admitted.nth(12)).toBeDisabled();
   await admitted.nth(0).uncheck();
   await expect(admitted.nth(12)).toBeEnabled();
@@ -261,7 +260,7 @@ test("Compose names an unpriceable constituent, then drafts the Formula and its 
   const main = page.getByRole("main");
   const sheet = main.getByTestId("formula-draft");
   await expect(main.locator("output")).toHaveText("0/12");
-  await expect(main.locator("output").locator("xpath=../..")).toHaveCSS("position", "sticky");
+  await expect(main.getByTestId("selection-action-bar")).toHaveCSS("align-items", "center");
   await expect(sheet.getByText("Choose at least one constituent.", { exact: true })).toBeVisible();
   for (const symbol of ["NFLXx", "AAPLx", "TQQQx"]) await main.getByRole("checkbox", { name: new RegExp(symbol) }).check();
   await expect(sheet.getByRole("status")).toHaveText("TQQQx has no quote. No mainnet route buys it with USDC right now.", { timeout: QUOTED });

@@ -18,7 +18,7 @@ export const appGroups: AppGroup[] = [
     routes: [
       { label: "Baskets", href: "/app/baskets", isActive: (pathname: string) => within("/app/baskets")(pathname) && !within(buildHref)(pathname) },
       // /app/allocation is the builder's original address; old links still land on it.
-      { label: "Build a basket", href: buildHref, isActive: (pathname: string) => within(buildHref)(pathname) || within("/app/allocation")(pathname) },
+      { label: "Allocation", href: buildHref, isActive: (pathname: string) => within(buildHref)(pathname) || within("/app/allocation")(pathname) },
     ],
   },
   {
@@ -41,7 +41,7 @@ export const readingRoutes = [
 export const mobileRoutes = [
   { ...appGroups[0].routes[0], isActive: (pathname: string) => pathname === "/app" || within("/app/positions")(pathname), icon: "desk" as const },
   { ...appGroups[3].routes[0], icon: "assay" as const },
-  { ...appGroups[1].routes[0], icon: "plus" as const, primary: true },
+  { ...appGroups[1].routes[1], icon: "plus" as const, primary: true },
   { ...appGroups[2].routes[0], icon: "hall" as const },
   { ...appGroups[2].routes[1], icon: "buy" as const },
 ];

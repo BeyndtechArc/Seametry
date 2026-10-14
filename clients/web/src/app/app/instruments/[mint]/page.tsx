@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { findAdmission, gradeOf, isAdmitted } from "@/lib/allocation/admissions";
+import { findCatalogueInstrument } from "@/lib/instrument-catalogue";
 import { InstrumentAssay } from "../../_desk/workbench";
 
 export const metadata: Metadata = {
@@ -13,5 +14,6 @@ export default async function InstrumentPage({ params, searchParams }: { params:
   const { mint } = await params;
   const { from, selected } = await searchParams;
   const admission = findAdmission(mint);
-  return <InstrumentAssay mint={mint} admission={admission} grade={admission ? gradeOf(admission) : undefined} canAdd={Boolean(admission && isAdmitted(admission))} from={from === "compose" || from === "allocation" ? from : undefined} selected={selected ?? ""} />;
+  const listing = findCatalogueInstrument(mint);
+  return <InstrumentAssay mint={mint} listing={listing} admission={admission} grade={admission ? gradeOf(admission) : undefined} canAdd={Boolean(admission && isAdmitted(admission))} from={from === "compose" || from === "allocation" ? from : undefined} selected={selected ?? ""} />;
 }

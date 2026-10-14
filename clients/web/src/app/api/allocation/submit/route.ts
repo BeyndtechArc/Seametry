@@ -28,7 +28,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof Refusal) {
       const changed = error.status === 409 && error.message.startsWith("The transaction was changed after it was approved");
-      return NextResponse.json({ error: error.message, ...(changed ? { code: "SIGNED_MESSAGE_CHANGED", sent: false } : {}) }, { status: error.status });
+      // Validation and expiry refusals happen before sendRawTransaction. A
+      // caller may safely prepare them again; an RPC refusal remains
+      // uncertain because the RPC can lose its response after broadcast.
+      const definitelyNotSent = error.status === 400 || error.status === 409 || error.status === 410;
+      return NextResponse.json({ error: error.message, ...(changed ? { code: "SIGNED_MESSAGE_CHANGED" } : {}), ...(definitelyNotSent ? { sent: false } : {}) }, { status: error.status });
     }
     return NextResponse.json({ error: error instanceof Error ? error.message : "Sending the leg failed." }, { status: 500 });
   }

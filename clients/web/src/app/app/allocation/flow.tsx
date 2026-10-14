@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import bs58 from "bs58";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { VersionedTransaction } from "@solana/web3.js";
-import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, RouteAction, SelectionCount, StepBar, StepTrack, Stamp } from "@seametry/ui";
+import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, RouteAction, SelectionCount, StepBar, StepRegister, StepTrack, Stamp, type RegisterStep } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
 import { ProcessDialog, ProcessOutcome } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitByWeights, splitEvenly } from "@/lib/amount";
@@ -18,6 +19,8 @@ import { AllocationMotion, type AllocationMotionState } from "./allocation-motio
 import styles from "./allocation.module.css";
 
 type Phase = "idle" | "preparing" | "signing" | "sending" | "settled" | "failed";
+type BatchPhase = "idle" | "preflight" | "approval" | "settling";
+type BatchProblem = { at: 0 | 1 | 2; plain: string; technical?: string };
 
 type Leg = {
   mint: string;
@@ -89,6 +92,54 @@ function signedChange(atoms: string, scale: number, unit: string) {
 
 function reasonFrom(error: unknown) {
   return error instanceof Error ? error.message : String(error);
+}
+
+function technicalFrom(error: unknown) {
+  if (!(error instanceof Error)) return String(error);
+  const cause = (error as Error & { cause?: unknown }).cause;
+  return cause instanceof Error ? `${error.name}: ${error.message}\nCause: ${cause.name}: ${cause.message}` : `${error.name}: ${error.message}`;
+}
+
+function stoppedAllocation(at: BatchProblem["at"], error: unknown): BatchProblem {
+  const message = reasonFrom(error);
+  if (at === 0) {
+    return {
+      at,
+      plain: error instanceof TypeError
+        ? "Seametry could not reach the route service. Nothing was signed or spent. Check the connection and try again."
+        : `${message} Nothing was signed or spent.`,
+      technical: error instanceof ApiError ? undefined : technicalFrom(error),
+    };
+  }
+  if (at === 1) {
+    const declined = /user rejected|user denied|user declined|rejected the request/i.test(message);
+    return {
+      at,
+      plain: declined
+        ? "You declined the allocation in your wallet. Nothing was sent or spent."
+        : "The wallet did not sign the complete allocation. Nothing was sent or spent.",
+      technical: declined ? undefined : technicalFrom(error),
+    };
+  }
+  return {
+    at,
+    plain: "One or more signed purchases did not receive a submit receipt. Seametry is checking their signatures on mainnet before another attempt is allowed.",
+    technical: technicalFrom(error),
+  };
+}
+
+function allocationSteps(phase: BatchPhase, problem?: BatchProblem): RegisterStep[] {
+  const active = phase === "preflight" ? 0 : phase === "approval" ? 1 : 2;
+  const definitions = [
+    { title: "Check every route", glyph: "assay" as const, note: "Quoting and simulating every constituent before your wallet is asked" },
+    { title: "Approve one allocation", glyph: "wallet" as const, note: "Batch signing the complete set where the wallet supports it" },
+    { title: "Confirm every purchase", glyph: "confirm" as const, note: "Watching each signed purchase on mainnet until it settles or expires" },
+  ];
+  return definitions.map((step, index) => {
+    if (problem && index === problem.at) return { ...step, state: "stopped" as const, problem: { plain: problem.plain, technical: problem.technical } };
+    if (problem) return { ...step, state: index < problem.at ? "done" as const : "waiting" as const };
+    return { ...step, state: index < active ? "done" as const : index === active ? "now" as const : "waiting" as const };
+  });
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -212,9 +263,10 @@ export function AllocationFlow({
   const [weights, setWeights] = useState<Record<string, string> | undefined>(initialWeights);
   const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
   const [now, setNow] = useState(() => Date.now());
-  const [batchPhase, setBatchPhase] = useState<"idle" | "preflight" | "approval" | "settling">("idle");
+  const [batchPhase, setBatchPhase] = useState<BatchPhase>("idle");
+  const [batchProblem, setBatchProblem] = useState<BatchProblem>();
+  const [processOpen, setProcessOpen] = useState(false);
   const [shortfall, setShortfall] = useState<string>();
-  const [outcomeClosed, setOutcomeClosed] = useState(false);
   const [copied, setCopied] = useState(false);
   const allocationId = useRef<string | undefined>(undefined);
 
@@ -232,7 +284,7 @@ export function AllocationFlow({
     (lot) => (backing === "any" || lot.grade === backing) && (issuer === "any" || lot.issuer === issuer) && lot.capacityUsdc >= Number(minCapacity),
   );
   const needle = query.trim().toLowerCase();
-  const visible = needle === "" ? preferred : preferred.filter((lot) => lot.symbol.toLowerCase().includes(needle) || lot.issuer.toLowerCase().includes(needle));
+  const visible = needle === "" ? preferred : preferred.filter((lot) => lot.symbol.toLowerCase().includes(needle) || lot.name?.toLowerCase().includes(needle) || lot.issuer.toLowerCase().includes(needle));
   const chosen = preferred.filter((lot) => selected.includes(lot.mint));
   const chosenMints = chosen.map((lot) => lot.mint).join(",");
   const hiddenChosen = offered.filter((lot) => selected.includes(lot.mint)).length - chosen.length;
@@ -324,6 +376,8 @@ export function AllocationFlow({
   const clearProgress = () => {
     setProgress({ plan: "", changes: {} });
     setBatchPhase("idle");
+    setBatchProblem(undefined);
+    setProcessOpen(false);
     allocationId.current = undefined;
   };
 
@@ -340,14 +394,14 @@ export function AllocationFlow({
   };
 
   const watch = useCallback(
-    async (mint: string, signature: string, sentAt: string) => {
+    async (mint: string, signature: string, sentAt: string, blockhash?: string) => {
       // Watched until the leg lands, fails, or is declared dropped, which the
       // status route does once DROPPED_AFTER_MS has passed unseen; the attempt
       // cap only guards against a status route that never answers.
       for (let attempt = 0; attempt < 120; attempt += 1) {
         await new Promise((resolve) => setTimeout(resolve, 3000));
         try {
-          const query = new URLSearchParams({ signature, ...(walletAddress ? { wallet: walletAddress } : {}), mint, sent: sentAt });
+          const query = new URLSearchParams({ signature, ...(walletAddress ? { wallet: walletAddress } : {}), mint, sent: sentAt, ...(blockhash ? { blockhash } : {}) });
           const response = await fetch(`/api/allocation/status?${query.toString()}`);
           const status = (await response.json()) as { state?: string; detail?: string; error?: string; tokenDeltaAtoms?: string; tokenDeltaScale?: number };
           if (status.state === "confirmed" || status.state === "finalized") {
@@ -397,7 +451,8 @@ export function AllocationFlow({
     const pending = legs.filter((leg) => leg.phase === "idle" || (leg.phase === "failed" && leg.retryable));
     if (!pending.length || !publicKey || (!signAllTransactions && !signTransaction) || inFlight || buying.current) return;
     buying.current = true;
-    setOutcomeClosed(false);
+    setBatchProblem(undefined);
+    setProcessOpen(true);
     const signingWallet = walletAddress;
     if (!signingWallet) {
       buying.current = false;
@@ -425,9 +480,10 @@ export function AllocationFlow({
         clearProgress();
         setShortfall(reasonFrom(error));
       } else {
+        setBatchProblem(stoppedAllocation(0, error));
         pending.forEach((leg) => update(leg.mint, {
           phase: "failed",
-          note: "Allocation preflight stopped before signing. " + reasonFrom(error),
+          note: `${reasonFrom(error)} Nothing was signed, sent or spent.`,
           retryable: true,
         }));
       }
@@ -462,6 +518,7 @@ export function AllocationFlow({
       if (changed >= 0) throw new ApiError("The wallet changed one of the transactions Seametry checked.", 409, "SIGNED_MESSAGE_CHANGED", false);
     } catch (error) {
       const blocked = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED";
+      setBatchProblem(stoppedAllocation(1, error));
       ready.forEach(({ leg }) => update(leg.mint, {
         phase: "failed",
         prepared: undefined,
@@ -481,7 +538,12 @@ export function AllocationFlow({
     }
 
     setBatchPhase("settling");
-    ready.forEach(({ leg, prepared }) => update(leg.mint, { phase: "sending", prepared }));
+    ready.forEach(({ leg, prepared }, index) => update(leg.mint, {
+      phase: "sending",
+      prepared,
+      signature: bs58.encode(signed[index].signatures[0]),
+      note: "Signed. Sending to mainnet.",
+    }));
 
     await Promise.all(ready.map(async ({ leg, prepared }, index) => {
       try {
@@ -504,20 +566,46 @@ export function AllocationFlow({
           allocationTemplateId: identity.templateId,
         });
         update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
-        void watch(leg.mint, signature, submittedAt);
+        await watch(leg.mint, signature, submittedAt, prepared.blockhash);
       } catch (error) {
-        const changed = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED" && error.sent === false;
-        update(leg.mint, {
-          phase: "failed",
-          retryable: false,
-          walletBlocked: changed,
-          uncertain: !changed,
-          note: changed ? "Not sent. The signed transaction no longer matched the approved plan." : "Submission could not be verified. Check wallet activity before another attempt.",
+        const definitelyNotSent = error instanceof ApiError && error.sent === false;
+        const changed = definitelyNotSent && error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED";
+        if (definitelyNotSent) {
+          update(leg.mint, {
+            phase: "failed",
+            signature: undefined,
+            retryable: !changed,
+            walletBlocked: changed,
+            uncertain: false,
+            note: changed ? "Not sent. The signed transaction no longer matched the approved plan." : `${reasonFrom(error)} Nothing moved; prepare this purchase again.`,
+          });
+          return;
+        }
+        const signature = bs58.encode(signed[index].signatures[0]);
+        const submittedAt = new Date().toISOString();
+        recordLocalTrade({
+          signature,
+          wallet: signingWallet,
+          mint: leg.mint,
+          symbol: leg.symbol,
+          direction: "buy",
+          inputAtoms: leg.atoms.toString(),
+          inputScale: USDC_SCALE,
+          submittedAt,
+          allocationId: runId,
+          allocationName: identity.name,
+          allocationTemplateId: identity.templateId,
         });
+        update(leg.mint, {
+          phase: "sending",
+          signature,
+          retryable: false,
+          uncertain: true,
+          note: "The submit receipt was lost. Checking this signed transaction on mainnet before another attempt.",
+        });
+        await watch(leg.mint, signature, submittedAt, prepared.blockhash);
       }
     }));
-    // The batch is over: each leg's own phase now says where it stands. Left in
-    // "settling", the Key would read busy the moment any leg became retryable.
     setBatchPhase("idle");
     buying.current = false;
   };
@@ -552,6 +640,7 @@ export function AllocationFlow({
   // The result opens as a centre dialog once every leg has ended, as Strike's
   // outcome does; the inline record below stays as the lasting account.
   const ended = (motionState === "success" || motionState === "partial" || motionState === "failure") && !inFlight && batchPhase === "idle" && attempted.length > 0;
+  const running = batchPhase !== "idle" || Boolean(inFlight);
   const total = parsed && "atoms" in parsed ? `${formatAmount(parsed.atoms, USDC_SCALE)} USDC` : "Not set";
   // Per leg, as Jupiter rounds each swap's fee, then summed; the prepared leg
   // later shows the exact fee its simulation moved.
@@ -646,7 +735,10 @@ export function AllocationFlow({
                             <LotMark symbol={lot.symbol} src={logoFor(lot.mint)} size="list" />
                             <span>
                               <b>{lot.symbol}</b>
-                              <small>{lot.issuer}</small>
+                              <small className={styles.lotMeta} title={[lot.name, lot.issuer].filter(Boolean).join(" · ")}>
+                                {lot.name ? <span>{lot.name}</span> : null}
+                                <span>{lot.issuer}</span>
+                              </small>
                             </span>
                           </Link>
                           <label className={styles.lotToggle}>
@@ -686,7 +778,7 @@ export function AllocationFlow({
           ) : null}
 
           {step === 1 ? (
-            <section className={styles.section} aria-label="Set the basket amount">
+            <section className={styles.section} aria-label="Set the allocation amount">
               <Field
                 id="allocation-usdc"
                 label="USDC to spend"
@@ -778,6 +870,7 @@ export function AllocationFlow({
                               fees={[
                                 { label: `Seametry routing fee, ${formatAmount(BigInt(leg.prepared.routingFeeBps), 2)}%`, value: `${formatAmount(leg.prepared.routingFeeAtoms, USDC_SCALE)} USDC` },
                                 { label: "Priority fee set by the route", value: `${formatAmount(leg.prepared.priorityFeeLamports, 9)} SOL` },
+                                ...(leg.prepared.solNeededLamports ? [{ label: "SOL needed, including account opening", value: `${formatAmount(leg.prepared.solNeededLamports, 9)} SOL` }] : []),
                                 { label: "Venue fees", value: "Included in the expected output" },
                               ]}
                               route={`Jupiter, through ${leg.prepared.route.join(", ")}, quoted at slot ${leg.prepared.contextSlot}`}
@@ -785,7 +878,7 @@ export function AllocationFlow({
                               secondsLeft={secondsLeft}
                             />
                             <p className={styles.simulated}>
-                              Simulated on mainnet for this wallet:{" "}
+                              Simulated token changes on mainnet for this wallet:{" "}
                               {leg.prepared.simulated.map((change) => signedChange(change.atoms, change.scale, change.unit)).join("; ")}.
                             </p>
                           </>
@@ -804,7 +897,8 @@ export function AllocationFlow({
                   <p className={styles.summary} role={uncertainCount ? "alert" : "status"}>{summaryLine}</p>
                 ) : null}
                 {settledCount > 0 ? <Link href="/app/positions" className={styles.holdingsLink}>View holdings and sell</Link> : null}
-                {started && !inFlight && !walletBlocked ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
+                {running && !processOpen ? <QuietAction onClick={() => setProcessOpen(true)}>View purchase progress</QuietAction> : null}
+                {started && !running && !walletBlocked ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
               </section>
             </>
           ) : null}
@@ -852,19 +946,19 @@ export function AllocationFlow({
           }
         />
       )}
-      {ended && !outcomeClosed ? (
+      {(running || ended || Boolean(batchProblem)) && processOpen ? (
         <ProcessDialog
           open
-          onClose={() => setOutcomeClosed(true)}
-          title={motionState === "success" ? "Allocation assembled" : motionState === "partial" ? "Allocation partly assembled" : "Purchase stopped"}
+          onClose={() => setProcessOpen(false)}
+          title={running ? "Buying allocation" : motionState === "success" ? "Allocation assembled" : motionState === "partial" ? "Allocation partly assembled" : "Purchase stopped"}
           register="Mainnet"
-          closeLabel="Close purchase outcome"
-          footer={<>
+          closeLabel="Close allocation status"
+          footer={ended ? <>
             {settledCount > 0 ? <RouteAction href="/app/positions">View holdings and sell</RouteAction> : null}
-            {!walletBlocked ? <QuietAction type="button" onClick={() => { setOutcomeClosed(true); startOver(); }}>Start new allocation</QuietAction> : null}
-          </>}
+            {!walletBlocked ? <QuietAction type="button" onClick={startOver}>Start new allocation</QuietAction> : null}
+          </> : undefined}
         >
-          <ProcessOutcome kind={motionState === "success" ? "success" : "error"} title={summaryLine}>
+          {batchProblem ? <StepRegister label="Allocation progress" steps={allocationSteps("idle", batchProblem)} /> : running ? <StepRegister label="Allocation progress" steps={allocationSteps(batchPhase === "idle" ? "settling" : batchPhase)} /> : <ProcessOutcome kind={motionState === "success" ? "success" : "error"} title={summaryLine}>
             <ul className={styles.outcomeLegs} aria-label="Purchases">
               {legs.map((leg) => (
                 <li key={leg.mint}>
@@ -874,7 +968,7 @@ export function AllocationFlow({
                 </li>
               ))}
             </ul>
-          </ProcessOutcome>
+          </ProcessOutcome>}
         </ProcessDialog>
       ) : null}
       <ProcessDialog

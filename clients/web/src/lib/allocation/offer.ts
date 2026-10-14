@@ -4,6 +4,7 @@ import { allocationConfig, requestCountry } from "./config";
 import { countryGate } from "./rules";
 import { formatAmount } from "../amount";
 import { logoFor } from "../instrument-logos";
+import { instrumentName } from "../instrument-names";
 import { relativeEvidenceAge } from "../storm-fixture";
 
 // What an Allocation offers, built once for the web page and for
@@ -13,6 +14,7 @@ import { relativeEvidenceAge } from "../storm-fixture";
 export type OfferedLot = {
   mint: string;
   symbol: string;
+  name?: string;
   issuer: string;
   grade: GradeName;
   decision: string;
@@ -46,6 +48,7 @@ export function allocationOffer() {
     return {
       mint: lot.instrument.mint,
       symbol: lot.instrument.symbol ?? lot.instrument.mint,
+      name: instrumentName(lot.instrument.mint),
       issuer: lot.issuer,
       grade: gradeOf(lot),
       decision: lot.capacity_decision.decision,

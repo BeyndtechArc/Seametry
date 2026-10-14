@@ -500,6 +500,30 @@ test("a published basket buys every constituent from its record with one Key pre
   await expect(page.getByText("Purchases settled", { exact: true })).toBeVisible();
 });
 
+test("an allocation stays one watched request from preflight through mainnet confirmation", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true });
+  const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
+  let releasePreflight!: () => void;
+  const preflightHeld = new Promise<void>((resolve) => { releasePreflight = resolve; });
+  await page.route("**/api/allocation/prepare-batch", async (route) => {
+    await preflightHeld;
+    await route.fulfill({ status: 422, json: { error: "The route changed before it could be simulated." } });
+  });
+
+  await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await page.getByRole("button", { name: "Buy allocation" }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Buying allocation" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByTestId("step-register")).toContainText("Check every route");
+  await expect(dialog.getByTestId("step-register")).toContainText("Approve one allocation");
+  await expect(dialog.getByTestId("step-register")).toContainText("Confirm every purchase");
+  releasePreflight();
+  await expect(page.getByRole("dialog", { name: "Purchase stopped" })).toContainText("Nothing was signed or spent");
+});
+
 test("a simulation failure inside a venue names that venue, and one inside Jupiter names none", () => {
   // The two failure lines of a live NBIS, NVDAx and AVGOx preflight, 13 October 2026.
   const goonfi = [
@@ -672,7 +696,7 @@ test("a remix buys at the weights the reader set, exactly, and is recorded as a 
 test("the amount step names and enforces the funding floor before wallet signing", async ({ page }) => {
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx");
   await page.goto(`/app/allocation?selected=${aapl!.instrument.mint}&amount=0.5`);
-  await expect(page.getByRole("region", { name: "Set the basket amount" }).getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Set the allocation amount" }).getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toBeVisible();
   await expect(page.getByRole("main").getByText("0.01 SOL", { exact: false })).toHaveCount(0);
   await page.getByLabel("USDC to spend").fill("1");
   await expect(page.getByText("Spend at least 1.000000 USDC for 1 constituent. The minimum is 1 USDC each.")).toHaveCount(0);

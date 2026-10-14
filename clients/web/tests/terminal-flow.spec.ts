@@ -93,6 +93,15 @@ test("the Terminal moves from the instrument register into one assay", async ({ 
   await expect(page.getByText("SELL_DEPTH_NOT_MEASURED", { exact: true })).toBeVisible();
 });
 
+test("the instrument catalogue exposes every captured issuer listing without calling it assayed", async ({ request }) => {
+  const response = await request.get("/api/instruments/catalogue?q=Agilent");
+  expect(response.ok()).toBe(true);
+  const catalogue = await response.json();
+  expect(catalogue.meta.total).toBe(2442);
+  expect(catalogue.meta.filtered).toBeGreaterThan(0);
+  expect(catalogue.data.some((instrument: { name: string; state: string }) => instrument.name.includes("Agilent") && instrument.state === "listed")).toBe(true);
+});
+
 test("the Terminal names the API boundary when no deployment is connected", async ({ page }) => {
   await page.route("**/api/terminal/instruments", async (route) => {
     await route.fulfill({

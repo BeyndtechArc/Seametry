@@ -148,7 +148,7 @@ func plainSVG(body []byte) string {
 				// namespace declaration alone cannot draw or fetch anything;
 				// any actual namespaced element or attribute is still checked
 				// below and refused unless it is ordinary SVG drawing.
-				if attribute.Name.Space == "xmlns" && attribute.Name.Local == "x" {
+				if attribute.Name.Space == "xmlns" && attribute.Name.Local == "x" && t.Name.Local == "svg" && attribute.Value == "http://www.w3.org/1999/xlink" {
 					continue
 				}
 				if attribute.Name.Space != "" || !svgAttributes[attribute.Name.Local] {
@@ -160,6 +160,50 @@ func plainSVG(body []byte) string {
 			}
 		}
 	}
+}
+
+// captureNames reads only the mint bytes already captured for the policy
+// snapshot. A remote metadata document cannot silently rename a listed lot.
+func captureNames(fixtureDir, manifestPath string) error {
+	targets, err := loadTargets(filepath.Join(fixtureDir, "targets.json"))
+	if err != nil {
+		return err
+	}
+	names := map[string]string{}
+	for _, target := range targets {
+		raw, err := os.ReadFile(filepath.Join(fixtureDir, target.Symbol+".json"))
+		if err != nil {
+			return fmt.Errorf("read %s fixture: %w", target.Symbol, err)
+		}
+		var fixture Fixture
+		if err := json.Unmarshal(raw, &fixture); err != nil {
+			return fmt.Errorf("parse %s fixture: %w", target.Symbol, err)
+		}
+		data, err := base64.StdEncoding.DecodeString(fixture.DataBase64)
+		if err != nil {
+			return fmt.Errorf("decode %s fixture: %w", target.Symbol, err)
+		}
+		mint, err := registry.DecodeMint(data)
+		if err != nil {
+			return fmt.Errorf("decode %s mint: %w", target.Symbol, err)
+		}
+		metadata, present, err := mint.TokenMetadata()
+		if err != nil {
+			return fmt.Errorf("read %s TokenMetadata: %w", target.Symbol, err)
+		}
+		if present && metadata.Name != "" {
+			names[fixture.Address] = metadata.Name
+		}
+	}
+	body, err := json.MarshalIndent(names, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(manifestPath, append(body, '\n'), 0o644); err != nil {
+		return fmt.Errorf("write captured names to %s: %w", manifestPath, err)
+	}
+	fmt.Printf("recorded %d captured mint names in %s\n", len(names), manifestPath)
+	return nil
 }
 
 func qualified(name xml.Name) string {
