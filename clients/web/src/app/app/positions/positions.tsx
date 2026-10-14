@@ -242,7 +242,7 @@ export function Positions() {
                       <li key={leg.mint}>
                         <LotMark symbol={leg.symbol} src={logoFor(leg.mint)} size="list" />
                         <div><b>{leg.symbol}</b><span>{formatBalance(leg.atoms, leg.scale)} to sell</span></div>
-                        {quote ? <div><strong>{formatAmount(quote.outAtoms, 6)} USDC</strong><small>expected, at least {formatAmount(quote.floorAtoms, 6)}</small></div> : null}
+                        {quote ? <div className={styles.saleQuote}><strong>{formatAmount(quote.outAtoms, 6)} USDC</strong><small>expected, at least {formatAmount(quote.floorAtoms, 6)}</small></div> : null}
                       </li>
                     );
                   })}

@@ -187,16 +187,7 @@
   font-weight: var(--sm-font-weight-medium);
 }
 
-.signature {
-  min-width: 0;
-  color: var(--sm-text-secondary);
-  font-family: var(--sm-font-family-digest);
-  font-size: var(--sm-font-size-small);
-  overflow-wrap: anywhere;
-}
-
 .quiet,
-.note,
 .simulated,
 .loading {
   max-width: var(--sm-size-readable);
@@ -332,20 +323,6 @@
   min-width: 0;
 }
 
-.refused summary {
-  width: fit-content;
-  min-height: var(--sm-size-target);
-  display: flex;
-  align-items: center;
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-  cursor: pointer;
-}
-
-.refused[open] summary {
-  color: var(--sm-text-primary);
-}
-
 .refused li {
   display: grid;
   gap: var(--sm-space-2);
@@ -364,44 +341,7 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-.summary {
-  color: var(--sm-text-primary);
-}
-
 /* The purchase outcome dialog's legs: symbol, where it ended, its transaction. */
-.outcomeLegs {
-  display: grid;
-  gap: var(--sm-space-2);
-  margin: var(--sm-space-3) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.outcomeLegs li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: baseline;
-  gap: var(--sm-space-4);
-  padding-top: var(--sm-space-2);
-  border-top: 0.5px solid var(--sm-line-rule);
-  font-size: var(--sm-font-size-small);
-}
-
-.outcomeLegs span {
-  color: var(--sm-text-secondary);
-}
-
-.outcomeLegs a {
-  color: var(--sm-accent-touchText);
-  font-family: var(--sm-font-family-digest);
-}
-
-.holdingsLink {
-  justify-self: start;
-  color: var(--sm-accent-touchText);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
 
 .orderRail {
   position: sticky;
@@ -559,118 +499,3 @@
 /* Transaction status is a physical register of real swap legs, not a
    decorative basket illustration. Active rules signal network work.
    Settled rules fill; refused rules break. */
-.settlementDiagram {
-  display: grid;
-  gap: var(--sm-space-4);
-  min-width: 0;
-  margin: 0;
-  padding: var(--sm-space-5);
-  border-top: 0.5px solid var(--sm-line-strong);
-  background: var(--sm-surface-raised);
-}
-
-.settlementDiagramHead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sm-space-4);
-}
-
-.settlementDiagramHead strong {
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.settlementDiagramHead > span {
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-micro);
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
-.settlementTrack {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(var(--sm-space-12), 1fr));
-  gap: var(--sm-space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.settlementTrack li {
-  display: grid;
-  gap: var(--sm-space-2);
-  min-width: 0;
-}
-
-.settlementLine {
-  position: relative;
-  display: block;
-  height: var(--sm-space-1);
-  overflow: hidden;
-  background: var(--sm-line-rule);
-}
-
-.settlementLine i {
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform: scaleX(0);
-  transform-origin: left center;
-  background: var(--sm-accent-provenance);
-}
-
-.settlementTrack li[data-phase="preparing"] .settlementLine i,
-.settlementTrack li[data-phase="signing"] .settlementLine i,
-.settlementTrack li[data-phase="sending"] .settlementLine i {
-  transform: scaleX(0.58);
-  animation: seametry-settlement-check 1.3s ease-in-out infinite alternate;
-}
-
-.settlementTrack li[data-phase="settled"] .settlementLine i {
-  transform: scaleX(1);
-  background: var(--sm-text-primary);
-}
-
-.settlementTrack li[data-phase="failed"] .settlementLine {
-  height: calc(var(--sm-space-1) - 1px);
-  border-top: 1px dashed var(--sm-line-strong);
-  background: transparent;
-}
-
-.settlementTrack li b {
-  overflow: hidden;
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-medium);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.settlementTrack li small,
-.settlementDiagram figcaption {
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.settlementTrack li[data-phase="settled"] small {
-  color: var(--sm-text-primary);
-}
-
-.settlementDiagram figcaption {
-  padding-top: var(--sm-space-3);
-  border-top: 0.5px solid var(--sm-line-rule);
-  line-height: 1.5;
-}
-
-@keyframes seametry-settlement-check {
-  from { transform: scaleX(0.18); opacity: 0.55; }
-  to { transform: scaleX(0.82); opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .settlementLine i {
-    animation: none !important;
-    transition: none !important;
-  }
-}
