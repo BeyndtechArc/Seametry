@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ContinueAction, Field, FilterBar, LotMark, QuietAction, Rule, SelectionCount, StepBar, StepTrack, type GradeName } from "@seametry/ui";
+import { Identity } from "@seametry/ui/list";
+import { ActionBar, ContinueAction, Field, FilterBar, LotMark, QuietAction, Rule, SelectionCount, StepBar, StepTrack, type GradeName } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
 import { shortIssuer } from "@/lib/issuers";
 import { MAX_CONSTITUENTS, SHARE_DECIMALS } from "@/lib/hall/constants";
@@ -195,14 +196,7 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
             {visible.map((candidate) => (
               <li key={candidate.mint} data-refused={!candidate.admitted || undefined}>
                 <Link className={styles.candidateDetail} href={`/app/instruments/${encodeURIComponent(candidate.mint)}?from=compose&selected=${encodeURIComponent(selected.join(","))}`} aria-label={`Open ${candidate.symbol} assay`}>
-                  <LotMark symbol={candidate.symbol} src={candidate.logo} size="list" />
-                  <span>
-                    <b>{candidate.symbol}</b>
-                    <small className={styles.candidateMeta} title={[candidate.name, candidate.issuer].filter(Boolean).join(" · ")}>
-                      {candidate.name ? <span>{candidate.name}</span> : null}
-                      <span>{candidate.issuer}</span>
-                    </small>
-                  </span>
+                  <Identity symbol={candidate.symbol} name={candidate.name} logo={candidate.logo} issuer={shortIssuer(candidate.issuer)} />
                 </Link>
                 <label className={styles.candidateToggle}>
                   <input
@@ -257,6 +251,21 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
           </p>
         </section>
         </>
+        )}
+        {/* The bars belong to the input column, so they ride its foot as Allocation's do and never run under the Draft. */}
+        {step === 0 ? (
+          <ActionBar data-testid="selection-action-bar" summary={<SelectionCount current={chosen.length} total={MAX_CONSTITUENTS} noun="constituents selected" />}>
+            <ContinueAction disabled={chosen.length === 0} title={chosen.length === 0 ? "Choose at least one constituent." : undefined} onClick={() => setStep(1)}>
+              Set the Formula
+            </ContinueAction>
+          </ActionBar>
+        ) : (
+          <StepBar
+            plan={missing}
+            problem={missing !== ready}
+            back={<QuietAction type="button" icon="back" onClick={() => setStep(0)}>Back</QuietAction>}
+            next={<FoundingKey founding={founding} disabled={foundingLegs.length === 0} />}
+          />
         )}
       </div>
 
@@ -334,21 +343,6 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
       </aside>
     </div>
 
-    {step === 0 ? (
-      <div className={styles.selectionBar} data-testid="selection-action-bar">
-        <SelectionCount current={chosen.length} total={MAX_CONSTITUENTS} noun="constituents selected" />
-        <ContinueAction disabled={chosen.length === 0} title={chosen.length === 0 ? "Choose at least one constituent." : undefined} onClick={() => setStep(1)}>
-          Set the Formula
-        </ContinueAction>
-      </div>
-    ) : (
-      <StepBar
-        plan={missing}
-        problem={missing !== ready}
-        back={<QuietAction type="button" icon="back" onClick={() => setStep(0)}>Back</QuietAction>}
-        next={<FoundingKey founding={founding} disabled={foundingLegs.length === 0} />}
-      />
-    )}
     </>
   );
 }

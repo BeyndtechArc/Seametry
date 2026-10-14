@@ -282,3 +282,21 @@ test("Compose names an unpriceable constituent, then drafts the Formula and its 
   await expect(founding).toContainText('"atomsPerShare"');
   await expect(founding).toContainText('"network": "devnet"');
 });
+
+test("the Formula's action bar rides its column as Allocation's does: in view, beside the Draft, above the phone tabs", async ({ page }) => {
+  await page.goto("/app/compose");
+  const bar = page.getByTestId("selection-action-bar");
+  const draft = page.getByTestId("formula-draft");
+  await page.mouse.wheel(0, 600);
+  const [barBox, draftBox] = [await bar.boundingBox(), await draft.boundingBox()];
+  // Pinned to the foot of the viewport while the list scrolls, and never under the Draft rail.
+  expect(barBox!.y + barBox!.height).toBeLessThanOrEqual(page.viewportSize()!.height + 1);
+  expect(barBox!.y + barBox!.height).toBeGreaterThan(page.viewportSize()!.height - 80);
+  expect(barBox!.x + barBox!.width).toBeLessThanOrEqual(draftBox!.x);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.mouse.wheel(0, 400);
+  const tabs = await page.getByRole("navigation", { name: "Mobile product" }).boundingBox();
+  const phoneBar = await bar.boundingBox();
+  expect(phoneBar!.y + phoneBar!.height).toBeLessThanOrEqual(tabs!.y);
+});

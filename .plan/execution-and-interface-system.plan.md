@@ -351,6 +351,8 @@ commit read from GitHub, each job reported.
 - Also in #28: Callout (inline alerts with a tone cell) for every condition
   that was a bare paragraph, the Depth chart on an instrument's assay, issuer
   powers stated once, and view Tabs drawn as the page header's edge.
+- Sponsor (Compose) uses the same Action bar and Identity rows as the
+  Allocation builder (14 October 2026).
 - Left: Strike, Melt and Delivery on the engine (phase 4); Sheet, Dialog and
   the Button family merged as section 4 sets out (phase 5); Baskets, Alloys,
   Sponsor and Overview onto the shared parts (phase 6); empty-state
