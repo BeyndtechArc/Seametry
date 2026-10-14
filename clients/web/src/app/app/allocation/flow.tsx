@@ -1,52 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import bs58 from "bs58";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { VersionedTransaction } from "@solana/web3.js";
-import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, RouteAction, SelectionCount, StepBar, StepRegister, StepTrack, Stamp, type RegisterStep } from "@seametry/ui";
+import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepRegister, StepTrack, Stamp, type RegisterStep } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
-import { ProcessDialog, ProcessOutcome } from "@seametry/ui/modal-sheet";
+import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitByWeights, splitEvenly } from "@/lib/amount";
-import { patchLocalTrade, recordLocalTrade } from "@/lib/allocation/activity";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
 import { logoFor } from "@/lib/instrument-logos";
 import { shortIssuer } from "@/lib/issuers";
 import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, minimumPlanAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
-import { AllocationMotion, type AllocationMotionState } from "./allocation-motion";
+import { approveAndSend, NotSent } from "@/lib/execution/run";
 import styles from "./allocation.module.css";
 
-type Phase = "idle" | "preparing" | "signing" | "sending" | "settled" | "failed";
-type BatchPhase = "idle" | "preflight" | "approval" | "settling";
-type BatchProblem = { at: 0 | 1 | 2; plain: string; technical?: string };
+/** The wait before the hand-off to Activity: quoting every leg, then the one wallet approval. */
+type Attempt =
+  | { stage: "checking" }
+  | { stage: "approving"; prepared: PreparedLeg[] }
+  | { stage: "stopped"; problem: BatchProblem };
+type BatchProblem = { at: 0 | 1; plain: string; technical?: string };
 
-type Leg = {
-  mint: string;
-  symbol: string;
-  atoms: bigint;
-  phase: Phase;
-  prepared?: PreparedLeg;
-  signature?: string;
-  note?: string;
-  retryable?: boolean;
-  uncertain?: boolean;
-  walletBlocked?: boolean;
-};
+type PlanLeg = { mint: string; symbol: string; atoms: bigint };
 
 class ApiError extends Error {
   constructor(message: string, readonly status: number, readonly code?: string, readonly sent?: boolean) { super(message); }
-}
-
-function fromBase64(text: string): Uint8Array {
-  return Uint8Array.from(atob(text), (character) => character.charCodeAt(0));
-}
-
-function toBase64(bytes: Uint8Array): string {
-  let text = "";
-  for (const byte of bytes) text += String.fromCharCode(byte);
-  return btoa(text);
 }
 
 type UnsignedPlan = { mints: string[]; amount: string; weights?: Record<string, string> };
@@ -100,44 +79,28 @@ function technicalFrom(error: unknown) {
   return cause instanceof Error ? `${error.name}: ${error.message}\nCause: ${cause.name}: ${cause.message}` : `${error.name}: ${error.message}`;
 }
 
-function stoppedAllocation(at: BatchProblem["at"], error: unknown): BatchProblem {
-  const message = reasonFrom(error);
-  if (at === 0) {
-    return {
-      at,
-      plain: error instanceof TypeError
-        ? "Seametry could not reach the route service. Nothing was signed or spent. Check the connection and try again."
-        : `${message} Nothing was signed or spent.`,
-      technical: error instanceof ApiError ? undefined : technicalFrom(error),
-    };
-  }
-  if (at === 1) {
-    const declined = /user rejected|user denied|user declined|rejected the request/i.test(message);
-    return {
-      at,
-      plain: declined
-        ? "You declined the allocation in your wallet. Nothing was sent or spent."
-        : "The wallet did not sign the complete allocation. Nothing was sent or spent.",
-      technical: declined ? undefined : technicalFrom(error),
-    };
-  }
+function stoppedAllocation(error: unknown): BatchProblem {
+  if (error instanceof NotSent) return { at: 1, plain: error.message };
   return {
-    at,
-    plain: "One or more signed purchases did not receive a submit receipt. Seametry is checking their signatures on mainnet before another attempt is allowed.",
-    technical: technicalFrom(error),
+    at: 0,
+    plain: error instanceof TypeError
+      ? "Seametry could not reach the route service. Nothing was signed or spent. Check the connection and try again."
+      : `${reasonFrom(error)} Nothing was signed or spent.`,
+    technical: error instanceof ApiError ? undefined : technicalFrom(error),
   };
 }
 
-function allocationSteps(phase: BatchPhase, problem?: BatchProblem): RegisterStep[] {
-  const active = phase === "preflight" ? 0 : phase === "approval" ? 1 : 2;
+function allocationSteps(attempt: Attempt): RegisterStep[] {
   const definitions = [
     { title: "Check every route", glyph: "assay" as const, note: "Quoting and simulating every constituent before your wallet is asked" },
-    { title: "Approve one allocation", glyph: "wallet" as const, note: "Batch signing the complete set where the wallet supports it" },
-    { title: "Confirm every purchase", glyph: "confirm" as const, note: "Watching each signed purchase on mainnet until it settles or expires" },
+    { title: "Approve in your wallet", glyph: "wallet" as const, note: "One approval signs every purchase where the wallet supports it. Activity follows them from there." },
   ];
+  const active = attempt.stage === "checking" ? 0 : 1;
   return definitions.map((step, index) => {
-    if (problem && index === problem.at) return { ...step, state: "stopped" as const, problem: { plain: problem.plain, technical: problem.technical } };
-    if (problem) return { ...step, state: index < problem.at ? "done" as const : "waiting" as const };
+    if (attempt.stage === "stopped") {
+      const { at, plain, technical } = attempt.problem;
+      return index === at ? { ...step, state: "stopped" as const, problem: { plain, technical } } : { ...step, state: index < at ? "done" as const : "waiting" as const };
+    }
     return { ...step, state: index < active ? "done" as const : index === active ? "now" as const : "waiting" as const };
   });
 }
@@ -148,22 +111,6 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   if (!response.ok) throw new ApiError(payload.error ?? `${path} answered ${response.status}`, response.status, payload.code, payload.sent);
   return payload as T;
 }
-
-function changedMessage(before: Uint8Array, originalBlockhash: string, signed: VersionedTransaction): string | undefined {
-  const after = signed.message.serialize();
-  if (before.length === after.length && before.every((byte, index) => byte === after[index])) return undefined;
-  if (originalBlockhash !== signed.message.recentBlockhash) return "The wallet changed the recent blockhash.";
-  return "The wallet changed the accounts, instructions, or lookup tables.";
-}
-
-const phaseLabel: Record<Phase, string> = {
-  idle: "Not bought",
-  preparing: "Preparing",
-  signing: "Signing",
-  sending: "Sending",
-  settled: "Settled",
-  failed: "Not bought",
-};
 
 function OrderSummary({
   selectedSymbols,
@@ -261,14 +208,11 @@ export function AllocationFlow({
   const [step, setStep] = useState(fixedTemplate || (initialAmount && initialSelected.length > 0) ? 1 : 0);
   const [typed, setTyped] = useState(initialAmount);
   const [weights, setWeights] = useState<Record<string, string> | undefined>(initialWeights);
-  const [progress, setProgress] = useState<{ plan: string; changes: Record<string, Partial<Leg>> }>({ plan: "", changes: {} });
+  const [attempt, setAttempt] = useState<Attempt>();
+  const [progressHidden, setProgressHidden] = useState(false);
   const [now, setNow] = useState(() => Date.now());
-  const [batchPhase, setBatchPhase] = useState<BatchPhase>("idle");
-  const [batchProblem, setBatchProblem] = useState<BatchProblem>();
-  const [processOpen, setProcessOpen] = useState(false);
   const [shortfall, setShortfall] = useState<string>();
   const [copied, setCopied] = useState(false);
-  const allocationId = useRef<string | undefined>(undefined);
 
   const [query, setQuery] = useState("");
   const [backing, setBacking] = useState("any");
@@ -320,16 +264,11 @@ export function AllocationFlow({
           ? `At these weights ${chosen[belowMinimum].symbol} would receive ${formatAmount(split[belowMinimum], USDC_SCALE)} USDC. Each constituent needs at least 1 USDC; raise the amount or its weight.`
           : undefined;
 
-  // The plan is derived from the inputs on every render. Progress is kept as
-  // each leg's changes, and only while it belongs to the same plan; the
-  // inputs lock once a leg has started, so progress never lands on another.
-  const plan = `${walletAddress ?? "no-wallet"}|${typed}|${chosen.map((lot) => `${lot.mint}:${weights?.[lot.mint] ?? "="}`).join(",")}`;
-  const changes = progress.plan === plan ? progress.changes : {};
-  const legs: Leg[] =
-    amountProblem || split.length === 0
-      ? []
-      : chosen.map((lot, i) => ({ mint: lot.mint, symbol: lot.symbol, atoms: split[i], phase: "idle", ...changes[lot.mint] }));
-  const started = legs.some((leg) => leg.phase !== "idle" || leg.note);
+  // The plan is derived from the inputs on every render, and locked only
+  // while quoting and approval run; once signed it belongs to Activity.
+  const legs: PlanLeg[] = amountProblem || split.length === 0 ? [] : chosen.map((lot, i) => ({ mint: lot.mint, symbol: lot.symbol, atoms: split[i] }));
+  const started = attempt?.stage === "checking" || attempt?.stage === "approving";
+  const prepared = attempt?.stage === "approving" ? attempt.prepared : undefined;
   // Holdings group a purchase under its basket only when it is that basket as
   // published: every constituent, equal weights. Anything else started from a
   // basket is a remix of it, and is named so rather than passed off as it.
@@ -343,9 +282,6 @@ export function AllocationFlow({
 
   useEffect(() => {
     currentWallet.current = walletAddress;
-    // Clearing on the next microtask avoids a render-time state update while
-    // invalidating any prepared transaction left by the previous wallet.
-    queueMicrotask(() => setProgress({ plan: "", changes: {} }));
   }, [walletAddress]);
 
   // A wallet browser has a separate storage partition from Safari or Chrome.
@@ -356,258 +292,65 @@ export function AllocationFlow({
     keepUnsignedPlanInUrl({ mints: chosenMints ? chosenMints.split(",") : [], amount: typed, weights });
   }, [chosenMints, typed, weights, started]);
 
-  const anyPrepared = legs.some((leg) => leg.phase === "signing" || leg.phase === "sending");
   useEffect(() => {
-    if (!anyPrepared) return;
+    if (!prepared) return;
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
-  }, [anyPrepared]);
-
-  const update = useCallback(
-    (mint: string, change: Partial<Leg>) => {
-      setProgress((current) => {
-        const kept = current.plan === plan ? current.changes : {};
-        return { plan, changes: { ...kept, [mint]: { ...kept[mint], ...change } } };
-      });
-    },
-    [plan],
-  );
-
-  const clearProgress = () => {
-    setProgress({ plan: "", changes: {} });
-    setBatchPhase("idle");
-    setBatchProblem(undefined);
-    setProcessOpen(false);
-    allocationId.current = undefined;
-  };
+  }, [prepared]);
 
   const adjustAmount = () => {
     setShortfall(undefined);
     requestAnimationFrame(() => document.getElementById("allocation-usdc")?.focus());
   };
 
-  const startOver = () => {
-    clearProgress();
-    setTyped("");
-    keepUnsignedPlanInUrl({ mints: chosen.map((lot) => lot.mint), amount: "", weights });
-    setStep(fixedTemplate ? 1 : 0);
-  };
-
-  const watch = useCallback(
-    async (mint: string, signature: string, sentAt: string, blockhash?: string) => {
-      // Watched until the leg lands, fails, or is declared dropped, which the
-      // status route does once DROPPED_AFTER_MS has passed unseen; the attempt
-      // cap only guards against a status route that never answers.
-      for (let attempt = 0; attempt < 120; attempt += 1) {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        try {
-          const query = new URLSearchParams({ signature, ...(walletAddress ? { wallet: walletAddress } : {}), mint, sent: sentAt, ...(blockhash ? { blockhash } : {}) });
-          const response = await fetch(`/api/allocation/status?${query.toString()}`);
-          const status = (await response.json()) as { state?: string; detail?: string; error?: string; tokenDeltaAtoms?: string; tokenDeltaScale?: number };
-          if (status.state === "confirmed" || status.state === "finalized") {
-            update(mint, { phase: "settled", note: `Settled, ${status.state} on mainnet.` });
-            if (walletAddress && status.tokenDeltaAtoms && !status.tokenDeltaAtoms.startsWith("-") && status.tokenDeltaScale !== undefined) {
-              patchLocalTrade(walletAddress, signature, {
-                settled: true,
-                settledAtoms: status.tokenDeltaAtoms,
-                settledScale: status.tokenDeltaScale,
-              });
-            }
-            return;
-          }
-          if (status.state === "failed") {
-            update(mint, { phase: "failed", note: "Mainnet rejected this purchase. The network fee may have been charged. Review the transaction before trying again.", retryable: false });
-            return;
-          }
-          if (status.state === "expired") {
-            // Unseen past its blockhash, so it can never land: buying again is safe.
-            update(mint, { phase: "failed", retryable: true, uncertain: false, note: "The network never included this purchase and it can no longer land. Nothing moved. Buy again prepares a fresh quote." });
-            return;
-          }
-        } catch {
-          // A missed poll is retried; the signature stays on screen either way.
-        }
-      }
-      // Unconfirmed is not failed: the purchase may still land, so it is never
-      // retried from this plan. Left in "sending", the Key read busy for good.
-      update(mint, {
-        phase: "failed",
-        retryable: false,
-        uncertain: true,
-        note: "Mainnet status could not be read for six minutes. Check wallet activity and the signature below before buying this again.",
-      });
-    },
-    [update, walletAddress],
-  );
-
-  // A submission error may arrive after broadcast. Never retry that leg from
-  // the same plan without checking its on-chain state first.
-  const walletBlocked = legs.some((leg) => leg.walletBlocked);
-  const nextLeg = walletBlocked ? undefined : legs.find((leg) => leg.phase === "idle" || (leg.phase === "failed" && leg.retryable));
-  const inFlight = legs.find((leg) => leg.phase === "preparing" || leg.phase === "signing" || leg.phase === "sending");
-  const buying = useRef(false);
-
+  /**
+   * Quotes and simulates every leg, asks the wallet once, and hands the
+   * signed purchases to the engine (lib/execution/run.ts). The dialog closes
+   * on approval; the toast and Activity carry each purchase from there.
+   */
   const buyAll = async () => {
-    const pending = legs.filter((leg) => leg.phase === "idle" || (leg.phase === "failed" && leg.retryable));
-    if (!pending.length || !publicKey || (!signAllTransactions && !signTransaction) || inFlight || buying.current) return;
-    buying.current = true;
-    setBatchProblem(undefined);
-    setProcessOpen(true);
     const signingWallet = walletAddress;
-    if (!signingWallet) {
-      buying.current = false;
-      return;
-    }
-    const runId = allocationId.current ?? window.crypto.randomUUID();
-    allocationId.current = runId;
-    setBatchPhase("preflight");
-    pending.forEach((leg) => update(leg.mint, { phase: "preparing", note: undefined, prepared: undefined, signature: undefined, retryable: false, uncertain: false, walletBlocked: false }));
-
-    let ready: { leg: Leg; prepared: PreparedLeg }[];
+    if (!signingWallet || started || legs.length === 0) return;
+    setProgressHidden(false);
+    setAttempt({ stage: "checking" });
+    let quoted: PreparedLeg[];
     try {
-      const prepared = await postJson<PreparedLeg[]>("/api/allocation/prepare-batch", {
+      quoted = await postJson<PreparedLeg[]>("/api/allocation/prepare-batch", {
         wallet: signingWallet,
-        legs: pending.map((leg) => ({ mint: leg.mint, usdcAtoms: leg.atoms.toString() })),
+        legs: legs.map((leg) => ({ mint: leg.mint, usdcAtoms: leg.atoms.toString() })),
         planMints: chosen.map((lot) => lot.mint),
       });
-      if (prepared.length !== pending.length) throw new Error("The Allocation preflight returned an incomplete plan.");
-      ready = pending.map((leg, index) => ({ leg, prepared: prepared[index] }));
-      ready.forEach(({ leg, prepared: item }) => update(leg.mint, { phase: "signing", prepared: item }));
+      if (quoted.length !== legs.length) throw new Error("The Allocation preflight returned an incomplete plan.");
     } catch (error) {
       if (error instanceof ApiError && error.status === 402) {
-        // Not enough USDC or SOL: nothing was prepared, so no leg failed. The
-        // reader is asked to fund the wallet or lower the amount instead.
-        clearProgress();
+        // Not enough USDC or SOL: nothing was prepared. The holder is asked
+        // to fund the wallet or lower the amount instead.
+        setAttempt(undefined);
         setShortfall(reasonFrom(error));
       } else {
-        setBatchProblem(stoppedAllocation(0, error));
-        pending.forEach((leg) => update(leg.mint, {
-          phase: "failed",
-          note: `${reasonFrom(error)} Nothing was signed, sent or spent.`,
-          retryable: true,
-        }));
+        setAttempt({ stage: "stopped", problem: stoppedAllocation(error) });
       }
-      setBatchPhase("idle");
-      buying.current = false;
       return;
     }
     if (currentWallet.current !== signingWallet) {
-      setBatchPhase("idle");
-      buying.current = false;
+      setAttempt(undefined);
       return;
     }
-
-    setBatchPhase("approval");
-    const originals = ready.map(({ prepared }) => VersionedTransaction.deserialize(fromBase64(prepared.transaction)));
-    const beforeSigning = originals.map((transaction) => ({
-      message: transaction.message.serialize().slice(),
-      blockhash: transaction.message.recentBlockhash,
-    }));
-
-    let signed: VersionedTransaction[];
+    setAttempt({ stage: "approving", prepared: quoted });
     try {
-      if (signAllTransactions) {
-        signed = await signAllTransactions(originals);
-      } else if (signTransaction) {
-        signed = [];
-        for (const transaction of originals) signed.push(await signTransaction(transaction));
-      } else {
-        throw new Error("This wallet does not offer transaction signing.");
-      }
-      const changed = signed.findIndex((transaction, index) => changedMessage(beforeSigning[index].message, beforeSigning[index].blockhash, transaction));
-      if (changed >= 0) throw new ApiError("The wallet changed one of the transactions Seametry checked.", 409, "SIGNED_MESSAGE_CHANGED", false);
+      await approveAndSend({
+        wallet: signingWallet,
+        kind: "buy",
+        subject: identity.name,
+        allocation: { id: window.crypto.randomUUID(), name: identity.name, ...(identity.templateId ? { templateId: identity.templateId } : {}) },
+        // The plan names each purchase; the quote supplies its terms.
+        prepared: quoted.map((quote, index) => ({ ...quote, mint: legs[index].mint, symbol: legs[index].symbol })),
+        signer: { signTransaction, signAllTransactions, connectedWallet: () => currentWallet.current },
+      });
+      setAttempt(undefined);
     } catch (error) {
-      const blocked = error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED";
-      setBatchProblem(stoppedAllocation(1, error));
-      ready.forEach(({ leg }) => update(leg.mint, {
-        phase: "failed",
-        prepared: undefined,
-        retryable: !blocked,
-        walletBlocked: blocked,
-        note: blocked ? "Not sent. The wallet changed a checked transaction." : "The allocation was not signed. Nothing was sent.",
-      }));
-      setBatchPhase("idle");
-      buying.current = false;
-      return;
+      setAttempt({ stage: "stopped", problem: stoppedAllocation(error) });
     }
-
-    if (currentWallet.current !== signingWallet) {
-      setBatchPhase("idle");
-      buying.current = false;
-      return;
-    }
-
-    setBatchPhase("settling");
-    ready.forEach(({ leg, prepared }, index) => update(leg.mint, {
-      phase: "sending",
-      prepared,
-      signature: bs58.encode(signed[index].signatures[0]),
-      note: "Signed. Sending to mainnet.",
-    }));
-
-    await Promise.all(ready.map(async ({ leg, prepared }, index) => {
-      try {
-        const { signature } = await postJson<{ signature: string }>("/api/allocation/submit", {
-          transaction: toBase64(signed[index].serialize()),
-          approval: prepared.approval,
-        });
-        const submittedAt = new Date().toISOString();
-        recordLocalTrade({
-          signature,
-          wallet: signingWallet,
-          mint: leg.mint,
-          symbol: leg.symbol,
-          direction: "buy",
-          inputAtoms: leg.atoms.toString(),
-          inputScale: USDC_SCALE,
-          submittedAt,
-          allocationId: runId,
-          allocationName: identity.name,
-          allocationTemplateId: identity.templateId,
-        });
-        update(leg.mint, { signature, note: "Sent. Waiting for mainnet to confirm." });
-        await watch(leg.mint, signature, submittedAt, prepared.blockhash);
-      } catch (error) {
-        const definitelyNotSent = error instanceof ApiError && error.sent === false;
-        const changed = definitelyNotSent && error instanceof ApiError && error.code === "SIGNED_MESSAGE_CHANGED";
-        if (definitelyNotSent) {
-          update(leg.mint, {
-            phase: "failed",
-            signature: undefined,
-            retryable: !changed,
-            walletBlocked: changed,
-            uncertain: false,
-            note: changed ? "Not sent. The signed transaction no longer matched the approved plan." : `${reasonFrom(error)} Nothing moved; prepare this purchase again.`,
-          });
-          return;
-        }
-        const signature = bs58.encode(signed[index].signatures[0]);
-        const submittedAt = new Date().toISOString();
-        recordLocalTrade({
-          signature,
-          wallet: signingWallet,
-          mint: leg.mint,
-          symbol: leg.symbol,
-          direction: "buy",
-          inputAtoms: leg.atoms.toString(),
-          inputScale: USDC_SCALE,
-          submittedAt,
-          allocationId: runId,
-          allocationName: identity.name,
-          allocationTemplateId: identity.templateId,
-        });
-        update(leg.mint, {
-          phase: "sending",
-          signature,
-          retryable: false,
-          uncertain: true,
-          note: "The submit receipt was lost. Checking this signed transaction on mainnet before another attempt.",
-        });
-        await watch(leg.mint, signature, submittedAt, prepared.blockhash);
-      }
-    }));
-    setBatchPhase("idle");
-    buying.current = false;
   };
 
   const keyDisabledReason = unavailable
@@ -616,31 +359,9 @@ export function AllocationFlow({
       ? "Connect a wallet first."
       : !signTransaction && !signAllTransactions
         ? "This wallet does not offer transaction signing."
-        : inFlight
-          ? `${phaseLabel[inFlight.phase]} ${inFlight.symbol}.`
-          : walletBlocked
-            ? "This wallet changed the prepared transaction. Connect another wallet to continue this plan."
-          : !nextLeg
-            ? "No unbought purchase can be safely retried from this plan."
-            : undefined;
-
-  const attempted = legs.filter((leg) => leg.phase === "settled" || leg.phase === "failed");
-  const settledCount = legs.filter((leg) => leg.phase === "settled").length;
-  const uncertainCount = legs.filter((leg) => leg.uncertain).length;
-  const failedCount = legs.filter((leg) => leg.phase === "failed").length;
-  const motionState: AllocationMotionState =
-    batchPhase === "preflight" ? "preflight" :
-    batchPhase === "approval" ? "approval" :
-    legs.some((leg) => leg.phase === "sending") ? "settling" :
-    legs.length > 0 && settledCount === legs.length ? "success" :
-    settledCount > 0 && failedCount > 0 ? "partial" :
-    failedCount > 0 && settledCount === 0 ? "failure" :
-    "idle";
-  const summaryLine = `${settledCount} of ${legs.length} ${legs.length === 1 ? "purchase" : "purchases"} settled.${walletBlocked ? " This wallet could not sign this purchase. The remaining purchases are paused." : uncertainCount ? ` ${uncertainCount} ${uncertainCount === 1 ? "submission needs" : "submissions need"} a wallet activity check.` : attempted.length === legs.length && settledCount < legs.length ? " The remaining purchases were not sent or did not settle." : ""}`;
-  // The result opens as a centre dialog once every leg has ended, as Strike's
-  // outcome does; the inline record below stays as the lasting account.
-  const ended = (motionState === "success" || motionState === "partial" || motionState === "failure") && !inFlight && batchPhase === "idle" && attempted.length > 0;
-  const running = batchPhase !== "idle" || Boolean(inFlight);
+        : legs.length === 0
+          ? amountProblem ?? "Enter the USDC to spend."
+          : undefined;
   const total = parsed && "atoms" in parsed ? `${formatAmount(parsed.atoms, USDC_SCALE)} USDC` : "Not set";
   // Per leg, as Jupiter rounds each swap's fee, then summed; the prepared leg
   // later shows the exact fee its simulation moved.
@@ -660,7 +381,7 @@ export function AllocationFlow({
   // themselves, since the amount is only ever read against those purchases.
   const steps = ["Choose", "Buy"];
   const continueReason = chosen.length === 0 ? "Choose at least one constituent." : undefined;
-  const backReason = started ? "Purchases have started. Start a new allocation to change the plan." : undefined;
+  const backReason = started ? "Wait for the wallet, or stop, before changing the plan." : undefined;
   const planLine = [chosen.length === 0 ? "Nothing chosen" : `${chosen.length} chosen`, parsed && "atoms" in parsed ? total : ""].filter(Boolean).join(", ");
 
   return (
@@ -845,60 +566,44 @@ export function AllocationFlow({
                   step where signing happens carries it. */}
               <div className={styles.orderInline} data-testid="order-sheet-inline">{orderSummary}</div>
               <section className={styles.section} aria-label="Buy allocation">
-                {motionState !== "idle" ? <AllocationMotion state={motionState} total={legs.length} settled={settledCount} legs={legs.map((leg) => ({ symbol: leg.symbol, phase: leg.phase }))} /> : null}
-                <p className={styles.quiet}>One allocation decision, independently simulated legs. Wallets with batch signing can approve the set together; other wallets may still show more than one signature prompt.</p>
+                <p className={styles.quiet}>One allocation decision, independently simulated purchases. Wallets with batch signing approve the set together; other wallets may show one prompt per purchase. Once approved, Activity follows each one.</p>
                 <ol className={styles.legs}>
-                  {legs.map((leg) => {
-                    const secondsLeft = leg.prepared ? secondsUntil(leg.prepared.expiresAt, now) : 0;
+                  {legs.map((leg, index) => {
+                    const quote = prepared?.[index];
                     return (
-                      <li key={leg.mint} className={styles.leg} data-phase={leg.phase}>
+                      <li key={leg.mint} className={styles.leg}>
                         <header>
                           <b>
                             {leg.symbol}, {formatAmount(leg.atoms, USDC_SCALE)} USDC
                           </b>
-                          <span>{leg.walletBlocked ? "Not sent" : leg.phase === "failed" && leg.retryable ? "Prepare again" : leg.uncertain ? "Check wallet" : phaseLabel[leg.phase]}</span>
                         </header>
-                        {leg.phase === "preparing" ? (
-                          <p className={styles.loading}>Loading quotes for {formatAmount(leg.atoms, USDC_SCALE)} USDC</p>
-                        ) : null}
-                        {leg.prepared && leg.phase === "signing" ? (
+                        {attempt?.stage === "checking" ? <p className={styles.loading}>Quoting {formatAmount(leg.atoms, USDC_SCALE)} USDC of {leg.symbol}</p> : null}
+                        {quote ? (
                           <>
                             <QuoteBlock
-                              floor={formatAmount(leg.prepared.floorAtoms, leg.prepared.outScale)}
-                              expected={formatAmount(leg.prepared.outAtoms, leg.prepared.outScale)}
+                              floor={formatAmount(quote.floorAtoms, quote.outScale)}
+                              expected={formatAmount(quote.outAtoms, quote.outScale)}
                               unit={leg.symbol}
                               fees={[
-                                { label: `Seametry routing fee, ${formatAmount(BigInt(leg.prepared.routingFeeBps), 2)}%`, value: `${formatAmount(leg.prepared.routingFeeAtoms, USDC_SCALE)} USDC` },
-                                { label: "Priority fee set by the route", value: `${formatAmount(leg.prepared.priorityFeeLamports, 9)} SOL` },
-                                ...(leg.prepared.solNeededLamports ? [{ label: "SOL needed, including account opening", value: `${formatAmount(leg.prepared.solNeededLamports, 9)} SOL` }] : []),
+                                { label: `Seametry routing fee, ${formatAmount(BigInt(quote.routingFeeBps), 2)}%`, value: `${formatAmount(quote.routingFeeAtoms, USDC_SCALE)} USDC` },
+                                { label: "Priority fee set by the route", value: `${formatAmount(quote.priorityFeeLamports, 9)} SOL` },
+                                ...(quote.solNeededLamports ? [{ label: "SOL needed, including account opening", value: `${formatAmount(quote.solNeededLamports, 9)} SOL` }] : []),
                                 { label: "Venue fees", value: "Included in the expected output" },
                               ]}
-                              route={`Jupiter, through ${leg.prepared.route.join(", ")}, quoted at slot ${leg.prepared.contextSlot}`}
-                              received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(leg.prepared.receivedAt)) / 1000))}s`, absolute: leg.prepared.receivedAt }}
-                              secondsLeft={secondsLeft}
+                              route={`Jupiter, through ${quote.route.join(", ")}, quoted at slot ${quote.contextSlot}`}
+                              received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(quote.receivedAt)) / 1000))}s`, absolute: quote.receivedAt }}
+                              secondsLeft={secondsUntil(quote.expiresAt, now)}
                             />
                             <p className={styles.simulated}>
                               Simulated token changes on mainnet for this wallet:{" "}
-                              {leg.prepared.simulated.map((change) => signedChange(change.atoms, change.scale, change.unit)).join("; ")}.
+                              {quote.simulated.map((change) => signedChange(change.atoms, change.scale, change.unit)).join("; ")}.
                             </p>
                           </>
-                        ) : null}
-                        {leg.note ? <p className={styles.note}>{leg.note}</p> : null}
-                        {leg.signature ? (
-                          <a className={styles.signature} href={`https://explorer.solana.com/tx/${leg.signature}`} rel="noreferrer" target="_blank">
-                            {leg.signature}
-                          </a>
                         ) : null}
                       </li>
                     );
                   })}
                 </ol>
-                {attempted.length > 0 ? (
-                  <p className={styles.summary} role={uncertainCount ? "alert" : "status"}>{summaryLine}</p>
-                ) : null}
-                {settledCount > 0 ? <Link href="/app/positions" className={styles.holdingsLink}>View holdings and sell</Link> : null}
-                {running && !processOpen ? <QuietAction onClick={() => setProcessOpen(true)}>View purchase progress</QuietAction> : null}
-                {started && !running && !walletBlocked ? <QuietAction onClick={startOver}>Start new allocation</QuietAction> : null}
               </section>
             </>
           ) : null}
@@ -928,47 +633,32 @@ export function AllocationFlow({
           next={
             !connected ? (
               <ContinueAction onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</ContinueAction>
-            ) : walletBlocked ? (
-              <span>Purchase paused</span>
-            ) : nextLeg || inFlight ? (
+            ) : (
               <Key
-                busy={Boolean(inFlight) || batchPhase !== "idle"}
-                busyLabel={batchPhase === "preflight" ? "Checking every leg" : batchPhase === "approval" ? "Waiting for wallet" : inFlight ? "Settling allocation" : undefined}
-                disabled={Boolean(keyDisabledReason) && !inFlight}
+                busy={started}
+                busyLabel={attempt?.stage === "checking" ? "Checking every leg" : "Waiting for wallet"}
+                disabled={Boolean(keyDisabledReason)}
                 disabledReason={keyDisabledReason}
+                // The field already states an amount problem; the Key says it again only when pressed.
+                reasonBeside={false}
                 onClick={() => void buyAll()}
               >
                 {fixedTemplate ? "Buy basket" : "Buy allocation"}
               </Key>
-            ) : (
-              <span>{uncertainCount ? "Check wallet activity" : settledCount === legs.length ? "Purchases settled" : "Review purchase status"}</span>
             )
           }
         />
       )}
-      {(running || ended || Boolean(batchProblem)) && processOpen ? (
+      {attempt && !(started && progressHidden) ? (
         <ProcessDialog
           open
-          onClose={() => setProcessOpen(false)}
-          title={running ? "Buying allocation" : motionState === "success" ? "Allocation assembled" : motionState === "partial" ? "Allocation partly assembled" : "Purchase stopped"}
-          register="Mainnet"
-          closeLabel="Close allocation status"
-          footer={ended ? <>
-            {settledCount > 0 ? <RouteAction href="/app/positions">View holdings and sell</RouteAction> : null}
-            {!walletBlocked ? <QuietAction type="button" onClick={startOver}>Start new allocation</QuietAction> : null}
-          </> : undefined}
+          onClose={() => (started ? setProgressHidden(true) : setAttempt(undefined))}
+          title={attempt.stage === "stopped" ? "Purchase stopped" : `Buying ${identity.name}`}
+          register={attempt.stage === "stopped" ? "Nothing was sent" : "Mainnet"}
+          closeLabel={started ? "Hide purchase progress" : "Dismiss"}
+          footer={attempt.stage === "stopped" ? <ContinueAction type="button" onClick={() => void buyAll()}>Try again</ContinueAction> : undefined}
         >
-          {batchProblem ? <StepRegister label="Allocation progress" steps={allocationSteps("idle", batchProblem)} /> : running ? <StepRegister label="Allocation progress" steps={allocationSteps(batchPhase === "idle" ? "settling" : batchPhase)} /> : <ProcessOutcome kind={motionState === "success" ? "success" : "error"} title={summaryLine}>
-            <ul className={styles.outcomeLegs} aria-label="Purchases">
-              {legs.map((leg) => (
-                <li key={leg.mint}>
-                  <b>{leg.symbol}</b>
-                  <span>{leg.walletBlocked ? "Not sent" : leg.phase === "failed" && leg.retryable ? "Prepare again" : leg.uncertain ? "Check wallet" : phaseLabel[leg.phase]}</span>
-                  {leg.signature ? <a href={`https://explorer.solana.com/tx/${leg.signature}`} rel="noreferrer" target="_blank">{leg.signature.slice(0, 8)}…</a> : null}
-                </li>
-              ))}
-            </ul>
-          </ProcessOutcome>}
+          <StepRegister label="Allocation progress" steps={allocationSteps(attempt)} />
         </ProcessDialog>
       ) : null}
       <ProcessDialog

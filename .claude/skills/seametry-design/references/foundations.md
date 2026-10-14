@@ -140,7 +140,7 @@ Tokens are in `assets/tokens/seametry.tokens.json`. Never write a raw colour; th
 | `accent.provenanceField` | Bars beside green, chart fills, chips | Any surface larger than a chip |
 | `line.highlight` | Top-edge hairline on raised surfaces | Anything else |
 | `surface.inverse`, `text.inverse` | The supporting ink: BLOCK stamps, index chips on plates, and compact utility wrappers. Black on the light certificate, bone on the dark touchstone | A primary action's fill, a panel, more than one ink block per control |
-| `status.success`, `status.warning`, `status.error` | Purchase outcome icons only, with the outcome stated in text | Market movement, evidence grade, whole-panel fill |
+| `status.success`, `status.warning`, `status.error` | Status mark only, with the state stated in text | Market movement, evidence grade, whole-panel fill |
 
 **Ink.** Black supports green; it never competes with it (Storm, 4 October 2026). A primary action stays green with its pressed-green cell. A secondary action keeps its sheet label and its glyph sits behind a hairline in the label's own colour, so the two read as different jobs by fill alone; an ink icon cell was tried there and removed because it read as a stray black stamp beside a quiet label (Storm, 12 October 2026). Ink is a neutral, not a hue, so it carries no meaning beyond weight.
 

@@ -10,7 +10,7 @@ Every component states:
 - **Data**: the API fields it renders. Never invented values.
 - **Rules**: what it must never do.
 
-Universal states, required unless stated otherwise: default, loading, empty, stale, unavailable, error. Loading is a rule-line skeleton plus a sentence naming what is loading. Never a spinner, except a running step's mark in a Step register.
+Universal states, required unless stated otherwise: default, loading, empty, stale, unavailable, error. Loading is a rule-line skeleton plus a sentence naming what is loading. Never a spinner, except the running Status mark of a request the user started: in a Step register, a Timeline, a Toast, or a busy Key.
 
 ## Contents
 1. Atoms
@@ -210,14 +210,42 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Anatomy:** native dialog centred in the viewport; quiet register label; title; a Step register; an icon-only round close control labelled for assistive technology, a named full-round case; optional footer for the one follow-up action.
 **Identity:** a `radius.sheet` plate with the single top highlight rule and tonal elevation; no shadow, blur or glow.
 **States:** closed; open. The request's own states live in its Step register.
-**Rules:** for watching a request (founding, signing, confirming), never for a task the user edits; that is the Modal sheet. The editable sheet carries its own Step track before the request starts. When the watched request ends, close its progress dialog and open a separate outcome dialog, so confirmation never masquerades as another running step. Closing does not cancel the request, and the opening surface offers a way back. Native focus and Escape contract; focus returns to the opening control.
+**Rules:** for watching a request (founding, signing, confirming), never for a task the user edits; that is the Modal sheet. The editable sheet carries its own Step track before the request starts. A purchase or sale watches only its waits before the wallet (checking routes, approving) here; on approval the dialog closes and its Toast and Activity record carry it (Storm, 14 October 2026). A Hall ceremony (Strike, Melt) keeps its dialog until it lands: when it ends, close its progress dialog and open a separate outcome dialog, so confirmation never masquerades as another running step. Closing does not cancel the request, and the opening surface offers a way back. Native focus and Escape contract; focus returns to the opening control.
 
-### Purchase outcome
-**Answers:** was this constituent purchase sent, settled, or stopped before any funds moved?
-**Anatomy:** one status icon, one literal outcome title, one short account of funds and next action, optional technical detail, and a transaction link only when a signature exists. It replaces the running Step register inside the same Process dialog when the request ends.
-**States:** settled uses the success mark; not sent uses the error mark; uncertain broadcast uses the warning mark; pending confirmation stays in the running Step register. Icon colours use the scoped semantic status tokens and never carry meaning alone.
-**Data:** caller-owned outcome, refusal and signature. The component never infers settlement from a wallet signature alone.
-**Rules:** no retry for a wallet that changed the checked message, or when broadcast status is uncertain. A retry is offered only after a refusal known to have happened before broadcast. The same fact appears on the purchase row after the dialog closes.
+### Status mark
+**Answers:** where does this thing stand: waiting, running, done, partly done, or stopped?
+**Anatomy:** a round mark on the quiet surface holding one glyph: the caller's own while waiting, a turning ring while running, a check when done, a half disc when partly done, an X when stopped. The state is also given as visually hidden text. Two sizes: row, and compact for a Toast.
+**States:** waiting, running, done, partial, stopped; reduced motion holds the ring still.
+**Data:** caller-owned state.
+**Rules:** the only moving mark in the system, and it moves only for a request the user started and is waiting on. Never the only carrier of meaning: a word beside it always states the same thing. `@seametry/ui/timeline`.
+
+### Timeline
+**Answers:** what happened to each part of this request, in order, and what did each part move?
+**Anatomy:** an ordered list; each item is a Status mark joined to the next by a connector rule, a title (the constituent), a right-aligned figure (what it spent, and what it received once known), and detail below: the phase in words, the plain problem when it did not land with the raw error behind a "Technical detail" disclosure, and its Id.
+**States:** every item waiting, running, done or stopped; a record mixes them.
+**Data:** an execution record's legs (`lib/execution/record.ts`). Received quantities come from the confirmed transaction's balance changes, never from the quote.
+**Rules:** figures are exact atoms at their scale with their unit; no USDC value is invented for a token amount.
+
+### Id
+**Answers:** which transaction or account is this, and where can I check it?
+**Anatomy:** the identifier shown by its first and last six characters in the digest face, an icon to copy it whole whose glyph turns to a check for two seconds, and an icon that reads it on Solscan. Both icons carry labels for assistive technology; no visible word says "copy", "copied" or "open".
+**States:** default; copied.
+**Data:** a signature or address, never truncated in what is copied.
+**Rules:** never the only place a signature appears for a request that did not settle; the Activity record keeps it. `@seametry/ui/id`.
+
+### Toast
+**Answers:** what is the request I just started doing now that I have moved on, and what do I do next?
+**Anatomy:** a raised plate in the bottom corner (above the phone tab bar): a compact Status mark, a one-line headline ("Buying Prime Seven"), one line of progress or outcome, up to three lot marks, an icon-only dismiss, and at most one next action below. Pressing the body opens the request's Activity record.
+**States:** running (stays while any leg is open); finished (stays six seconds after the last leg ends, then leaves); dismissed. At most three at once, newest nearest the edge.
+**Data:** one execution record; the headline, line and action come from `headline`, `progressLine`, `outcomeLine` and `nextAction` in `lib/execution/record.ts`, so every surface says the same thing.
+**Rules:** never holds the only copy of anything: the record stays in Activity. Not a ceremony; motion is entry, exit and the running mark only. `@seametry/ui/toast`.
+
+### Activity
+**Answers:** what has this browser bought or sold, did each part land, and what can I do about what did not?
+**Anatomy:** an icon in the App shell header with the count of finished records not yet seen, opening a Modal sheet that lists every record newest first: a Status mark, headline, outcome sentence and age, the record's Timeline, and its one next action (View holdings, Buy the other n, Sell again, Read on Solscan). Holdings shows the same list for the connected wallet.
+**States:** empty ("Nothing bought or sold from this browser yet."); records settling, settled, partly settled, nothing moved, needs attention.
+**Data:** device-local execution records, watched by one loop in the App shell (`lib/execution/watcher.ts`) that reads every open leg in one request per tick.
+**Rules:** a leg is never left open past its blockhash deadline once the chain can be read; while it cannot be, the record says so after 45 seconds instead of spinning. Wallet balances stay the authority over what is held.
 
 ### Step track
 **Answers:** where am I in this flow, and what is left?
@@ -317,14 +345,6 @@ Top of every constituent and alloy page. Lot number; name in display serif; tick
 **States:** complete basket; part-admitted basket (left-out constituents named, the record says why); equal; custom and assigned; custom and not adding to 100% (stated with the figure, no Key); a constituent below 1 USDC at its weight (named, with what to raise).
 **Data:** the published members, current admission, whole-percent weights split by `splitByWeights` in integer atoms. Weights travel in the URL with the rest of the unsigned plan, paired by position with `selected`.
 **Rules:** whole percents only, so the split is exact integer arithmetic. Holdings name a purchase after its basket only when it is that basket as published, every constituent at equal weight; anything else started from a basket is "<name> remix", never passed off as the published composition.
-
-### Constituent settlement register
-**Answers:** which exact constituent legs have been prepared, signed, submitted or settled?
-**Anatomy:** compact per-constituent process register, one rule and one short status per leg, backed by transaction-phase state. Active rule moves only while real preflight/signing/settlement is in progress. Settled rule fills, failed rule breaks.
-**Identity:** a ledger of independent outcomes, not an orbital illustration. Nothing renders before the user initiates a purchase or exit.
-**States:** checking, approval, sending, complete, partial, refused, reduced motion.
-**Data:** actual constituent symbols, phase transitions and confirmed count from transaction state.
-**Rules:** do not create placeholder orbit nodes, fake progress percentages, invented transaction success or animation while idle.
 
 ### Catalogue table
 **Answers:** what is in this set, and which entries meet the standard?

@@ -1,0 +1,10 @@
+Surface:     Responsive web app (App shell, Allocation builder, Holdings)
+Template:    App shell with a corner Toast region and an Activity sheet; existing Allocation and Holdings templates
+Question:    I pressed Buy or Sell: is it landing, did it land, and what do I do about what did not?
+Sections:    Toast region (what is running now); Activity sheet (every record, its legs, its next action); Holdings Activity list (the same records for the connected wallet)
+Components:  Status mark, Timeline, Toast, Id, Activity (registered in components.md); Modal sheet, Process dialog, Step register, Key, Lot mark
+Data:        Device-local execution records (lib/execution/record.ts), each leg's signature, spend, quoted output and floor, lastValidBlockHeight from Jupiter's /swap, and the wallet's token changes read from the confirmed transaction by POST /api/execution/status
+States:      settling (running mark, "n of m landed"); settled ("All n purchases landed", View holdings); partly settled (which landed, Buy the other n or Sell again); nothing moved (said plainly, whether a network fee was charged); needs attention (chain unreadable for 45 seconds, Read on Solscan, checking continues); empty Activity says nothing was bought or sold from this browser
+Ceremony:    None added. A purchase or sale's dialog closes on wallet approval; Strike and Melt keep theirs.
+Names:       Activity, purchase, sale, landed, did not land, not sent, nothing moved, Allocation
+Assumptions: Records stay device-local, as the trade list before them did; wallet balances remain the authority. A signature unseen 20 blocks past its lastValidBlockHeight can never land. Records kept before this engine have no block height and fall back to five minutes of wall time. A retry from a toast starts a new Allocation record rather than joining the old one.

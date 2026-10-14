@@ -1534,6 +1534,15 @@
   color: var(--sm-status-error);
 }
 
+/* A busy Key turns its icon cell's mark: the request it started is alive. */
+.key[aria-busy="true"] .actionIcon svg {
+  animation: step-turn 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .key[aria-busy="true"] .actionIcon svg { animation: none; }
+}
+
 @keyframes step-turn {
   to { transform: rotate(360deg); }
 }

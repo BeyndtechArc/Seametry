@@ -353,10 +353,10 @@ export function Key({
           aria-busy={busy || undefined}
         >
           <span className={styles.actionLabel}>{busy ? busyLabel ?? "Working" : children}</span>
-          <span className={styles.actionIcon}><Icon name="key" /></span>
+          <span className={styles.actionIcon}><Icon name={busy ? "running" : "key"} /></span>
         </button>
       </span>
-      {disabled && disabledReason ? <span className={styles.controlReason}>{disabledReason}</span> : null}
+      {buttonProps.disabled && !busy && disabledReason ? <span className={styles.controlReason}>{disabledReason}</span> : null}
     </span>
   );
 }
