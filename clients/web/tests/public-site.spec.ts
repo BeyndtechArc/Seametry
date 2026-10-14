@@ -397,7 +397,7 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   await expect(page.getByRole("banner").getByText("Seametry", { exact: true })).toBeHidden();
   const appTabs = page.getByRole("navigation", { name: "Mobile product" });
   await expect(appTabs.getByRole("link")).toHaveCount(5);
-  await expect(appTabs.getByRole("link", { name: "Baskets" })).toHaveAttribute("href", "/app/baskets");
+  await expect(appTabs.getByRole("link", { name: "Allocation" })).toHaveAttribute("href", "/app/baskets/build");
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("button", { name: "Use light mode" })).toBeVisible();
   const appOrder = await page.evaluate(() => ({

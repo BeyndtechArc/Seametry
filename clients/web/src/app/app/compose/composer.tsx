@@ -334,7 +334,7 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
     </div>
 
     {step === 0 ? (
-      <div className={styles.selectionBar}>
+      <div className={styles.selectionBar} data-testid="selection-action-bar">
         <SelectionCount current={chosen.length} total={MAX_CONSTITUENTS} noun="constituents selected" />
         <ContinueAction disabled={chosen.length === 0} title={chosen.length === 0 ? "Choose at least one constituent." : undefined} onClick={() => setStep(1)}>
           Set the Formula

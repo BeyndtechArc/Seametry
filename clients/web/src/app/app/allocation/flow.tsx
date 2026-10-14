@@ -483,7 +483,7 @@ export function AllocationFlow({
         setBatchProblem(stoppedAllocation(0, error));
         pending.forEach((leg) => update(leg.mint, {
           phase: "failed",
-          note: "Preflight stopped before signing. Nothing was sent or spent.",
+          note: `${reasonFrom(error)} Nothing was signed, sent or spent.`,
           retryable: true,
         }));
       }
