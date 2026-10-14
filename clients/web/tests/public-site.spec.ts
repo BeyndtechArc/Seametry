@@ -553,8 +553,9 @@ test("the app header connects a wallet and keeps the mode control beside it", as
   });
   expect(treatment).toEqual({ login: true, evenLabel: true, theme: false });
   await expect(login.locator(":scope > span").last().locator("svg")).toHaveCount(1);
+  // The mark opens the Overview; the tabs do not repeat it.
+  await expect(page.getByRole("banner").getByRole("link", { name: "Seametry" })).toHaveAttribute("href", "/app");
   await expect(page.getByRole("banner").getByRole("navigation", { name: "Product" }).getByRole("link")).toHaveText([
-    "Overview",
     "Holdings",
     "Baskets",
     "Allocation",
