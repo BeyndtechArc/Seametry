@@ -1,24 +1,25 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { LotMark, QuietLink } from "@seametry/ui";
-import { Icon } from "@seametry/ui/icons";
+import { QuietLink } from "@seametry/ui";
+import { Icon, type IconName } from "@seametry/ui/icons";
 import { Id, solscan } from "@seametry/ui/id";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { StatusMark, Timeline, TimelineItem, type MarkState } from "@seametry/ui/timeline";
 import { Toast, ToastRegion } from "@seametry/ui/toast";
 import { Callout } from "@seametry/ui/callout";
 import { formatAmount } from "@/lib/amount";
-import { logoSrc } from "@/lib/logo-src";
 import { deriveState, endedAt, hasSignature, headline, isTerminal, LEG_WORDS, nextAction, outcomeLine, progressLine, retryWeights, type Execution, type ExecutionState, type Leg, type Quantity } from "@/lib/execution/record";
 import { executions, useExecutions } from "@/lib/execution/store";
 import { useExecutionWatcher } from "@/lib/execution/watcher";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import styles from "./activity.module.css";
 
-// A finished request stays in the corner this long, then lives on in Activity.
-const SHOWN_AFTER_FINISH_MS = 6_000;
+// How recently a request may have ended for a page opened since to toast it,
+// covering a refresh just after the last leg landed.
+const RECENTLY_ENDED_MS = 10_000;
 
 const MARKS: Record<ExecutionState, MarkState> = {
   settling: "running",
@@ -49,33 +50,42 @@ function useNow(keepRunning: (now: number) => boolean) {
   return now;
 }
 
-function NextStep({ execution, now }: { execution: Execution; now: number }) {
+type Step = { href: string; label: string; icon: IconName; external?: boolean };
+
+/** The one next step a record allows, as a destination, so the Activity list and the toast offer the same thing. */
+function nextStep(execution: Execution, now: number): Step | undefined {
   const next = nextAction(execution, now);
   switch (next.kind) {
     case "view-holdings":
-      return <QuietLink href="/app/positions" icon="next">View holdings</QuietLink>;
+      return { href: "/app/positions", label: "View holdings", icon: "next" };
     case "retry": {
-      if (execution.kind === "sell") return <QuietLink href="/app/positions" icon="next">Sell again</QuietLink>;
+      if (execution.kind === "sell") return { href: "/app/positions", label: "Sell again", icon: "refresh" };
       const weights = retryWeights(next.legs);
       const total = next.legs.reduce((sum, leg) => sum + BigInt(leg.spend.atoms), 0n);
       const query = new URLSearchParams({ selected: next.legs.map((leg) => leg.mint).join(","), amount: formatAmount(total, 6).replaceAll(",", "") });
       if (weights) query.set("weights", next.legs.map((leg) => weights[leg.mint]).join(","));
-      return <QuietLink href={`/app/baskets/build?${query.toString()}`} icon="next">{next.legs.length === execution.legs.length ? "Buy again" : `Buy the other ${next.legs.length}`}</QuietLink>;
+      return { href: `/app/baskets/build?${query.toString()}`, label: next.legs.length === execution.legs.length ? "Buy again" : `Buy the other ${next.legs.length}`, icon: "refresh" };
     }
     case "read-chain":
-      return <QuietLink href={solscan(next.signature)} target="_blank" rel="noreferrer" icon="external">Read on Solscan</QuietLink>;
+      return { href: solscan(next.signature), label: "Read on Solscan", icon: "external", external: true };
     case "none":
-      return null;
+      return undefined;
   }
 }
 
-function Marks({ legs }: { legs: Leg[] }) {
-  return (
-    <span className={styles.marks} aria-hidden="true">
-      {legs.slice(0, 3).map((leg) => <LotMark key={leg.mint} symbol={leg.symbol} src={logoSrc(leg.mint)} size="list" />)}
-      {legs.length > 3 ? <span className={styles.more}>+{legs.length - 3}</span> : null}
-    </span>
-  );
+function NextStep({ execution, now }: { execution: Execution; now: number }) {
+  const step = nextStep(execution, now);
+  if (!step) return null;
+  return step.external
+    ? <QuietLink href={step.href} target="_blank" rel="noreferrer" icon={step.icon}>{step.label}</QuietLink>
+    : <QuietLink href={step.href} icon={step.icon}>{step.label}</QuietLink>;
+}
+
+/** The same step as the toast's icon: its label is the accessible name and the tooltip. */
+function NextStepIcon({ step }: { step: Step }) {
+  return step.external
+    ? <a href={step.href} target="_blank" rel="noreferrer" aria-label={step.label} title={step.label}><Icon name={step.icon} /></a>
+    : <Link href={step.href} aria-label={step.label} title={step.label}><Icon name={step.icon} /></Link>;
 }
 
 /** Every record for a wallet, newest first: the lasting account of what this browser asked for. */
@@ -140,16 +150,17 @@ export function ActivityDock() {
   // With no wallet connected, every record this browser holds is shown.
   const records = useExecutions(useWallet().publicKey?.toBase58());
   const [sheet, setSheet] = useState<{ focus?: string }>();
-  const now = useNow((current) => records.some((execution) => {
-    const ended = endedAt(execution);
-    return ended === undefined || current - ended < SHOWN_AFTER_FINISH_MS;
-  }));
+  const now = useNow((current) => records.some((execution) => endedAt(execution) === undefined || current - endedAt(execution)! < RECENTLY_ENDED_MS));
   const [dismissed, setDismissed] = useState<string[]>([]);
+  // A request that ended before this page opened is counted on the icon, not
+  // toasted; one that ends while the page is open stays until its countdown
+  // runs out or it is dismissed.
+  const [openedAt] = useState(() => Date.now());
 
   const toasts = records.filter((execution) => {
     if (dismissed.includes(execution.id)) return false;
     const ended = endedAt(execution);
-    return ended === undefined || now - ended < SHOWN_AFTER_FINISH_MS;
+    return ended === undefined || ended >= openedAt - RECENTLY_ENDED_MS;
   }).slice(0, 3).reverse();
   const unread = records.filter((execution) => !execution.seen && execution.legs.every(isTerminal)).length;
 
@@ -176,8 +187,8 @@ export function ActivityDock() {
               state={MARKS[state]}
               title={headline(execution, now)}
               line={state === "settling" ? progressLine(execution) : outcomeLine(execution, now)}
-              lead={<Marks legs={execution.legs} />}
-              action={nextAction(execution, now).kind === "none" ? undefined : <NextStep execution={execution} now={now} />}
+              action={nextStep(execution, now) ? <NextStepIcon step={nextStep(execution, now)!} /> : undefined}
+              countdown={state !== "settling" && state !== "needs-attention"}
               onOpen={() => show(execution.id)}
               openLabel={`${headline(execution, now)}, show in Activity`}
               onDismiss={() => {

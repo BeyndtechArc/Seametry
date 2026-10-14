@@ -50,12 +50,15 @@
   --sm-motion-duration-quick: 120ms;
   --sm-motion-duration-base: 180ms;
   --sm-motion-duration-settle: 220ms;
-  --sm-motion-duration-sheet: 240ms;
+  --sm-motion-duration-sheet: 420ms;
   --sm-motion-duration-punch: 90ms;
   --sm-motion-duration-punchStagger: 70ms;
   --sm-motion-duration-seal: 180ms;
+  --sm-motion-duration-overlay: 320ms;
+  --sm-motion-duration-linger: 6000ms;
   --sm-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
   --sm-motion-easing-exit: cubic-bezier(0.4, 0, 1, 1);
+  --sm-motion-easing-glide: cubic-bezier(0.32, 0.72, 0, 1);
   --sm-breakpoint-s: 480px;
   --sm-breakpoint-m: 768px;
   --sm-breakpoint-l: 1024px;

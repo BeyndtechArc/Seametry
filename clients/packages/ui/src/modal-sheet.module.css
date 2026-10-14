@@ -19,8 +19,36 @@
   opacity: 1;
   transform: translateX(0);
   transition:
-    transform var(--sm-motion-duration-sheet) var(--sm-motion-easing-standard),
-    opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+    transform var(--sm-motion-duration-sheet) var(--sm-motion-easing-glide),
+    opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
+}
+
+/* Closing plays the arrival backwards before the dialog is closed
+   (useNativeDialog marks it data-closing and waits for the slide to end). */
+.dialog[data-closing] {
+  opacity: 0;
+  transform: translateX(100%);
+  transition:
+    transform var(--sm-motion-duration-sheet) var(--sm-motion-easing-exit),
+    opacity var(--sm-motion-duration-sheet) var(--sm-motion-easing-exit);
+}
+
+.dialog::backdrop,
+.process::backdrop {
+  opacity: 1;
+  transition: opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
+}
+
+.dialog[data-closing]::backdrop,
+.process[data-closing]::backdrop {
+  opacity: 0;
+}
+
+@starting-style {
+  .dialog[open]::backdrop,
+  .process[open]::backdrop {
+    opacity: 0;
+  }
 }
 
 .dialog::backdrop {
@@ -98,6 +126,10 @@
       transform: translateY(100%);
     }
   }
+
+  .dialog[data-closing] {
+    transform: translateY(100%);
+  }
 }
 
 /* components.md, Process dialog: centred, because it is watched, not worked in. */
@@ -116,8 +148,16 @@
   opacity: 1;
   transform: translateY(0);
   transition:
-    transform var(--sm-motion-duration-base) var(--sm-motion-easing-standard),
-    opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+    transform var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide),
+    opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
+}
+
+.process[data-closing] {
+  opacity: 0;
+  transform: translateY(var(--sm-space-4)) scale(0.98);
+  transition:
+    transform var(--sm-motion-duration-overlay) var(--sm-motion-easing-exit),
+    opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-exit);
 }
 
 .process::backdrop {
@@ -127,7 +167,7 @@
 @starting-style {
   .process[open] {
     opacity: 0;
-    transform: translateY(var(--sm-space-5));
+    transform: translateY(var(--sm-space-5)) scale(0.98);
   }
 }
 
@@ -223,9 +263,15 @@
 .outcomeBody h3 { margin: 0; font-size: var(--sm-font-size-title-s); }
 .outcomeBody p { margin: 0; color: var(--sm-text-secondary); line-height: 1.5; }
 
+/* Without motion, opening and closing are immediate; the close still waits
+   for its one-millisecond transition, so the same code path runs. */
 @media (prefers-reduced-motion: reduce) {
   .dialog,
-  .process {
-    transition: none;
+  .process,
+  .dialog[data-closing],
+  .process[data-closing],
+  .dialog::backdrop,
+  .process::backdrop {
+    transition-duration: 1ms;
   }
 }

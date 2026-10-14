@@ -6,7 +6,7 @@
   z-index: 40;
   display: grid;
   gap: var(--sm-space-3);
-  width: min(calc(100vw - 2 * var(--sm-space-5)), calc(var(--sm-space-13) * 3));
+  width: min(calc(100vw - 2 * var(--sm-space-5)), calc(var(--sm-space-13) * 2.5));
   pointer-events: none;
 }
 
@@ -18,29 +18,44 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  overflow: hidden;
   border: 0.5px solid var(--sm-line-strong);
   border-top-color: var(--sm-line-highlight);
   border-radius: var(--sm-radius-surface);
   color: var(--sm-text-primary);
   background: var(--sm-surface-raised);
   pointer-events: auto;
-  transition: opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard), transform var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide),
+    transform var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
 }
 
 @starting-style {
   .toast {
     opacity: 0;
-    transform: translateY(var(--sm-space-3));
+    transform: translateY(var(--sm-space-5));
   }
+}
+
+/* Leaving drifts right and fades, and then unmounts. */
+.toast[data-leaving] {
+  opacity: 0;
+  transform: translateX(var(--sm-space-6));
+  transition:
+    opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-exit),
+    transform var(--sm-motion-duration-overlay) var(--sm-motion-easing-exit);
 }
 
 .open {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--sm-space-4);
+  gap: var(--sm-space-3);
   min-width: 0;
-  padding: var(--sm-space-4) 0 var(--sm-space-4) var(--sm-space-4);
+  padding: var(--sm-space-3) 0 var(--sm-space-3) var(--sm-space-3);
   border: 0;
   color: inherit;
   background: transparent;
@@ -50,7 +65,8 @@
 }
 
 .open:focus-visible,
-.dismiss:focus-visible {
+.dismiss:focus-visible,
+.action :focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: -2px;
 }
@@ -63,50 +79,89 @@
 
 .text b {
   overflow: hidden;
-  font-size: var(--sm-font-size-body);
-  font-weight: var(--sm-font-weight-medium);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-semibold);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Two lines at most: an outcome sentence cut mid-word lost the part that mattered. */
 .text span {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
+  font-size: var(--sm-font-size-micro);
   font-variant-numeric: tabular-nums;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .lead {
   display: flex;
 }
 
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-1);
+  padding: 0 var(--sm-space-2);
+}
+
+/* The next step and dismiss share one framed icon size. */
+.action a,
+.action button,
 .dismiss {
   display: grid;
   place-items: center;
-  align-self: start;
-  width: var(--sm-size-target);
-  height: var(--sm-size-target);
+  width: var(--sm-space-8);
+  height: var(--sm-space-8);
   padding: 0;
-  border: 0;
+  border: 0.5px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-data);
   color: var(--sm-text-secondary);
-  background: transparent;
+  background: var(--sm-surface-sheet);
   cursor: pointer;
 }
 
-.dismiss:hover {
-  color: var(--sm-text-primary);
+.dismiss {
+  border-color: transparent;
+  background: transparent;
 }
 
+.action a:hover,
+.action button:hover,
+.dismiss:hover {
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-tray);
+}
+
+.action svg,
 .dismiss svg {
   width: var(--sm-space-5);
   height: var(--sm-space-5);
 }
 
-.action {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--sm-space-3);
-  padding: 0 var(--sm-space-4) var(--sm-space-4);
+/* The time left before a finished toast leaves; pointing at it holds it. */
+.countdown {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--sm-text-tertiary);
+  transform-origin: left;
+  animation: linger var(--sm-motion-duration-linger) linear forwards;
+}
+
+.toast:hover .countdown,
+.toast:focus-within .countdown {
+  animation-play-state: paused;
+}
+
+@keyframes linger {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
 }
 
 @media (min-width: 900px) {
@@ -116,6 +171,15 @@
   }
 }
 
+/* Without motion the toast still leaves on time: the countdown keeps its
+   clock but is not drawn, and leaving takes one millisecond so its end fires. */
 @media (prefers-reduced-motion: reduce) {
-  .toast { transition: none; }
+  .toast,
+  .toast[data-leaving] {
+    transition-duration: 1ms;
+  }
+
+  .countdown {
+    visibility: hidden;
+  }
 }

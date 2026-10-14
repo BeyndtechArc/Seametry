@@ -176,10 +176,12 @@ export const tokens = {
       "quick": 120,
       "base": 180,
       "settle": 220,
-      "sheet": 240,
+      "sheet": 420,
       "punch": 90,
       "punchStagger": 70,
-      "seal": 180
+      "seal": 180,
+      "overlay": 320,
+      "linger": 6000
     },
     "easing": {
       "standard": [
@@ -192,6 +194,12 @@ export const tokens = {
         0.4,
         0,
         1,
+        1
+      ],
+      "glide": [
+        0.32,
+        0.72,
+        0,
         1
       ]
     }

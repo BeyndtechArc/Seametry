@@ -88,9 +88,15 @@
       "status": {
         "$type": "color",
         "$description": "Reserved for purchase outcome icons. Meaning is repeated in text.",
-        "success": { "$value": "#8FCBA4" },
-        "warning": { "$value": "#E3C178" },
-        "error": { "$value": "#DEA098" }
+        "success": {
+          "$value": "#8FCBA4"
+        },
+        "warning": {
+          "$value": "#E3C178"
+        },
+        "error": {
+          "$value": "#DEA098"
+        }
       },
       "figure": {
         "$type": "color",
@@ -208,9 +214,15 @@
       "status": {
         "$type": "color",
         "$description": "Reserved for purchase outcome icons. Meaning is repeated in text.",
-        "success": { "$value": "#2E6947" },
-        "warning": { "$value": "#7B5915" },
-        "error": { "$value": "#A3433A" }
+        "success": {
+          "$value": "#2E6947"
+        },
+        "warning": {
+          "$value": "#7B5915"
+        },
+        "error": {
+          "$value": "#A3433A"
+        }
       },
       "figure": {
         "$type": "color",
@@ -446,7 +458,8 @@
         "$value": "220ms"
       },
       "sheet": {
-        "$value": "240ms"
+        "$value": "420ms",
+        "$description": "A side sheet's slide in and out. Long enough to read as a surface arriving, not a flash (Storm, 14 October 2026)."
       },
       "punch": {
         "$value": "90ms"
@@ -456,6 +469,14 @@
       },
       "seal": {
         "$value": "180ms"
+      },
+      "overlay": {
+        "$value": "320ms",
+        "$description": "A centre dialog or a toast entering and leaving."
+      },
+      "linger": {
+        "$value": "6000ms",
+        "$description": "How long a finished toast stays; its countdown bar runs exactly this long and its end removes the toast."
       }
     },
     "easing": {
@@ -475,6 +496,15 @@
           1,
           1
         ]
+      },
+      "glide": {
+        "$value": [
+          0.32,
+          0.72,
+          0,
+          1
+        ],
+        "$description": "Arrives fast and settles slowly, for surfaces that slide in: sheets, dialogs, toasts."
       }
     }
   },

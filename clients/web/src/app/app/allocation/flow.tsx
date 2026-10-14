@@ -299,9 +299,12 @@ export function AllocationFlow({
     return () => clearInterval(timer);
   }, [prepared]);
 
+  // The page behind a closing dialog stays inert until the exit ends, so the
+  // amount takes focus from the dialog's onClosed, not straight away.
+  const focusAmountOnClose = useRef(false);
   const adjustAmount = () => {
+    focusAmountOnClose.current = true;
     setShortfall(undefined);
-    requestAnimationFrame(() => document.getElementById("allocation-usdc")?.focus());
   };
 
   /**
@@ -653,6 +656,11 @@ export function AllocationFlow({
       <ProcessDialog
         open={Boolean(shortfall)}
         onClose={() => setShortfall(undefined)}
+        onClosed={() => {
+          if (!focusAmountOnClose.current) return;
+          focusAmountOnClose.current = false;
+          document.getElementById("allocation-usdc")?.focus();
+        }}
         title="Fund the wallet or lower the amount"
         register="Nothing was signed"
         closeLabel="Close"

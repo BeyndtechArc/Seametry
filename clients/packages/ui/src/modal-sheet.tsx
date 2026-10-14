@@ -4,8 +4,23 @@ import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Icon } from "./icons";
 import styles from "./modal-sheet.module.css";
 
-/** The native dialog contract both surfaces share: modal open, Escape, and focus back to the opener. */
-function useNativeDialog(open: boolean, onClose: () => void) {
+/** The longest transition on the element, in milliseconds, read from its computed style. */
+function transitionMs(element: Element) {
+  const style = getComputedStyle(element);
+  const seconds = (list: string) => list.split(",").map((part) => (part.trim().endsWith("ms") ? parseFloat(part) / 1000 : parseFloat(part)) || 0);
+  const durations = seconds(style.transitionDuration);
+  const delays = seconds(style.transitionDelay);
+  return Math.max(0, ...durations.map((duration, index) => (duration + (delays[index] ?? 0)) * 1000));
+}
+
+/**
+ * The native dialog contract both surfaces share: modal open, Escape, focus
+ * back to the opener, and an exit as deliberate as the entry. Closing marks
+ * the dialog data-closing so its CSS plays the arrival backwards, and only
+ * when that transition ends is the dialog closed; a timer at the same
+ * length stands in if no transition runs.
+ */
+function useNativeDialog(open: boolean, onClose: () => void, onClosed?: () => void) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
@@ -13,12 +28,34 @@ function useNativeDialog(open: boolean, onClose: () => void) {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
-    if (open && !dialog.open) {
-      returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      dialog.showModal();
-    } else if (!open && dialog.open) {
-      dialog.close();
+    if (open) {
+      dialog.removeAttribute("data-closing");
+      if (!dialog.open) {
+        returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        dialog.showModal();
+      }
+      return;
     }
+    if (!dialog.open) return;
+    dialog.setAttribute("data-closing", "");
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      dialog.removeEventListener("transitionend", onEnd);
+      clearTimeout(timer);
+      dialog.removeAttribute("data-closing");
+      dialog.close();
+    };
+    const onEnd = (event: TransitionEvent) => {
+      if (event.target === dialog) finish();
+    };
+    dialog.addEventListener("transitionend", onEnd);
+    const timer = setTimeout(finish, transitionMs(dialog) + 50);
+    return () => {
+      dialog.removeEventListener("transitionend", onEnd);
+      clearTimeout(timer);
+    };
   }, [open]);
 
   const dialogProps = {
@@ -30,9 +67,12 @@ function useNativeDialog(open: boolean, onClose: () => void) {
     onClose: () => {
       if (open) onClose();
       returnFocusRef.current?.focus();
+      // After the exit, the page is no longer inert, so a caller can move
+      // focus somewhere other than the opener here.
+      onClosed?.();
     },
   };
-  return { dialogProps, close: () => dialogRef.current?.close() };
+  return { dialogProps, close: onClose };
 }
 
 export type ModalSheetProps = {
@@ -43,6 +83,8 @@ export type ModalSheetProps = {
   closeLabel?: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** Runs once the exit has finished and the page behind is interactive again. */
+  onClosed?: () => void;
 };
 
 /** components.md, Modal sheet: an end sheet for a task the user works in. */
@@ -54,8 +96,9 @@ export function ModalSheet({
   closeLabel = "Close sheet",
   children,
   footer,
+  onClosed,
 }: ModalSheetProps) {
-  const { dialogProps, close } = useNativeDialog(open, onClose);
+  const { dialogProps, close } = useNativeDialog(open, onClose, onClosed);
   const titleId = useId();
 
   return (
@@ -84,8 +127,9 @@ export function ProcessDialog({
   closeLabel,
   children,
   footer,
+  onClosed,
 }: Omit<ModalSheetProps, "register" | "closeLabel"> & { register: string; closeLabel: string }) {
-  const { dialogProps, close } = useNativeDialog(open, onClose);
+  const { dialogProps, close } = useNativeDialog(open, onClose, onClosed);
   const titleId = useId();
 
   return (
