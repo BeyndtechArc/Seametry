@@ -279,14 +279,16 @@
 }
 
 .lotMarkLettered {
-  color: var(--sm-text-inverse);
-  background: var(--sm-surface-inverse);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-medium);
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-raised);
+  border: 0.5px solid var(--sm-line-strong);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-semibold);
+  letter-spacing: var(--sm-font-tracking-body);
 }
 
 .lotMarkHeader.lotMarkLettered {
-  font-size: var(--sm-font-size-small);
+  font-size: var(--sm-font-size-body);
 }
 
 .grade:focus-visible {
@@ -416,16 +418,25 @@
    near the right edge of a narrow screen. */
 .infoNote {
   display: inline-block;
+  vertical-align: middle;
 }
 
 .infoNote summary {
   display: inline-grid;
   place-items: center;
-  width: var(--sm-size-target);
-  height: var(--sm-size-target);
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
   color: var(--sm-text-tertiary);
   list-style: none;
   cursor: pointer;
+}
+
+.infoNote summary::after {
+  content: "";
+  position: absolute;
+  width: var(--sm-size-target);
+  height: var(--sm-size-target);
+  transform: translateX(calc(var(--sm-space-2) * -1));
 }
 
 .infoNote summary::-webkit-details-marker {

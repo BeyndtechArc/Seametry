@@ -50,6 +50,21 @@
   letter-spacing: var(--sm-font-tracking-display);
 }
 
+.instrumentName {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-body);
+  overflow-wrap: anywhere;
+}
+
+.instrumentTable .instrumentName {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sm-font-size-small);
+}
+
 .loading,
 .boundary {
   display: grid;
@@ -326,6 +341,83 @@
   min-height: var(--sm-size-target);
   color: var(--sm-accent-touchText);
   font-weight: var(--sm-font-weight-medium);
+}
+
+.catalogueRows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sm-space-4);
+  margin: var(--sm-space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.catalogueRows > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sm-space-5);
+  min-width: 0;
+  padding: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  background: var(--sm-surface-sheet);
+}
+
+.catalogueIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-4);
+  min-width: 0;
+  color: var(--sm-text-primary);
+  text-decoration: none;
+}
+
+.catalogueIdentity > span:last-child {
+  display: grid;
+  gap: var(--sm-space-1);
+  min-width: 0;
+}
+
+.catalogueIdentity b,
+.catalogueIdentity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalogueIdentity small {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.catalogueIdentity:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
+}
+
+.catalogueState {
+  flex: none;
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.catalogueState[data-state="available"] {
+  color: var(--sm-accent-touchText);
+}
+
+.cataloguePager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sm-space-6);
+  padding: var(--sm-space-6) 0;
+  color: var(--sm-text-secondary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.quietState {
+  margin-top: var(--sm-space-6);
+  color: var(--sm-text-secondary);
 }
 
 .backLink {
@@ -900,6 +992,15 @@
 }
 
 @media (max-width: 800px) {
+  .catalogueRows {
+    grid-template-columns: 1fr;
+    gap: var(--sm-space-3);
+  }
+
+  .catalogueRows > li {
+    padding: var(--sm-space-4);
+  }
+
   .assayHero,
   .decisionPanel,
   .boundary {

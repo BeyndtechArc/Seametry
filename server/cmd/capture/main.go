@@ -99,6 +99,8 @@ func main() {
 	dir := flag.String("dir", filepath.Join("shared", "fixtures", "mainnet"), "fixture directory")
 	commitment := flag.String("commitment", "finalized", "commitment level")
 	logos := flag.Bool("logos", false, "mirror the logo each fixture's on-chain metadata names, instead of capturing mints")
+	names := flag.Bool("names", false, "record the names stored in the captured mints without making a network request")
+	nameManifest := flag.String("name-manifest", filepath.Join("shared", "evidence", "instrument-names.json"), "the captured mint names for the web interface")
 	logoDir := flag.String("logo-dir", filepath.Join("clients", "web", "public", "instruments"), "where mirrored logos are written")
 	logoManifest := flag.String("logo-manifest", filepath.Join("shared", "evidence", "instrument-logos.json"), "the record of every logo, captured or not")
 	symbols := flag.String("symbols", "", "comma separated symbols from targets.json to capture; empty captures every target")
@@ -106,6 +108,12 @@ func main() {
 
 	if *logos {
 		if err := mirrorLogos(*dir, *logoDir, *logoManifest); err != nil {
+			fail(err)
+		}
+		return
+	}
+	if *names {
+		if err := captureNames(*dir, *nameManifest); err != nil {
 			fail(err)
 		}
 		return

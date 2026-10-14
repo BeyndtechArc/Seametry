@@ -167,6 +167,8 @@ export type PreparedLeg = {
   contextSlot: number;
   receivedAt: string;
   expiresAt: string;
+  /** The exact recent blockhash the wallet signs, used to stop waiting at expiry. */
+  blockhash: string;
   priorityFeeLamports: string;
   /**
    * Set on purchases only, where a batch sums it: SOL this leg spends or
@@ -241,12 +243,9 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     const data = after[index]?.data;
     return Array.isArray(data) ? Buffer.from(data[0], "base64") : null;
   };
-  const lamportsBefore = BigInt(before[0]?.lamports ?? 0);
-  const lamportsAfter = BigInt(after[0]?.lamports ?? 0);
   const simulated: BalanceChange[] = [
     { atoms: (tokenAmount(accountData(1)) - tokenAmount(before[1]?.data)).toString(), scale: 6, unit: "USDC" },
     { atoms: (tokenAmount(accountData(2)) - tokenAmount(before[2]?.data)).toString(), scale: lot.decimals, unit: lot.instrument.symbol ?? mint },
-    { atoms: (lamportsAfter - lamportsBefore).toString(), scale: 9, unit: "SOL" },
   ];
   const feeAtoms = tokenAmount(accountData(3)) - tokenAmount(before[3]?.data);
 
@@ -280,6 +279,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     contextSlot: quote.contextSlot,
     receivedAt: receivedAt.toISOString(),
     expiresAt: expiresAt.toISOString(),
+    blockhash: transaction.message.recentBlockhash,
     priorityFeeLamports: String(swap.prioritizationFeeLamports ?? 0),
     solNeededLamports: solNeeded.toString(),
     routingFeeBps: feeBps,
@@ -370,7 +370,6 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
   const simulated: BalanceChange[] = [
     { atoms: (tokenAmount(accountData(2)) - tokenAmount(before[2]?.data)).toString(), scale: lot.decimals, unit: lot.instrument.symbol ?? mint },
     { atoms: (tokenAmount(accountData(1)) - tokenAmount(before[1]?.data)).toString(), scale: 6, unit: "USDC" },
-    { atoms: (BigInt(after[0]?.lamports ?? 0) - BigInt(before[0]?.lamports ?? 0)).toString(), scale: 9, unit: "SOL" },
   ];
   const feeAtoms = tokenAmount(accountData(3)) - tokenAmount(before[3]?.data);
   if (new Date() > expiresAt) throw new Refusal(410, "This sale quote expired. Request current terms before signing.");
@@ -383,7 +382,7 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
   return {
     mint, symbol: lot.instrument.symbol ?? mint, inAtoms: quote.inAmount, outAtoms: quote.outAmount,
     floorAtoms: quote.otherAmountThreshold, outScale: 6, route: quote.routePlan.map((hop) => hop.swapInfo.label),
-    contextSlot: quote.contextSlot, receivedAt: receivedAt.toISOString(), expiresAt: expiresAt.toISOString(),
+    contextSlot: quote.contextSlot, receivedAt: receivedAt.toISOString(), expiresAt: expiresAt.toISOString(), blockhash: transaction.message.recentBlockhash,
     priorityFeeLamports: String(swap.prioritizationFeeLamports ?? 0), routingFeeBps: feeBps,
     routingFeeAtoms: feeAtoms.toString(), simulated, transaction: swap.swapTransaction, approval,
   };
@@ -445,11 +444,21 @@ export async function legStatus(
   walletText?: string,
   mint?: string,
   sentAt?: Date,
+  blockhash?: string,
 ): Promise<LegStatus> {
   const connection = new Connection(config.mainnetRpcUrl, "confirmed");
   const { value } = await connection.getSignatureStatuses([signature], { searchTransactionHistory: true });
   const status = value[0];
   if (!status) {
+    if (blockhash) {
+      const valid = await connection.isBlockhashValid(blockhash, { commitment: "confirmed" });
+      if (!valid.value) {
+        const last = (await connection.getSignatureStatuses([signature], { searchTransactionHistory: true })).value[0];
+        if (!last) return { state: "expired", detail: "The signed transaction never reached mainnet before its blockhash expired. Nothing moved." };
+        if (last.err) return { state: "failed", detail: JSON.stringify(last.err) };
+        return { state: last.confirmationStatus === "finalized" ? "finalized" : last.confirmationStatus === "confirmed" ? "confirmed" : "pending" };
+      }
+    }
     return sentAt && Date.now() - sentAt.getTime() > DROPPED_AFTER_MS
       ? { state: "expired", detail: "The network never included this transaction and it can no longer land. Nothing moved." }
       : { state: "pending" };

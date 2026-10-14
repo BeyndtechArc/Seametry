@@ -14,6 +14,7 @@ import styles from "./compose.module.css";
 export type Candidate = {
   mint: string;
   symbol: string;
+  name?: string;
   issuer: string;
   grade: GradeName;
   decimals: number;
@@ -83,7 +84,7 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
   // chosen instrument they hide leaving it, counted; search only moves the view.
   const preferred = candidates.filter((candidate) => (backing === "any" || candidate.grade === backing) && (issuer === "any" || candidate.issuer === issuer));
   const needle = query.trim().toLowerCase();
-  const visible = needle === "" ? preferred : preferred.filter((candidate) => candidate.symbol.toLowerCase().includes(needle) || candidate.issuer.toLowerCase().includes(needle));
+  const visible = needle === "" ? preferred : preferred.filter((candidate) => candidate.symbol.toLowerCase().includes(needle) || candidate.name?.toLowerCase().includes(needle) || candidate.issuer.toLowerCase().includes(needle));
   const chosen = preferred.filter((candidate) => selected.includes(candidate.mint));
   const hiddenChosen = selected.length - chosen.length;
   const full = chosen.length >= MAX_CONSTITUENTS;
@@ -196,7 +197,10 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
                   <LotMark symbol={candidate.symbol} src={logoFor(candidate.mint)} size="list" />
                   <span>
                     <b>{candidate.symbol}</b>
-                    <small>{candidate.issuer}</small>
+                    <small className={styles.candidateMeta} title={[candidate.name, candidate.issuer].filter(Boolean).join(" · ")}>
+                      {candidate.name ? <span>{candidate.name}</span> : null}
+                      <span>{candidate.issuer}</span>
+                    </small>
                   </span>
                 </Link>
                 <label className={styles.candidateToggle}>
@@ -329,26 +333,21 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
       </aside>
     </div>
 
-    <StepBar
-      plan={step === 0 ? <><SelectionCount current={chosen.length} total={MAX_CONSTITUENTS} noun="constituents selected" />{full ? <span>Remove one to choose another.</span> : null}</> : missing}
-      problem={step === 0 ? full : missing !== ready}
-      back={
-        step === 1 ? (
-          <QuietAction type="button" onClick={() => setStep(0)}>
-            Back
-          </QuietAction>
-        ) : undefined
-      }
-      next={
-        step === 0 ? (
-          <ContinueAction disabled={chosen.length === 0} title={chosen.length === 0 ? "Choose at least one constituent." : undefined} onClick={() => setStep(1)}>
-            Set the Formula
-          </ContinueAction>
-        ) : (
-          <FoundingKey founding={founding} disabled={foundingLegs.length === 0} />
-        )
-      }
-    />
+    {step === 0 ? (
+      <div className={styles.selectionBar}>
+        <SelectionCount current={chosen.length} total={MAX_CONSTITUENTS} noun="constituents selected" />
+        <ContinueAction disabled={chosen.length === 0} title={chosen.length === 0 ? "Choose at least one constituent." : undefined} onClick={() => setStep(1)}>
+          Set the Formula
+        </ContinueAction>
+      </div>
+    ) : (
+      <StepBar
+        plan={missing}
+        problem={missing !== ready}
+        back={<QuietAction type="button" icon="back" onClick={() => setStep(0)}>Back</QuietAction>}
+        next={<FoundingKey founding={founding} disabled={foundingLegs.length === 0} />}
+      />
+    )}
     </>
   );
 }

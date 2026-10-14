@@ -312,6 +312,22 @@
   font-size: var(--sm-font-size-small);
 }
 
+.lotChoice .lotMeta {
+  display: flex;
+  gap: var(--sm-space-2);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.lotChoice .lotMeta span {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .refused {
   min-width: 0;
 }

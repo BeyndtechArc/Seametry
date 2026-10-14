@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import AllocationPage from "../../allocation/page";
 
 export const metadata: Metadata = {
-  title: "Build a basket | Seametry",
+  title: "Allocation | Seametry",
   description: "Build a direct-wallet Allocation from admitted tokenized equities.",
 };
 

@@ -180,6 +180,36 @@
   line-height: 1.5;
 }
 
+.candidateDetail .candidateMeta {
+  display: flex;
+  gap: var(--sm-space-2);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.candidateDetail .candidateMeta span {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.candidateDetail .candidateMeta span + span {
+  flex: 0 1 auto;
+}
+
+.selectionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  background: var(--sm-surface-sheet);
+}
+
 .methods {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

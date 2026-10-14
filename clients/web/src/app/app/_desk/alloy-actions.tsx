@@ -27,6 +27,8 @@ type Run = {
   at: number;
   state: "running" | "stopped" | "done";
   problem?: StageProblem;
+  /** Melt confirmed but Delivery did not; the Claim is the recovery path. */
+  recoverableClaim?: boolean;
 };
 
 const PREPARE: Step = { title: "Prepare the stand-ins", glyph: "hall", note: "Minting the devnet stand-ins this Strike takes into your wallet", subject: STRIKE };
@@ -166,6 +168,7 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
     ) => {
       let at = 0;
       let stage: RequestStage = "prepare";
+      const confirmed = new Set<RequestSubject>();
       const advance = (next: number, nextStage: RequestStage) => {
         at = next;
         stage = nextStage;
@@ -176,6 +179,7 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
         const signature = await sendTransaction(transaction, connection);
         advance(step + 1, "confirm");
         await awaitLanding(connection, signature, transaction.message.recentBlockhash);
+        confirmed.add(steps[step].subject);
         return signature;
       };
       setSheetOpen(false);
@@ -188,7 +192,15 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
         setProgressOpen(false);
         setOutcomeOpen(true);
       } catch (error) {
-        setRun({ title, steps, at, state: "stopped", problem: requestProblem(steps[at].subject, stage, error) });
+        const current = steps[Math.min(at, steps.length - 1)];
+        const recoverableClaim = confirmed.has(MELT) && current.subject === DELIVERY;
+        const problem = recoverableClaim
+          ? {
+              plain: "The Melt confirmed, so the shares have already returned to the Hall. Delivery stopped, but every undelivered stock remains in your Claim. Continue delivery without melting again.",
+              technical: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+            }
+          : requestProblem(current.subject, stage, error);
+        setRun({ title, steps, at, state: "stopped", problem, recoverableClaim });
         setProgressOpen(false);
         setOutcomeOpen(true);
       } finally {
@@ -229,7 +241,8 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
     execute("Deliver your Claim", [signStep(DELIVERY), confirmStep(DELIVERY)], async (advance, sign) => {
       if (!publicKey || !program) return;
       advance(0, "build");
-      for (const transaction of await buildDelivery(connection, program, REGISTER_HALL_PROGRAM_ID, alloyKey, publicKey, deliverable)) {
+      const currentClaim = (await readClaim(connection, program, REGISTER_HALL_PROGRAM_ID, alloyKey, publicKey)).filter((leg) => !alloy.legs[leg.index]?.held_back);
+      for (const transaction of await buildDelivery(connection, program, REGISTER_HALL_PROGRAM_ID, alloyKey, publicKey, currentClaim)) {
         await sign(0, transaction);
       }
     });
@@ -324,6 +337,9 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
         title={run.state === "done" ? "Action confirmed" : "Action stopped"}
         register="Devnet"
         closeLabel="Close Alloy outcome"
+        footer={run.recoverableClaim
+          ? <ContinueAction type="button" onClick={() => { setOutcomeOpen(false); void deliver(); }}>Continue delivery</ContinueAction>
+          : <ContinueAction type="button" onClick={() => setOutcomeOpen(false)}>Done</ContinueAction>}
       >
         {run.state === "done" ? <ProcessOutcome kind="success" title="Confirmed on devnet"><p>{run.title} completed.</p></ProcessOutcome> : <ProcessOutcome kind="error" title="Action stopped"><p>{run.problem?.plain ?? "The action stopped before confirmation."}</p>{run.problem?.technical ? <details><summary>Technical detail</summary><pre>{run.problem.technical}</pre></details> : null}</ProcessOutcome>}
       </ProcessDialog> : null}
