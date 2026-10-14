@@ -551,6 +551,11 @@ test("a wallet short of funds is asked to fund or adjust, and no purchase is mar
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText("This wallet holds 3.000000 USDC; the Allocation requires 7.000000 USDC.");
   await expect(dialog.getByRole("button", { name: "Copy wallet address" })).toBeVisible();
+  // The address is shortened in the middle and copied whole, so it never overflows the dialog.
+  await expect(dialog.getByText("4vJ9JU…MAnX1d", { exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 720 });
   await expect(page.getByText("Allocation preflight stopped before signing")).toHaveCount(0);
   await dialog.getByRole("button", { name: "Adjust amount" }).click();
   await expect(dialog).toHaveCount(0);

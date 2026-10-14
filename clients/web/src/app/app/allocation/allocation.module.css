@@ -434,3 +434,21 @@
 /* Transaction status is a physical register of real swap legs, not a
    decorative basket illustration. Active rules signal network work.
    Settled rules fill; refused rules break. */
+
+/* Where to send funds: the address shortened in the middle, copied whole. */
+.fundTo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sm-space-3);
+  padding: var(--sm-space-3) var(--sm-space-4);
+  border: 0.5px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-surface);
+  background: var(--sm-surface-sheet);
+}
+
+.fundTo > span {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
