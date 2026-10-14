@@ -8,6 +8,7 @@ import {
   judgeLeg,
   migrateLegacy,
   nextAction,
+  outcomeLine,
   receivedFrom,
   retryWeights,
   UNREADABLE_AFTER_MS,
@@ -122,4 +123,14 @@ test("the trade list kept before the engine becomes one record per decision", ()
   expect(bought.legs[1]).toMatchObject({ phase: "sent" });
   expect(bought.legs[1].lastValidBlockHeight).toBeUndefined();
   expect(migrated.every((entry) => entry.seen)).toBe(true);
+});
+
+test("an outcome names the shared reason the missed legs share, and whether anything was charged", () => {
+  const slipped = { plain: "The price moved more than the 0.50% slippage limit between the quote and sending, so mainnet's check stopped it. Nothing moved." };
+  const shared = record([leg("landed"), leg("refused", { problem: slipped }), leg("refused", { problem: slipped })]);
+  expect(outcomeLine(shared, T0)).toBe(`1 landed; 2 did not. ${slipped.plain}`);
+  const mixed = record([leg("landed"), leg("refused", { problem: slipped }), leg("dropped", { problem: { plain: "Its deadline passed." } })]);
+  expect(outcomeLine(mixed, T0)).toBe("1 landed; 2 did not. Each ended its own way; Activity has each reason. Nothing was charged for them.");
+  const rejected = record([leg("failed", { problem: { plain: "Mainnet rejected it after it was sent." } }), leg("failed", { problem: { plain: "Mainnet rejected it after it was sent." } })]);
+  expect(outcomeLine(rejected, T0)).toBe("Nothing changed hands. Mainnet rejected it after it was sent. A rejected transaction still paid its network fee.");
 });
