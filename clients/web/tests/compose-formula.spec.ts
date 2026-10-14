@@ -285,8 +285,14 @@ test("Compose names an unpriceable constituent, then drafts the Formula and its 
 
 test("the Formula's action bar rides its column as Allocation's does: in view, beside the Draft, above the phone tabs", async ({ page }) => {
   await page.goto("/app/compose");
-  const bar = page.getByTestId("selection-action-bar");
-  const draft = page.getByTestId("formula-draft");
+  // Scoped to main and awaited: while the page streams, React holds its
+  // finished content in a hidden node at the end of the body, a second copy
+  // a measurement taken too early would find.
+  const main = page.getByRole("main");
+  const bar = main.getByTestId("selection-action-bar");
+  const draft = main.getByTestId("formula-draft");
+  await expect(bar).toBeVisible();
+  await expect(draft).toBeVisible();
   await page.mouse.wheel(0, 600);
   const [barBox, draftBox] = [await bar.boundingBox(), await draft.boundingBox()];
   // Pinned to the foot of the viewport while the list scrolls, and never under the Draft rail.
