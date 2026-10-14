@@ -219,11 +219,17 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Data:** caller-owned state.
 **Rules:** the only moving mark in the system, and it moves only for a request the user started and is waiting on. Never the only carrier of meaning: a word beside it always states the same thing. `@seametry/ui/timeline`.
 
+### Banner
+**Answers:** why can this page not do its job yet, and what do I do about it?
+**Anatomy:** one line across the top of the page content: a small mark, the condition with its instruction, and the action that resolves it when the reader can take one (Connect wallet).
+**States:** note; blocked (an inverse rule on the leading edge) when the page cannot act at all, such as purchases closed in this deployment.
+**Rules:** a condition of the whole page, never a fact inside it; that is a Callout. One per page, above everything the condition affects. Says what to do, not only what is wrong. `@seametry/ui/banner`.
+
 ### Callout
 **Answers:** what must I weigh before going on, and how serious is it?
 **Anatomy:** a bordered raised plate; a full-height icon cell on the left that carries the tone (note: info on the tray; caution: info on `status.warning`; blocked: X on `surface.inverse`, the BLOCK stamp's inversion; done: check on `status.success`); a title and one or two sentences filling the rest of the line; at most one action below.
 **States:** note, caution, blocked, done; announced (role alert) when the user's own action caused it, otherwise a note.
-**Rules:** every condition that changes what the reader can do (purchases closed, nothing to sell, not yet assayed, a read that failed, an empty view) is a Callout, never a bare paragraph. Never stacked more than two in one place. `@seametry/ui/callout`.
+**Rules:** a fact inside the content that changes what the reader can do (nothing to sell, not yet assayed, a read that failed, an empty view) is a Callout, never a bare paragraph. A condition of the whole page (no wallet, purchases closed) is a Banner. Never stacked more than two in one place. `@seametry/ui/callout`.
 
 ### Depth chart
 **Answers:** how much does a buy give up at each size Seametry measured?
@@ -263,6 +269,11 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Anatomy:** the flow's steps in order on one trace: each a numbered square mark, joined to the next by a dashed line that turns solid once the step behind it is finished, like a circuit run. The current mark is inverted, finished steps are quiet links back, later steps sit in `text.tertiary` and inert. Below the step's content, a step bar pinned to the bottom of the view: Back (Quiet action), one line summarising the plan so far, and Continue (Route action as a button).
 **States:** each step current, finished or ahead; Continue unavailable with its reason in the bar; Back unavailable once anything irreversible has started, with that reason.
 **Rules:** one question per step; the plan survives moving between steps. Never skips a step that has something to decide. Used for every flow that builds something and then commits it: Allocation (Choose, then Buy with the amount and each purchase together), Compose (Choose, then Found with weighting, identity and the Found key), and the mobile app. A summary panel stays beside the steps on a wide screen and joins the commit step on a narrow one (Storm, 7 October 2026). The bar is StepBar in @seametry/ui, so every flow pins the same one.
+
+### Action bar
+**Answers:** what is this page's one decision, and what does it act on?
+**Anatomy:** a raised bar pinned to the bottom of the page column: on the left the figure the decision acts on (a Selection count, or a Bar figure such as shares held) or one sentence when there is none yet; on the right the one action, its label on one line.
+**Rules:** one per page. It sits in its column, never under a side rail, and above the phone tab bar through `--shell-bottom-inset`. Used by the Allocation builder (Set amount) and an Alloy record (Strike or Melt). `ActionBar` and `BarFigure` in `@seametry/ui`.
 
 ### Selection count
 **Answers:** how much of the permitted set have I chosen?

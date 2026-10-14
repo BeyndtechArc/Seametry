@@ -6,6 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { ContinueAction, Field, IconButton, Key, LotMark, QuietAction, QuoteBlock, StepTrack } from "@seametry/ui";
 import { Identity, List, ListCell, ListRow } from "@seametry/ui/list";
 import { Tabs } from "@seametry/ui/tabs";
+import { Banner } from "@seametry/ui/banner";
 import { Callout } from "@seametry/ui/callout";
 import { PageHeader } from "../_shell/page-header";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
@@ -198,7 +199,7 @@ export function Positions() {
           />
         ) : undefined}
       />
-      {!wallet ? <Callout title="No wallet connected">Connect the wallet that holds your instruments from the header. Connecting buys or sells nothing.</Callout> : (
+      {!wallet ? <Banner action={<QuietAction type="button" icon="wallet" onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</QuietAction>}>Connect the wallet that holds your instruments to see them here. Connecting buys or sells nothing.</Banner> : (
         <>
           <div id="holdings-view" role="tabpanel" aria-label={VIEW_NAMES[view]} className={styles.view}>
             {view === "positions" ? <>

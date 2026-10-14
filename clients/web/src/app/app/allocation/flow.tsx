@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepRegister, StepTrack, Stamp, type RegisterStep } from "@seametry/ui";
+import { ActionBar, ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepRegister, StepTrack, Stamp, type RegisterStep } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
-import { Callout } from "@seametry/ui/callout";
+import { Banner } from "@seametry/ui/banner";
 import { Identity } from "@seametry/ui/list";
 import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitByWeights, splitEvenly } from "@/lib/amount";
@@ -387,7 +387,7 @@ export function AllocationFlow({
 
   return (
     <div className={styles.flow}>
-      {unavailable ? <Callout tone="blocked" title="Purchases are closed here">{unavailable}</Callout> : null}
+      {unavailable ? <Banner tone="blocked">{unavailable}</Banner> : null}
 
       {!fixedTemplate ? <StepTrack label="Allocation steps" steps={steps} current={step} onStep={(index) => !started && setStep(index)} /> : null}
 
@@ -598,12 +598,11 @@ export function AllocationFlow({
             </>
           ) : null}
         {step === 0 ? (
-          <div className={styles.selectionBar} data-testid="selection-action-bar">
-            <SelectionCount current={chosen.length} total={offered.length} />
+          <ActionBar data-testid="selection-action-bar" summary={<SelectionCount current={chosen.length} total={offered.length} />}>
             <ContinueAction disabled={Boolean(continueReason)} title={continueReason} onClick={() => setStep(1)}>
               Set amount
             </ContinueAction>
-          </div>
+          </ActionBar>
         ) : (
           <StepBar
             plan={planLine}

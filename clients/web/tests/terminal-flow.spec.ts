@@ -209,6 +209,10 @@ test("a founded Alloy is named, pictured and listed by stock from its founding r
     expect(answer.status()).toBe(307);
     expect(new URL(answer.headers().location, "http://localhost").pathname).toBe(logo.path);
   }
+  // The record ends in the same action bar as the Allocation builder: what it acts on, then the one Key.
+  const bar = main.getByRole("region", { name: `Strike or Melt ${record.symbol}` });
+  await expect(bar).toContainText("Connect a wallet to Strike or Melt.");
+  await expect(bar.getByRole("button", { name: "Strike or Melt" })).toBeVisible();
 });
 
 test("Strike and Melt are held, with their reasons, until a wallet logs in", async ({ page }) => {

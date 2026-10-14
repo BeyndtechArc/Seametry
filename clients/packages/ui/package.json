@@ -17,7 +17,8 @@
     "./id": "./src/id.tsx",
     "./list": "./src/list.tsx",
     "./tabs": "./src/tabs.tsx",
-    "./callout": "./src/callout.tsx"
+    "./callout": "./src/callout.tsx",
+    "./banner": "./src/banner.tsx"
   },
   "peerDependencies": {
     "react": "^19.3.0"

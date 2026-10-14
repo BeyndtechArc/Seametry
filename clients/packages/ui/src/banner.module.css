@@ -1,0 +1,53 @@
+.banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-4);
+  min-height: var(--sm-size-target);
+  padding: var(--sm-space-2) var(--sm-space-2) var(--sm-space-2) var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  border-bottom: 0.5px solid var(--sm-line-strong);
+  background: var(--sm-surface-tray);
+}
+
+.banner[data-tone="blocked"] {
+  border-left: 2px solid var(--sm-surface-inverse);
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  color: var(--sm-text-secondary);
+}
+
+.banner[data-tone="blocked"] .mark {
+  color: var(--sm-text-primary);
+}
+
+.mark svg {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+}
+
+/* One line on a wide screen; a long instruction wraps rather than hides. */
+.text {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+}
+
+.action {
+  display: flex;
+  gap: var(--sm-space-3);
+}
+
+@media (max-width: 560px) {
+  .banner {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: var(--sm-space-3) var(--sm-space-4);
+  }
+
+  .action {
+    grid-column: 2;
+  }
+}
