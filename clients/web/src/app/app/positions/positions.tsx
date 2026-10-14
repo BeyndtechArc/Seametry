@@ -34,9 +34,10 @@ async function responseJson<T>(response: Response): Promise<T> {
   return body as T;
 }
 
-async function quoteSale(wallet: string, mint: string, atoms: string): Promise<PreparedLeg> {
-  const response = await fetch("/api/allocation/sell/prepare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ wallet, mint, atoms }) });
-  return responseJson<PreparedLeg>(response);
+/** Every leg in one request, so one server paces their Jupiter calls together. */
+async function quoteSales(wallet: string, legs: { mint: string; atoms: string }[]): Promise<PreparedLeg[]> {
+  const response = await fetch("/api/allocation/sell/prepare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ wallet, legs }) });
+  return responseJson<PreparedLeg[]>(response);
 }
 
 export function Positions() {
@@ -117,7 +118,7 @@ export function Positions() {
     setStage("quoting");
     setTradeProblem(undefined);
     try {
-      setPrepared(await quoteSale(wallet, position.mint, validAtoms.toString()));
+      setPrepared((await quoteSales(wallet, [{ mint: position.mint, atoms: validAtoms.toString() }]))[0]);
       setNow(Date.now());
       setStage("review");
     } catch (error) {
@@ -159,7 +160,7 @@ export function Positions() {
     }
     setSale({ ...sale, stage: "quoting", problem: undefined, prepared: undefined });
     try {
-      const quoted = await Promise.all(sale.legs.map((leg) => quoteSale(wallet, leg.mint, leg.atoms)));
+      const quoted = await quoteSales(wallet, sale.legs.map(({ mint, atoms }) => ({ mint, atoms })));
       setSale((current) => current && { ...current, stage: "review", prepared: quoted });
     } catch (error) {
       setSale((current) => current && { ...current, stage: "idle", problem: error instanceof Error ? error.message : String(error) });

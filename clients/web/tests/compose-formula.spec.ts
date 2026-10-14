@@ -6,10 +6,11 @@ import { FOUNDING, requestProblem } from "../src/lib/request-problem";
 import { UNREGISTERED_SPONSOR_MARK } from "../src/lib/compose/founding-transaction";
 import { registeredMetadataPath, registeredMetadataUri } from "../src/lib/compose/identity";
 import { REGISTER_HALL_PROGRAM_ID } from "../src/lib/hall/constants";
+import { slidingWindow } from "../src/lib/request-window";
 import { registerTestWallet } from "./test-wallet";
 
-// How long a page may take to show quotes. lib/jupiter spaces calls a little
-// over a second apart, the fixture refuses each mint's first quote with 429,
+// How long a page may take to show quotes. lib/jupiter lets ten calls leave
+// in any ten seconds, the fixture refuses each mint's first quote with 429,
 // and other workers quote through the same server at the same time.
 const QUOTED = 30_000;
 test.describe.configure({ timeout: 60_000 });
@@ -179,17 +180,29 @@ test("a quote asked again within its lifetime is the same observation, not a new
   expect(second.observedAt).toBe(first.observedAt);
 });
 
-test("the server spaces every Jupiter call at least a second apart, however many requests overlap", async ({ request }) => {
+test("ten requests leave at once and every later one waits for the oldest to leave the window", () => {
+  const next = slidingWindow(10, 10_000);
+  const granted = Array.from({ length: 12 }, () => next(1_000));
+  expect(granted.slice(0, 10)).toEqual(Array(10).fill(1_000));
+  expect(granted.slice(10)).toEqual([11_000, 11_000]);
+  // Once the window has passed, a request goes when it is asked for.
+  expect(next(30_000)).toBe(30_000);
+});
+
+test("the server never sends Jupiter more than ten calls in any ten seconds, however many requests overlap", async ({ request }) => {
+  test.setTimeout(90_000);
   const admitted = JSON.parse(readFileSync("../../shared/evidence/admissions.json", "utf8")).instruments.map((admission: { instrument: { mint: string } }) => admission.instrument.mint);
-  // Three overlapping requests for mints no other test quotes, so none is cached.
-  await Promise.all(admitted.slice(-3).map((mint: string) => request.get(`/api/compose/quotes?mints=${mint}`)));
+  // Six overlapping requests for mints no other test quotes, so none is
+  // cached. The fixture refuses each first quote, so they make twelve calls,
+  // more than the window holds.
+  await Promise.all(admitted.slice(-6).map((mint: string) => request.get(`/api/compose/quotes?mints=${mint}`)));
   const arrivals: number[] = await (await request.get("http://127.0.0.1:3846/jupiter/arrivals")).json();
-  const gaps = arrivals.slice(1).map((at, index) => at - arrivals[index]);
-  expect(gaps.length).toBeGreaterThan(2);
-  // Calls leave 1,100 ms apart; the fixture times their arrival, which local
-  // scheduling jitter can pull a few milliseconds closer (996 ms was seen on
-  // 6 October 2026). Unpaced, overlapping requests arrive milliseconds apart.
-  expect(Math.min(...gaps)).toBeGreaterThanOrEqual(950);
+  expect(arrivals.length).toBeGreaterThan(10);
+  // The window is 10,250 ms; the fixture times arrivals, which local
+  // scheduling jitter can pull a few milliseconds closer. Unpaced,
+  // overlapping requests would put all twelve inside one second.
+  const spans = arrivals.slice(10).map((at, index) => at - arrivals[index]);
+  expect(Math.min(...spans)).toBeGreaterThanOrEqual(10_000);
 });
 
 test("pressing Found separates progress from the final stopped outcome", async ({ page }) => {

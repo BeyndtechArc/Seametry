@@ -480,6 +480,18 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
 }
 
 /**
+ * Prepares every leg of a sale in one request, so one server instance paces
+ * all of their Jupiter calls. Sell All sent a request per leg, Vercel could
+ * serve them on separate instances, and together their calls passed
+ * Jupiter's limit on every attempt (15 October 2026).
+ */
+export async function prepareSales(config: AllocationConfig, walletText: string, legs: { mint: string; inAtoms: bigint }[]): Promise<PreparedLeg[]> {
+  if (legs.length === 0) throw new Refusal(400, "A sale needs at least one holding to sell.");
+  if (new Set(legs.map((leg) => leg.mint)).size !== legs.length) throw new Refusal(400, "The sale names a holding more than once.");
+  return Promise.all(legs.map((leg) => prepareSale(config, walletText, leg.mint, leg.inAtoms)));
+}
+
+/**
  * Broadcasts a leg the holder signed, only if it is the transaction this
  * server approved, unchanged, still inside its quote's lifetime, and still
  * judged on the same evidence. Returns the signature.

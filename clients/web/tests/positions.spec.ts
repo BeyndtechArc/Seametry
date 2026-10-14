@@ -29,11 +29,11 @@ test("a bought Allocation kept from before the engine is sold whole with one rev
     wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
     positions: lots.map((lot) => ({ mint: lot.instrument.mint, symbol: lot.instrument.symbol, atoms: "900000", sellableAtoms: "900000", scale: lot.decimals, tokenProgram: lot.token_program })),
   } }));
-  const prepares: { mint: string; atoms: string }[] = [];
+  const prepares: { wallet: string; legs: { mint: string; atoms: string }[] }[] = [];
   await page.route("**/api/allocation/sell/prepare", async (route) => {
-    const body = route.request().postDataJSON() as { mint: string; atoms: string };
+    const body = route.request().postDataJSON() as { wallet: string; legs: { mint: string; atoms: string }[] };
     prepares.push(body);
-    await route.fulfill({ json: preparedLeg({ inAtoms: body.atoms, inScale: 8, outAtoms: "1000000", floorAtoms: "990000" }) });
+    await route.fulfill({ json: body.legs.map((leg) => preparedLeg({ inAtoms: leg.atoms, inScale: 8, outAtoms: "1000000", floorAtoms: "990000" })) });
   });
   const submits = await acceptSubmits(page);
   await answerChain(page, () => ({ phase: "landed", changes: [{ mint: USDC_MINT, atoms: "995000", scale: 6 }] }));
@@ -52,9 +52,12 @@ test("a bought Allocation kept from before the engine is sold whole with one rev
   const toasts = page.getByRole("region", { name: "Requests in progress" });
   await expect(toasts).toContainText("Sold Prime Seven", { timeout: 10_000 });
   await expect(toasts).toContainText("All 2 sales landed.");
-  // Exactly the quantities this Allocation bought, capped by what the wallet holds.
-  expect(prepares.sort((a, b) => a.mint.localeCompare(b.mint))).toEqual(
-    lots.map((lot, index) => ({ wallet, mint: lot.instrument.mint, atoms: index === 0 ? "400000" : "250000" })).sort((a, b) => a.mint.localeCompare(b.mint)),
+  // One request for every leg, so one server paces their Jupiter calls, asking
+  // exactly the quantities this Allocation bought, capped by what the wallet holds.
+  expect(prepares).toHaveLength(1);
+  expect(prepares[0].wallet).toBe(wallet);
+  expect(prepares[0].legs.sort((a, b) => a.mint.localeCompare(b.mint))).toEqual(
+    lots.map((lot, index) => ({ mint: lot.instrument.mint, atoms: index === 0 ? "400000" : "250000" })).sort((a, b) => a.mint.localeCompare(b.mint)),
   );
   expect(submits()).toBe(2);
   // Sold whole, so the Allocation has nothing left to sell.
@@ -70,10 +73,10 @@ test("a sale steps from amount to review in the sheet, then hands over to the to
     wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
     positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
   } }));
-  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: preparedLeg({
+  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: [preparedLeg({
     inAtoms: "5000000", inScale: lot.decimals, outAtoms: "1000000", floorAtoms: "990000", routingFeeBps: 17, tipOffsetBps: 8, routingFeeAtoms: "1700", priorityFeeLamports: "215264",
     simulated: [{ atoms: "1000000", scale: 6, unit: "USDC" }], landing: "sender", tipLamports: "5000",
-  }) }));
+  })] }));
   await acceptSubmits(page);
   await answerChain(page, () => ({ phase: "landed", changes: [{ mint: USDC_MINT, atoms: "1000000", scale: 6 }] }));
 
@@ -111,7 +114,7 @@ test("a sale mainnet's check refuses ends at once as not sent, in a plain senten
     wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
     positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
   } }));
-  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: preparedLeg({ inAtoms: "5000000", inScale: lot.decimals }) }));
+  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: [preparedLeg({ inAtoms: "5000000", inScale: lot.decimals })] }));
   // What the submit route answers for a preflight refusal: a plain reason, sent:false, and web3.js's own text aside.
   const raw = "Simulation failed. \nMessage: Transaction simulation failed: Error processing Instruction 3: custom program error: 0x1771. \nCatch the `SendTransactionError` and call `getLogs()` on it for full details.";
   await page.route("**/api/allocation/submit", (route) => route.fulfill({ status: 422, json: {
@@ -189,7 +192,7 @@ test("a sale the network dropped says nothing moved and offers to sell again", a
     wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
     positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
   } }));
-  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: preparedLeg({ inAtoms: "5000000", inScale: lot.decimals }) }));
+  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: [preparedLeg({ inAtoms: "5000000", inScale: lot.decimals })] }));
   await acceptSubmits(page);
   await answerChain(page, () => ({ phase: "dropped" }));
 
@@ -216,7 +219,7 @@ test("a wallet that declines leaves the sheet open, saying nothing was sent", as
     wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
     positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
   } }));
-  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: preparedLeg({ inAtoms: "5000000", inScale: lot.decimals }) }));
+  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: [preparedLeg({ inAtoms: "5000000", inScale: lot.decimals })] }));
   const submits = await acceptSubmits(page);
 
   await page.goto("/app/positions");

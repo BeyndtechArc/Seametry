@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Refusal } from "./refusal";
+import { slidingWindow } from "./request-window";
 
 // The Jupiter base the Go liquidity client uses (server/internal/liquidity/jupiter.go).
 // JUPITER_API_URL points the tests at the local fixture, so no test run
@@ -9,28 +10,34 @@ function base() {
   return process.env.JUPITER_API_URL?.trim() || "https://api.jup.ag/swap/v1";
 }
 
-// The free plan allows one request a second, sixty a minute over a sliding
-// window, counted per organisation rather than per key
-// (developers.jup.ag/docs/portal/rate-limits). A 429 is the plan's limit, not
-// a market fact, so it is waited out a bounded number of times before it is
-// reported as what it is.
-const RATE_LIMIT_RETRIES = 2;
-const LONGEST_WAIT_MS = 3_000;
-
-// Every call from this server instance takes the next free slot, a little
-// over a second after the last, so concurrent requests queue instead of
-// bursting into 429s. Compose quoting each ticked box as it was ticked sent
-// overlapping bursts, and AAPLx came back limited on 6 October 2026. It
-// paces one instance only: several warm serverless instances can still
-// together exceed the plan, which the retry and the quote cache absorb.
-const SPACING_MS = 1_100;
-let nextSlot = 0;
+// The free plan as measured on this deployment's key, 15 October 2026: ten
+// requests sent at once all passed, the eleventh was refused, and its
+// x-ratelimit-reset named the second ten seconds after the oldest. The docs
+// call this one a second, sixty a minute, counted per organisation rather
+// than per key (developers.jup.ag/docs/portal/rate-limits). Every call from
+// this server instance takes the next slot in that window, so a basket's
+// calls go ten at once and then one a second instead of bursting into 429s;
+// the quarter second is margin against the two clocks disagreeing. It paces
+// one instance only: another instance, a local server on the same key, or
+// the daily route sample can still take slots, which the wait below absorbs.
+const nextSlot = slidingWindow(10, 10_250);
 
 function paced() {
   const now = Date.now();
-  const slot = Math.max(now, nextSlot);
-  nextSlot = slot + SPACING_MS;
-  return new Promise((resolve) => setTimeout(resolve, slot - now));
+  return new Promise((resolve) => setTimeout(resolve, nextSlot(now) - now));
+}
+
+// A 429 is the plan's limit, not a market fact, so it is waited out while the
+// wait is short, and otherwise reported with how long it has left.
+const RATE_LIMIT_RETRIES = 3;
+const LONGEST_WAIT_MS = 11_000;
+
+/** Jupiter's x-ratelimit-reset is the second a slot opens; Retry-After is what the test fixture sends. */
+function rateLimitWaitMs(headers: Headers, now: number): number {
+  const reset = Number.parseInt(headers.get("x-ratelimit-reset") ?? "", 10);
+  if (!Number.isNaN(reset)) return Math.max(0, reset * 1_000 - now) + 250;
+  const seconds = Number.parseInt(headers.get("retry-after") ?? "", 10);
+  return Number.isNaN(seconds) ? 1_000 : seconds * 1_000;
 }
 
 export type JupiterQuote = {
@@ -52,12 +59,6 @@ export class JupiterRefusal extends Refusal {
   }
 }
 
-function waitFor(retryAfter: string | null) {
-  const seconds = Number.parseInt(retryAfter ?? "", 10);
-  const ms = Number.isNaN(seconds) ? 1_000 : Math.min(seconds * 1_000, LONGEST_WAIT_MS);
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export async function jupiter<T>(apiKey: string, path: string, init?: RequestInit): Promise<T> {
   for (let attempt = 0; ; attempt++) {
     await paced();
@@ -66,9 +67,13 @@ export async function jupiter<T>(apiKey: string, path: string, init?: RequestIni
       headers: { "x-api-key": apiKey, "content-type": "application/json", ...init?.headers },
       cache: "no-store",
     });
-    if (response.status === 429 && attempt < RATE_LIMIT_RETRIES) {
-      await waitFor(response.headers.get("retry-after"));
-      continue;
+    if (response.status === 429) {
+      const wait = rateLimitWaitMs(response.headers, Date.now());
+      if (attempt < RATE_LIMIT_RETRIES && wait <= LONGEST_WAIT_MS) {
+        await new Promise((resolve) => setTimeout(resolve, wait));
+        continue;
+      }
+      throw new JupiterRefusal(429, undefined, `Jupiter is limiting how often Seametry may ask for routes; a request frees up in ${Math.ceil(wait / 1_000)}s. Nothing was signed or sent.`);
     }
     if (!response.ok) {
       const detail = (await response.text()).slice(0, 300);
