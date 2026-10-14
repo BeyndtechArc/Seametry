@@ -94,6 +94,60 @@ export function preflightRefusal(message: string, logs: string[]): PreflightRefu
   return { kind: "other" };
 }
 
+/**
+ * Helius Sender's designated tip accounts on mainnet, read from the raw
+ * source of helius.dev/docs/sending-transactions/sender on 14 October 2026.
+ * A leg sent through Sender must transfer its tip to one of them.
+ */
+export const SENDER_TIP_ACCOUNTS = [
+  "4ACfpUFoaSD9bfPdeu6DBt89gB6ENTeHBXCAi87NhDEE",
+  "D2L6yPZ2FmmmTKPgzaMKdhu6EWZcTpLy1Vhx8uvZe7NZ",
+  "9bnz4RShgq1hAnLnZbP8kbgBg1kEmcJBYQq3gQbmnSta",
+  "5VY91ws6B2hMmBFRsXkoAAdsPHBJwRfBht4DXox3xkwn",
+  "2nyhqdwKcJZR2vcqCyrYsaPVdAnFoJjiksCXJ7hfEYgD",
+  "2q5pghRs6arqVjRvT5gfgWfWcHWmw1ZuCzphgd5KfWGJ",
+  "wyvPkWjVZz1M8fHQnMMCDTQDbkManefNNhweYk5WkcF",
+  "3KCKozbAaF75qEU33jtzozcJ29yJuaLJTy2jFdzUY8bT",
+  "4vieeGHPYPG2MmyPRcYjdiDmmhN3ww7hsFNap8pVN3Ey",
+  "4TQLFNWK8AovT1gFvda5jfw2oJeRMKEmw7aH6MGBJ3or",
+] as const;
+
+/**
+ * The tip each leg pays to land through Sender's SWQOS-only route, its
+ * documented minimum on 14 October 2026. Sender's other route needs 0.001
+ * SOL a leg. The holder's wallet pays it inside the swap it signs, and the
+ * routing fee is lowered by its value (Storm, 14 October 2026), so Seametry
+ * bears it without a wallet or key of its own that could run dry unseen.
+ */
+export const SENDER_TIP_LAMPORTS = 5_000;
+
+/**
+ * Accounts a quote may use when the leg also carries the tip, which adds a
+ * static key and an instruction. A route that still outgrows a transaction
+ * falls back to Jupiter's own build through the RPC.
+ */
+export const SENDER_MAX_ACCOUNTS = 48;
+
+/** How long one Jupiter quote of SOL in USDC prices the tip for every leg prepared after it. */
+export const TIP_VALUE_TTL_MS = 60_000;
+
+/**
+ * Basis points taken off the routing fee so it covers a tip worth
+ * `tipUsdcAtoms`, on a leg whose USDC side is `notionalAtoms`. Jupiter takes
+ * whole basis points, so this rounds up: the holder is never left paying any
+ * part of the tip the fee can cover. It stops at `tierBps`, where the fee is
+ * gone and the remainder of the tip is the holder's, which the order sheet
+ * shows as a SOL line.
+ */
+export function tipOffsetBps(tipUsdcAtoms: bigint, notionalAtoms: bigint, tierBps: number): number {
+  if (notionalAtoms <= 0n) return tierBps;
+  const bps = (tipUsdcAtoms * 10_000n + notionalAtoms - 1n) / notionalAtoms;
+  return bps >= BigInt(tierBps) ? tierBps : Number(bps);
+}
+
+/** The packet limit a serialized transaction must fit, in bytes. */
+export const TRANSACTION_SIZE_LIMIT = 1_232;
+
 /** A sale spends token atoms and receives USDC; the USDC output pays the disclosed routing fee. */
 export function sellQuoteParams(mint: string, inAtoms: bigint, feeBps: number): URLSearchParams {
   return new URLSearchParams({

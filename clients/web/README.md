@@ -110,7 +110,7 @@ and CI checks for drift; this app decides nothing about admission itself.
 
 Execution runs in this app's route handlers (`src/app/api/allocation/*`,
 `src/lib/allocation/*`) under ENGINEERING_STANDARD section 11, until the Go
-Execution service exists (API.md step A7): no key held, quote expiry checked
+Execution service exists (API.md step A7): no customer key held, quote expiry checked
 when a leg is prepared and again when it is sent, a program allowlist before
 the wallet sees anything, a mainnet simulation shown before signing, and an
 approval that refuses any transaction other than the one simulated.
@@ -141,13 +141,58 @@ five are set the page says which are missing and nothing can be bought.
 - `ALLOCATION_ASSUME_COUNTRY`: local runs only, where no host sets the
   country header.
 
+### Helius Sender delivery
+
+Purchases, single sales and Sell All share this delivery path. It needs no
+variable of its own: with `MAINNET_RPC_URL` a keyed HTTPS Helius RPC URL, the
+Sender endpoint is derived from that key. Never use `NEXT_PUBLIC_`.
+
+- `HELIUS_SENDER_URL`: optional override, set in the **web deployment's
+  server environment** (Vercel for the current web app). It must be a keyed
+  HTTPS Helius Sender `/fast` endpoint, such as
+  `https://sender.helius-rpc.com/fast?api-key=YOUR_KEY&swqos_only=true`; the
+  code enforces `swqos_only=true` for its 5,000-lamport tip, and a malformed
+  override fails rather than silently running without it.
+
+Each Sender leg tips 0.000005 SOL from the holder's own wallet, as the last
+instruction of the swap the holder signs, so there is one signature and no
+Seametry wallet to fund or watch. Seametry bears the tip by lowering that
+leg's routing fee by the tip's worth: one Jupiter quote of 1 SOL in USDC,
+reused for a minute, prices it, and the fee comes down by that many basis
+points rounded up, never below zero. A sale's fee is taken from the USDC it
+receives, so a sale is quoted once at the full tier to size the reduction,
+one more Jupiter request per sale. The order sheet shows the lowered rate,
+the reduction, and the tip in SOL.
+
+The customer pays account-opening rent, the 5,000-lamport signature fee, the
+quoted priority fee and the tip, all in SOL, and the funding check includes
+each of them.
+
+No Sender endpoint, or a route too large for the 1,232-byte packet, uses the
+existing RPC path; such a leg keeps the lowered fee it was quoted at. RPC legs in one execution
+are sent sequentially, at least 1.1 seconds apart; Sender legs can submit
+together. This pacing is per execution, not a project-wide rate limiter.
+Signed preflight, message approval, issuer policy and quote expiry remain
+enforced. Ambiguous responses keep watching the original signature; they do
+not authorize another purchase. Sender does not guarantee inclusion, make
+a basket atomic, or remove the wallet's signing requirements.
+
+Provider reference, checked 14 October 2026:
+[Helius Sender](https://www.helius.dev/docs/sending-transactions/sender).
+Offline regressions live in `tests/sender.spec.ts` and
+`tests/allocation-rules.spec.ts`. Run `npx playwright test` from this folder;
+its fixture blanks the sponsor secret and never sends a mainnet transaction.
+For the isolated Sender rules, run
+`npx playwright test --config=playwright.sender.config.ts` without a build
+or browser. Transport tests use injected responses, not a live Sender.
+
 What it can offer is whatever the snapshot admits; the snapshot is the
 record, so this file names no instruments. Offering another instrument needs
 it added to `shared/fixtures/mainnet/targets.json`, captured
 (`go run ./server/cmd/capture`), measured (`go run ./server/cmd/depth`, with
 a Jupiter key), and the snapshot regenerated.
 
-Not yet proven against mainnet from the environment that wrote it: Jupiter
-and mainnet RPC were unreachable there, so the first real prepare, sign and
-send is the first end to end run. The pure rules are tested in
-`tests/allocation-rules.spec.ts`.
+Sender delivery is verified with offline transaction and browser fixtures.
+A funded, user-approved mainnet smoke test is still required for this
+integration; these tests do not establish live inclusion rates or reproduce
+Phantom and Solflare's actual mobile signing screens.

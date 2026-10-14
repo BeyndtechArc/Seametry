@@ -32,6 +32,9 @@ function sameBytes(a: Uint8Array, b: Uint8Array) {
   return a.length === b.length && a.every((byte, index) => byte === b[index]);
 }
 
+/** Just over Helius Free's one sendTransaction a second, so consecutive RPC sends never meet in the same second. */
+const RPC_SEND_SPACING_MS = 1_100;
+
 const DECLINED = /user rejected|user denied|user declined|rejected the request/i;
 
 async function sign(signer: Signer, transactions: VersionedTransaction[]): Promise<VersionedTransaction[]> {
@@ -109,10 +112,21 @@ export async function approveAndSend({
   };
   executions.add(execution);
 
+  // A Sender leg goes at once; Sender takes fifty a second. A leg falling back
+  // to the RPC waits its turn: Helius's Free plan takes one send a second,
+  // and sending a basket's legs together lost all but one (14 October 2026).
+  const toRpc: number[] = [];
   legs.forEach((leg, index) => {
     if (leg.phase !== "signed") return;
-    void send(execution.id, leg.signature, toBase64(signed[index].serialize()), prepared[index].approval);
+    if (prepared[index].landing === "rpc") toRpc.push(index);
+    else void send(execution.id, leg.signature, toBase64(signed[index].serialize()), prepared[index].approval);
   });
+  void (async () => {
+    for (const [turn, index] of toRpc.entries()) {
+      if (turn > 0) await new Promise((resolve) => setTimeout(resolve, RPC_SEND_SPACING_MS));
+      await send(execution.id, legs[index].signature, toBase64(signed[index].serialize()), prepared[index].approval);
+    }
+  })();
   return execution;
 }
 

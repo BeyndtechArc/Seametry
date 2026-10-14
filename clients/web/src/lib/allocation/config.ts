@@ -1,5 +1,7 @@
 import "server-only";
 
+import { senderEndpoint } from "./sender";
+
 export type AllocationConfig = {
   jupiterApiKey: string;
   mainnetRpcUrl: string;
@@ -7,6 +9,14 @@ export type AllocationConfig = {
   blockedCountries: string | undefined;
   /** The wallet whose USDC account receives the routing fee. */
   feeWallet: string;
+  /**
+   * Helius Sender's endpoint for the RPC's own API key, which lifts Sender's
+   * rate limit from one send a second to fifty (helius.dev Sender docs, 14
+   * October 2026); HELIUS_SENDER_URL overrides it. Absent when the RPC is not
+   * a keyed Helius URL, and then every leg is built by Jupiter's /swap and
+   * sent through the RPC.
+   */
+  senderUrl?: string;
 };
 
 /**
@@ -33,6 +43,7 @@ export function allocationConfig(): { config: AllocationConfig } | { missing: st
       approvalSecret: required.ALLOCATION_APPROVAL_SECRET!,
       blockedCountries: process.env.ALLOCATION_BLOCKED_COUNTRIES,
       feeWallet: required.ALLOCATION_FEE_WALLET!,
+      senderUrl: senderEndpoint(required.MAINNET_RPC_URL!, process.env.HELIUS_SENDER_URL),
     },
   };
 }
