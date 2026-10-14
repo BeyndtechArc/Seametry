@@ -10,7 +10,10 @@ export function BrandMark({ href = "/", compactOnNarrow = false }: { href?: stri
     <Link className={`${styles.brand} ${compactOnNarrow ? styles.compactOnNarrow : ""}`} href={href} aria-label="Seametry">
       {/* eslint-disable-next-line @next/next/no-img-element -- next/image writes an inline style attribute, which this site's CSP (style-src without unsafe-inline) refuses; an SVG needs none of its optimisation. */}
       <img className={styles.mark} src="/logo.svg" width={229} height={232} alt="" />
-      <b>Seametry</b>
+      <span className={styles.words}>
+        <b>Seametry</b>
+        <small>Open-AP ETF</small>
+      </span>
     </Link>
   );
 }

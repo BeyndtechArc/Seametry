@@ -3,8 +3,7 @@ import { admissions, blockingFact, gradeOf, partitionAdmissions } from "./admiss
 import { allocationConfig, requestCountry } from "./config";
 import { countryGate } from "./rules";
 import { formatAmount } from "../amount";
-import { logoFor } from "../instrument-logos";
-import { instrumentName } from "../instrument-names";
+import { identityOf } from "../instrument-identity";
 import { relativeEvidenceAge } from "../storm-fixture";
 
 // What an Allocation offers, built once for the web page and for
@@ -48,7 +47,7 @@ export function allocationOffer() {
     return {
       mint: lot.instrument.mint,
       symbol: lot.instrument.symbol ?? lot.instrument.mint,
-      name: instrumentName(lot.instrument.mint),
+      name: identityOf(lot.instrument.mint)?.name,
       issuer: lot.issuer,
       grade: gradeOf(lot),
       decision: lot.capacity_decision.decision,
@@ -57,7 +56,7 @@ export function allocationOffer() {
       prerogatives,
       multiplier: multiplierLine(lot),
       slot: lot.instrument.capture.slot,
-      logo: logoFor(lot.instrument.mint),
+      logo: identityOf(lot.instrument.mint)?.logo,
     };
   });
   const refusedLots: RefusedLot[] = refused.map((lot) => ({ symbol: lot.instrument.symbol ?? lot.instrument.mint, fact: blockingFact(lot) }));

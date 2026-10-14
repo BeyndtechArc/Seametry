@@ -1,8 +1,8 @@
 .region {
   position: fixed;
   right: var(--sm-space-5);
-  /* Above the phone tab bar: its padding, one target, and a gap. */
-  bottom: calc(var(--sm-space-3) + var(--sm-size-target) + var(--sm-space-5) + var(--sm-space-3) + env(safe-area-inset-bottom));
+  /* Above the App shell's phone tab bar, when there is one. */
+  bottom: calc(var(--shell-bottom-inset, 0px) + var(--sm-space-3));
   z-index: 40;
   display: grid;
   gap: var(--sm-space-3);
@@ -112,7 +112,7 @@
 @media (min-width: 900px) {
   .region {
     right: var(--sm-space-8);
-    bottom: var(--sm-space-8);
+    bottom: calc(var(--shell-bottom-inset, 0px) + var(--sm-space-8));
   }
 }
 

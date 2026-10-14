@@ -19,7 +19,7 @@
   height: var(--sm-space-7);
   padding: 0;
   border: 0;
-  border-radius: var(--sm-radius-control);
+  border-radius: var(--sm-radius-data);
   color: var(--sm-text-secondary);
   background: transparent;
   cursor: pointer;

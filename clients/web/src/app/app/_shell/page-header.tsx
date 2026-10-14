@@ -13,27 +13,32 @@ export function NetworkBadge({ network }: { network: Network }) {
   );
 }
 
-/** components.md, Page header: group, title with an optional Info note, the network, and optional quiet links. */
+/**
+ * components.md, Page header: the page's one title with an optional Info
+ * note, the network, and optional quiet links. The product tabs already name
+ * the page's group, so the header does not repeat it, and no section below
+ * restates the title.
+ */
 export function PageHeader({
-  group,
   title,
   titleId,
   info,
   network,
+  tabs,
   children,
 }: {
-  group: string;
   title: string;
   titleId?: string;
   /** What the page holds or assumes, behind an Info note beside the title. */
   info?: ReactNode;
   network: Network;
+  /** The page's view Tabs, drawn as the header's bottom edge so one rule closes both. */
+  tabs?: ReactNode;
   children?: ReactNode;
 }) {
   return (
-    <header className={styles.pageHeader}>
+    <header className={styles.pageHeader} data-tabs={tabs ? "" : undefined}>
       <div className={styles.titleLine}>
-        <span>{group}</span>
         <div className={styles.titleRow}>
           <h1 id={titleId}>{title}</h1>
           {info ? <InfoNote label={`About ${title}`}>{info}</InfoNote> : null}
@@ -41,6 +46,7 @@ export function PageHeader({
       </div>
       <NetworkBadge network={network} />
       {children ? <div className={styles.links}>{children}</div> : null}
+      {tabs ? <div className={styles.tabs}>{tabs}</div> : null}
     </header>
   );
 }

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { admissions, isAdmitted } from "../src/lib/allocation/admissions";
 import { registerTestWallet } from "./test-wallet";
 
 const mint = "XsTockMint111111111111111111111111111111111";
@@ -30,20 +31,19 @@ const meta = {
   cluster: "mainnet",
 };
 
-test("the Terminal moves from the instrument register into one assay", async ({ page }) => {
+test("the instrument register is one list that opens one assay", async ({ page }) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
-  await page.route("**/api/terminal/instruments", async (route) => {
-    await route.fulfill({ json: { data: [instrument], meta } });
-  });
-  await page.route(`**/api/terminal/instruments/${mint}`, async (route) => {
+  const aapl = admissions.instruments.find((entry) => entry.instrument.symbol === "AAPLx")!;
+  await page.route(`**/api/terminal/instruments/${aapl.instrument.mint}`, async (route) => {
     await route.fulfill({
       json: {
-        instrument: { data: instrument, meta },
+        instrument: { data: { ...instrument, mint: aapl.instrument.mint, symbol: "AAPLx" }, meta },
         admissibility: {
           data: {
             decision: "BLOCK",
-            reasons: [{ code: "UNKNOWN_EXTENSION", severity: "BLOCK", fact: "Extension 91 is not decoded." }],
+            // The policy cites each issuer power in the power's own words, as the live engine does.
+            reasons: [{ code: "UNKNOWN_EXTENSION", severity: "BLOCK", fact: "Extension 91 is not decoded." }, { code: "ISSUER_CAN_FREEZE", severity: "WARN", fact: "The issuer can freeze an account holding this instrument." }],
             policy_version: "policy-2026.09.2",
             input_digest: "047d10ac031522499c5743457489566932288415e96009e380b2fb18a981e109",
           },
@@ -71,62 +71,80 @@ test("the Terminal moves from the instrument register into one assay", async ({ 
     });
   });
 
-  const registerRequest = page.waitForRequest((request) => request.url().endsWith("/api/terminal/instruments"));
   await page.goto("/app/instruments");
-  await registerRequest;
-  expect(browserErrors).toEqual([]);
   await expect(page.getByRole("heading", { level: 1, name: "Instruments" })).toBeVisible();
-  const row = page.getByRole("row", { name: /XSTK/ });
+  // One title: no second header restates the page.
+  await expect(page.getByRole("heading", { level: 2 })).toHaveCount(0);
+  await expect(page.getByRole("tab", { name: /^Available/ })).toHaveAttribute("aria-selected", "true");
+  const register = page.getByRole("list", { name: "Instruments" });
+  await page.getByRole("searchbox").fill("AAPLx");
+  const row = register.getByRole("listitem").filter({ hasText: "AAPLx" });
+  await expect(row).toContainText("Apple");
+  await expect(row).toContainText("xStocks");
   await expect(row).toContainText("Certificate");
-  // No logo was captured for this mint, so its mark is lettered, not an image.
-  await expect(row.getByTestId("lot-mark")).toHaveText("XS");
-  await expect(row.locator("img[data-testid='lot-mark']")).toHaveCount(0);
-  await row.getByRole("link", { name: "Open assay" }).click();
+  // The mirrored logo is drawn at the identity size, and nothing says "Open".
+  await expect(row.locator("img[data-testid='lot-mark']")).toHaveAttribute("width", "40");
+  await expect(row.getByText(/open/i)).toHaveCount(0);
+  await row.getByRole("link").click();
 
-  await expect(page).toHaveURL(`/app/instruments/${mint}`);
-  await expect(page.getByRole("heading", { level: 1, name: "XSTK" })).toBeVisible();
-  await expect(page.getByText("BLOCK", { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(`/app/instruments/${aapl.instrument.mint}`);
+  await expect(page.getByRole("heading", { level: 1, name: "AAPLx" })).toBeVisible();
+  await expect(page.getByText("Apple", { exact: true })).toBeVisible();
+  // The decision is stated once, by its stamp.
+  await expect(page.getByText("Block", { exact: true })).toHaveCount(1);
+  await expect(page.getByText("BLOCK", { exact: true })).toHaveCount(0);
   await expect(page.getByText("policy-2026.09.2", { exact: true })).toBeVisible();
   await expect(page.getByText("Extension 91 is not decoded.", { exact: true })).toBeVisible();
-  await expect(page.getByRole("row", { name: /10\.000000 USDC/ })).toContainText("35 bps");
-  await expect(page.getByRole("row", { name: /25\.000000 USDC/ })).toContainText("No route");
-  await expect(page.getByText("SELL_DEPTH_NOT_MEASURED", { exact: true })).toBeVisible();
+  // Each issuer power appears once, under Issuer powers, with the code the policy filed it under.
+  await expect(page.getByText("The issuer can freeze an account holding this instrument.", { exact: true })).toHaveCount(1);
+  await expect(page.getByRole("listitem").filter({ hasText: "The issuer can freeze an account" })).toContainText("ISSUER_CAN_FREEZE");
+  const depth = page.getByRole("list", { name: "Shortfall by buy size" }).getByRole("listitem");
+  await expect(depth.filter({ hasText: "10 USDC" })).toContainText("35 bps");
+  await expect(depth.filter({ hasText: "25 USDC" })).toContainText("No route");
+  await expect(page.getByRole("figure")).toContainText("Jupiter quotes, 17s old");
+  await expect(page.getByRole("note").filter({ hasText: "Sell depth" })).toContainText("SELL_DEPTH_NOT_MEASURED");
+  expect(browserErrors).toEqual([]);
 });
 
-test("the instrument catalogue exposes every captured issuer listing without calling it assayed", async ({ request }) => {
-  const response = await request.get("/api/instruments/catalogue?q=Agilent");
+test("the instrument catalogue names every listing from its mint and calls none assayed that is not", async ({ request }) => {
+  const listings = ["backpack-securities", "xstocks"].map((name) => JSON.parse(readFileSync(`../../shared/evidence/listings/${name}.json`, "utf8")) as { tokens: unknown[] });
+  const response = await request.get("/api/instruments/catalogue?q=Agilent&state=any");
   expect(response.ok()).toBe(true);
   const catalogue = await response.json();
-  expect(catalogue.meta.total).toBe(2442);
-  expect(catalogue.meta.filtered).toBeGreaterThan(0);
-  expect(catalogue.data.some((instrument: { name: string; state: string }) => instrument.name.includes("Agilent") && instrument.state === "listed")).toBe(true);
+  expect(catalogue.meta.total).toBe(listings.reduce((sum, listing) => sum + listing.tokens.length, 0));
+  const agilent = (catalogue.data as { symbol: string; name?: string; state: string }[]).find((entry) => entry.symbol === "A");
+  expect(agilent).toMatchObject({ name: "Agilent Technologies", state: "listed" });
+  const everything = await (await request.get("/api/instruments/catalogue?state=bogus")).json();
+  expect(everything.detail).toContain("Expected ?state= one of any, available, assayed, listed");
 });
 
-test("the Terminal names the API boundary when no deployment is connected", async ({ page }) => {
-  await page.route("**/api/terminal/instruments", async (route) => {
-    await route.fulfill({
-      status: 503,
-      json: {
-        title: "Terminal API unavailable",
-        detail: "Set SEAMETRY_API_URL to a deployed or local Gateway.",
-        status: 503,
-      },
-    });
-  });
+test("every assay tab fits a phone without hiding one off the edge", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app/instruments");
+  const tabs = page.getByRole("tablist", { name: "Assay state" });
+  await expect(tabs.getByRole("tab")).toHaveCount(4);
+  const [scroll, client] = await tabs.evaluate((element) => [element.scrollWidth, element.clientWidth]);
+  expect(scroll).toBeLessThanOrEqual(client);
+});
 
-  await expect(page.getByRole("heading", { level: 1, name: "Instruments" })).toBeVisible();
+test("the tabs count each assay state and drop a column that would repeat on every row", async ({ page }) => {
+  await page.goto("/app/instruments");
+  const available = page.getByRole("tab", { name: /^Available/ });
+  await expect(available).toContainText(String(admissions.instruments.filter(isAdmitted).length));
+  const register = page.getByRole("list", { name: "Instruments" });
+  await page.getByRole("tab", { name: /^Not assayed/ }).click();
+  await expect(register.getByRole("listitem").first()).not.toContainText("Not assayed");
+  await page.getByRole("tab", { name: /^All/ }).click();
+  await expect(register.getByRole("listitem").filter({ hasText: "Not assayed" }).first()).toBeVisible();
+});
+
+test("an assay the Gateway cannot serve names the boundary instead of an empty page", async ({ page }) => {
+  await page.route(`**/api/terminal/instruments/${mint}`, async (route) => {
+    await route.fulfill({ status: 503, json: { title: "Terminal API unavailable", detail: "Set SEAMETRY_API_URL to a deployed or local Gateway.", status: 503 } });
+  });
+  await page.goto(`/app/instruments/${mint}`);
   await expect(page.getByText("Terminal API unavailable", { exact: true })).toBeVisible();
   await expect(page.getByText("Set SEAMETRY_API_URL to a deployed or local Gateway.", { exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/app/alloys");
-  await expect(page.getByRole("link", { name: "Return to the desk" })).toHaveAttribute("href", "/app");
-});
-
-test("the Terminal distinguishes an empty persisted register from an unavailable Gateway", async ({ page }) => {
-  await page.goto("/app/instruments");
-  await expect(page.getByText("No persisted instruments", { exact: true })).toBeVisible();
-  await expect(page.getByText("The Gateway answered with an empty instrument register as of Sep 29, 2026, 12:00 PM UTC.", { exact: true })).toBeVisible();
-  await expect(page.getByText("Terminal API unavailable", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Inspect live Alloys" })).toHaveAttribute("href", "/app/alloys");
 });
 
@@ -185,8 +203,16 @@ test("a founded Alloy is named, pictured and listed by stock from its founding r
     const row = holdings.nth(index);
     await expect(row).toContainText(leg.symbol);
     const logo = logos.find((entry: { mint: string }) => entry.mint === leg.real_mint);
-    await expect(row.getByTestId("lot-mark")).toHaveAttribute("src", logo.path);
+    // The page asks the logo route by the real mint, and the route answers with the mirrored file.
+    await expect(row.getByTestId("lot-mark")).toHaveAttribute("src", `/instruments/logo/${leg.real_mint}`);
+    const answer = await page.request.get(`/instruments/logo/${leg.real_mint}`, { maxRedirects: 0 });
+    expect(answer.status()).toBe(307);
+    expect(new URL(answer.headers().location, "http://localhost").pathname).toBe(logo.path);
   }
+  // The record ends in the same action bar as the Allocation builder: what it acts on, then the one Key.
+  const bar = main.getByRole("region", { name: `Strike or Melt ${record.symbol}` });
+  await expect(bar).toContainText("Connect a wallet to Strike or Melt.");
+  await expect(bar.getByRole("button", { name: "Strike or Melt" })).toBeVisible();
 });
 
 test("Strike and Melt are held, with their reasons, until a wallet logs in", async ({ page }) => {

@@ -36,11 +36,6 @@
   opacity: 0.08;
 }
 
-.instrumentTable a:focus-visible {
-  outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-2);
-}
-
 .assayIdentity h1,
 .sectionHeading h2,
 .boundary h2 {
@@ -54,15 +49,6 @@
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-body);
   overflow-wrap: anywhere;
-}
-
-.instrumentTable .instrumentName {
-  display: block;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--sm-font-size-small);
 }
 
 .loading,
@@ -115,8 +101,7 @@
   line-height: 1.6;
 }
 
-.boundary code,
-.missingRegister code {
+.boundary code {
   color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-micro);
@@ -142,45 +127,6 @@
 .sectionHeading p {
   color: var(--sm-text-secondary);
   line-height: 1.55;
-}
-
-.tableViewport {
-  /* The containing block for .srOnly labels inside a cell. Without it they
-     position against the page, escape this scroller, and widen a phone
-     viewport to the table's full width. */
-  position: relative;
-  overflow-x: auto;
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.instrumentTable,
-.depthTable {
-  width: 100%;
-  border-collapse: collapse;
-  color: var(--sm-text-secondary);
-  text-align: left;
-}
-
-.instrumentTable th,
-.depthTable th {
-  padding: var(--sm-space-4) var(--sm-space-5);
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.instrumentTable td,
-.depthTable td {
-  min-width: var(--sm-space-12);
-  padding: var(--sm-space-6) var(--sm-space-5);
-  border-top: 0.5px solid var(--sm-line-rule);
-  background: var(--sm-surface-sheet);
-  vertical-align: top;
-}
-
-.instrumentTable td:first-child {
-  min-width: calc(var(--sm-space-13) * 2);
 }
 
 /* The Alloys register: one balanced row per Alloy, identity first, then the
@@ -304,12 +250,6 @@
   }
 }
 
-.instrumentTable td:first-child,
-.instrumentTable td:nth-child(4) {
-  display: grid;
-  gap: var(--sm-space-3);
-}
-
 .lotIdentity {
   display: flex;
   align-items: center;
@@ -323,101 +263,15 @@
   min-width: 0;
 }
 
-.instrumentTable b {
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title);
-  font-weight: var(--sm-font-weight-regular);
-}
-
-.instrumentTable small {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.instrumentTable a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--sm-size-target);
-  color: var(--sm-accent-touchText);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.catalogueRows {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sm-space-4);
-  margin: var(--sm-space-6) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.catalogueRows > li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sm-space-5);
-  min-width: 0;
-  padding: var(--sm-space-5);
-  border-top: 0.5px solid var(--sm-line-highlight);
-  background: var(--sm-surface-sheet);
-}
-
-.catalogueIdentity {
-  display: flex;
-  align-items: center;
-  gap: var(--sm-space-4);
-  min-width: 0;
-  color: var(--sm-text-primary);
-  text-decoration: none;
-}
-
-.catalogueIdentity > span:last-child {
-  display: grid;
-  gap: var(--sm-space-1);
-  min-width: 0;
-}
-
-.catalogueIdentity b,
-.catalogueIdentity small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.catalogueIdentity small {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.catalogueIdentity:focus-visible {
-  outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-2);
-}
-
-.catalogueState {
-  flex: none;
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.catalogueState[data-state="available"] {
-  color: var(--sm-accent-touchText);
-}
-
 .cataloguePager {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sm-space-6);
+  gap: var(--sm-space-4);
   padding: var(--sm-space-6) 0;
+  font-size: var(--sm-font-size-small);
   color: var(--sm-text-secondary);
   font-variant-numeric: tabular-nums lining-nums;
-}
-
-.quietState {
-  margin-top: var(--sm-space-6);
-  color: var(--sm-text-secondary);
 }
 
 .backLink {
@@ -930,21 +784,6 @@
   line-height: 1.55;
 }
 
-.missingRegister {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sm-space-5) var(--sm-space-8);
-  padding: var(--sm-space-5) 0;
-}
-
-.missingRegister p {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sm-space-4);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-}
-
 .powerRegister {
   border-top: 0.5px solid var(--sm-line-strong);
   border-bottom: 0.5px solid var(--sm-line-rule);
@@ -952,7 +791,8 @@
 
 .powerRegister li {
   display: grid;
-  grid-template-columns: var(--sm-space-9) minmax(0, 1fr);
+  grid-template-columns: var(--sm-space-9) minmax(0, 1fr) auto;
+  align-items: baseline;
   gap: var(--sm-space-6);
   padding: var(--sm-space-5) 0;
   border-top: 0.5px solid var(--sm-line-rule);
@@ -979,27 +819,7 @@
   color: var(--sm-text-primary);
 }
 
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 @media (max-width: 800px) {
-  .catalogueRows {
-    grid-template-columns: 1fr;
-    gap: var(--sm-space-3);
-  }
-
-  .catalogueRows > li {
-    padding: var(--sm-space-4);
-  }
 
   .assayHero,
   .decisionPanel,
@@ -1020,4 +840,47 @@
     grid-template-columns: 1fr;
     gap: var(--sm-space-3);
   }
+}
+
+/* The instrument register's columns: identity, issuer, then grade and state when the tab varies them. */
+.registerTwo { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) auto; }
+.registerThree { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+.registerFour { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+
+@media (max-width: 768px) {
+  .registerTwo { grid-template-columns: minmax(0, 1fr) auto; }
+  .registerThree,
+  .registerFour { grid-template-columns: minmax(0, 1fr) auto auto; }
+}
+
+.registerToolbar {
+  margin: var(--sm-space-7) 0 var(--sm-space-5);
+}
+
+.registerMeta {
+  margin: var(--sm-space-4) 0 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+/* The policy code a power was filed under, quiet beside its sentence. */
+.powerRegister code {
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+  letter-spacing: var(--sm-font-tracking-serial);
+}
+
+@media (max-width: 768px) {
+  .powerRegister li {
+    grid-template-columns: var(--sm-space-9) minmax(0, 1fr);
+  }
+
+  .powerRegister code {
+    grid-column: 2;
+  }
+}
+
+.assayNotice {
+  margin-top: var(--sm-space-6);
 }

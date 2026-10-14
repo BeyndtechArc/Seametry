@@ -1,0 +1,63 @@
+.tabs {
+  display: flex;
+  gap: var(--sm-space-6);
+  overflow-x: auto;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  scrollbar-width: none;
+}
+
+.tabs button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sm-space-3);
+  min-height: var(--sm-size-target);
+  padding: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -0.5px;
+  color: var(--sm-text-secondary);
+  background: transparent;
+  font: inherit;
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-medium);
+  cursor: pointer;
+}
+
+.tabs button:hover {
+  color: var(--sm-text-primary);
+}
+
+.tabs button[aria-selected="true"] {
+  border-bottom-color: var(--sm-text-primary);
+  color: var(--sm-text-primary);
+}
+
+.tabs button:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: 2px;
+}
+
+.count {
+  color: var(--sm-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabs button[aria-selected="true"] .count {
+  color: var(--sm-text-secondary);
+}
+
+/* Four labelled tabs with counts fit a 390 pixel phone on tighter spacing. */
+@media (max-width: 480px) {
+  .tabs {
+    gap: var(--sm-space-3);
+  }
+
+  .tabs button {
+    gap: var(--sm-space-2);
+  }
+
+  .count {
+    font-size: var(--sm-font-size-micro);
+  }
+}

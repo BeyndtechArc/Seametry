@@ -92,7 +92,7 @@ export function AlloyRegister() {
 
   return (
     <div className={styles.alloyRegister}>
-      <PageHeader group="Hall" title="Alloys" network="Devnet" info={<p>Every Alloy account the Hall holds, read live, with its supply and any leg held back.</p>} />
+      <PageHeader title="Alloys" network="Devnet" info={<p>Every Alloy account the Hall holds, read live, with its supply and any leg held back.</p>} />
 
       {loading ? <AlloyLoading /> : null}
       {problem ? <AlloyBoundary problem={problem} /> : null}
@@ -186,7 +186,6 @@ export function AlloyRecord({ address }: { address: string }) {
               <p className={styles.alloySentence}>
                 One share holds {alloy.legs.length} {alloy.legs.length === 1 ? "stock" : "stocks"} in fixed amounts. Anyone can Strike a share by depositing them, or Melt one to take them back.
               </p>
-              <AlloyActions alloy={alloy} onChanged={reload} />
             </div>
           </section>
 
@@ -321,6 +320,8 @@ export function AlloyRecord({ address }: { address: string }) {
               </section>
             </div>
           </details>
+          {/* Last in the record, so its bar can ride the bottom of the whole page column. */}
+          <AlloyActions alloy={alloy} onChanged={reload} />
         </>
       ) : null}
     </>

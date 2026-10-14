@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ContinueAction, Field, FilterBar, LotMark, QuietAction, Rule, SelectionCount, StepBar, StepTrack, type GradeName } from "@seametry/ui";
 import { formatAmount, parseAmount } from "@/lib/amount";
-import { logoFor } from "@/lib/instrument-logos";
 import { shortIssuer } from "@/lib/issuers";
 import { MAX_CONSTITUENTS, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { USDC_SCALE, draftFormula, identityProblem, unitsToAtoms, type QuotedLeg, type Weighting } from "@/lib/compose/formula";
@@ -15,6 +14,8 @@ export type Candidate = {
   mint: string;
   symbol: string;
   name?: string;
+  /** A mirrored logo's path, absent when none was captured. */
+  logo?: string;
   issuer: string;
   grade: GradeName;
   decimals: number;
@@ -194,7 +195,7 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
             {visible.map((candidate) => (
               <li key={candidate.mint} data-refused={!candidate.admitted || undefined}>
                 <Link className={styles.candidateDetail} href={`/app/instruments/${encodeURIComponent(candidate.mint)}?from=compose&selected=${encodeURIComponent(selected.join(","))}`} aria-label={`Open ${candidate.symbol} assay`}>
-                  <LotMark symbol={candidate.symbol} src={logoFor(candidate.mint)} size="list" />
+                  <LotMark symbol={candidate.symbol} src={candidate.logo} size="list" />
                   <span>
                     <b>{candidate.symbol}</b>
                     <small className={styles.candidateMeta} title={[candidate.name, candidate.issuer].filter(Boolean).join(" · ")}>
@@ -280,7 +281,7 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
                     const atoms = unitsToAtoms(unitsTyped, candidate.decimals);
                     return (
                       <tr key={candidate.mint}>
-                        <th scope="row"><span className={styles.lot}><LotMark symbol={candidate.symbol} src={logoFor(candidate.mint)} />{candidate.symbol}</span></th>
+                        <th scope="row"><span className={styles.lot}><LotMark symbol={candidate.symbol} src={candidate.logo} />{candidate.symbol}</span></th>
                         <td>{typeof atoms === "bigint" ? formatAmount(atoms, candidate.decimals) : "No observation"}</td>
                         <td>No observation</td>
                       </tr>
@@ -299,7 +300,7 @@ export function Composer({ candidates, unquoted, initialSelected }: { candidates
               <tbody>
                 {draft.legs.map((leg) => (
                   <tr key={leg.mint}>
-                    <th scope="row"><span className={styles.lot}><LotMark symbol={leg.symbol} src={logoFor(leg.mint)} />{leg.symbol}</span></th>
+                    <th scope="row"><span className={styles.lot}><LotMark symbol={leg.symbol} src={candidates.find((candidate) => candidate.mint === leg.mint)?.logo} />{leg.symbol}</span></th>
                     <td>{formatAmount(leg.atomsPerShare, leg.decimals)}</td>
                     <td>{formatAmount(leg.usdcPerShare, USDC_SCALE)} USDC</td>
                     <td>{formatAmount(leg.weightBps, 2)}%</td>

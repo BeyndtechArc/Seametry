@@ -81,7 +81,7 @@ Cross-issuer: same underlying from other issuers, grades side by side
 ```
 Lot header with Good Delivery or NGD stamp
 Formula: constituents, units per share, value weights and their drift
-Catalogue table of constituents
+List of constituents
 NAV with weakest evidence stated
 Hall facts: program, instance, share mint prerogatives (none), the Key
 Strike and melt history as Decision rows
@@ -98,7 +98,7 @@ Links: alloy or allocation, policy version, evidence
 
 ### Catalogue
 
-Title and one sentence on the Good Delivery rules with a link to the published rule set; filter by stamp, grade, issuer; Catalogue table; NGD entries visible, never hidden.
+Title and one sentence on the Good Delivery rules with a link to the published rule set; filter by stamp, grade, issuer; List; NGD entries visible, never hidden.
 
 ### Glossary term
 

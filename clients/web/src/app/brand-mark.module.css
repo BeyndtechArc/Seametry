@@ -7,16 +7,37 @@
   text-decoration: none;
 }
 
-.brand b {
+/* The name over what it is, both quiet beside the mark, which leads: the
+   mark stands taller than the two lines together (Storm, 14 October 2026).
+   The tagline sits below the smallest type token, so it is derived from it
+   (9.6px), with half the serial tracking. */
+/* The two lines sit low against the mark, a little above its foot. */
+.words {
+  display: grid;
+  align-self: flex-end;
+  gap: var(--sm-space-2);
+  padding-bottom: calc(var(--sm-space-2) + var(--sm-space-1));
+  line-height: 1;
+}
+
+.words b {
   font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-s);
+  font-size: var(--sm-font-size-lead);
   font-weight: var(--sm-font-weight-regular);
   letter-spacing: var(--sm-font-tracking-title);
 }
 
+.words small {
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-ui);
+  font-size: calc(var(--sm-font-size-micro) * 0.8);
+  font-weight: var(--sm-font-weight-medium);
+  letter-spacing: calc(var(--sm-font-tracking-serial) / 2);
+}
+
 .mark {
-  width: var(--sm-space-8);
-  height: var(--sm-space-8);
+  width: calc(var(--sm-space-8) * 1.5);
+  height: calc(var(--sm-space-8) * 1.5);
 }
 
 .brand:focus-visible {
@@ -25,7 +46,7 @@
 }
 
 @media (max-width: 700px) {
-  .compactOnNarrow b {
+  .compactOnNarrow .words {
     display: none;
   }
 

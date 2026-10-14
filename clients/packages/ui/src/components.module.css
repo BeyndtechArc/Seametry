@@ -875,7 +875,7 @@
    however long the step's list runs. */
 .stepBar {
   position: sticky;
-  bottom: 0;
+  bottom: var(--shell-bottom-inset, 0px);
   z-index: 2;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -898,6 +898,29 @@
 
 .stepPlan[data-problem] {
   color: var(--sm-text-primary);
+}
+
+.actionBar {
+  position: sticky;
+  bottom: var(--shell-bottom-inset, 0px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-highlight);
+  background: var(--sm-surface-raised);
+}
+
+.actionBar .actionLabel {
+  white-space: nowrap;
+}
+
+.actionBarSummary {
+  min-width: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
 }
 
 .selectionCount {
@@ -968,6 +991,40 @@
 .key[aria-disabled="true"]:active {
   transform: none;
   background: transparent;
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: var(--sm-size-target);
+  height: var(--sm-size-target);
+  padding: 0;
+  border: 0;
+  border-top: 0.5px solid var(--sm-line-rule);
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-secondary);
+  background: var(--sm-surface-sheet);
+  cursor: pointer;
+}
+
+.iconButton svg {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+}
+
+.iconButton:hover:not(:disabled) {
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-tray);
+}
+
+.iconButton:disabled {
+  color: var(--sm-text-faint);
+  cursor: not-allowed;
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: 1px;
 }
 
 .quietAction {

@@ -21,7 +21,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className={styles.topBarInner} data-testid="app-header-inner">
           <BrandMark href="/app" compactOnNarrow />
           <nav aria-label="Product" className={styles.productNav}>
-            {appGroups.flatMap(({ icon, routes }) => routes.map((route) => ({ ...route, icon }))).map((route) => {
+            {/* The mark already opens the Overview, so the wide bar does not name it again (Storm, 14 October 2026). */}
+            {appGroups.flatMap(({ icon, routes }) => routes.map((route) => ({ ...route, icon }))).filter((route) => route.href !== "/app").map((route) => {
               const current = route.isActive(pathname);
               return (
                 <Link key={route.href} href={route.href} aria-current={current ? "page" : undefined}>

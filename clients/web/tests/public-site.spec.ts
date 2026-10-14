@@ -22,7 +22,7 @@ test("on a phone, stock rows stay compact and the count sits beside the next act
   const main = page.getByRole("main");
   const lot = main.locator('[aria-label="Choose the constituents"] > ul > li').first();
   await expect(lot.getByRole("checkbox")).toBeVisible();
-  await expect(lot.getByRole("link", { name: /Open .* assay/ })).toBeVisible();
+  await expect(lot.getByRole("link", { name: / assay$/ })).toBeVisible();
   await expect(lot.getByText("Warn", { exact: true })).toHaveCount(0);
   const rowBox = await lot.boundingBox();
   expect(rowBox!.height).toBeLessThan(112);
@@ -30,6 +30,9 @@ test("on a phone, stock rows stay compact and the count sits beside the next act
   const action = main.getByRole("button", { name: "Set amount" });
   const [countBox, actionBox] = [await count.boundingBox(), await action.boundingBox()];
   expect(Math.abs(countBox!.y + countBox!.height / 2 - (actionBox!.y + actionBox!.height / 2))).toBeLessThan(8);
+  // The bar rides above the phone tab bar, never under it.
+  const tabs = await page.getByRole("navigation", { name: "Mobile product" }).boundingBox();
+  expect(actionBox!.y + actionBox!.height).toBeLessThanOrEqual(tabs!.y);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
 });
 
@@ -550,8 +553,9 @@ test("the app header connects a wallet and keeps the mode control beside it", as
   });
   expect(treatment).toEqual({ login: true, evenLabel: true, theme: false });
   await expect(login.locator(":scope > span").last().locator("svg")).toHaveCount(1);
+  // The mark opens the Overview; the tabs do not repeat it.
+  await expect(page.getByRole("banner").getByRole("link", { name: "Seametry" })).toHaveAttribute("href", "/app");
   await expect(page.getByRole("banner").getByRole("navigation", { name: "Product" }).getByRole("link")).toHaveText([
-    "Overview",
     "Holdings",
     "Baskets",
     "Allocation",

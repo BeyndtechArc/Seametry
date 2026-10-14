@@ -3,7 +3,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import manifest from "../../../shared/evidence/instrument-logos.json";
 
-test("every logo declared captured is mirrored, present and byte-identical", () => {
+test("every logo declared captured is mirrored, present, and byte-identical to what the manifest says is stored", () => {
   const captured = manifest.logos.filter((entry) => entry.state === "captured");
   expect(captured.length).toBeGreaterThan(0);
   for (const entry of captured) {
@@ -13,8 +13,14 @@ test("every logo declared captured is mirrored, present and byte-identical", () 
     const file = "public" + entry.path;
     expect(existsSync(file), "missing mirror for " + entry.symbol + " at " + entry.path).toBe(true);
     const bytes = readFileSync(file);
-    expect(bytes.length, "empty mirror " + entry.symbol).toBe(entry.bytes);
-    expect(createHash("sha256").update(bytes).digest("hex"), "hash mismatch " + entry.symbol).toBe(entry.sha256);
+    // A reduced copy records its own digest beside the issuer's; anything else is the issuer's file itself.
+    const stored = "stored_sha256" in entry && entry.stored_sha256 ? { bytes: entry.stored_bytes, sha256: entry.stored_sha256 } : { bytes: entry.bytes, sha256: entry.sha256 };
+    expect(bytes.length, "empty mirror " + entry.symbol).toBe(stored.bytes);
+    expect(createHash("sha256").update(bytes).digest("hex"), "hash mismatch " + entry.symbol).toBe(stored.sha256);
+    if (stored.sha256 !== entry.sha256) {
+      // PNG width and height sit at bytes 16 and 20; the mirror keeps 128 pixels at most.
+      expect(Math.max(bytes.readUInt32BE(16), bytes.readUInt32BE(20)), "oversized reduced copy " + entry.symbol).toBeLessThanOrEqual(128);
+    }
   }
 });
 

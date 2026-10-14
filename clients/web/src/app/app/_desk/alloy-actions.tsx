@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Connection, PublicKey, type VersionedTransaction } from "@solana/web3.js";
 import { AnchorProvider } from "@coral-xyz/anchor";
 import { useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
-import { ContinueAction, Field, Key, QuietAction, StepRegister, StepTrack, type RegisterStep } from "@seametry/ui";
+import { ActionBar, BarFigure, ContinueAction, Field, Key, QuietAction, StepRegister, StepTrack, type RegisterStep } from "@seametry/ui";
 import type { IconName } from "@seametry/ui/icons";
 import { ModalSheet, ProcessDialog, ProcessOutcome } from "@seametry/ui/modal-sheet";
 import { buildDelivery, buildMelt, buildStrike, readClaim, type ClaimLeg } from "@/lib/alloys/hall-transactions";
 import { formatAmount, parseAmount } from "@/lib/amount";
-import { legIdentity } from "@/lib/alloys/records";
+import { alloyIdentity, legIdentity } from "@/lib/alloys/records";
 import { DEVNET_RPC_ENDPOINT, REGISTER_HALL_PROGRAM_ID, SHARE_DECIMALS } from "@/lib/hall/constants";
 import { ownerTokenAccount } from "@/lib/hall/pda";
 import { hallProgram } from "@/lib/hall/program";
@@ -109,6 +109,7 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
     [anchorWallet, connection],
   );
   const alloyKey = useMemo(() => new PublicKey(alloy.address), [alloy.address]);
+  const symbol = alloyIdentity(alloy).symbol ?? "Alloy";
 
   const [shares, setShares] = useState<bigint>();
   const [claim, setClaim] = useState<ClaimLeg[]>([]);
@@ -267,15 +268,25 @@ export function AlloyActions({ alloy, onChanged }: { alloy: Alloy; onChanged: ()
 
   return (
     <>
-      <Key type="button" onClick={() => {
-        // Only a running action reopens its progress. A finished one reopened
-        // its outcome on every press, so after a Strike Melt was unreachable.
-        if (run?.state === "running") { setProgressOpen(true); return; }
-        setRun(undefined);
-        setOutcomeOpen(false);
-        setSheetStep(0);
-        setSheetOpen(true);
-      }}>Strike or Melt</Key>
+      <ActionBar
+        role="region"
+        aria-label={`Strike or Melt ${symbol}`}
+        summary={!connected
+          ? "Connect a wallet to Strike or Melt."
+          : shares === undefined
+            ? `Reading your ${symbol} shares.`
+            : <BarFigure value={formatAmount(shares, SHARE_DECIMALS)} caption={`${symbol} shares held`} />}
+      >
+        <Key type="button" onClick={() => {
+          // Only a running action reopens its progress. A finished one reopened
+          // its outcome on every press, so after a Strike Melt was unreachable.
+          if (run?.state === "running") { setProgressOpen(true); return; }
+          setRun(undefined);
+          setOutcomeOpen(false);
+          setSheetStep(0);
+          setSheetOpen(true);
+        }}>Strike or Melt</Key>
+      </ActionBar>
       <ModalSheet
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}

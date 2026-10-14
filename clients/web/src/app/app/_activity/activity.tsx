@@ -8,8 +8,9 @@ import { Id, solscan } from "@seametry/ui/id";
 import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { StatusMark, Timeline, TimelineItem, type MarkState } from "@seametry/ui/timeline";
 import { Toast, ToastRegion } from "@seametry/ui/toast";
+import { Callout } from "@seametry/ui/callout";
 import { formatAmount } from "@/lib/amount";
-import { logoFor } from "@/lib/instrument-logos";
+import { logoSrc } from "@/lib/logo-src";
 import { deriveState, endedAt, hasSignature, headline, isTerminal, LEG_WORDS, nextAction, outcomeLine, progressLine, retryWeights, type Execution, type ExecutionState, type Leg, type Quantity } from "@/lib/execution/record";
 import { executions, useExecutions } from "@/lib/execution/store";
 import { useExecutionWatcher } from "@/lib/execution/watcher";
@@ -71,7 +72,7 @@ function NextStep({ execution, now }: { execution: Execution; now: number }) {
 function Marks({ legs }: { legs: Leg[] }) {
   return (
     <span className={styles.marks} aria-hidden="true">
-      {legs.slice(0, 3).map((leg) => <LotMark key={leg.mint} symbol={leg.symbol} src={logoFor(leg.mint)} size="list" />)}
+      {legs.slice(0, 3).map((leg) => <LotMark key={leg.mint} symbol={leg.symbol} src={logoSrc(leg.mint)} size="list" />)}
       {legs.length > 3 ? <span className={styles.more}>+{legs.length - 3}</span> : null}
     </span>
   );
@@ -84,7 +85,7 @@ export function ActivityList({ records, focus }: { records: Execution[]; focus?:
   useEffect(() => {
     focused.current?.scrollIntoView({ block: "nearest" });
   }, [focus]);
-  if (records.length === 0) return <p className={styles.empty}>Nothing bought or sold from this browser yet.</p>;
+  if (records.length === 0) return <Callout title="Nothing bought or sold from this browser yet">Each purchase and sale you sign here is kept with what it spent, what it received and its signature.</Callout>;
   return (
     <div className={styles.list}>
       {records.map((execution) => {

@@ -1,6 +1,14 @@
 package main
 
-import "testing"
+import (
+	"encoding/base64"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/BeyndtechArc/Seametry/server/internal/registry"
+)
 
 // The shape of api.backpack.exchange/api/v1/assets on 7 October 2026, cut to
 // the cases that matter: a withdrawable stock, a stock that cannot leave the
@@ -25,6 +33,35 @@ func TestBackpackListingKeepsUSStocksWithASolanaToken(t *testing.T) {
 	}
 	if tokens[1].Symbol != "AAPL" || *tokens[1].Withdrawable {
 		t.Fatalf("AAPL, which cannot leave the exchange, read as %+v", tokens[1])
+	}
+}
+
+// AAPLx as captured from mainnet: the name and URI on its listing entry are
+// the ones Backed Finance wrote into the mint, which the web reads its name
+// and logo from.
+func TestListingEntryCarriesTheMintsOwnMetadata(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("..", "..", "..", "shared", "fixtures", "mainnet", "AAPLx.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Data string `json:"data_base64"`
+	}
+	if err := json.Unmarshal(raw, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	data, err := base64.StdEncoding.DecodeString(fixture.Data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mint, err := registry.DecodeMint(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var token listedToken
+	recordMetadata(&token, mint)
+	if token.MetadataName != "Apple xStock" || token.MetadataURI != "https://xstocks-metadata.backed.fi/tokens/Solana/AAPLx/metadata.json" || token.MetadataProblem != "" {
+		t.Fatalf("AAPLx metadata recorded as %+v", token)
 	}
 }
 

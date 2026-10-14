@@ -1,6 +1,7 @@
 import type {
   AnchorHTMLAttributes,
   ButtonHTMLAttributes,
+  HTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
 } from "react";
@@ -400,6 +401,19 @@ export function TextAction({
   );
 }
 
+/**
+ * components.md, Icon button: an action whose glyph says it all (back,
+ * next, close, copy, refresh). The label is required and becomes the
+ * accessible name and the tooltip; it is never drawn.
+ */
+export function IconButton({ icon, label, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { icon: IconName; label: string }) {
+  return (
+    <button type="button" {...buttonProps} className={classes(styles.iconButton, buttonProps.className)} aria-label={label} title={label}>
+      <Icon name={icon} />
+    </button>
+  );
+}
+
 /** components.md, Route action: a step forward inside one page is navigation, so it wears the Route action as a button. */
 export function ContinueAction({ children, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
   return (
@@ -453,6 +467,29 @@ export function StepBar({ back, plan, problem = false, next }: { back?: ReactNod
       </span>
       {next ?? <span />}
     </div>
+  );
+}
+
+/**
+ * components.md, Action bar: the page's one decision pinned to the bottom of
+ * its column, with the figure it acts on beside it. It rides above the phone
+ * tab bar (--shell-bottom-inset) and stays in its column, never under a rail.
+ */
+export function ActionBar({ summary, children, ...divProps }: HTMLAttributes<HTMLDivElement> & { summary: ReactNode; children: ReactNode }) {
+  return (
+    <div {...divProps} className={classes(styles.actionBar, divProps.className)}>
+      <div className={styles.actionBarSummary}>{summary}</div>
+      {children}
+    </div>
+  );
+}
+
+/** The Action bar's figure: one value in the display face with what it counts beside it. */
+export function BarFigure({ value, caption }: { value: string; caption: string }) {
+  return (
+    <output className={styles.selectionCount} aria-live="polite">
+      <strong>{value}</strong><small> {caption}</small>
+    </output>
   );
 }
 

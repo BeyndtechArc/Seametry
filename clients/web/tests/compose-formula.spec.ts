@@ -155,7 +155,7 @@ test("each lot draws the logo its mint names, served exactly as the capture reco
 
   const served = await request.get(aapl.path);
   expect(served.status()).toBe(200);
-  expect(createHash("sha256").update(await served.body()).digest("hex")).toBe(aapl.sha256);
+  expect(createHash("sha256").update(await served.body()).digest("hex")).toBe(aapl.stored_sha256 ?? aapl.sha256);
 });
 
 test("ticking several boxes in a row asks for quotes once, after the selection settles", async ({ page }) => {

@@ -219,6 +219,23 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Data:** caller-owned state.
 **Rules:** the only moving mark in the system, and it moves only for a request the user started and is waiting on. Never the only carrier of meaning: a word beside it always states the same thing. `@seametry/ui/timeline`.
 
+### Banner
+**Answers:** why can this page not do its job yet, and what do I do about it?
+**Anatomy:** one line across the top of the page content: a small mark, the condition with its instruction, and the action that resolves it when the reader can take one (Connect wallet).
+**States:** note; blocked (an inverse rule on the leading edge) when the page cannot act at all, such as purchases closed in this deployment.
+**Rules:** a condition of the whole page, never a fact inside it; that is a Callout. One per page, above everything the condition affects. Says what to do, not only what is wrong. `@seametry/ui/banner`.
+
+### Callout
+**Answers:** what must I weigh before going on, and how serious is it?
+**Anatomy:** a bordered raised plate; a full-height icon cell on the left that carries the tone (note: info on the tray; caution: info on `status.warning`; blocked: X on `surface.inverse`, the BLOCK stamp's inversion; done: check on `status.success`); a title and one or two sentences filling the rest of the line; at most one action below.
+**States:** note, caution, blocked, done; announced (role alert) when the user's own action caused it, otherwise a note.
+**Rules:** a fact inside the content that changes what the reader can do (nothing to sell, not yet assayed, a read that failed, an empty view) is a Callout, never a bare paragraph. A condition of the whole page (no wallet, purchases closed) is a Banner. Never stacked more than two in one place. `@seametry/ui/callout`.
+
+### Depth chart
+**Answers:** how much does a buy give up at each size Seametry measured?
+**Anatomy:** one bar per stored USDC size on an unbroken baseline, each labelled with its exact basis points above and its size below; a size with no route is a dashed frame the full height. The caption names the source and age. Bars come in twentieths of the frame (the style policy refuses inline heights); the label carries the exact figure.
+**Rules:** neutral ink only; a shortfall is not a loss to colour. The scale never tops out below 50 bps. Used on an instrument's assay.
+
 ### Timeline
 **Answers:** what happened to each part of this request, in order, and what did each part move?
 **Anatomy:** an ordered list; each item is a Status mark joined to the next by a connector rule, a title (the constituent), a right-aligned figure (what it spent, and what it received once known), and detail below: the phase in words, the plain problem when it did not land with the raw error behind a "Technical detail" disclosure, and its Id.
@@ -252,6 +269,11 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Anatomy:** the flow's steps in order on one trace: each a numbered square mark, joined to the next by a dashed line that turns solid once the step behind it is finished, like a circuit run. The current mark is inverted, finished steps are quiet links back, later steps sit in `text.tertiary` and inert. Below the step's content, a step bar pinned to the bottom of the view: Back (Quiet action), one line summarising the plan so far, and Continue (Route action as a button).
 **States:** each step current, finished or ahead; Continue unavailable with its reason in the bar; Back unavailable once anything irreversible has started, with that reason.
 **Rules:** one question per step; the plan survives moving between steps. Never skips a step that has something to decide. Used for every flow that builds something and then commits it: Allocation (Choose, then Buy with the amount and each purchase together), Compose (Choose, then Found with weighting, identity and the Found key), and the mobile app. A summary panel stays beside the steps on a wide screen and joins the commit step on a narrow one (Storm, 7 October 2026). The bar is StepBar in @seametry/ui, so every flow pins the same one.
+
+### Action bar
+**Answers:** what is this page's one decision, and what does it act on?
+**Anatomy:** a raised bar pinned to the bottom of the page column: on the left the figure the decision acts on (a Selection count, or a Bar figure such as shares held) or one sentence when there is none yet; on the right the one action, its label on one line.
+**Rules:** one per page. It sits in its column, never under a side rail, and above the phone tab bar through `--shell-bottom-inset`. Used by the Allocation builder (Set amount) and an Alloy record (Strike or Melt). `ActionBar` and `BarFigure` in `@seametry/ui`.
 
 ### Selection count
 **Answers:** how much of the permitted set have I chosen?
@@ -346,14 +368,31 @@ Top of every constituent and alloy page. Lot number; name in display serif; tick
 **Data:** the published members, current admission, whole-percent weights split by `splitByWeights` in integer atoms. Weights travel in the URL with the rest of the unsigned plan, paired by position with `selected`.
 **Rules:** whole percents only, so the split is exact integer arithmetic. Holdings name a purchase after its basket only when it is that basket as published, every constituent at equal weight; anything else started from a basket is "<name> remix", never passed off as the published composition.
 
-### Catalogue table
-**Answers:** what is in this set, and which entries meet the standard?
-Columns: Lot, Name, Grade, Condition summary, Evidence, Stamp. Sortable. Rows are data: radius 0, rules between, no zebra fills heavier than one tone.
-Directly inspired by Infisical's certificate table, carrying our data.
+### List
+**Answers:** what is in this set, and where does each entry lead?
+**Anatomy:** a bordered raised plate with the single top highlight; a quiet column head; divided rows of one height, each row one target (a link, or a button that opens a sheet on the same page) ending in a next glyph. The page names its columns once as a grid template; rows take them by subgrid, so heads and cells align without the page styling either. A cell marked wide leaves below the tablet breakpoint, where a row keeps its identity and one value.
+**States:** default; empty (the page says why in one sentence above where the list would be); loading (a rule-line skeleton naming what is read).
+**Data:** caller-owned rows.
+**Rules:** a column whose value is the same on every visible row is not a column: drop it for that view. No "Open" or "View" text in a row; the row is the target. `@seametry/ui/list`. Used by Instruments and Holdings.
+
+### Identity
+**Answers:** which instrument is this, at a glance?
+**Anatomy:** the issuer's mirrored logo (or its lettered tile), the symbol, and one quiet line: the company from the mint's own metadata, then the issuer's short name when the view mixes issuers.
+**Rules:** the mark is never shorter than the text beside it: 40px beside two lines, 56px in a page header. The issuer's name never appears inside the company name; names come from `lib/instrument-identity.ts` only. `@seametry/ui/list`.
+
+### Tabs
+**Answers:** which view of this subject am I looking at, and how much is in each?
+**Anatomy:** labels on one rule, the current one underlined in ink, each with the count its view holds. Arrow keys move between them.
+**Rules:** for views of one subject (Holdings: Positions, Allocations, Activity; Instruments: by assay state). A control that changes a value rather than the view is a Segmented control. `@seametry/ui/tabs`.
+
+### Icon button
+**Answers:** an action whose glyph says it all: back, next, close, copy, refresh.
+**Anatomy:** a square of one target, rules above and below like a Quiet action, one glyph. Its label is required and becomes the accessible name and the tooltip; it is never drawn.
+**Rules:** never for the page's decision (Buy, Sell all, Strike, Melt), which is a Key with its words.
 
 ### Pagination
 **Answers:** which part of a long published register am I reading, and where can I continue?
-**Anatomy:** previous page when one exists; numbered page links; next page when one exists; current page stated with `aria-current`.
+**Anatomy:** previous page when one exists; numbered page links; next page when one exists; current page stated with `aria-current`. In the app, previous and next are Icon buttons either side of "Page n of m".
 **States:** first page; middle page; last page; one page, in which case the component is absent.
 **Data:** total rows, rows per generated page, current page and stable page URLs.
 **Rules:** use only when the register outgrows one useful reading surface. Every page remains a complete static document and every row remains reachable without JavaScript. Pagination never replaces a filter when the user's question is categorical.
@@ -433,12 +472,12 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **Identity:** a terminal's top bar on the sheet surface, aligned to the content width so its edges meet the page. The current tab is a raised tone behind primary text, led by its group's icon in the action green (Desk, Buy, Hall, Assay), so the icon marks where you are rather than decorating every route; the House rail uses only the action-green label because its destinations share one line with no tab. The reading links in the Status bar keep their icons, which distinguish an exit from the operational routes.
 **States:** current route; narrow; wallet disconnected or connected; each page's network.
 **Data:** one route list that drives the top bar tabs and the narrow navigation register, so they cannot disagree.
-**Rules:** the mobile tabs reference the same route records as the wide bar. Every route resolves. The current route is named by its tab; a page header appears only when it adds network or decision context that the shell cannot carry. Reading links remain on the public pages and wide Status bar.
+**Rules:** the phone tab bar takes its height from `--shell-bottom-inset`, which the shell publishes and every sticky bar and the Toast region sit above, so nothing pinned to the bottom hides behind it. The mobile tabs reference the same route records as the wide bar. Every route resolves. The current route is named by its tab; a page header appears only when it adds network or decision context that the shell cannot carry. Reading links remain on the public pages and wide Status bar.
 
 ### Page header
 **Answers:** what is this page, and what does it act on?
-**Anatomy:** group label; title, with an optional Info note beside it; Network badge; optional quiet links.
-**Rules:** no subtitle. The page's own components say what it is; what a reader may want first goes in the Info note, and explanation belongs on the reading pages, linked, not repeated here (Storm, 7 October 2026).
+**Anatomy:** title, with an optional Info note beside it; Network badge; optional quiet links. No group label: the product tabs already name it (Storm, 14 October 2026).
+**Rules:** one title per page; no section below restates it. No subtitle. The page's own components say what it is; what a reader may want first goes in the Info note, and explanation belongs on the reading pages, linked, not repeated here (Storm, 7 October 2026).
 
 ### Network badge
 **Answers:** which cluster does this page read or write?

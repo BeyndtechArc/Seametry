@@ -14,11 +14,6 @@
   min-width: 0;
 }
 
-.titleLine span {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-small);
-}
-
 .titleRow {
   position: relative;
   display: block;
@@ -71,4 +66,14 @@
 .network[data-network="devnet"] {
   color: var(--sm-text-primary);
   border-color: var(--sm-accent-provenance);
+}
+
+.pageHeader[data-tabs] {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.tabs {
+  grid-column: 1 / -1;
+  margin-top: var(--sm-space-3);
 }

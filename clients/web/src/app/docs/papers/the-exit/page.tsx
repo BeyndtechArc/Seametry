@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { ClaimLine, LotMark, TextAction } from "@seametry/ui";
-import { logoFor } from "@/lib/instrument-logos";
+import { logoOf } from "@/lib/instrument-identity";
 import { theExit } from "@/lib/papers/the-exit";
 import { SectionHeading } from "../../../public-shell";
 import styles from "../../../site.module.css";
@@ -179,7 +179,7 @@ export default async function TheExitPage() {
                   <tr key={row.symbol}>
                     <td>
                       <span className={styles.paperLot}>
-                        <LotMark symbol={row.symbol} src={logoFor(row.mint)} />
+                        <LotMark symbol={row.symbol} src={logoOf(row.mint)} />
                         {row.symbol}
                       </span>
                     </td>
