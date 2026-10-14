@@ -343,6 +343,15 @@ commit read from GitHub, each job reported.
 
 ---
 
+### Progress, 14 October 2026
+
+- Phases 1 to 3 (engine, Toast, Activity; buys, trades and Sell All on it): PR #27.
+- Phase 7 (identity and logos), and phase 6 for Instruments, Holdings and the
+  builder rows, with List, Identity, Tabs and Icon button: PR #28, stacked on #27.
+- Left: Strike, Melt and Delivery on the engine (phase 4); Sheet, Dialog and
+  the Button family merged as section 4 sets out (phase 5); Baskets, Alloys,
+  Sponsor and Overview onto the shared parts (phase 6).
+
 ## 7. Decisions
 
 Storm decided all four on 14 October 2026, each as recommended: D1 (a), D2 as
