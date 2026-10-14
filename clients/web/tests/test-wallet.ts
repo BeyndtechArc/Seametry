@@ -5,8 +5,8 @@ import type { Page } from "@playwright/test";
  * exposes its account before connect is called, as Phantom does on a site it
  * has approved, so its connect completes without waiting on anything.
  */
-export async function registerTestWallet(page: Page, { trusted, signs = false }: { trusted: boolean; signs?: boolean }) {
-  await page.addInitScript(({ trustedWallet, signsTransactions }) => {
+export async function registerTestWallet(page: Page, { trusted, signs = false, declines = false }: { trusted: boolean; signs?: boolean; declines?: boolean }) {
+  await page.addInitScript(({ trustedWallet, signsTransactions, declinesTransactions }) => {
     // A signing wallet writes a distinct 64-byte signature into the first
     // signature slot (byte 0 is the compact count) and leaves the message
     // alone, as a real wallet does, so flows that read the signed
@@ -55,12 +55,16 @@ export async function registerTestWallet(page: Page, { trusted, signs = false }:
         "solana:signTransaction": {
           version: "1.0.0",
           supportedTransactionVersions: ["legacy", 0],
-          signTransaction: async (...inputs: { transaction: Uint8Array }[]) => inputs.map((input) => ({ signedTransaction: sign(input.transaction) })),
+          signTransaction: async (...inputs: { transaction: Uint8Array }[]) => {
+            // Phantom's wording when the holder presses Cancel.
+            if (declinesTransactions) throw new Error("User rejected the request.");
+            return inputs.map((input) => ({ signedTransaction: sign(input.transaction) }));
+          },
         },
       },
     };
     window.addEventListener("wallet-standard:app-ready", (event) => {
       (event as CustomEvent<{ register: (entry: unknown) => void }>).detail.register(wallet);
     });
-  }, { trustedWallet: trusted, signsTransactions: signs });
+  }, { trustedWallet: trusted, signsTransactions: signs, declinesTransactions: declines });
 }

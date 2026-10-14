@@ -1,0 +1,128 @@
+.mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--sm-space-8);
+  height: var(--sm-space-8);
+  border: 1px solid var(--sm-line-strong);
+  border-radius: 50%;
+  color: var(--sm-text-tertiary);
+  background: var(--sm-surface-sheet);
+}
+
+.mark[data-size="compact"] {
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
+}
+
+.mark svg {
+  width: 55%;
+  height: 55%;
+}
+
+.mark[data-state="running"] {
+  border-color: var(--sm-status-warning);
+  color: var(--sm-status-warning);
+}
+
+.mark[data-state="running"] svg {
+  animation: mark-turn 0.9s linear infinite;
+}
+
+.mark[data-state="done"] {
+  border-color: var(--sm-status-success);
+  color: var(--sm-status-success);
+}
+
+.mark[data-state="partial"] {
+  border-color: var(--sm-status-warning);
+  color: var(--sm-status-warning);
+}
+
+.mark[data-state="stopped"] {
+  border-color: var(--sm-status-error);
+  color: var(--sm-status-error);
+}
+
+@keyframes mark-turn {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark[data-state="running"] svg { animation: none; }
+}
+
+.timeline {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--sm-space-8) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sm-space-4);
+  padding-bottom: var(--sm-space-6);
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+/* The connector runs from below this mark to the next one. */
+.item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--sm-space-8) + var(--sm-space-2));
+  bottom: var(--sm-space-2);
+  left: calc(var(--sm-space-8) / 2);
+  border-left: 1px solid var(--sm-line-rule);
+}
+
+.body {
+  display: grid;
+  gap: var(--sm-space-2);
+  min-width: 0;
+  padding-top: var(--sm-space-2);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sm-space-4);
+  min-width: 0;
+}
+
+.head b {
+  min-width: 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-body);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.meta {
+  flex: none;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.detail {
+  display: grid;
+  gap: var(--sm-space-2);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

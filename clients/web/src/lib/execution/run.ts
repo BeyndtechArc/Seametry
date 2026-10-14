@@ -1,0 +1,141 @@
+import bs58 from "bs58";
+import { VersionedTransaction } from "@solana/web3.js";
+import type { PreparedLeg } from "../allocation/execution";
+import { executions } from "./store";
+import type { Execution, ExecutionKind, Leg } from "./record";
+
+export type Signer = {
+  signAllTransactions?: <T extends VersionedTransaction>(transactions: T[]) => Promise<T[]>;
+  signTransaction?: <T extends VersionedTransaction>(transaction: T) => Promise<T>;
+  /** Read after signing: the wallet the page is connected to now. */
+  connectedWallet: () => string | undefined;
+};
+
+/** Raised before anything is sent, so the sheet that asked can say nothing moved and stay open. */
+export class NotSent extends Error {
+  constructor(message: string, readonly declined = false) {
+    super(message);
+  }
+}
+
+function fromBase64(text: string): Uint8Array {
+  return Uint8Array.from(atob(text), (character) => character.charCodeAt(0));
+}
+
+function toBase64(bytes: Uint8Array): string {
+  let text = "";
+  for (const byte of bytes) text += String.fromCharCode(byte);
+  return btoa(text);
+}
+
+function sameBytes(a: Uint8Array, b: Uint8Array) {
+  return a.length === b.length && a.every((byte, index) => byte === b[index]);
+}
+
+const DECLINED = /user rejected|user denied|user declined|rejected the request/i;
+
+async function sign(signer: Signer, transactions: VersionedTransaction[]): Promise<VersionedTransaction[]> {
+  try {
+    if (signer.signAllTransactions) return await signer.signAllTransactions(transactions);
+    if (!signer.signTransaction) throw new NotSent("This wallet does not offer transaction signing. Nothing was sent.");
+    const signed: VersionedTransaction[] = [];
+    for (const transaction of transactions) signed.push(await signer.signTransaction(transaction));
+    return signed;
+  } catch (error) {
+    if (error instanceof NotSent) throw error;
+    const message = error instanceof Error ? error.message : String(error);
+    if (DECLINED.test(message)) throw new NotSent("You declined in your wallet. Nothing was sent.", true);
+    throw new NotSent(`The wallet did not sign: ${message}. Nothing was sent.`);
+  }
+}
+
+/**
+ * Signs every prepared leg in one wallet approval where the wallet allows it,
+ * checks the wallet changed nothing, records the execution, and sends each
+ * leg. It returns once the record exists, so the caller can close its sheet;
+ * sending continues and the watcher in the App shell takes the record from
+ * there. Anything thrown is a NotSent: nothing reached the network.
+ */
+export async function approveAndSend({
+  wallet,
+  kind,
+  subject,
+  allocation,
+  prepared,
+  signer,
+}: {
+  wallet: string;
+  kind: ExecutionKind;
+  subject: string;
+  allocation?: Execution["allocation"];
+  prepared: PreparedLeg[];
+  signer: Signer;
+}): Promise<Execution> {
+  const originals = prepared.map((leg) => VersionedTransaction.deserialize(fromBase64(leg.transaction)));
+  const before = originals.map((transaction) => transaction.message.serialize().slice());
+  const signed = await sign(signer, originals);
+  if (signed.length !== originals.length) throw new NotSent(`The wallet returned ${signed.length} of ${originals.length} transactions. Nothing was sent.`);
+  const changed = signed.findIndex((transaction, index) => !sameBytes(before[index], transaction.message.serialize()));
+  if (changed >= 0) throw new NotSent(`The wallet changed the ${prepared[changed].symbol} transaction Seametry checked. Nothing was sent.`);
+  if (signer.connectedWallet() !== wallet) throw new NotSent("The connected wallet changed while signing. Nothing was sent.");
+
+  const signedAt = new Date().toISOString();
+  const legs: Leg[] = prepared.map((leg, index) => {
+    const first = signed[index].signatures[0];
+    const unsigned = !first || first.every((byte) => byte === 0);
+    const tokenUnit = kind === "buy" ? leg.symbol : "USDC";
+    return {
+      signature: unsigned ? `unsigned-${index}-${signedAt}` : bs58.encode(first),
+      mint: leg.mint,
+      symbol: leg.symbol,
+      spend: { atoms: leg.inAtoms, scale: leg.inScale, unit: kind === "buy" ? "USDC" : leg.symbol },
+      expect: { out: { atoms: leg.outAtoms, scale: leg.outScale, unit: tokenUnit }, floor: { atoms: leg.floorAtoms, scale: leg.outScale, unit: tokenUnit } },
+      lastValidBlockHeight: leg.lastValidBlockHeight,
+      phase: unsigned ? "refused" : "signed",
+      signedAt,
+      ...(unsigned ? { endedAt: signedAt, problem: { plain: "The wallet returned this one unsigned, so it was not sent. Nothing moved." } } : {}),
+    };
+  });
+  const execution: Execution = {
+    id: legs.find((leg) => leg.phase === "signed")?.signature ?? `refused-${signedAt}`,
+    kind,
+    wallet,
+    network: "mainnet",
+    subject,
+    ...(allocation ? { allocation } : {}),
+    legs,
+    createdAt: signedAt,
+    seen: false,
+  };
+  executions.add(execution);
+
+  legs.forEach((leg, index) => {
+    if (leg.phase !== "signed") return;
+    void send(execution.id, leg.signature, toBase64(signed[index].serialize()), prepared[index].approval);
+  });
+  return execution;
+}
+
+/**
+ * A refusal the server marks sent:false is final: nothing reached the
+ * network. Any other failure may have come after the broadcast, so the leg
+ * is left for the watcher, which settles it either way by its deadline.
+ */
+async function send(executionId: string, signature: string, transaction: string, approval: string) {
+  let phase: Leg["phase"] = "sent";
+  let problem: Leg["problem"];
+  try {
+    const response = await fetch("/api/allocation/submit", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ transaction, approval }) });
+    const body = (await response.json().catch(() => ({}))) as { signature?: string; error?: string; sent?: boolean };
+    if (!response.ok && body.sent === false) {
+      phase = "refused";
+      problem = { plain: `${body.error ?? "Seametry refused to send it."} Nothing moved.` };
+    }
+  } catch {
+    // The receipt was lost, not the transaction: the watcher reads the chain.
+  }
+  executions.update(executionId, (execution) => ({
+    ...execution,
+    legs: execution.legs.map((leg) => (leg.signature === signature && leg.phase === "signed" ? { ...leg, phase, ...(problem ? { problem, endedAt: new Date().toISOString() } : {}) } : leg)),
+  }));
+}

@@ -6,8 +6,8 @@ import { findAllocationIndex } from "../src/lib/allocation/indexes";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
 import { countryGate, failedVenueProgram, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
 import { listedPositions } from "../src/lib/allocation/positions";
-import { signedSignature } from "../src/lib/allocation/activity";
 import { registerTestWallet } from "./test-wallet";
+import { acceptSubmits, answerChain, preparedLeg } from "./execution-fixture";
 
 // Pure rules only: no build, no wallet, no network. The route handlers that
 // call these reach Jupiter and mainnet, which a test here cannot.
@@ -121,13 +121,6 @@ test("a sale only offers the associated account balance when holdings span token
   ], [lot], new Map([[lot.instrument.mint, "associated"]]));
   expect(positions[0].atoms).toBe("317");
   expect(positions[0].sellableAtoms).toBe("100");
-});
-
-test("a signed transaction can be indexed before the submit response", () => {
-  const bytes = new Uint8Array(64);
-  bytes[63] = 1;
-  expect(signedSignature(bytes)).toBe(`${"1".repeat(63)}2`);
-  expect(() => signedSignature(new Uint8Array(64))).toThrow(/did not return a transaction signature/);
 });
 
 function swapLike(programIds: string[]): VersionedTransaction {
@@ -374,7 +367,7 @@ test("a wallet that already trusts the site shows as connected the moment it is 
 });
 
 test("one Allocation decision preflights the whole plan and never signs a refused simulation", async ({ page }) => {
-  await registerTestWallet(page, { trusted: true });
+  await registerTestWallet(page, { trusted: true, signs: true });
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx");
   expect(aapl).toBeDefined();
   await page.goto(`/app/allocation?selected=${aapl!.instrument.mint}&amount=1`);
@@ -382,104 +375,81 @@ test("one Allocation decision preflights the whole plan and never signs a refuse
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
   let prepares = 0;
-  let submits = 0;
   await page.route("**/api/allocation/prepare-batch", (route) => {
     prepares += 1;
     return route.fulfill({ status: 422, json: { error: "The route could not be simulated." } });
   });
-  await page.route("**/api/allocation/submit", (route) => {
-    submits += 1;
-    return route.fulfill({ status: 500, json: { error: "Unexpected submission." } });
-  });
-  await expect(page.getByRole("button", { name: "Buy allocation" })).toBeVisible();
+  const submits = await acceptSubmits(page);
   await page.getByRole("button", { name: "Buy allocation" }).click();
-  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText(/route could not be simulated/i)).toBeVisible();
+  const stopped = page.getByRole("dialog", { name: "Purchase stopped" });
+  await expect(stopped).toContainText("The route could not be simulated. Nothing was signed or spent.");
   expect(prepares).toBe(1);
-  expect(submits).toBe(0);
+  expect(submits()).toBe(0);
+  await stopped.getByRole("button", { name: "Dismiss" }).click();
   await expect(page.getByRole("button", { name: "Buy allocation" })).toBeEnabled();
 });
 
-test("a changed signed Allocation stops the whole plan without same-wallet retry", async ({ page }) => {
-  await registerTestWallet(page, { trusted: true });
+test("a leg Seametry refuses to send is recorded as not sent, and nothing moved", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true, signs: true });
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
   const nvda = admissions.instruments.find((lot) => lot.instrument.symbol === "NVDAx")!;
-  const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
-  const transaction = new VersionedTransaction(new TransactionMessage({
-    payerKey: wallet,
-    recentBlockhash: Keypair.generate().publicKey.toBase58(),
-    instructions: [],
-  }).compileToV0Message());
-  const prepared = {
-    transaction: Buffer.from(transaction.serialize()).toString("base64"),
-    approval: "test-approval",
-    expiresAt: new Date(Date.now() + 60_000).toISOString(),
-    floorAtoms: "1", outAtoms: "1", outScale: 6,
-    routingFeeBps: 15, routingFeeAtoms: "1500", priorityFeeLamports: "0",
-    route: ["Test route"], contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
-  };
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint},${nvda.instrument.mint}&amount=2`);
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
-  let prepares = 0;
-  await page.route("**/api/allocation/prepare-batch", (route) => {
-    prepares += 1;
-    return route.fulfill({ json: [prepared, prepared] });
-  });
+  await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: [preparedLeg(), preparedLeg()] }));
   await page.route("**/api/allocation/submit", (route) => route.fulfill({
     status: 409,
     json: { code: "SIGNED_MESSAGE_CHANGED", sent: false, error: "The transaction was changed after it was approved, so it was not sent. Prepare the leg again." },
   }));
+  const asked = await answerChain(page, () => ({ phase: "sent" }));
   await page.getByRole("button", { name: "Buy allocation" }).click();
-  await expect(page.getByText("Purchase paused")).toBeVisible();
-  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText(/signed transaction no longer matched/i).first()).toBeVisible();
-  expect(prepares).toBe(1);
+
+  const toasts = page.getByRole("region", { name: "Requests in progress" });
+  await expect(toasts).toContainText("Nothing bought: Custom allocation");
+  await expect(toasts).toContainText("Nothing changed hands and nothing was charged.");
+  // A refused leg is final, so the chain is never asked about it.
+  expect(asked).toHaveLength(0);
+  await toasts.getByRole("button", { name: /show in Activity/ }).click();
+  const activity = page.getByRole("dialog", { name: "Activity" });
+  await expect(activity.getByText("Not sent. The transaction was changed after it was approved", { exact: false })).toHaveCount(2);
+  await expect(page.getByRole("button", { name: "Buy allocation" })).toBeEnabled();
 });
 
-test("a confirmed Allocation shows settlement state and transaction evidence", async ({ page }) => {
-  await registerTestWallet(page, { trusted: true });
+test("a confirmed purchase lands in Activity with what it received and its signature", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true, signs: true });
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
-  const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
-  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: wallet, recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
-  await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: [{
-    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
-    expiresAt: new Date(Date.now() + 60_000).toISOString(), floorAtoms: "1", outAtoms: "1", outScale: 6,
-    routingFeeBps: 25, routingFeeAtoms: "2500", priorityFeeLamports: "0", route: ["Test route"],
-    contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
-  }] }));
-  await page.route("**/api/allocation/submit", (route) => route.fulfill({ json: { signature: "test-signature" } }));
-  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed", tokenDeltaAtoms: "1", tokenDeltaScale: 6 } }));
+  await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: [preparedLeg({ lastValidBlockHeight: 4_321 })] }));
+  await acceptSubmits(page);
+  const asked = await answerChain(page, () => ({ phase: "landed", changes: [{ mint: aapl.instrument.mint, atoms: "3700", scale: aapl.decimals }, { mint: USDC_MINT, atoms: "-1000000", scale: 6 }] }));
   await page.getByRole("button", { name: "Buy allocation" }).click();
-  await expect(page.getByRole("dialog", { name: "Allocation assembled" })).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByRole("region", { name: "Buy allocation" }).getByRole("link", { name: "test-signature" })).toHaveAttribute("href", /test-signature/);
-  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText("1 of 1 purchase settled.")).toBeVisible();
+
+  const toasts = page.getByRole("region", { name: "Requests in progress" });
+  await expect(toasts).toContainText("Bought Custom allocation", { timeout: 10_000 });
+  // The dialog handed over on approval; the toast carries the purchase.
+  await expect(page.getByRole("dialog", { name: "Buying Custom allocation" })).toHaveCount(0);
+  await expect(toasts.getByRole("link", { name: "View holdings" })).toHaveAttribute("href", "/app/positions");
+  // The watcher asks with the leg's own block height deadline.
+  expect(asked[0].lastValidBlockHeight).toBe(4_321);
+  await page.getByTestId("activity-trigger").click();
+  const activity = page.getByRole("dialog", { name: "Activity" });
+  await expect(activity).toContainText(`1.000000 USDC for ${formatAmount("3700", aapl.decimals)} AAPLx`);
+  await expect(activity.getByRole("link", { name: "Read AAPLx signature on Solscan" })).toHaveAttribute("href", /^https:\/\/solscan\.io\/tx\/[1-9A-HJ-NP-Za-km-z]{64,88}$/);
 });
 
 test("a published basket buys every constituent from its record with one Key press and one batch", async ({ page }) => {
-  await registerTestWallet(page, { trusted: true });
+  await registerTestWallet(page, { trusted: true, signs: true });
   const basket = findAllocationIndex("prime-seven")!;
   const mints = basket.members.map((member) => admissions.instruments.find((lot) => lot.instrument.symbol === member.symbol)!.instrument.mint);
-  const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
-  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: wallet, recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
-  const prepared = {
-    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
-    expiresAt: new Date(Date.now() + 60_000).toISOString(), floorAtoms: "1", outAtoms: "1", outScale: 6,
-    routingFeeBps: 20, routingFeeAtoms: "2000", priorityFeeLamports: "0", route: ["Test route"],
-    contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
-  };
   const batches: { legs: { mint: string; usdcAtoms: string }[]; planMints: string[] }[] = [];
-  let submits = 0;
   await page.route("**/api/allocation/prepare-batch", async (route) => {
     batches.push(route.request().postDataJSON());
-    await route.fulfill({ json: mints.map(() => prepared) });
+    await route.fulfill({ json: mints.map(() => preparedLeg()) });
   });
-  await page.route("**/api/allocation/submit", (route) => {
-    submits += 1;
-    return route.fulfill({ json: { signature: `basket-signature-${submits}` } });
-  });
-  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed", tokenDeltaAtoms: "1", tokenDeltaScale: 6 } }));
+  const submits = await acceptSubmits(page);
+  await answerChain(page, () => ({ phase: "landed", changes: [] }));
 
   await page.goto("/app/baskets/prime-seven?amount=7");
   await page.getByText("Connect", { exact: true }).click();
@@ -489,19 +459,19 @@ test("a published basket buys every constituent from its record with one Key pre
   await expect(order.getByLabel("USDC to spend")).toHaveValue("7");
   await order.getByRole("button", { name: "Buy basket" }).click();
 
-  await expect(page.getByRole("dialog", { name: "Allocation assembled" })).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText("7 of 7 purchases settled.")).toBeVisible();
+  const toasts = page.getByRole("region", { name: "Requests in progress" });
+  await expect(toasts).toContainText("Bought Prime Seven", { timeout: 10_000 });
+  await expect(toasts).toContainText("All 7 purchases landed.");
   expect(batches).toHaveLength(1);
   expect(batches[0].legs.map((leg) => leg.mint).sort()).toEqual([...mints].sort());
   expect(batches[0].legs.every((leg) => leg.usdcAtoms === "1000000")).toBe(true);
-  expect(submits).toBe(7);
-  // Every leg has ended, so nothing may still read as in progress.
-  await expect(order.getByRole("button", { name: "Buy basket" })).toHaveCount(0);
-  await expect(page.getByText("Purchases settled", { exact: true })).toBeVisible();
+  expect(submits()).toBe(7);
+  // The Key is free the moment the wallet approves; nothing waits on it.
+  await expect(order.getByRole("button", { name: "Buy basket" })).toBeEnabled();
 });
 
-test("an allocation stays one watched request from preflight through mainnet confirmation", async ({ page }) => {
-  await registerTestWallet(page, { trusted: true });
+test("an allocation shows its two waits before the wallet, then hands over", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true, signs: true });
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
   let releasePreflight!: () => void;
   const preflightHeld = new Promise<void>((resolve) => { releasePreflight = resolve; });
@@ -515,11 +485,10 @@ test("an allocation stays one watched request from preflight through mainnet con
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Buy allocation" }).click();
 
-  const dialog = page.getByRole("dialog", { name: "Buying allocation" });
+  const dialog = page.getByRole("dialog", { name: "Buying Custom allocation" });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByTestId("step-register")).toContainText("Check every route");
-  await expect(dialog.getByTestId("step-register")).toContainText("Approve one allocation");
-  await expect(dialog.getByTestId("step-register")).toContainText("Confirm every purchase");
+  await expect(dialog.getByTestId("step-register")).toContainText("Approve in your wallet");
   releasePreflight();
   await expect(page.getByRole("dialog", { name: "Purchase stopped" })).toContainText("Nothing was signed or spent");
 });
@@ -567,103 +536,64 @@ test("a wallet short of funds is asked to fund or adjust, and no purchase is mar
   expect(submits).toBe(0);
 });
 
-test("a basket purchase that mainnet never confirms ends as a wallet check, not a purchase stuck sending", async ({ page }) => {
+test("a purchase whose status cannot be read says so within a minute, and never reads as stuck", async ({ page }) => {
   await page.clock.install();
-  await registerTestWallet(page, { trusted: true });
-  const basket = findAllocationIndex("prime-seven")!;
-  const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
-  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: wallet, recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
-  const prepared = {
-    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
-    expiresAt: new Date(Date.now() + 600_000).toISOString(), floorAtoms: "1", outAtoms: "1", outScale: 6,
-    routingFeeBps: 20, routingFeeAtoms: "2000", priorityFeeLamports: "0", route: ["Test route"],
-    contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
-  };
-  let submits = 0;
-  await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: basket.members.map(() => prepared) }));
-  await page.route("**/api/allocation/submit", (route) => {
-    submits += 1;
-    return route.fulfill({ json: { signature: `unconfirmed-signature-${submits}` } });
-  });
-  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "processed" } }));
+  await registerTestWallet(page, { trusted: true, signs: true });
+  const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
+  await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: [preparedLeg()] }));
+  await acceptSubmits(page);
+  const asked = await answerChain(page, () => ({ status: 502 }));
 
-  await page.goto("/app/baskets/prime-seven?amount=7");
+  await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
-  const order = page.getByRole("region", { name: "Buy Prime Seven" });
-  await order.getByRole("button", { name: "Buy basket" }).click();
-  await expect.poll(() => submits).toBe(basket.members.length);
-  // The page polls each signature every three seconds for six minutes, while
-  // a status route that never decides keeps answering; run the clock past it.
-  for (let tick = 0; tick < 124; tick += 1) {
-    await page.clock.runFor(3000);
-    await page.waitForTimeout(20);
+  await page.getByRole("button", { name: "Buy allocation" }).click();
+  const toasts = page.getByRole("region", { name: "Requests in progress" });
+  await expect(toasts).toContainText("Buying Custom allocation");
+  for (let tick = 0; tick < 70; tick += 1) {
+    await page.clock.runFor(1_000);
+    await page.waitForTimeout(10);
   }
-  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText(`${basket.members.length} submissions need a wallet activity check.`)).toBeVisible();
-  await expect(page.getByRole("dialog", { name: "Purchase stopped" })).toBeVisible();
-  await expect(page.getByText("Check wallet activity", { exact: true })).toBeVisible();
-  await expect(page.getByText(/Sending/)).toHaveCount(0);
+  await expect(toasts).toContainText("Mainnet cannot be read right now");
+  await expect(toasts.getByRole("link", { name: "Read on Solscan" })).toHaveAttribute("href", /solscan\.io\/tx\//);
+  // Failed reads back off to one every 16 seconds, not one a tick.
+  expect(asked.length).toBeLessThan(10);
 });
 
-test("a purchase the network dropped is told apart from a pending one, and can be bought again", async ({ page }) => {
-  await registerTestWallet(page, { trusted: true });
+test("a purchase the network dropped says nothing moved and offers to buy exactly that again", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true, signs: true });
   const basket = findAllocationIndex("prime-seven")!;
-  const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
-  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: wallet, recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
-  const prepared = {
-    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
-    expiresAt: new Date(Date.now() + 600_000).toISOString(), floorAtoms: "1", outAtoms: "1", outScale: 6,
-    routingFeeBps: 20, routingFeeAtoms: "2000", priorityFeeLamports: "0", route: ["Test route"],
-    contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
-  };
-  let submits = 0;
-  const sentTimes: string[] = [];
-  await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: basket.members.map(() => prepared) }));
-  await page.route("**/api/allocation/submit", (route) => {
-    submits += 1;
-    return route.fulfill({ json: { signature: `dropped-signature-${submits}` } });
-  });
-  await page.route("**/api/allocation/status?**", (route) => {
-    sentTimes.push(new URL(route.request().url()).searchParams.get("sent") ?? "");
-    return route.fulfill({ json: { state: "expired", detail: "never included" } });
-  });
+  const mints = basket.members.map((member) => admissions.instruments.find((lot) => lot.instrument.symbol === member.symbol)!.instrument.mint);
+  await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: mints.map(() => preparedLeg()) }));
+  await acceptSubmits(page);
+  await answerChain(page, () => ({ phase: "dropped" }));
 
   await page.goto("/app/baskets/prime-seven?amount=7");
   await page.getByText("Connect", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   const order = page.getByRole("region", { name: "Buy Prime Seven" });
   await order.getByRole("button", { name: "Buy basket" }).click();
-  await expect(page.getByText("The network never included this purchase and it can no longer land. Nothing moved.", { exact: false })).toHaveCount(basket.members.length, { timeout: 15_000 });
-  // The status route is told when each leg was sent, which is how it can declare a drop.
-  expect(sentTimes.every((sent) => !Number.isNaN(Date.parse(sent)))).toBe(true);
-  await expect(page.getByText("submissions need a wallet activity check", { exact: false })).toHaveCount(0);
+  const toasts = page.getByRole("region", { name: "Requests in progress" });
+  await expect(toasts).toContainText("Nothing bought: Prime Seven", { timeout: 15_000 });
+  const href = new URL(await toasts.getByRole("link", { name: "Buy again" }).getAttribute("href") ?? "", "http://localhost");
+  expect(href.pathname).toBe("/app/baskets/build");
+  expect(href.searchParams.get("selected")?.split(",").sort()).toEqual([...mints].sort());
+  expect(href.searchParams.get("amount")).toBe("7.000000");
+  expect(href.searchParams.get("weights")).toBeNull();
   await expect(order.getByRole("button", { name: "Buy basket" })).toBeEnabled();
 });
 
 test("a remix buys at the weights the reader set, exactly, and is recorded as a remix", async ({ page }) => {
-  await registerTestWallet(page, { trusted: true });
+  await registerTestWallet(page, { trusted: true, signs: true });
   const basket = findAllocationIndex("prime-seven")!;
   const mintOf = (symbol: string) => admissions.instruments.find((lot) => lot.instrument.symbol === symbol)!.instrument.mint;
-  const wallet = new PublicKey("4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d");
-  const transaction = new VersionedTransaction(new TransactionMessage({ payerKey: wallet, recentBlockhash: Keypair.generate().publicKey.toBase58(), instructions: [] }).compileToV0Message());
-  const prepared = {
-    transaction: Buffer.from(transaction.serialize()).toString("base64"), approval: "test-approval",
-    expiresAt: new Date(Date.now() + 60_000).toISOString(), floorAtoms: "1", outAtoms: "1", outScale: 6,
-    routingFeeBps: 20, routingFeeAtoms: "2000", priorityFeeLamports: "0", route: ["Test route"],
-    contextSlot: 1, receivedAt: new Date().toISOString(), simulated: [],
-  };
   const batches: { legs: { mint: string; usdcAtoms: string }[] }[] = [];
-  let submits = 0;
   await page.route("**/api/allocation/prepare-batch", async (route) => {
     batches.push(route.request().postDataJSON());
-    await route.fulfill({ json: basket.members.map(() => prepared) });
+    await route.fulfill({ json: basket.members.map(() => preparedLeg()) });
   });
-  // Holdings keep only what has a signature's shape, so the fixture answers with one.
-  await page.route("**/api/allocation/submit", (route) => {
-    submits += 1;
-    return route.fulfill({ json: { signature: Keypair.generate().publicKey.toBase58() + Keypair.generate().publicKey.toBase58() } });
-  });
-  await page.route("**/api/allocation/status?**", (route) => route.fulfill({ json: { state: "confirmed", tokenDeltaAtoms: "1", tokenDeltaScale: 6 } }));
+  const submits = await acceptSubmits(page);
+  await answerChain(page, () => ({ phase: "landed", changes: [] }));
 
   await page.goto("/app/baskets/build?basket=prime-seven");
   await page.getByText("Connect", { exact: true }).click();
@@ -675,7 +605,8 @@ test("a remix buys at the weights the reader set, exactly, and is recorded as a 
   await expect(page.getByText("100% of 100% assigned")).toBeVisible();
   await page.getByLabel("AAPLx", { exact: true }).fill("40");
   await expect(page.getByText(/The weights add to \d+%\. They must add to 100%\./)).toBeVisible();
-  await expect(page.getByRole("button", { name: "Buy allocation" })).toHaveCount(0);
+  // Blocked, not hidden: pressed, it says why.
+  await expect(page.getByRole("button", { name: "Buy allocation" })).toHaveAttribute("aria-disabled", "true");
   for (const member of basket.members.filter((member) => member.symbol !== "AAPLx")) {
     await page.getByLabel(member.symbol, { exact: true }).fill("10");
   }
@@ -683,14 +614,16 @@ test("a remix buys at the weights the reader set, exactly, and is recorded as a 
   expect(new URL(page.url()).searchParams.get("weights")).toBeTruthy();
 
   await page.getByRole("button", { name: "Buy allocation" }).click();
-  await expect(page.getByRole("region", { name: "Buy allocation" }).getByText("7 of 7 purchases settled.")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("region", { name: "Requests in progress" })).toContainText("Bought Prime Seven remix", { timeout: 10_000 });
   expect(batches).toHaveLength(1);
-  expect(submits).toBe(7);
+  expect(submits()).toBe(7);
   const atomsBySymbol = Object.fromEntries(basket.members.map((member) => [member.symbol, batches[0].legs.find((leg) => leg.mint === mintOf(member.symbol))?.usdcAtoms]));
   expect(atomsBySymbol).toEqual({ AAPLx: "40000000", MSFTx: "10000000", AMZNx: "10000000", GOOGLx: "10000000", METAx: "10000000", NVDAx: "10000000", TSLAx: "10000000" });
-  const recorded = await page.evaluate(() => JSON.parse(localStorage.getItem("seametry:mainnet-allocation-activity:v1") ?? "[]") as { allocationName?: string; allocationTemplateId?: string }[]);
-  expect(recorded).toHaveLength(7);
-  expect(recorded.every((trade) => trade.allocationName === "Prime Seven remix" && trade.allocationTemplateId === undefined)).toBe(true);
+  const recorded = await page.evaluate(() => JSON.parse(localStorage.getItem("seametry:executions:v1") ?? "[]") as { allocation?: { name: string; templateId?: string }; legs: unknown[] }[]);
+  expect(recorded).toHaveLength(1);
+  expect(recorded[0].legs).toHaveLength(7);
+  expect(recorded[0].allocation).toMatchObject({ name: "Prime Seven remix" });
+  expect(recorded[0].allocation?.templateId).toBeUndefined();
 });
 
 test("the amount step names and enforces the funding floor before wallet signing", async ({ page }) => {

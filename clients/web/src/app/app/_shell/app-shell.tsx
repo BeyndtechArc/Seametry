@@ -7,6 +7,7 @@ import { Icon } from "@seametry/ui/icons";
 import { ThemeControl } from "@seametry/ui/theme-control";
 import { BrandMark } from "../../brand-mark";
 import { WalletState } from "../../wallet-state";
+import { ActivityDock } from "../_activity/activity";
 import { appGroups, mobileRoutes, readingRoutes } from "./routes";
 import styles from "./app-shell.module.css";
 
@@ -31,6 +32,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             })}
           </nav>
           <div className={styles.headerActions} data-testid="app-header-actions">
+            <ActivityDock />
             <WalletState />
             <span className={styles.theme} data-testid="app-header-theme"><ThemeControl defaultTheme="dark" /></span>
           </div>

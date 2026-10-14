@@ -6,7 +6,7 @@ import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { DROPPED_AFTER_MS, MIN_LEG_USDC_ATOMS, PRIORITY_FEE, failedVenueProgram, QUOTE_TTL_MS, USDC_MINT, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
+import { MIN_LEG_USDC_ATOMS, PRIORITY_FEE, failedVenueProgram, QUOTE_TTL_MS, USDC_MINT, USDC_SCALE, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 
@@ -83,7 +83,7 @@ async function refuseUnfunded(
   return needed;
 }
 
-type JupiterSwap = { swapTransaction: string; prioritizationFeeLamports?: number };
+type JupiterSwap = { swapTransaction: string; lastValidBlockHeight: number; prioritizationFeeLamports?: number };
 type Routed = { quote: JupiterQuote; swap: JupiterSwap; transaction: VersionedTransaction; simulation: Awaited<ReturnType<Connection["simulateTransaction"]>>; receivedAt: Date };
 
 let venueLabels: Promise<Record<string, string>> | undefined;
@@ -167,8 +167,10 @@ export type PreparedLeg = {
   contextSlot: number;
   receivedAt: string;
   expiresAt: string;
-  /** The exact recent blockhash the wallet signs, used to stop waiting at expiry. */
-  blockhash: string;
+  /** Scale of inAtoms: USDC's on a purchase, the lot's on a sale. */
+  inScale: number;
+  /** The block height after which this transaction can never land, from Jupiter's /swap. */
+  lastValidBlockHeight: number;
   priorityFeeLamports: string;
   /**
    * Set on purchases only, where a batch sums it: SOL this leg spends or
@@ -272,6 +274,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     mint,
     symbol: lot.instrument.symbol ?? mint,
     inAtoms: quote.inAmount,
+    inScale: USDC_SCALE,
     outAtoms: quote.outAmount,
     floorAtoms: quote.otherAmountThreshold,
     outScale: lot.decimals,
@@ -279,7 +282,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     contextSlot: quote.contextSlot,
     receivedAt: receivedAt.toISOString(),
     expiresAt: expiresAt.toISOString(),
-    blockhash: transaction.message.recentBlockhash,
+    lastValidBlockHeight: swap.lastValidBlockHeight,
     priorityFeeLamports: String(swap.prioritizationFeeLamports ?? 0),
     solNeededLamports: solNeeded.toString(),
     routingFeeBps: feeBps,
@@ -380,9 +383,9 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
     messageSha256: messageDigest(transaction.message.serialize()), expiresAt: expiresAt.toISOString(),
   }, config.approvalSecret);
   return {
-    mint, symbol: lot.instrument.symbol ?? mint, inAtoms: quote.inAmount, outAtoms: quote.outAmount,
+    mint, symbol: lot.instrument.symbol ?? mint, inAtoms: quote.inAmount, inScale: lot.decimals, outAtoms: quote.outAmount,
     floorAtoms: quote.otherAmountThreshold, outScale: 6, route: quote.routePlan.map((hop) => hop.swapInfo.label),
-    contextSlot: quote.contextSlot, receivedAt: receivedAt.toISOString(), expiresAt: expiresAt.toISOString(), blockhash: transaction.message.recentBlockhash,
+    contextSlot: quote.contextSlot, receivedAt: receivedAt.toISOString(), expiresAt: expiresAt.toISOString(), lastValidBlockHeight: swap.lastValidBlockHeight,
     priorityFeeLamports: String(swap.prioritizationFeeLamports ?? 0), routingFeeBps: feeBps,
     routingFeeAtoms: feeAtoms.toString(), simulated, transaction: swap.swapTransaction, approval,
   };
@@ -422,74 +425,4 @@ export async function submitLeg(config: AllocationConfig, signedBase64: string, 
   } catch (error) {
     throw new Refusal(422, `Mainnet refused the transaction: ${error instanceof Error ? error.message : String(error)}`);
   }
-}
-
-export type LegStatus = {
-  /** expired: never seen by the cluster and now past landing; nothing moved. */
-  state: "pending" | "confirmed" | "finalized" | "failed" | "expired";
-  detail?: string;
-  tokenDeltaAtoms?: string;
-  tokenDeltaScale?: number;
-};
-
-/**
- * Confirmation remains the authority for whether a leg settled. When the
- * caller supplies a wallet and mint, transaction meta is also used to return
- * the wallet's actual token delta for that mint. That delta is portfolio
- * attribution only; wallet balances remain the ownership authority.
- */
-export async function legStatus(
-  config: AllocationConfig,
-  signature: string,
-  walletText?: string,
-  mint?: string,
-  sentAt?: Date,
-  blockhash?: string,
-): Promise<LegStatus> {
-  const connection = new Connection(config.mainnetRpcUrl, "confirmed");
-  const { value } = await connection.getSignatureStatuses([signature], { searchTransactionHistory: true });
-  const status = value[0];
-  if (!status) {
-    if (blockhash) {
-      const valid = await connection.isBlockhashValid(blockhash, { commitment: "confirmed" });
-      if (!valid.value) {
-        const last = (await connection.getSignatureStatuses([signature], { searchTransactionHistory: true })).value[0];
-        if (!last) return { state: "expired", detail: "The signed transaction never reached mainnet before its blockhash expired. Nothing moved." };
-        if (last.err) return { state: "failed", detail: JSON.stringify(last.err) };
-        return { state: last.confirmationStatus === "finalized" ? "finalized" : last.confirmationStatus === "confirmed" ? "confirmed" : "pending" };
-      }
-    }
-    return sentAt && Date.now() - sentAt.getTime() > DROPPED_AFTER_MS
-      ? { state: "expired", detail: "The network never included this transaction and it can no longer land. Nothing moved." }
-      : { state: "pending" };
-  }
-  if (status.err) return { state: "failed", detail: JSON.stringify(status.err) };
-
-  const state = status.confirmationStatus === "finalized" ? "finalized" : status.confirmationStatus === "confirmed" ? "confirmed" : "pending";
-  if (state === "pending" || !walletText || !mint) return { state };
-
-  let wallet: PublicKey;
-  try {
-    wallet = new PublicKey(walletText);
-  } catch {
-    return { state };
-  }
-
-  const transaction = await connection.getTransaction(signature, {
-    commitment: "confirmed",
-    maxSupportedTransactionVersion: 0,
-  });
-  const meta = transaction?.meta;
-  if (!meta) return { state };
-
-  const owner = wallet.toBase58();
-  const balances = (rows: typeof meta.preTokenBalances) => (rows ?? [])
-    .filter((row) => row.owner === owner && row.mint === mint)
-    .reduce((sum, row) => sum + BigInt(row.uiTokenAmount.amount), 0n);
-  const pre = balances(meta.preTokenBalances);
-  const post = balances(meta.postTokenBalances);
-  const scale = (meta.postTokenBalances ?? []).find((row) => row.owner === owner && row.mint === mint)?.uiTokenAmount.decimals ??
-    (meta.preTokenBalances ?? []).find((row) => row.owner === owner && row.mint === mint)?.uiTokenAmount.decimals;
-  if (scale === undefined) return { state };
-  return { state, tokenDeltaAtoms: (post - pre).toString(), tokenDeltaScale: scale };
 }

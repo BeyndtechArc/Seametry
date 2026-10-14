@@ -11,7 +11,10 @@
     "./plates": "./src/plates.tsx",
     "./theme-control": "./src/theme-control.tsx",
     "./tokens.css": "./src/generated/tokens.css",
-    "./tokens": "./src/generated/tokens.ts"
+    "./tokens": "./src/generated/tokens.ts",
+    "./toast": "./src/toast.tsx",
+    "./timeline": "./src/timeline.tsx",
+    "./id": "./src/id.tsx"
   },
   "peerDependencies": {
     "react": "^19.3.0"

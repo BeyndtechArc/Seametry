@@ -44,14 +44,6 @@ export function quoteParams(mint: string, inAtoms: bigint, feeBps: number): URLS
  */
 export const PRIORITY_FEE = { priorityLevelWithMaxLamports: { maxLamports: 500_000, priorityLevel: "veryHigh" } } as const;
 
-/**
- * How long after submission a signature the cluster has never seen is
- * declared dropped. Its blockhash came from the quote taken just before
- * signing and stays valid for about 150 slots, 60 to 90 seconds, so a
- * transaction unseen five minutes after it was sent can never land.
- */
-export const DROPPED_AFTER_MS = 5 * 60_000;
-
 // Programs every route invokes; a failure inside them is not a venue's.
 const ROUTE_PLUMBING = new Set([
   "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
