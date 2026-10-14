@@ -1,12 +1,12 @@
 import "server-only";
 
-import { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
+import { Connection, PublicKey, SendTransactionError, VersionedTransaction } from "@solana/web3.js";
 import { ExtensionType, getAccountLen, getAccountTypeOfMintType, getAssociatedTokenAddressSync, getExtensionTypes, getMint, type Mint } from "@solana/spl-token";
 import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { MIN_LEG_USDC_ATOMS, PRIORITY_FEE, failedVenueProgram, QUOTE_TTL_MS, USDC_MINT, USDC_SCALE, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
+import { MIN_LEG_USDC_ATOMS, PRIORITY_FEE, SLIPPAGE_BPS, failedVenueProgram, preflightRefusal, QUOTE_TTL_MS, USDC_MINT, USDC_SCALE, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 
@@ -423,6 +423,31 @@ export async function submitLeg(config: AllocationConfig, signedBase64: string, 
   try {
     return await connection.sendRawTransaction(transaction.serialize(), { skipPreflight: false, maxRetries: 3 });
   } catch (error) {
-    throw new Refusal(422, `Mainnet refused the transaction: ${error instanceof Error ? error.message : String(error)}`);
+    const technical = error instanceof Error ? error.message : String(error);
+    // web3.js raises SendTransactionError with the simulation's logs when the
+    // RPC's preflight refuses: that happens before broadcast, so the leg
+    // certainly reached nothing. Anything else (a lost connection, a timeout)
+    // may have been broadcast, and stays the watcher's to settle.
+    if (!(error instanceof SendTransactionError) || !/Simulation failed/.test(technical)) {
+      throw new Refusal(502, "Seametry could not confirm mainnet received it, so it is watched until its deadline.", { technical });
+    }
+    throw new Refusal(422, await preflightSentence(config, technical, error.logs ?? []), { notSent: true, technical });
+  }
+}
+
+/** The plain account of a preflight refusal, naming the venue by Jupiter's label when one refused. */
+async function preflightSentence(config: AllocationConfig, message: string, logs: string[]): Promise<string> {
+  const refusal = preflightRefusal(message, logs);
+  switch (refusal.kind) {
+    case "slippage":
+      return `The price moved more than the ${formatAmount(BigInt(SLIPPAGE_BPS), 2)}% slippage limit between the quote and sending, so mainnet's check stopped it. A fresh quote usually goes through.`;
+    case "venue":
+      return `${(await refusingVenue(config, logs)) ?? "The trading venue on its route"} refused it when mainnet checked it before sending. A fresh quote may route around it.`;
+    case "expired":
+      return "Its quote aged out before it reached mainnet. A fresh quote is needed.";
+    case "unfunded":
+      return "The wallet could not pay for it by the time it was sent. Add SOL or USDC and try again.";
+    case "other":
+      return "Mainnet's check refused it before sending.";
   }
 }

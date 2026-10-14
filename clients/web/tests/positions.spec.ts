@@ -100,6 +100,44 @@ test("a sale steps from amount to review in the sheet, then hands over to the to
   await expect(toasts).toHaveCount(0);
 });
 
+test("a sale mainnet's check refuses ends at once as not sent, in a plain sentence with the raw text kept aside", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true, signs: true });
+  const lot = admissions.instruments.find((entry) => entry.instrument.symbol === "AMZNx")!;
+  await page.route("**/api/allocation/positions?**", (route) => route.fulfill({ json: {
+    wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
+    positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
+  } }));
+  await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: preparedLeg({ inAtoms: "5000000", inScale: lot.decimals }) }));
+  // What the submit route answers for a preflight refusal: a plain reason, sent:false, and web3.js's own text aside.
+  const raw = "Simulation failed. \nMessage: Transaction simulation failed: Error processing Instruction 3: custom program error: 0x1771. \nCatch the `SendTransactionError` and call `getLogs()` on it for full details.";
+  await page.route("**/api/allocation/submit", (route) => route.fulfill({ status: 422, json: {
+    error: "The price moved more than the 0.50% slippage limit between the quote and sending, so mainnet's check stopped it. A fresh quote usually goes through.",
+    sent: false, technical: raw,
+  } }));
+  const asked = await answerChain(page, () => ({ phase: "sent" }));
+
+  await page.goto("/app/positions");
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await page.getByRole("button", { name: "Trade AMZNx" }).click();
+  const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
+  await sheet.getByRole("button", { name: "Use 50%" }).click();
+  await sheet.getByRole("button", { name: "Review sale" }).click();
+  await sheet.getByRole("button", { name: "Sign sale" }).click();
+
+  const toasts = page.getByRole("region", { name: "Requests in progress" });
+  await expect(toasts).toContainText("Nothing sold: AMZNx");
+  // Ended by the refusal itself, not by waiting out a deadline.
+  expect(asked).toHaveLength(0);
+  await page.getByRole("tab", { name: /^Activity/ }).click();
+  const activity = page.getByRole("tabpanel", { name: "Activity" });
+  await expect(activity.getByText("Not sent", { exact: true })).toBeVisible();
+  await expect(activity).toContainText("The price moved more than the 0.50% slippage limit between the quote and sending");
+  await expect(activity.getByText("Catch the `SendTransactionError`", { exact: false })).toBeHidden();
+  await activity.getByText("Technical detail").click();
+  await expect(activity.getByText("custom program error: 0x1771", { exact: false })).toBeVisible();
+});
+
 test("a finished toast leaves when its countdown runs out, and pointing at it holds it", async ({ page }) => {
   // A sale that landed a moment ago, as the engine records it.
   await page.addInitScript((owner) => {
@@ -164,7 +202,7 @@ test("a sale the network dropped says nothing moved and offers to sell again", a
   await expect(toasts).toContainText("Nothing changed hands and nothing was charged.");
   await expect(toasts.getByRole("link", { name: "Sell again" })).toHaveAttribute("href", "/app/positions");
   await page.getByRole("tab", { name: /^Activity/ }).click();
-  await expect(page.getByRole("tabpanel", { name: "Activity" })).toContainText("never landed before its deadline", { ignoreCase: true });
+  await expect(page.getByRole("tabpanel", { name: "Activity" })).toContainText("Its deadline passed before mainnet included it");
 });
 
 test("a wallet that declines leaves the sheet open, saying nothing was sent", async ({ page }) => {

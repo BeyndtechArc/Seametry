@@ -105,3 +105,26 @@
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+/* A leg's state reads as a label; its explanation is its own sentence below. */
+.legState {
+  width: fit-content;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-micro);
+  font-weight: var(--sm-font-weight-semibold);
+  letter-spacing: var(--sm-font-tracking-body);
+}
+
+.legState[data-phase="refused"],
+.legState[data-phase="dropped"],
+.legState[data-phase="failed"] {
+  color: var(--sm-text-secondary);
+}
+
+.legProblem {
+  max-width: var(--sm-size-readable);
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.5;
+}

@@ -135,9 +135,10 @@ export const LEG_WORDS: Record<LegPhase, string> = {
   refused: "Not sent",
 };
 
+/** Each sentence follows its leg's word (LEG_WORDS), so it never repeats it. */
 export const LEG_PROBLEMS = {
-  failed: "Mainnet rejected it. The network fee was charged; nothing else moved.",
-  dropped: "It never landed before its deadline and no longer can. Nothing moved.",
+  failed: "Mainnet rejected it after it was sent. The network fee was charged; nothing else moved.",
+  dropped: "Its deadline passed before mainnet included it, so it never can. Nothing moved.",
 } as const;
 
 const VERBS: Record<ExecutionKind, { doing: string; done: string; partly: string; none: string; leg: string }> = {
