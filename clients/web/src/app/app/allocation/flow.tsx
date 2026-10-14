@@ -6,6 +6,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { ActionBar, ContinueAction, Field, FilterBar, Key, LotMark, QuietAction, QuoteBlock, SelectionCount, StepBar, StepRegister, StepTrack, Stamp, type RegisterStep } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
 import { Banner } from "@seametry/ui/banner";
+import { Id } from "@seametry/ui/id";
 import { Identity } from "@seametry/ui/list";
 import { ProcessDialog } from "@seametry/ui/modal-sheet";
 import { describeSplit, formatAmount, parseAmount, splitByWeights, splitEvenly } from "@/lib/amount";
@@ -213,7 +214,6 @@ export function AllocationFlow({
   const [progressHidden, setProgressHidden] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [shortfall, setShortfall] = useState<string>();
-  const [copied, setCopied] = useState(false);
 
   const [query, setQuery] = useState("");
   const [backing, setBacking] = useState("any");
@@ -664,16 +664,16 @@ export function AllocationFlow({
         title="Fund the wallet or lower the amount"
         register="Nothing was signed"
         closeLabel="Close"
-        footer={<>
-          <QuietAction type="button" icon="wallet" onClick={() => {
-            if (!walletAddress) return;
-            void navigator.clipboard.writeText(walletAddress).then(() => setCopied(true));
-          }}>{copied ? "Wallet address copied" : "Copy wallet address"}</QuietAction>
-          <ContinueAction type="button" onClick={adjustAmount}>Adjust amount</ContinueAction>
-        </>}
+        footer={<ContinueAction type="button" onClick={adjustAmount}>Adjust amount</ContinueAction>}
       >
         <p>{shortfall}</p>
-        <p>Send USDC or SOL to {walletAddress ? <b>{walletAddress}</b> : "this wallet"} and buy again, or lower the amount so it fits what the wallet holds. Seametry prepared nothing and nothing left the wallet.</p>
+        {walletAddress ? (
+          <div className={styles.fundTo}>
+            <span>Send to</span>
+            <Id value={walletAddress} label="wallet address" />
+          </div>
+        ) : null}
+        <p>Or lower the amount so it fits what the wallet holds. Nothing was prepared and nothing left the wallet.</p>
       </ProcessDialog>
     </div>
   );

@@ -77,8 +77,8 @@ async function refuseUnfunded(
   const needed = rent + SIGNATURE_FEE_LAMPORTS + priorityFeeLamports;
   const held = BigInt(walletAccount?.lamports ?? 0);
   if (held < needed) {
-    const opening = rent > 0n ? `${formatAmount(rent, 9)} SOL to open its ${symbol} account, returned if that account is closed, and ` : "";
-    throw new Refusal(402, `This wallet holds ${formatAmount(held, 9)} SOL; buying ${symbol} needs ${opening}${formatAmount(needed - rent, 9)} SOL in network fees. Add SOL to the wallet and buy again.`);
+    const opening = rent > 0n ? `${formatAmount(rent, 9)} SOL to open its ${symbol} account (returned if that account is closed) and ` : "";
+    throw new Refusal(402, `Add at least ${formatAmount(needed - held, 9)} SOL. Buying ${symbol} needs ${formatAmount(needed, 9)} SOL: ${opening}${formatAmount(needed - rent, 9)} SOL in network fees. This wallet holds ${formatAmount(held, 9)} SOL, and fees and new accounts are paid in SOL, not USDC.`);
   }
   return needed;
 }
@@ -328,7 +328,7 @@ export async function prepareBatch(
   const solNeeded = prepared.reduce((sum, leg) => sum + BigInt(leg.solNeededLamports ?? "0"), 0n);
   const solHeld = BigInt(await connection.getBalance(wallet, "confirmed"));
   if (solHeld < solNeeded) {
-    throw new Refusal(402, `This wallet holds ${formatAmount(solHeld, 9)} SOL; the ${prepared.length} purchases need ${formatAmount(solNeeded, 9)} SOL together, for new token accounts (returned if closed) and network fees. Add SOL to the wallet or buy fewer constituents.`);
+    throw new Refusal(402, `Add at least ${formatAmount(solNeeded - solHeld, 9)} SOL, or buy fewer constituents. The ${prepared.length} purchases need ${formatAmount(solNeeded, 9)} SOL together, for new token accounts (returned if closed) and network fees; this wallet holds ${formatAmount(solHeld, 9)} SOL, and those are paid in SOL, not USDC.`);
   }
   return prepared;
 }
