@@ -1,50 +1,42 @@
 import { expect, test } from "@playwright/test";
-import { Keypair, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { SENDER_TIP_LAMPORTS } from "../src/lib/allocation/rules";
 import { broadcastSender, carriesSenderTip, composeSwap, senderEndpoint, senderTipAccount, signatureFeeLamports } from "../src/lib/allocation/sender";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 
 function fixture() {
   const wallet = Keypair.generate();
-  const payer = Keypair.generate();
   const parts = {
     computeBudgetInstructions: [], setupInstructions: [], addressLookupTableAddresses: [],
     swapInstruction: { programId: SystemProgram.programId.toBase58(), accounts: [{ pubkey: wallet.publicKey.toBase58(), isSigner: true, isWritable: true }], data: "" },
   };
-  return { wallet, payer, options: { wallet: wallet.publicKey, tipPayer: payer.publicKey, tipAccount: senderTipAccount(0), parts, lookupTables: [], blockhash: Keypair.generate().publicKey.toBase58() } };
+  return { wallet, options: { wallet: wallet.publicKey, tipAccount: senderTipAccount(0), parts, lookupTables: [], blockhash: Keypair.generate().publicKey.toBase58() } };
 }
 
-test("the sponsor never signs a Jupiter instruction that can access its funds", () => {
-  const { options, payer } = fixture();
-  options.parts.swapInstruction.accounts.push({ pubkey: payer.publicKey.toBase58(), isSigner: false, isWritable: true });
-  expect(() => composeSwap(options)).toThrow(/tip wallet/);
-});
-
-test("the sponsor cannot also be the customer's wallet", () => {
+test("a route that names any signer but the holder is never offered for signing", () => {
   const { options } = fixture();
-  expect(() => composeSwap({ ...options, wallet: options.tipPayer })).toThrow(/tip wallet/);
+  options.parts.swapInstruction.accounts.push({ pubkey: Keypair.generate().publicKey.toBase58(), isSigner: true, isWritable: true });
+  expect(() => composeSwap(options)).toThrow(/unexpected signer/);
 });
 
 test("having the tip accounts present is not proof of the correct tip", () => {
   const { options } = fixture();
-  const message = new TransactionMessage({ payerKey: options.wallet, recentBlockhash: options.blockhash, instructions: [
-    SystemProgram.transfer({ fromPubkey: options.tipPayer, toPubkey: options.tipAccount, lamports: 1 }),
-  ] }).compileToV0Message();
-  expect(carriesSenderTip(new VersionedTransaction(message), options.tipPayer)).toBe(false);
+  const recognised = (fromPubkey: PublicKey, lamports: number) => carriesSenderTip(new VersionedTransaction(new TransactionMessage({ payerKey: options.wallet, recentBlockhash: options.blockhash, instructions: [
+    SystemProgram.transfer({ fromPubkey, toPubkey: options.tipAccount, lamports }),
+  ] }).compileToV0Message()));
+  expect(recognised(options.wallet, SENDER_TIP_LAMPORTS)).toBe(true);
+  expect(recognised(options.wallet, 1)).toBe(false);
+  expect(recognised(Keypair.generate().publicKey, SENDER_TIP_LAMPORTS)).toBe(false);
 });
 
-test("both signatures survive the wallet round trip and are included in the SOL requirement", () => {
-  const { wallet, payer, options } = fixture();
-  const prepared = composeSwap(options)!;
-  prepared.sign([payer]);
-  const signed = VersionedTransaction.deserialize(prepared.serialize());
+test("the holder's one signature survives the wallet round trip and is the only one paid for", () => {
+  const { wallet, options } = fixture();
+  const signed = VersionedTransaction.deserialize(composeSwap(options)!.serialize());
   signed.sign([wallet]);
-  for (let index = 0; index < 2; index += 1) {
-    expect(nacl.sign.detached.verify(signed.message.serialize(), signed.signatures[index], signed.message.staticAccountKeys[index].toBytes())).toBe(true);
-  }
-  expect(signatureFeeLamports(signed)).toBe(10_000n);
-  const rpc = new VersionedTransaction(new TransactionMessage({ payerKey: wallet.publicKey, recentBlockhash: options.blockhash, instructions: [] }).compileToV0Message());
-  expect(signatureFeeLamports(rpc)).toBe(5_000n);
+  expect(signed.signatures).toHaveLength(1);
+  expect(nacl.sign.detached.verify(signed.message.serialize(), signed.signatures[0], wallet.publicKey.toBytes())).toBe(true);
+  expect(signatureFeeLamports(signed)).toBe(5_000n);
 });
 
 test("Sender configuration always selects keyed SWQOS and rejects lookalike RPC hosts", () => {
@@ -62,9 +54,9 @@ test("Sender configuration always selects keyed SWQOS and rejects lookalike RPC 
 });
 
 function signedFixture() {
-  const { wallet, payer, options } = fixture();
+  const { wallet, options } = fixture();
   const transaction = composeSwap(options)!;
-  transaction.sign([wallet, payer]);
+  transaction.sign([wallet]);
   return transaction;
 }
 

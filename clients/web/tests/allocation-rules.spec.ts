@@ -5,7 +5,7 @@ import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocati
 import { findAllocationIndex } from "../src/lib/allocation/indexes";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
 import { carriesSenderTip, composeSwap, senderTipAccount } from "../src/lib/allocation/sender";
-import { SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, TRANSACTION_SIZE_LIMIT, countryGate, failedVenueProgram, preflightRefusal, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
+import { SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, TRANSACTION_SIZE_LIMIT, countryGate, failedVenueProgram, preflightRefusal, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, tipOffsetBps, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
 import { listedPositions } from "../src/lib/allocation/positions";
 import { registerTestWallet } from "./test-wallet";
 import { acceptSubmits, answerChain, preparedLeg } from "./execution-fixture";
@@ -530,9 +530,9 @@ test("Sender's tip accounts are ten distinct mainnet addresses", () => {
   for (const account of SENDER_TIP_ACCOUNTS) expect(() => new PublicKey(account)).not.toThrow();
 });
 
-test("a Sender leg is the holder's transaction with Seametry's tip last, signed for by the tip wallet", () => {
-  const wallet = Keypair.generate().publicKey;
-  const tipPayer = Keypair.generate();
+test("a Sender leg is the holder's transaction with the holder's tip last, signed by the holder alone", () => {
+  const holder = Keypair.generate();
+  const wallet = holder.publicKey;
   const tipAccount = senderTipAccount(3);
   const jupiterIx = (programId: string, bytes: number) => ({ programId, accounts: [{ pubkey: wallet.toBase58(), isSigner: true, isWritable: true }], data: Buffer.alloc(bytes, 1).toString("base64") });
   const parts = {
@@ -542,30 +542,38 @@ test("a Sender leg is the holder's transaction with Seametry's tip last, signed 
     addressLookupTableAddresses: [],
   };
   const blockhash = Keypair.generate().publicKey.toBase58();
-  const leg = composeSwap({ wallet, tipPayer: tipPayer.publicKey, tipAccount, parts, lookupTables: [], blockhash })!;
+  const leg = composeSwap({ wallet, tipAccount, parts, lookupTables: [], blockhash })!;
   expect(leg).toBeDefined();
-  // The holder pays the network fee and signs first; the tip wallet is the only other signer.
+  // The holder pays the network fee, the tip, and is the only signer.
   expect(leg.message.staticAccountKeys[0].equals(wallet)).toBe(true);
-  expect(leg.message.header.numRequiredSignatures).toBe(2);
+  expect(leg.message.header.numRequiredSignatures).toBe(1);
   const keys = leg.message.staticAccountKeys;
   const last = leg.message.compiledInstructions.at(-1)!;
   expect(keys[last.programIdIndex].equals(SystemProgram.programId)).toBe(true);
-  expect(keys[last.accountKeyIndexes[0]].equals(tipPayer.publicKey)).toBe(true);
+  expect(keys[last.accountKeyIndexes[0]].equals(wallet)).toBe(true);
   expect(keys[last.accountKeyIndexes[1]].equals(tipAccount)).toBe(true);
   // SystemProgram transfer: a 4-byte instruction index, then the lamports as a little-endian u64.
   expect(Buffer.from(last.data).readBigUInt64LE(4)).toBe(BigInt(SENDER_TIP_LAMPORTS));
   expect(unlistedProgram(leg)).toBeUndefined();
-  expect(carriesSenderTip(leg, tipPayer.publicKey)).toBe(true);
-  expect(carriesSenderTip(leg, Keypair.generate().publicKey)).toBe(false);
-
-  // Partly signed for the tip wallet, the holder's slot stays empty for the wallet.
-  leg.sign([tipPayer]);
-  expect(leg.signatures[0].every((byte) => byte === 0)).toBe(true);
-  expect(leg.signatures[1].some((byte) => byte !== 0)).toBe(true);
+  expect(carriesSenderTip(leg)).toBe(true);
+  leg.sign([holder]);
+  expect(leg.signatures[0].some((byte) => byte !== 0)).toBe(true);
 
   // A route too big to carry the tip is not offered at all.
   const oversized = { ...parts, swapInstruction: jupiterIx("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4", TRANSACTION_SIZE_LIMIT) };
-  expect(composeSwap({ wallet, tipPayer: tipPayer.publicKey, tipAccount, parts: oversized, lookupTables: [], blockhash })).toBeUndefined();
+  expect(composeSwap({ wallet, tipAccount, parts: oversized, lookupTables: [], blockhash })).toBeUndefined();
+});
+
+test("the routing fee is lowered, rounding up, by the tip's worth and never below zero", () => {
+  // A tip worth 750 USDC atoms on a 1 USDC leg is 7.5 basis points: 8 come off.
+  expect(tipOffsetBps(750n, 1_000_000n, 25)).toBe(8);
+  // On 100 USDC it is under one basis point, and still one comes off.
+  expect(tipOffsetBps(750n, 100_000_000n, 25)).toBe(1);
+  // Worth more than the fee: the fee is gone, never negative.
+  expect(tipOffsetBps(2_000n, 1_000_000n, 10)).toBe(10);
+  expect(tipOffsetBps(750n, 0n, 15)).toBe(15);
+  // A tip that divides exactly is not rounded past itself.
+  expect(tipOffsetBps(500n, 1_000_000n, 25)).toBe(5);
 });
 
 test("a preflight refusal is classified by what refused it", () => {

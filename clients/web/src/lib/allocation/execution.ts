@@ -6,7 +6,7 @@ import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { MIN_LEG_USDC_ATOMS, PRIORITY_FEE, SENDER_MAX_ACCOUNTS, SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, SLIPPAGE_BPS, failedVenueProgram, preflightRefusal, QUOTE_TTL_MS, USDC_MINT, USDC_SCALE, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, unlistedProgram } from "./rules";
+import { MIN_LEG_USDC_ATOMS, PRIORITY_FEE, SENDER_MAX_ACCOUNTS, SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, SLIPPAGE_BPS, failedVenueProgram, preflightRefusal, QUOTE_TTL_MS, TIP_VALUE_TTL_MS, USDC_MINT, USDC_SCALE, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, tipOffsetBps, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
 import { broadcastSender, carriesSenderTip, composeSwap, senderTipAccount, signatureFeeLamports, type JupiterInstructions } from "./sender";
@@ -85,29 +85,44 @@ async function refuseUnfunded(
 type JupiterSwap = { swapTransaction: string; lastValidBlockHeight: number; prioritizationFeeLamports?: number };
 
 /**
- * A leg ready to simulate and sign. landing "sender" carries a tip from
- * Seametry's tip wallet, already signed for, and is sent through Helius
- * Sender; "rpc" is Jupiter's own transaction, sent through the RPC.
+ * A leg ready to simulate and sign. landing "sender" carries the holder's
+ * tip to Helius Sender and is sent there; "rpc" is Jupiter's own
+ * transaction, sent through the RPC.
  */
 type Built = { transaction: VersionedTransaction; lastValidBlockHeight: number; prioritizationFeeLamports: number; landing: "sender" | "rpc" };
 type Routed = { quote: JupiterQuote; built: Built; simulation: Awaited<ReturnType<Connection["simulateTransaction"]>>; receivedAt: Date };
 
+/** SOL the holder's wallet pays to send the leg: signatures, the route's priority fee and, through Sender, the tip. */
+function sendingLamports(built: Built): bigint {
+  return signatureFeeLamports(built.transaction) + BigInt(built.prioritizationFeeLamports) + (built.landing === "sender" ? BigInt(SENDER_TIP_LAMPORTS) : 0n);
+}
+
+const SOL_MINT = "So11111111111111111111111111111111111111112";
+let tipValue: { usdcAtoms: Promise<bigint>; at: number } | undefined;
+
 /**
- * Whether Seametry's tip wallet can pay one more tip and stay rent exempt: a
- * system account below its rent-exempt minimum cannot send, so a tip from an
- * emptied wallet would fail the holder's whole swap.
+ * Sender's tip in USDC atoms, rounded up, from one Jupiter quote of 1 SOL
+ * reused for TIP_VALUE_TTL_MS: one more request a minute against Jupiter's
+ * one a second, rather than one per leg. A failed quote is not kept.
  */
-async function tipWalletCanPay(connection: Connection, tipPayer: PublicKey): Promise<boolean> {
-  const [balance, floor] = await Promise.all([connection.getBalance(tipPayer, "confirmed"), connection.getMinimumBalanceForRentExemption(0)]);
-  return balance >= floor + SENDER_TIP_LAMPORTS;
+function senderTipUsdcAtoms(config: AllocationConfig): Promise<bigint> {
+  if (tipValue && Date.now() - tipValue.at < TIP_VALUE_TTL_MS) return tipValue.usdcAtoms;
+  const query = new URLSearchParams({ inputMint: SOL_MINT, outputMint: USDC_MINT, amount: "1000000000", slippageBps: String(SLIPPAGE_BPS) });
+  const entry = {
+    usdcAtoms: jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${query}`).then((quote) => (BigInt(quote.outAmount) * BigInt(SENDER_TIP_LAMPORTS) + 999_999_999n) / 1_000_000_000n),
+    at: Date.now(),
+  };
+  entry.usdcAtoms.catch(() => { if (tipValue === entry) tipValue = undefined; });
+  tipValue = entry;
+  return entry.usdcAtoms;
 }
 
 /**
- * Builds the leg for Sender: Jupiter's swap instructions, the tip last, the
- * tip wallet's signature in place. Undefined when the route will not fit a
- * packet with the tip, which the caller answers with Jupiter's own build.
+ * Builds the leg for Sender: Jupiter's swap instructions with the holder's
+ * tip last. Undefined when the route will not fit a packet with the tip,
+ * which the caller answers with Jupiter's own build.
  */
-async function buildForSender(config: AllocationConfig, sender: NonNullable<AllocationConfig["sender"]>, connection: Connection, wallet: PublicKey, swapBody: string): Promise<Built | undefined> {
+async function buildForSender(config: AllocationConfig, connection: Connection, wallet: PublicKey, swapBody: string): Promise<Built | undefined> {
   const parts = await jupiter<JupiterInstructions>(config.jupiterApiKey, "/swap-instructions", { method: "POST", body: swapBody });
   const tables = await Promise.all(parts.addressLookupTableAddresses.map(async (address) => {
     const table = (await connection.getAddressLookupTable(new PublicKey(address))).value;
@@ -115,9 +130,8 @@ async function buildForSender(config: AllocationConfig, sender: NonNullable<Allo
     return table;
   }));
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
-  const transaction = composeSwap({ wallet, tipPayer: sender.tipPayer.publicKey, tipAccount: senderTipAccount(randomInt(SENDER_TIP_ACCOUNTS.length)), parts, lookupTables: tables, blockhash });
+  const transaction = composeSwap({ wallet, tipAccount: senderTipAccount(randomInt(SENDER_TIP_ACCOUNTS.length)), parts, lookupTables: tables, blockhash });
   if (!transaction) return undefined;
-  transaction.sign([sender.tipPayer]);
   return { transaction, lastValidBlockHeight, prioritizationFeeLamports: parts.prioritizationFeeLamports ?? 0, landing: "sender" };
 }
 
@@ -151,30 +165,32 @@ async function refusingVenue(config: AllocationConfig, logs: string[]): Promise<
  * technical detail. `beforeSimulating` runs the caller's funding checks on
  * each built swap, since its priority fee is part of what the wallet pays.
  *
- * With Sender configured and the tip wallet able to pay, the route is capped
- * at SENDER_MAX_ACCOUNTS and built with the tip for Sender; a route that
- * still will not fit, or a tip wallet that cannot pay, falls back to
- * Jupiter's own build sent through the RPC, as every leg was before Sender.
+ * With Sender configured, the route is capped at SENDER_MAX_ACCOUNTS and
+ * built with the tip for Sender; a route that still will not fit falls back
+ * to Jupiter's own build sent through the RPC, as every leg was before
+ * Sender, and keeps the lowered fee it was quoted at.
+ *
+ * `feeAccount` is undefined when the tip took the whole fee: Jupiter
+ * refuses a fee account with a zero platform fee ("platformFee must be
+ * greater than 0 when feeAccount is set", measured 14 October 2026).
  */
 async function routeAndSimulate(
   config: AllocationConfig,
   connection: Connection,
   wallet: PublicKey,
   query: URLSearchParams,
-  feeAccount: PublicKey,
+  feeAccount: PublicKey | undefined,
   watched: PublicKey[],
   subject: string,
   beforeSimulating: (built: Built) => Promise<void>,
 ): Promise<Routed> {
-  const sender = config.sender && (await tipWalletCanPay(connection, config.sender.tipPayer.publicKey)) ? config.sender : undefined;
-  if (config.sender && !sender) console.warn(`Sender tip wallet ${config.sender.tipPayer.publicKey.toBase58()} cannot pay a tip; ${subject} goes through the RPC.`);
-  if (sender) query.set("maxAccounts", String(SENDER_MAX_ACCOUNTS));
+  if (config.senderUrl) query.set("maxAccounts", String(SENDER_MAX_ACCOUNTS));
   let avoided: string | undefined;
   for (;;) {
     const quote = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${query}`);
     const receivedAt = new Date();
-    const swapBody = JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount.toBase58(), prioritizationFeeLamports: PRIORITY_FEE });
-    const built = (sender ? await buildForSender(config, sender, connection, wallet, swapBody) : undefined) ?? (await buildWithJupiter(config, swapBody));
+    const swapBody = JSON.stringify({ quoteResponse: quote, userPublicKey: wallet.toBase58(), dynamicComputeUnitLimit: true, feeAccount: feeAccount?.toBase58(), prioritizationFeeLamports: PRIORITY_FEE });
+    const built = (config.senderUrl ? await buildForSender(config, connection, wallet, swapBody) : undefined) ?? (await buildWithJupiter(config, swapBody));
     const transaction = built.transaction;
     const unlisted = unlistedProgram(transaction);
     if (unlisted) throw new Refusal(502, `The route Jupiter built for ${subject} invokes ${unlisted}, which is not on this deployment's program allowlist, so it was not offered for signing.`);
@@ -223,17 +239,20 @@ export type PreparedLeg = {
   /** The block height after which this transaction can never land, from Jupiter's /swap or the blockhash Sender's build used. */
   lastValidBlockHeight: number;
   priorityFeeLamports: string;
-  /** How the leg reaches mainnet: through Helius Sender with Seametry's tip, or through the RPC. */
+  /** How the leg reaches mainnet: through Helius Sender with a tip, or through the RPC. */
   landing: "sender" | "rpc";
-  /** Lamports Seametry's tip wallet pays for a Sender leg; "0" for an RPC leg. Never the holder's. */
+  /** Lamports this leg's transaction tips Sender from the holder's wallet; "0" for an RPC leg. */
   tipLamports: string;
   /**
    * Set on purchases only, where a batch sums it: SOL this leg spends or
-   * locks, rent for a new holding account plus signature and priority fees.
+   * locks, rent for a new holding account plus signature and priority fees
+   * and any tip.
    */
   solNeededLamports?: string;
-  /** The tier this leg was quoted at, from the plan's size. */
+  /** What this leg was quoted at: the plan size's tier less tipOffsetBps. */
   routingFeeBps: number;
+  /** Basis points taken off the tier so the routing fee covers the tip; 0 without Sender. */
+  tipOffsetBps: number;
   /** USDC atoms the simulation moved into Seametry's fee account. */
   routingFeeAtoms: string;
   simulated: BalanceChange[];
@@ -258,7 +277,6 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
   if (plan.size !== planMints.length) throw new Refusal(400, "The plan names a constituent more than once.");
   if (!plan.has(mint)) throw new Refusal(400, `The plan does not include ${lot.instrument.symbol ?? mint}, the constituent this leg buys.`);
   planMints.forEach(admittedLot);
-  const feeBps = routingFeeBps(plan.size);
   let wallet: PublicKey;
   try {
     wallet = new PublicKey(walletText);
@@ -270,6 +288,9 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
   if (inAtoms > cap) {
     throw new Refusal(400, `${lot.instrument.symbol ?? mint} may spend at most ${lot.capacity_usdc} USDC under the captured capacity decision.`);
   }
+  const tierBps = routingFeeBps(plan.size);
+  const tipBps = config.senderUrl ? tipOffsetBps(await senderTipUsdcAtoms(config), inAtoms, tierBps) : 0;
+  const feeBps = tierBps - tipBps;
 
   const connection = new Connection(config.mainnetRpcUrl, "confirmed");
   // The fee is paid into the fee wallet's USDC account; Jupiter will not open
@@ -288,11 +309,11 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
 
   let solNeeded = 0n;
   const { quote, built, simulation, receivedAt } = await routeAndSimulate(
-    config, connection, wallet, quoteParams(mint, inAtoms, feeBps), feeAccount, watched, `buying ${lot.instrument.symbol ?? mint}`,
+    config, connection, wallet, quoteParams(mint, inAtoms, feeBps), feeBps > 0 ? feeAccount : undefined, watched, `buying ${lot.instrument.symbol ?? mint}`,
     // Checked before simulating because simulation reports a short wallet as
     // the System program's error 0x1 inside the account opening instruction,
     // which names neither the shortfall nor what to do about it.
-    async (candidate) => { solNeeded = await refuseUnfunded(connection, lot, mint, inAtoms, signatureFeeLamports(candidate.transaction) + BigInt(candidate.prioritizationFeeLamports), before); },
+    async (candidate) => { solNeeded = await refuseUnfunded(connection, lot, mint, inAtoms, sendingLamports(candidate), before); },
   );
   const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
   const after = simulation.value.accounts ?? [];
@@ -343,6 +364,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     tipLamports: built.landing === "sender" ? String(SENDER_TIP_LAMPORTS) : "0",
     solNeededLamports: solNeeded.toString(),
     routingFeeBps: feeBps,
+    tipOffsetBps: tipBps,
     routingFeeAtoms: feeAtoms.toString(),
     simulated,
     transaction: Buffer.from(built.transaction.serialize()).toString("base64"),
@@ -404,7 +426,7 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
   const feeAccount = getAssociatedTokenAddressSync(new PublicKey(USDC_MINT), new PublicKey(config.feeWallet), true, new PublicKey(USDC_TOKEN_PROGRAM));
   if (!(await connection.getAccountInfo(feeAccount, "confirmed"))) throw new Refusal(503, "Seametry's USDC fee account is not open on mainnet. Seametry must open it before selling here is available.");
 
-  const feeBps = routingFeeBps(1);
+  const tierBps = routingFeeBps(1);
   const usdcAccount = getAssociatedTokenAddressSync(new PublicKey(USDC_MINT), wallet, false, new PublicKey(USDC_TOKEN_PROGRAM));
   const lotAccount = getAssociatedTokenAddressSync(new PublicKey(mint), wallet, false, new PublicKey(lot.token_program));
   const watched = [wallet, usdcAccount, lotAccount, feeAccount];
@@ -412,11 +434,20 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
   const held = tokenAmount(before[2]?.data);
   if (held < inAtoms) throw new Refusal(402, `This wallet holds ${formatAmount(held, lot.decimals)} ${lot.instrument.symbol ?? mint}; the sale asks for ${formatAmount(inAtoms, lot.decimals)}.`);
   const rent = before[1] ? 0n : BigInt(await connection.getMinimumBalanceForRentExemption(165));
+  // A sale's fee comes out of the USDC it receives, which is unknown until
+  // quoted, so one quote at the full tier sizes the tip's offset. That costs
+  // one more Jupiter request per sale, at one a second.
+  let tipBps = 0;
+  if (config.senderUrl) {
+    const sized = await jupiter<JupiterQuote>(config.jupiterApiKey, `/quote?${sellQuoteParams(mint, inAtoms, tierBps)}`);
+    tipBps = tipOffsetBps(await senderTipUsdcAtoms(config), BigInt(sized.outAmount), tierBps);
+  }
+  const feeBps = tierBps - tipBps;
 
   const { quote, built, simulation, receivedAt } = await routeAndSimulate(
-    config, connection, wallet, sellQuoteParams(mint, inAtoms, feeBps), feeAccount, watched, `selling ${lot.instrument.symbol ?? mint}`,
+    config, connection, wallet, sellQuoteParams(mint, inAtoms, feeBps), feeBps > 0 ? feeAccount : undefined, watched, `selling ${lot.instrument.symbol ?? mint}`,
     async (candidate) => {
-      const needed = rent + signatureFeeLamports(candidate.transaction) + BigInt(candidate.prioritizationFeeLamports);
+      const needed = rent + sendingLamports(candidate);
       const solHeld = BigInt(before[0]?.lamports ?? 0);
       if (solHeld < needed) throw new Refusal(402, `This wallet holds ${formatAmount(solHeld, 9)} SOL; the sale needs ${formatAmount(needed, 9)} SOL for network fees${rent ? " and a USDC token account" : ""}. Add SOL before selling.`);
     },
@@ -444,7 +475,7 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
     floorAtoms: quote.otherAmountThreshold, outScale: 6, route: quote.routePlan.map((hop) => hop.swapInfo.label),
     contextSlot: quote.contextSlot, receivedAt: receivedAt.toISOString(), expiresAt: expiresAt.toISOString(), lastValidBlockHeight: built.lastValidBlockHeight,
     priorityFeeLamports: String(built.prioritizationFeeLamports), landing: built.landing, tipLamports: built.landing === "sender" ? String(SENDER_TIP_LAMPORTS) : "0", routingFeeBps: feeBps,
-    routingFeeAtoms: feeAtoms.toString(), simulated, transaction: Buffer.from(built.transaction.serialize()).toString("base64"), approval,
+    tipOffsetBps: tipBps, routingFeeAtoms: feeAtoms.toString(), simulated, transaction: Buffer.from(built.transaction.serialize()).toString("base64"), approval,
   };
 }
 
@@ -477,8 +508,8 @@ export async function submitLeg(config: AllocationConfig, signedBase64: string, 
   }
 
   const connection = new Connection(config.mainnetRpcUrl, "confirmed");
-  if (config.sender && carriesSenderTip(transaction, config.sender.tipPayer.publicKey)) {
-    return sendThroughSender(config, config.sender.url, connection, transaction);
+  if (config.senderUrl && carriesSenderTip(transaction)) {
+    return sendThroughSender(config, config.senderUrl, connection, transaction);
   }
   try {
     return await connection.sendRawTransaction(transaction.serialize(), { skipPreflight: false, maxRetries: 3 });

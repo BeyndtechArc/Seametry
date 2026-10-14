@@ -4,9 +4,9 @@ import bs58 from "bs58";
 import { Refusal } from "../refusal";
 
 // A leg sent through Helius Sender: Jupiter's swap instructions with one more,
-// a tip from Seametry's tip wallet to a Sender tip account. Pure, so the shape
-// is tested without a network (tests/allocation-rules.spec.ts); the server
-// fetches the parts and signs for the tip wallet.
+// a tip from the holder's wallet to a Sender tip account, signed in the same
+// approval as the swap. Pure, so the shape is tested without a network
+// (tests/sender.spec.ts); the server fetches the parts.
 
 export type JupiterInstruction = { programId: string; accounts: { pubkey: string; isSigner: boolean; isWritable: boolean }[]; data: string };
 
@@ -35,14 +35,13 @@ export function senderTipAccount(index: number): PublicKey {
 }
 
 /**
- * The leg as one versioned transaction the holder pays for: compute budget,
- * account setup, the swap, cleanup, and last the tip, so the swap's own
- * instruction indices are the ones Jupiter built. Undefined when it would
+ * The leg as one versioned transaction the holder signs alone: compute
+ * budget, account setup, the swap, cleanup, and last the tip, so the swap's
+ * own instruction indices are the ones Jupiter built. Undefined when it would
  * not fit a packet, which the caller answers with Jupiter's RPC build.
  */
-export function composeSwap({ wallet, tipPayer, tipAccount, parts, lookupTables, blockhash }: {
+export function composeSwap({ wallet, tipAccount, parts, lookupTables, blockhash }: {
   wallet: PublicKey;
-  tipPayer: PublicKey;
   tipAccount: PublicKey;
   parts: JupiterInstructions;
   lookupTables: AddressLookupTableAccount[];
@@ -55,22 +54,19 @@ export function composeSwap({ wallet, tipPayer, tipAccount, parts, lookupTables,
     ...(parts.cleanupInstruction ? [instruction(parts.cleanupInstruction)] : []),
     ...(parts.otherInstructions ?? []).map(instruction),
   ];
-  // Signer privileges apply across the whole message, including CPI. Never
-  // lend the sponsor's authority to any provider-supplied instruction.
-  if (wallet.equals(tipPayer) || route.some((ix) => ix.programId.equals(tipPayer) || ix.keys.some((key) => key.pubkey.equals(tipPayer)))) {
-    throw new Refusal(502, "The route cannot use Seametry's tip wallet for anything except its landing tip.", { notSent: true });
-  }
+  // The holder approves the whole message, so a route that names any other
+  // signer is asking the wallet to sign for something it was not shown.
   if (route.some((ix) => ix.keys.some((key) => key.isSigner && !key.pubkey.equals(wallet)))) {
     throw new Refusal(502, "The route asks for an unexpected signer, so it was not offered for signing.", { notSent: true });
   }
   if (!SENDER_TIP_ACCOUNTS.some((account) => account === tipAccount.toBase58())) throw new Error("Unknown Sender tip account.");
   try {
-    const instructions = [...route, SystemProgram.transfer({ fromPubkey: tipPayer, toPubkey: tipAccount, lamports: SENDER_TIP_LAMPORTS })];
+    const instructions = [...route, SystemProgram.transfer({ fromPubkey: wallet, toPubkey: tipAccount, lamports: SENDER_TIP_LAMPORTS })];
     const message = new TransactionMessage({ payerKey: wallet, recentBlockhash: blockhash, instructions }).compileToV0Message(lookupTables);
     const transaction = new VersionedTransaction(message);
     // Submit recognizes the tip without another lookup-table RPC request.
     // If compilation put the recipient in a table, use the untipped fallback.
-    if (!carriesSenderTip(transaction, tipPayer)) return undefined;
+    if (!carriesSenderTip(transaction)) return undefined;
     return transaction.serialize().length <= TRANSACTION_SIZE_LIMIT ? transaction : undefined;
   } catch {
     // web3.js throws when the message overruns its buffer: the same answer.
@@ -78,19 +74,22 @@ export function composeSwap({ wallet, tipPayer, tipAccount, parts, lookupTables,
   }
 }
 
-/** True when the transaction pays a Sender tip from this tip wallet, which is how submit knows where to send it. */
-export function carriesSenderTip(transaction: VersionedTransaction, tipPayer: PublicKey): boolean {
-  const { staticAccountKeys: keys, compiledInstructions, header } = transaction.message;
+/**
+ * True when the transaction's last instruction pays Sender's tip from its fee
+ * payer, the holder, which is how submit knows where to send it. Submit only
+ * reaches this for a message whose digest Seametry approved.
+ */
+export function carriesSenderTip(transaction: VersionedTransaction): boolean {
+  const { staticAccountKeys: keys, compiledInstructions } = transaction.message;
   const last = compiledInstructions.at(-1);
   if (!last || !keys[last.programIdIndex]?.equals(SystemProgram.programId) || last.accountKeyIndexes.length !== 2) return false;
   const [from, to] = last.accountKeyIndexes;
   const data = Buffer.from(last.data);
-  return from > 0 && from < header.numRequiredSignatures && !!keys[from]?.equals(tipPayer)
-    && SENDER_TIP_ACCOUNTS.some((account) => account === keys[to]?.toBase58()) && data.length === 12
+  return from === 0 && SENDER_TIP_ACCOUNTS.some((account) => account === keys[to]?.toBase58()) && data.length === 12
     && data.readUInt32LE(0) === 2 && data.readBigUInt64LE(4) === BigInt(SENDER_TIP_LAMPORTS);
 }
 
-/** Base network fee, not the Sender tip. The holder pays for both signatures. */
+/** Base network fee, not the Sender tip: 5,000 lamports a signature. */
 export function signatureFeeLamports(transaction: VersionedTransaction): bigint {
   return BigInt(transaction.message.header.numRequiredSignatures) * 5_000n;
 }

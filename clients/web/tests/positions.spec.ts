@@ -71,7 +71,7 @@ test("a sale steps from amount to review in the sheet, then hands over to the to
     positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
   } }));
   await page.route("**/api/allocation/sell/prepare", (route) => route.fulfill({ json: preparedLeg({
-    inAtoms: "5000000", inScale: lot.decimals, outAtoms: "1000000", floorAtoms: "990000", routingFeeBps: 25, routingFeeAtoms: "2500", priorityFeeLamports: "215264",
+    inAtoms: "5000000", inScale: lot.decimals, outAtoms: "1000000", floorAtoms: "990000", routingFeeBps: 17, tipOffsetBps: 8, routingFeeAtoms: "1700", priorityFeeLamports: "215264",
     simulated: [{ atoms: "1000000", scale: 6, unit: "USDC" }], landing: "sender", tipLamports: "5000",
   }) }));
   await acceptSubmits(page);
@@ -89,8 +89,9 @@ test("a sale steps from amount to review in the sheet, then hands over to the to
   await sheet.getByRole("button", { name: "Review sale" }).click();
   await expect(sheet.getByLabel("Amount of AMZNx to sell")).toHaveCount(0);
   await expect(sheet.getByText("Simulated on mainnet for this wallet: +1.000000 USDC.")).toBeVisible();
-  // A Sender leg names its tip, and that Seametry pays it.
-  await expect(sheet.getByText("Landing tip, paid by Seametry")).toBeVisible();
+  // A Sender leg names its tip, and how far the routing fee came down to cover it.
+  await expect(sheet.getByText("Seametry routing fee, 0.17%, 0.08% lower to cover the landing tip")).toBeVisible();
+  await expect(sheet.getByText("Landing tip to Helius Sender")).toBeVisible();
   await expect(sheet.getByText("0.000005000 SOL")).toBeVisible();
   await sheet.getByRole("button", { name: "Sign sale" }).click();
 

@@ -114,19 +114,36 @@ export const SENDER_TIP_ACCOUNTS = [
 
 /**
  * The tip each leg pays to land through Sender's SWQOS-only route, its
- * documented minimum on 14 October 2026. Seametry's tip wallet pays it, not
- * the holder, out of the routing fee (Storm, 14 October 2026), so it is a
- * cost to Seametry and a disclosed line, never a charge to the wallet.
- * Sender's other route needs 0.001 SOL a leg.
+ * documented minimum on 14 October 2026. Sender's other route needs 0.001
+ * SOL a leg. The holder's wallet pays it inside the swap it signs, and the
+ * routing fee is lowered by its value (Storm, 14 October 2026), so Seametry
+ * bears it without a wallet or key of its own that could run dry unseen.
  */
 export const SENDER_TIP_LAMPORTS = 5_000;
 
 /**
- * Accounts a quote may use when the leg also carries the tip: the tip
- * wallet's signature and two static keys cost 128 bytes, and a route at
- * Jupiter's default of 64 accounts can then outgrow a transaction.
+ * Accounts a quote may use when the leg also carries the tip, which adds a
+ * static key and an instruction. A route that still outgrows a transaction
+ * falls back to Jupiter's own build through the RPC.
  */
 export const SENDER_MAX_ACCOUNTS = 48;
+
+/** How long one Jupiter quote of SOL in USDC prices the tip for every leg prepared after it. */
+export const TIP_VALUE_TTL_MS = 60_000;
+
+/**
+ * Basis points taken off the routing fee so it covers a tip worth
+ * `tipUsdcAtoms`, on a leg whose USDC side is `notionalAtoms`. Jupiter takes
+ * whole basis points, so this rounds up: the holder is never left paying any
+ * part of the tip the fee can cover. It stops at `tierBps`, where the fee is
+ * gone and the remainder of the tip is the holder's, which the order sheet
+ * shows as a SOL line.
+ */
+export function tipOffsetBps(tipUsdcAtoms: bigint, notionalAtoms: bigint, tierBps: number): number {
+  if (notionalAtoms <= 0n) return tierBps;
+  const bps = (tipUsdcAtoms * 10_000n + notionalAtoms - 1n) / notionalAtoms;
+  return bps >= BigInt(tierBps) ? tierBps : Number(bps);
+}
 
 /** The packet limit a serialized transaction must fit, in bytes. */
 export const TRANSACTION_SIZE_LIMIT = 1_232;

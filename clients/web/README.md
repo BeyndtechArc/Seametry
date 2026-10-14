@@ -141,39 +141,35 @@ five are set the page says which are missing and nothing can be bought.
 - `ALLOCATION_ASSUME_COUNTRY`: local runs only, where no host sets the
   country header.
 
-### Optional Helius Sender delivery
+### Helius Sender delivery
 
-Purchases, single sales and Sell All share this delivery path. Configure
-these in the **web deployment's server environment** (Vercel for the current
-web app), not only the Go VM's `server/deploy/.env`. Never use `NEXT_PUBLIC_`.
+Purchases, single sales and Sell All share this delivery path. It needs no
+variable of its own: with `MAINNET_RPC_URL` a keyed HTTPS Helius RPC URL, the
+Sender endpoint is derived from that key. Never use `NEXT_PUBLIC_`.
 
-- `ALLOCATION_TIP_PAYER_SECRET_KEY`: a dedicated, low-balance Solana wallet's
-  base58 secret key. Fund it with SOL separately from the customer wallet.
-  Do not use a treasury or user key. The server signs only its fixed tip;
-  provider instructions are forbidden from accessing this wallet.
-- `HELIUS_SENDER_URL`: optional when `MAINNET_RPC_URL` is a keyed HTTPS Helius
-  RPC URL; the Sender endpoint is derived using that key. Otherwise set
-  `https://sender.helius-rpc.com/fast?api-key=YOUR_KEY&swqos_only=true`.
-  An override must be a keyed HTTPS Helius Sender `/fast` endpoint. The code
-  enforces `swqos_only=true` for its 5,000-lamport tip. Partial or malformed
-  Sender configuration fails rather than silently running without it.
+- `HELIUS_SENDER_URL`: optional override, set in the **web deployment's
+  server environment** (Vercel for the current web app). It must be a keyed
+  HTTPS Helius Sender `/fast` endpoint, such as
+  `https://sender.helius-rpc.com/fast?api-key=YOUR_KEY&swqos_only=true`; the
+  code enforces `swqos_only=true` for its 5,000-lamport tip, and a malformed
+  override fails rather than silently running without it.
 
-Redeploy the web app after setting the variables. Existing routing-fee tiers
-are unchanged. Seametry pays 0.000005 SOL per landed Sender leg from its tip
-wallet (0.000035 SOL for seven landed legs). This is an operating cost paid
-from margin, **not** an automatic conversion of USDC fees to SOL. Keep the
-wallet above its rent-exempt floor plus the tips for concurrent purchases;
-monitor and replenish it. A preparation checks one tip, not a reservation
-across all concurrent customers. A depleted wallet falls back to RPC at
-preparation; depletion after signing can still make a leg fail preflight.
+Each Sender leg tips 0.000005 SOL from the holder's own wallet, as the last
+instruction of the swap the holder signs, so there is one signature and no
+Seametry wallet to fund or watch. Seametry bears the tip by lowering that
+leg's routing fee by the tip's worth: one Jupiter quote of 1 SOL in USDC,
+reused for a minute, prices it, and the fee comes down by that many basis
+points rounded up, never below zero. A sale's fee is taken from the USDC it
+receives, so a sale is quoted once at the full tier to size the reduction,
+one more Jupiter request per sale. The order sheet shows the lowered rate,
+the reduction, and the tip in SOL.
 
-The customer still pays account-opening rent and Solana network fees.
-Sender legs require two signatures, a 10,000-lamport base fee rather than
-5,000, plus the quoted priority fee. Funding checks include both signatures;
-the sponsor's tip is disclosed separately and excluded from customer costs.
+The customer pays account-opening rent, the 5,000-lamport signature fee, the
+quoted priority fee and the tip, all in SOL, and the funding check includes
+each of them.
 
-No Sender configuration, insufficient tip balance, or a route too large for
-the 1,232-byte packet uses the existing RPC path. RPC legs in one execution
+No Sender endpoint, or a route too large for the 1,232-byte packet, uses the
+existing RPC path; such a leg keeps the lowered fee it was quoted at. RPC legs in one execution
 are sent sequentially, at least 1.1 seconds apart; Sender legs can submit
 together. This pacing is per execution, not a project-wide rate limiter.
 Signed preflight, message approval, issuer policy and quote expiry remain
