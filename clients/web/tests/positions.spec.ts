@@ -100,6 +100,46 @@ test("a sale steps from amount to review in the sheet, then hands over to the to
   await expect(toasts).toHaveCount(0);
 });
 
+test("a finished toast leaves when its countdown runs out, and pointing at it holds it", async ({ page }) => {
+  // A sale that landed a moment ago, as the engine records it.
+  await page.addInitScript((owner) => {
+    const now = new Date().toISOString();
+    localStorage.setItem("seametry:executions:v1", JSON.stringify([{
+      id: "landed", kind: "sell", wallet: owner, network: "mainnet", subject: "AMZNx", createdAt: now, seen: false,
+      legs: [{ signature: "5".repeat(30) + "Kq".repeat(28), mint: "m", symbol: "AMZNx", spend: { atoms: "5000000", scale: 8, unit: "AMZNx" }, phase: "landed", signedAt: now, endedAt: now, received: { atoms: "1000000", scale: 6, unit: "USDC" } }],
+    }]));
+  }, wallet);
+  await page.goto("/app/baskets");
+  const toast = page.getByRole("region", { name: "Requests in progress" }).getByRole("status").filter({ hasText: "Sold AMZNx" });
+  await expect(toast).toBeVisible();
+  await toast.hover();
+  // Held for longer than the countdown (motion.duration.linger, 6 seconds).
+  await page.waitForTimeout(7_000);
+  await expect(toast).toBeVisible();
+  await page.mouse.move(0, 0);
+  await expect(toast).toHaveCount(0, { timeout: 8_000 });
+});
+
+test("a sheet plays its exit before it closes", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true });
+  const lot = admissions.instruments.find((entry) => entry.instrument.symbol === "AMZNx")!;
+  await page.route("**/api/allocation/positions?**", (route) => route.fulfill({ json: {
+    wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
+    positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
+  } }));
+  await page.goto("/app/positions");
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await page.getByRole("button", { name: "Trade AMZNx" }).click();
+  const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
+  await expect(sheet).toBeVisible();
+  await sheet.getByRole("button", { name: "Hide trade sheet" }).click();
+  // Still on screen, sliding out, before it closes.
+  await expect(page.locator("dialog[data-closing]")).toHaveCount(1);
+  await expect(sheet).toHaveCount(0);
+  await expect(page.locator("dialog[data-closing]")).toHaveCount(0);
+});
+
 test("a sale the network dropped says nothing moved and offers to sell again", async ({ page }) => {
   await registerTestWallet(page, { trusted: true, signs: true });
   const lot = admissions.instruments.find((entry) => entry.instrument.symbol === "AMZNx")!;

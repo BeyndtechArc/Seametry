@@ -252,10 +252,11 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 
 ### Toast
 **Answers:** what is the request I just started doing now that I have moved on, and what do I do next?
-**Anatomy:** a raised plate in the bottom corner (above the phone tab bar): a compact Status mark, a one-line headline ("Buying Prime Seven"), one line of progress or outcome, up to three lot marks, an icon-only dismiss, and at most one next action below. Pressing the body opens the request's Activity record.
-**States:** running (stays while any leg is open); finished (stays six seconds after the last leg ends, then leaves); dismissed. At most three at once, newest nearest the edge.
-**Data:** one execution record; the headline, line and action come from `headline`, `progressLine`, `outcomeLine` and `nextAction` in `lib/execution/record.ts`, so every surface says the same thing.
-**Rules:** never holds the only copy of anything: the record stays in Activity. Not a ceremony; motion is entry, exit and the running mark only. `@seametry/ui/toast`.
+**Anatomy:** a slim raised plate in the bottom corner (above the phone tab bar): a compact Status mark, a one-line headline ("Buying Prime Seven") and up to two lines of progress or outcome; at the right, the one next step as a framed icon (View holdings, Buy again, Read on Solscan, labelled for assistive technology and as a tooltip) beside an icon dismiss. No button row. A finished toast carries a two-pixel countdown bar along its foot. Pressing the body opens the request's Activity record.
+**States:** running (stays while any leg is open, no countdown); finished (the countdown runs `motion.duration.linger`, pointing at or focusing the toast holds it, and its end removes the toast); leaving (drifts right and fades, then unmounts); dismissed. At most three at once, newest nearest the edge.
+**Motion:** enters by rising and fading over `motion.duration.overlay` on `motion.easing.glide`; leaves on `motion.easing.exit`. Under reduced motion the countdown keeps its clock but is not drawn.
+**Data:** one execution record; headline, line and next step come from `lib/execution/record.ts`, so every surface says the same thing.
+**Rules:** never holds the only copy of anything: the record stays in Activity. Not a ceremony. `@seametry/ui/toast`.
 
 ### Activity
 **Answers:** what has this browser bought or sold, did each part land, and what can I do about what did not?
@@ -424,6 +425,7 @@ Amount, plan, Quote block, path, approval Key, expiry. Occludes the page behind;
 **Data:** accessible title, close label and caller-owned content. The component owns no product data.
 **Rules:** use the native dialog focus and Escape contract; restore focus to the opening control; label the dialog from its visible title. An end sheet is for review or a bounded task, never generic navigation. It does not create a second Key. Opening motion uses `duration.sheet`; reduced motion lands immediately.
 
+**Motion:** slides in over `motion.duration.sheet` on `motion.easing.glide` with its backdrop fading in; closing plays the arrival backwards on `motion.easing.exit` and only then closes the dialog, so the page behind stays inert until the sheet has left. `onClosed` runs after that, for a caller that moves focus elsewhere.
 ### Process outcome
 **Answers:** is the signed action still being checked, confirmed, or refused?
 **Anatomy:** large outlined status mark, one short heading, one factual sentence, optional transaction link or technical disclosure.

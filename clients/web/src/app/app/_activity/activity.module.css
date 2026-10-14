@@ -90,28 +90,6 @@
   justify-content: flex-end;
 }
 
-.marks {
-  display: flex;
-  align-items: center;
-}
-
-.marks > * + * {
-  margin-left: calc(var(--sm-space-3) * -1);
-}
-
-.more {
-  display: grid;
-  place-items: center;
-  min-width: var(--sm-space-9);
-  height: var(--sm-space-9);
-  border: 0.5px solid var(--sm-line-strong);
-  border-radius: var(--sm-radius-data);
-  color: var(--sm-text-secondary);
-  background: var(--sm-surface-raised);
-  font-size: var(--sm-font-size-micro);
-  font-variant-numeric: tabular-nums;
-}
-
 .technical summary {
   width: fit-content;
   color: var(--sm-text-secondary);
