@@ -4,7 +4,7 @@ import { describeSplit, formatAmount, formatBalance, parseAmount, splitByWeights
 import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocation/admissions";
 import { findAllocationIndex } from "../src/lib/allocation/indexes";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
-import { countryGate, failedVenueProgram, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
+import { countryGate, failedVenueProgram, preflightRefusal, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
 import { listedPositions } from "../src/lib/allocation/positions";
 import { registerTestWallet } from "./test-wallet";
 import { acceptSubmits, answerChain, preparedLeg } from "./execution-fixture";
@@ -415,7 +415,8 @@ test("a leg Seametry refuses to send is recorded as not sent, and nothing moved"
   expect(asked).toHaveLength(0);
   await toasts.getByRole("button", { name: /show in Activity/ }).click();
   const activity = page.getByRole("dialog", { name: "Activity" });
-  await expect(activity.getByText("Not sent. The transaction was changed after it was approved", { exact: false })).toHaveCount(2);
+  await expect(activity.getByText("Not sent", { exact: true })).toHaveCount(2);
+  await expect(activity.getByText("The transaction was changed after it was approved", { exact: false })).toHaveCount(2);
   await expect(page.getByRole("button", { name: "Buy allocation" })).toBeEnabled();
 });
 
@@ -495,6 +496,25 @@ test("an allocation shows its two waits before the wallet, then hands over", asy
   await expect(dialog.getByTestId("step-register")).toContainText("Approve in your wallet");
   releasePreflight();
   await expect(page.getByRole("dialog", { name: "Purchase stopped" })).toContainText("Nothing was signed or spent");
+});
+
+test("a preflight refusal is classified by what refused it", () => {
+  // The shape web3.js gives a preflight refusal: Jupiter's slippage error,
+  // 6001 (0x1771), raised by the aggregator itself.
+  const slippage = [
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 invoke [1]",
+    "Program log: Error: SlippageToleranceExceeded",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 failed: custom program error: 0x1771",
+  ];
+  expect(preflightRefusal("Simulation failed. Message: Transaction simulation failed: Error processing Instruction 3: custom program error: 0x1771.", slippage)).toEqual({ kind: "slippage" });
+  const goonfi = [
+    "Program goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE failed: custom program error: 0x15",
+    "Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 failed: custom program error: 0x15",
+  ];
+  expect(preflightRefusal("Simulation failed.", goonfi)).toEqual({ kind: "venue", program: "goonuddtQRrWqqn5nFyczVKaie28f3kDkHWkHtURSLE" });
+  expect(preflightRefusal("Simulation failed. Message: Transaction simulation failed: Blockhash not found.", [])).toEqual({ kind: "expired" });
+  expect(preflightRefusal("Simulation failed. Message: Attempt to debit an account but found no record of a prior credit.", ["Transfer: insufficient lamports 10, need 5000"])).toEqual({ kind: "unfunded" });
+  expect(preflightRefusal("Simulation failed.", [])).toEqual({ kind: "other" });
 });
 
 test("a simulation failure inside a venue names that venue, and one inside Jupiter names none", () => {

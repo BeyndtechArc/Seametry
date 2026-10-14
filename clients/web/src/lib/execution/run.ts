@@ -126,10 +126,10 @@ async function send(executionId: string, signature: string, transaction: string,
   let problem: Leg["problem"];
   try {
     const response = await fetch("/api/allocation/submit", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ transaction, approval }) });
-    const body = (await response.json().catch(() => ({}))) as { signature?: string; error?: string; sent?: boolean };
+    const body = (await response.json().catch(() => ({}))) as { signature?: string; error?: string; sent?: boolean; technical?: string };
     if (!response.ok && body.sent === false) {
       phase = "refused";
-      problem = { plain: `${body.error ?? "Seametry refused to send it."} Nothing moved.` };
+      problem = { plain: `${body.error ?? "Seametry refused to send it."} Nothing moved.`, ...(body.technical ? { technical: body.technical } : {}) };
     }
   } catch {
     // The receipt was lost, not the transaction: the watcher reads the chain.

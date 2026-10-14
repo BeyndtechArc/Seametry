@@ -67,6 +67,33 @@ export function failedVenueProgram(logs: string[]): string | undefined {
   return undefined;
 }
 
+/**
+ * Jupiter v6's SlippageToleranceExceeded (error 6001): the route would
+ * have paid out less than the quote's floor at the moment it ran.
+ */
+const JUPITER_SLIPPAGE = /Program JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4 failed: custom program error: 0x1771|SlippageToleranceExceeded/;
+
+export type PreflightRefusal =
+  | { kind: "slippage" }
+  | { kind: "venue"; program: string }
+  | { kind: "expired" }
+  | { kind: "unfunded" }
+  | { kind: "other" };
+
+/**
+ * Why the RPC's preflight simulation refused a signed leg, from the error
+ * text and logs sendRawTransaction raised. A preflight refusal happens
+ * before broadcast, so whatever the kind, nothing reached the network.
+ */
+export function preflightRefusal(message: string, logs: string[]): PreflightRefusal {
+  if (logs.some((line) => JUPITER_SLIPPAGE.test(line)) || JUPITER_SLIPPAGE.test(message)) return { kind: "slippage" };
+  const venue = failedVenueProgram(logs);
+  if (venue) return { kind: "venue", program: venue };
+  if (/Blockhash not found|BlockhashNotFound/i.test(message)) return { kind: "expired" };
+  if (/insufficient (funds|lamports)|InsufficientFunds/i.test(message) || logs.some((line) => /insufficient (funds|lamports)/i.test(line))) return { kind: "unfunded" };
+  return { kind: "other" };
+}
+
 /** A sale spends token atoms and receives USDC; the USDC output pays the disclosed routing fee. */
 export function sellQuoteParams(mint: string, inAtoms: bigint, feeBps: number): URLSearchParams {
   return new URLSearchParams({

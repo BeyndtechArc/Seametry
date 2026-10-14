@@ -118,7 +118,8 @@ export function ActivityList({ records, focus }: { records: Execution[]; focus?:
                   title={leg.symbol}
                   meta={leg.received ? `${quantity(leg.spend)} for ${quantity(leg.received)}` : quantity(leg.spend)}
                 >
-                  <span>{LEG_WORDS[leg.phase]}{leg.problem ? `. ${leg.problem.plain}` : ""}</span>
+                  <span className={styles.legState} data-phase={leg.phase}>{LEG_WORDS[leg.phase]}</span>
+                  {leg.problem ? <p className={styles.legProblem}>{leg.problem.plain}</p> : null}
                   {leg.problem?.technical ? (
                     <details className={styles.technical}>
                       <summary>Technical detail</summary>
