@@ -125,7 +125,7 @@ func (s Server) GetInstrumentDepth(ctx context.Context, request api.GetInstrumen
 	// for it.
 	asOf := resolveAsOf(request.Params.AsOf)
 	now := time.Now().UTC()
-	if request.Params.Direction != nil && *request.Params.Direction == api.Sell {
+	if request.Params.Direction != nil && *request.Params.Direction == api.GetInstrumentDepthParamsDirectionSell {
 		return api.GetInstrumentDepth200JSONResponse{
 			Data: api.DepthCurve{ReferenceIndex: -1},
 			Meta: api.Meta{

@@ -13,6 +13,8 @@ const symbolOf = new Map(admissions.instruments.map((admission) => [admission.in
 const rateLimited = new Set();
 // When each quote arrived, so a test can measure the app's own pacing.
 const quoteArrivals = [];
+// Activity reports the web routes sent, in arrival order.
+const activityReports = [];
 
 const observedAt = "2026-09-29T12:00:00Z";
 const meta = {
@@ -137,6 +139,23 @@ const server = createServer((request, response) => {
   }
   if (path === "/jupiter/arrivals") {
     writeJson(response, 200, quoteArrivals);
+    return;
+  }
+  // Execution's activity record, as the Gateway answers it: every report is
+  // kept with the secret it carried, so a test reads back exactly what the
+  // web routes sent.
+  if (path.startsWith("/v1/internal/activity/") && request.method === "POST") {
+    let body = "";
+    request.on("data", (chunk) => { body += chunk; });
+    request.on("end", () => {
+      activityReports.push({ kind: path.slice("/v1/internal/activity/".length), secret: request.headers["x-seametry-service-secret"] ?? null, body: JSON.parse(body) });
+      response.writeHead(204);
+      response.end();
+    });
+    return;
+  }
+  if (path === "/fixture/activity") {
+    writeJson(response, 200, activityReports);
     return;
   }
   if (path === "/jupiter/quote") {

@@ -64,6 +64,15 @@ type ServerInterface interface {
 	// GetInstrumentDepth Depth at size as a curve, with each quote's age and expiry. Selling reports unavailable until it is measured (docs/prd/API.md 5.1).
 	// (GET /instruments/{mint}/depth)
 	GetInstrumentDepth(w http.ResponseWriter, r *http.Request, mint Mint, params GetInstrumentDepthParams)
+	// RecordActivityFunnel Funnel steps a browser reported, forwarded by the web route that received them.
+	// (POST /internal/activity/funnel)
+	RecordActivityFunnel(w http.ResponseWriter, r *http.Request)
+	// RecordActivityQuote One prepare request, with every leg it returned or the refusal that stopped it.
+	// (POST /internal/activity/quotes)
+	RecordActivityQuote(w http.ResponseWriter, r *http.Request)
+	// RecordActivitySubmission What happened when a prepared leg was sent, found by the message digest its approval binds.
+	// (POST /internal/activity/submissions)
+	RecordActivitySubmission(w http.ResponseWriter, r *http.Request)
 	// GetMe The opaque account subject accepted by the Go core.
 	// (GET /me)
 	GetMe(w http.ResponseWriter, r *http.Request)
@@ -619,6 +628,48 @@ func (siw *ServerInterfaceWrapper) GetInstrumentDepth(w http.ResponseWriter, r *
 	handler.ServeHTTP(w, r)
 }
 
+// RecordActivityFunnel operation middleware
+func (siw *ServerInterfaceWrapper) RecordActivityFunnel(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RecordActivityFunnel(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RecordActivityQuote operation middleware
+func (siw *ServerInterfaceWrapper) RecordActivityQuote(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RecordActivityQuote(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// RecordActivitySubmission operation middleware
+func (siw *ServerInterfaceWrapper) RecordActivitySubmission(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RecordActivitySubmission(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetMe operation middleware
 func (siw *ServerInterfaceWrapper) GetMe(w http.ResponseWriter, r *http.Request) {
 
@@ -895,6 +946,9 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/anchor-keys", wrapper.ListAnchorKeys)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/status", wrapper.GetStatus)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me", wrapper.GetMe)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/quotes", wrapper.RecordActivityQuote)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/submissions", wrapper.RecordActivitySubmission)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/funnel", wrapper.RecordActivityFunnel)
 
 	return m
 }
@@ -1571,6 +1625,105 @@ func (response GetInstrumentDepthdefaultApplicationProblemPlusJSONResponse) Visi
 	return err
 }
 
+type RecordActivityFunnelRequestObject struct {
+	Body *RecordActivityFunnelJSONRequestBody
+}
+
+type RecordActivityFunnelResponseObject interface {
+	VisitRecordActivityFunnelResponse(w http.ResponseWriter) error
+}
+
+type RecordActivityFunnel204Response struct {
+}
+
+func (response RecordActivityFunnel204Response) VisitRecordActivityFunnelResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type RecordActivityFunneldefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response RecordActivityFunneldefaultApplicationProblemPlusJSONResponse) VisitRecordActivityFunnelResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RecordActivityQuoteRequestObject struct {
+	Body *RecordActivityQuoteJSONRequestBody
+}
+
+type RecordActivityQuoteResponseObject interface {
+	VisitRecordActivityQuoteResponse(w http.ResponseWriter) error
+}
+
+type RecordActivityQuote204Response struct {
+}
+
+func (response RecordActivityQuote204Response) VisitRecordActivityQuoteResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type RecordActivityQuotedefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response RecordActivityQuotedefaultApplicationProblemPlusJSONResponse) VisitRecordActivityQuoteResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RecordActivitySubmissionRequestObject struct {
+	Body *RecordActivitySubmissionJSONRequestBody
+}
+
+type RecordActivitySubmissionResponseObject interface {
+	VisitRecordActivitySubmissionResponse(w http.ResponseWriter) error
+}
+
+type RecordActivitySubmission204Response struct {
+}
+
+func (response RecordActivitySubmission204Response) VisitRecordActivitySubmissionResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type RecordActivitySubmissiondefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response RecordActivitySubmissiondefaultApplicationProblemPlusJSONResponse) VisitRecordActivitySubmissionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetMeRequestObject struct {
 }
 
@@ -1904,6 +2057,15 @@ type StrictServerInterface interface {
 	// GetInstrumentDepth Depth at size as a curve, with each quote's age and expiry. Selling reports unavailable until it is measured (docs/prd/API.md 5.1).
 	// (GET /instruments/{mint}/depth)
 	GetInstrumentDepth(ctx context.Context, request GetInstrumentDepthRequestObject) (GetInstrumentDepthResponseObject, error)
+	// RecordActivityFunnel Funnel steps a browser reported, forwarded by the web route that received them.
+	// (POST /internal/activity/funnel)
+	RecordActivityFunnel(ctx context.Context, request RecordActivityFunnelRequestObject) (RecordActivityFunnelResponseObject, error)
+	// RecordActivityQuote One prepare request, with every leg it returned or the refusal that stopped it.
+	// (POST /internal/activity/quotes)
+	RecordActivityQuote(ctx context.Context, request RecordActivityQuoteRequestObject) (RecordActivityQuoteResponseObject, error)
+	// RecordActivitySubmission What happened when a prepared leg was sent, found by the message digest its approval binds.
+	// (POST /internal/activity/submissions)
+	RecordActivitySubmission(ctx context.Context, request RecordActivitySubmissionRequestObject) (RecordActivitySubmissionResponseObject, error)
 	// GetMe The opaque account subject accepted by the Go core.
 	// (GET /me)
 	GetMe(ctx context.Context, request GetMeRequestObject) (GetMeResponseObject, error)
@@ -2354,6 +2516,99 @@ func (sh *strictHandler) GetInstrumentDepth(w http.ResponseWriter, r *http.Reque
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetInstrumentDepthResponseObject); ok {
 		if err := validResponse.VisitGetInstrumentDepthResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RecordActivityFunnel operation middleware
+func (sh *strictHandler) RecordActivityFunnel(w http.ResponseWriter, r *http.Request) {
+	var request RecordActivityFunnelRequestObject
+
+	var body RecordActivityFunnelJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.RecordActivityFunnel(ctx, request.(RecordActivityFunnelRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RecordActivityFunnel")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(RecordActivityFunnelResponseObject); ok {
+		if err := validResponse.VisitRecordActivityFunnelResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RecordActivityQuote operation middleware
+func (sh *strictHandler) RecordActivityQuote(w http.ResponseWriter, r *http.Request) {
+	var request RecordActivityQuoteRequestObject
+
+	var body RecordActivityQuoteJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.RecordActivityQuote(ctx, request.(RecordActivityQuoteRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RecordActivityQuote")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(RecordActivityQuoteResponseObject); ok {
+		if err := validResponse.VisitRecordActivityQuoteResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RecordActivitySubmission operation middleware
+func (sh *strictHandler) RecordActivitySubmission(w http.ResponseWriter, r *http.Request) {
+	var request RecordActivitySubmissionRequestObject
+
+	var body RecordActivitySubmissionJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.RecordActivitySubmission(ctx, request.(RecordActivitySubmissionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RecordActivitySubmission")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(RecordActivitySubmissionResponseObject); ok {
+		if err := validResponse.VisitRecordActivitySubmissionResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

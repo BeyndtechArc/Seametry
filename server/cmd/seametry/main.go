@@ -34,6 +34,7 @@ import (
 	"time"
 
 	"github.com/BeyndtechArc/Seametry/server/internal/basket"
+	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
 	"github.com/BeyndtechArc/Seametry/server/internal/identity"
 	"github.com/BeyndtechArc/Seametry/server/internal/receipt"
@@ -131,7 +132,8 @@ func serve() error {
 	}
 	gwServer := gateway.NewServer(observationdb.New(pool), store.NewDirObjectStore(objectDir)).
 		WithHall(hall, basket.HallDevnetProgramID, "devnet").
-		WithReceipts(receipt.NewLedger(pool))
+		WithReceipts(receipt.NewLedger(pool)).
+		WithActivity(execution.NewReport(pool))
 	authOrigin := strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_ORIGIN"))
 	if authOrigin == "" {
 		return errors.New("SEAMETRY_AUTH_ORIGIN is not set; serve needs the Better Auth issuer to verify account subjects")
@@ -140,7 +142,13 @@ func serve() error {
 	if err != nil {
 		return fmt.Errorf("configuring the account subject verifier: %w", err)
 	}
-	handler := gateway.NewHandler(gwServer, func(next http.Handler) http.Handler {
+	// Unset, every internal report is refused with a 503 naming it, and the
+	// web deployment's trades go on without being recorded.
+	ingestSecret := strings.TrimSpace(os.Getenv("SEAMETRY_ACTIVITY_INGEST_SECRET"))
+	if ingestSecret == "" {
+		slog.Warn("seametry: SEAMETRY_ACTIVITY_INGEST_SECRET is not set; activity reports will be refused")
+	}
+	handler := gateway.NewHandler(gwServer, gateway.ServiceSecret(ingestSecret), func(next http.Handler) http.Handler {
 		return verifier.Middleware(next, time.Now)
 	})
 	srv := &http.Server{

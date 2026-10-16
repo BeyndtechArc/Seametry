@@ -15,6 +15,8 @@ import type { OfferedLot, RefusedLot } from "@/lib/allocation/offer";
 import { shortIssuer } from "@/lib/issuers";
 import { SLIPPAGE_BPS, USDC_SCALE, lotCapAtoms, minimumPlanAtoms, routingFeeAtoms, routingFeeBps } from "@/lib/allocation/rules";
 import { approveAndSend, NotSent } from "@/lib/execution/run";
+import { firstTouchFor, firstTouchSent } from "@/lib/first-touch";
+import { funnel } from "@/lib/funnel";
 import styles from "./allocation.module.css";
 
 /** The wait before the hand-off to Activity: quoting every leg, then the one wallet approval. */
@@ -323,7 +325,11 @@ export function AllocationFlow({
         wallet: signingWallet,
         legs: legs.map((leg) => ({ mint: leg.mint, usdcAtoms: leg.atoms.toString() })),
         planMints: chosen.map((lot) => lot.mint),
+        subject: identity.name,
+        ...(identity.templateId ? { templateId: identity.templateId } : {}),
+        firstTouch: firstTouchFor(signingWallet),
       });
+      firstTouchSent(signingWallet);
       if (quoted.length !== legs.length) throw new Error("The Allocation preflight returned an incomplete plan.");
     } catch (error) {
       if (error instanceof ApiError && error.status === 402) {
@@ -341,6 +347,7 @@ export function AllocationFlow({
       return;
     }
     setAttempt({ stage: "approving", prepared: quoted });
+    funnel("review_opened", { wallet: signingWallet, quoteId: quoted[0]?.quoteId });
     try {
       await approveAndSend({
         wallet: signingWallet,

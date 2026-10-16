@@ -132,6 +132,7 @@ services:
       SEAMETRY_HALL_DEVNET_RPC_URL: ${SEAMETRY_HALL_DEVNET_RPC_URL:-https://api.devnet.solana.com}
       HELIUS_RPC_URL: ${HELIUS_RPC_URL:-}
       JUP_KEY: ${JUP_KEY:-}
+      SEAMETRY_ACTIVITY_INGEST_SECRET: ${SEAMETRY_ACTIVITY_INGEST_SECRET:-}
     expose:
       - "8080"
     volumes:

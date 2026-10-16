@@ -370,6 +370,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/activity/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * One prepare request, with every leg it returned or the refusal that stopped it.
+         * @description Idempotent on the quote id: a retried report changes nothing. The wallet is created by its first quote, and its first-touch source is kept from the first report that carries one.
+         */
+        post: operations["recordActivityQuote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/activity/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * What happened when a prepared leg was sent, found by the message digest its approval binds.
+         * @description The first submission of a leg is kept and later ones change nothing. A digest no recorded leg carries answers 404: its quote report was lost or never sent.
+         */
+        post: operations["recordActivitySubmission"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/activity/funnel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Funnel steps a browser reported, forwarded by the web route that received them.
+         * @description A kind outside the known set is stored as unrecognised with the kind that was sent, never dropped. These rows are the browser's word and are never counted as volume, a fee or an outcome.
+         */
+        post: operations["recordActivityFunnel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -377,6 +437,83 @@ export interface components {
         AccountSubject: {
             /** @description The opaque Better Auth account subject. No profile field is carried in the service token. */
             id: string;
+        };
+        ActivityQuote: {
+            /** Format: uuid */
+            id: string;
+            /** @description The wallet's base58 address. */
+            wallet: string;
+            /** @enum {string} */
+            network: "mainnet" | "devnet";
+            /** @enum {string} */
+            kind: "buy" | "sell";
+            /** @description The Allocation or basket name the reader saw, when there is one. */
+            subject?: string;
+            template_id?: string;
+            plan_size: number;
+            /** @enum {string} */
+            deployment: "production" | "preview" | "development";
+            /** Format: date-time */
+            prepared_at: string;
+            refusal?: components["schemas"]["ActivityRefusal"];
+            first_touch?: components["schemas"]["ActivityFirstTouch"];
+            /** @description Empty exactly when refusal is present. */
+            legs: components["schemas"]["ActivityLeg"][];
+        };
+        ActivityRefusal: {
+            status: number;
+            text: string;
+        };
+        /** @description Where the browser first arrived, held in its own storage and sent with a wallet's first quote. Every field is optional and capped. */
+        ActivityFirstTouch: {
+            referrer_host?: string;
+            landing_path?: string;
+            utm_source?: string;
+            utm_medium?: string;
+            utm_campaign?: string;
+            utm_content?: string;
+            utm_term?: string;
+        };
+        ActivityLeg: {
+            /** Format: uuid */
+            id: string;
+            mint: string;
+            symbol: string;
+            in: components["schemas"]["Amount"];
+            out: components["schemas"]["Amount"];
+            floor: components["schemas"]["Amount"];
+            routing_fee_bps: number;
+            tip_offset_bps: number;
+            /** @description USDC atoms simulation moved into the fee account. */
+            simulated_fee_atoms: string;
+            tip_lamports: string;
+            /** @enum {string} */
+            landing: "sender" | "rpc";
+            /** Format: int64 */
+            last_valid_block_height: number;
+            message_sha256: string;
+        };
+        ActivitySubmission: {
+            message_sha256: string;
+            signature?: string;
+            /** Format: date-time */
+            submitted_at: string;
+            /** @enum {string} */
+            result: "sent" | "refused_not_sent" | "uncertain";
+            /** @description The refusal sentence the holder saw, when the leg was not plainly sent. */
+            text?: string;
+        };
+        ActivityFunnel: {
+            /** @enum {string} */
+            deployment: "production" | "preview" | "development";
+            events: components["schemas"]["ActivityFunnelEvent"][];
+        };
+        ActivityFunnelEvent: {
+            /** @description wallet_connected, review_opened, signature_requested, signature_declined, signature_failed or sheet_abandoned. Any other value is kept as unrecognised. A string, not an enum, so a newer browser's kind reaches the record instead of failing to bind. */
+            kind: string;
+            wallet?: string;
+            /** Format: uuid */
+            quote_id?: string;
         };
         /** @description Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3). */
         Amount: {
@@ -1362,6 +1499,75 @@ export interface operations {
                         meta: components["schemas"]["Meta"];
                     };
                 };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    recordActivityQuote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityQuote"];
+            };
+        };
+        responses: {
+            /** @description Recorded, or already recorded. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    recordActivitySubmission: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivitySubmission"];
+            };
+        };
+        responses: {
+            /** @description Recorded, or already recorded. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    recordActivityFunnel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityFunnel"];
+            };
+        };
+        responses: {
+            /** @description Recorded. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             default: components["responses"]["Problem"];
         };

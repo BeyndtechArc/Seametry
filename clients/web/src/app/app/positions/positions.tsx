@@ -17,6 +17,8 @@ import { allocationHoldings, endedAt, type AllocationHolding } from "@/lib/execu
 import { approveAndSend, NotSent, type Signer } from "@/lib/execution/run";
 import { useExecutions } from "@/lib/execution/store";
 import { logoSrc } from "@/lib/logo-src";
+import { firstTouchFor, firstTouchSent } from "@/lib/first-touch";
+import { funnel } from "@/lib/funnel";
 import { ActivityList } from "../_activity/activity";
 import styles from "./positions.module.css";
 
@@ -35,9 +37,12 @@ async function responseJson<T>(response: Response): Promise<T> {
 }
 
 /** Every leg in one request, so one server paces their Jupiter calls together. */
-async function quoteSales(wallet: string, legs: { mint: string; atoms: string }[]): Promise<PreparedLeg[]> {
-  const response = await fetch("/api/allocation/sell/prepare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ wallet, legs }) });
-  return responseJson<PreparedLeg[]>(response);
+async function quoteSales(wallet: string, subject: string, legs: { mint: string; atoms: string }[]): Promise<PreparedLeg[]> {
+  const response = await fetch("/api/allocation/sell/prepare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ wallet, subject, legs, firstTouch: firstTouchFor(wallet) }) });
+  const quoted = await responseJson<PreparedLeg[]>(response);
+  firstTouchSent(wallet);
+  funnel("review_opened", { wallet, quoteId: quoted[0]?.quoteId });
+  return quoted;
 }
 
 export function Positions() {
@@ -118,7 +123,7 @@ export function Positions() {
     setStage("quoting");
     setTradeProblem(undefined);
     try {
-      setPrepared((await quoteSales(wallet, [{ mint: position.mint, atoms: validAtoms.toString() }]))[0]);
+      setPrepared((await quoteSales(wallet, position.symbol, [{ mint: position.mint, atoms: validAtoms.toString() }]))[0]);
       setNow(Date.now());
       setStage("review");
     } catch (error) {
@@ -160,7 +165,7 @@ export function Positions() {
     }
     setSale({ ...sale, stage: "quoting", problem: undefined, prepared: undefined });
     try {
-      const quoted = await quoteSales(wallet, sale.legs.map(({ mint, atoms }) => ({ mint, atoms })));
+      const quoted = await quoteSales(wallet, sale.allocation.name, sale.legs.map(({ mint, atoms }) => ({ mint, atoms })));
       setSale((current) => current && { ...current, stage: "review", prepared: quoted });
     } catch (error) {
       setSale((current) => current && { ...current, stage: "idle", problem: error instanceof Error ? error.message : String(error) });
@@ -241,7 +246,10 @@ export function Positions() {
 
           <ModalSheet
             open={Boolean(sale)}
-            onClose={() => setSale(undefined)}
+            onClose={() => {
+              if (sale?.stage === "review" && sale.prepared) funnel("sheet_abandoned", { wallet, quoteId: sale.prepared[0]?.quoteId });
+              setSale(undefined);
+            }}
             title={sale ? `Sell ${sale.allocation.name}` : "Sell Allocation"}
             register="Mainnet"
             closeLabel="Hide Allocation sale"
@@ -273,7 +281,10 @@ export function Positions() {
 
           <ModalSheet
             open={Boolean(position)}
-            onClose={() => setSelectedMint(undefined)}
+            onClose={() => {
+              if (stage === "review" && prepared) funnel("sheet_abandoned", { wallet, quoteId: prepared.quoteId });
+              setSelectedMint(undefined);
+            }}
             title={`Trade ${position?.symbol ?? "instrument"}`}
             register="Mainnet"
             closeLabel="Hide trade sheet"
