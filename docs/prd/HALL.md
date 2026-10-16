@@ -145,7 +145,7 @@ Compiled constants per program version, taken in shares: a fraction of minted sh
 
 **Fuzzing** with Trident across instruction sequences, including issuer actions interleaved by mock authorities.
 
-**Audit before size.** Devnet and small mainnet testing do not need it. Open deposits do.
+**Audit before size.** Devnet and small mainnet testing do not need it. Open deposits do. The scope submitted for audit is measured from the source into `chain/AUDIT_SCOPE.md`, and CI fails when the program changes without it.
 
 **The mainnet canary is a separate deployment, not an unadvertised public Hall.**
 The current program permits any wallet to initialize an alloy and strike shares,

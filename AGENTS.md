@@ -187,6 +187,7 @@ reader cannot reconstruct.
 gofmt -l . && go vet ./server/... && go test ./server/...   # -race needs cgo, CI runs it on Linux
 node shared/tools/spec/generate.mjs --check          # conformance vectors must not drift
 node shared/tools/spec/verify-receipts.mjs           # Go seals, JavaScript verifies
+node chain/tools/audit-scope.mjs --check             # audit application still measures the Hall
 npm run design:lint                           # design system compliance
 npm run design:test                           # linter regressions
 npm run tokens                                # regenerate design tokens
