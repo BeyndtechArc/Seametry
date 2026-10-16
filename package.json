@@ -15,6 +15,7 @@
   "scripts": {
     "spec": "node shared/tools/spec/generate.mjs",
     "spec:check": "node shared/tools/spec/generate.mjs --check",
+    "audit:scope": "node chain/tools/audit-scope.mjs",
     "verify:receipts": "node shared/tools/spec/verify-receipts.mjs",
     "explorer": "go run ./server/cmd/explorer",
     "survey": "go run ./server/cmd/survey",

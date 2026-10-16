@@ -345,6 +345,11 @@ jobs:
         working-directory: chain
         run: cargo test --locked
 
+      # The audit application quotes the program's size; a change to the
+      # program since then has to be reflected in it before the audit starts.
+      - name: The audit scope still measures the program
+        run: node chain/tools/audit-scope.mjs --check
+
       # A separate workspace, so the two steps above never compile it. It
       # only runs by hand against a cluster; this keeps it from rotting.
       - name: The devnet runner still builds
