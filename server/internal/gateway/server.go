@@ -22,6 +22,7 @@ type Server struct {
 	HallCluster     string
 	HallEvidenceDir string
 	Receipts        ReceiptLedger
+	Activity        ActivityReport
 	Now             func() time.Time
 }
 

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { recordSubmission } from "@/lib/activity";
+import { submissionReport } from "@/lib/activity-report";
 import { allocationConfig, requestCountry } from "@/lib/allocation/config";
 import { submitLeg } from "@/lib/allocation/execution";
 import { Refusal } from "@/lib/refusal";
@@ -23,8 +25,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Expected transaction (the signed transaction, base64) and approval." }, { status: 400 });
   }
 
+  const submittedAt = new Date();
   try {
-    return NextResponse.json({ signature: await submitLeg(configured.config, body.transaction, body.approval) });
+    const signature = await submitLeg(configured.config, body.transaction, body.approval);
+    recordSubmission(submissionReport(body.transaction, submittedAt, { sent: true }));
+    return NextResponse.json({ signature });
   } catch (error) {
     if (error instanceof Refusal) {
       const changed = error.status === 409 && error.message.startsWith("The transaction was changed after it was approved");
@@ -33,6 +38,8 @@ export async function POST(request: NextRequest) {
       // again; any other RPC failure stays uncertain, because the RPC can
       // lose its response after broadcast.
       const definitelyNotSent = error.status === 400 || error.status === 409 || error.status === 410 || error.detail.notSent === true;
+      // A changed transaction's digest is no recorded leg's, so it is not reported.
+      if (!changed) recordSubmission(submissionReport(body.transaction, submittedAt, { sent: false, definitelyNotSent, text: error.message }));
       return NextResponse.json({
         error: error.message,
         ...(changed ? { code: "SIGNED_MESSAGE_CHANGED" } : {}),
@@ -40,6 +47,8 @@ export async function POST(request: NextRequest) {
         ...(error.detail.technical ? { technical: error.detail.technical } : {}),
       }, { status: error.status });
     }
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Sending the leg failed." }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Sending the leg failed.";
+    recordSubmission(submissionReport(body.transaction, submittedAt, { sent: false, definitelyNotSent: false, text: message }));
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -4,7 +4,7 @@ import styles from "../site.module.css";
 
 export const metadata: Metadata = {
   title: "Privacy policy | Seametry",
-  description: "How Seametry collects, uses, stores and deletes account and linked-wallet data.",
+  description: "How Seametry collects, uses, stores and deletes account, linked-wallet and trading activity data.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
     <PublicShell>
       <article className={styles.paper}>
         <header className={styles.storyHero}>
-          <span>Effective 9 October 2026</span>
+          <span>Effective 16 October 2026</span>
           <h1>Privacy policy</h1>
           <p>This policy explains how Beyndtech Arc handles personal data when you use Seametry.</p>
         </header>
@@ -34,15 +34,24 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="03" title="Saved work names its owner address." question="What else can the account service retain?" />
+          <SectionHeading index="03" title="Trades through Seametry are recorded by wallet." question="What does Seametry record when you trade?" />
           <div className={styles.paperText}>
-            <p>When account storage is enabled, Seametry may retain saved Allocation plans, execution records, Hallmarks, linked addresses and the network attached to each record. A reusable basket template copied to another wallet becomes a new plan for that wallet.</p>
+            <p>When you ask Seametry for a quote, or buy or sell through it, we record the public address of the wallet that asked, whether or not you have signed in: each quote we prepared or refused and the reason we gave, the terms of each leg, and whether each leg was sent. Your browser also reports steps only it can see: a wallet connecting, a review opening, a signature being requested, declined or failing, and a review closed without signing.</p>
+            <p>With a wallet&apos;s first quote, your browser sends where it first arrived on Seametry: the referring site&apos;s address, the first page you opened and any campaign tags in that link. It is held in your browser until then, sent once, and never sent if you do not trade. None of this uses a cookie, and we do not store your IP address with it.</p>
+            <p>Trade records are kept as the history of what Seametry did for that wallet. Funnel steps are deleted after 24 months. If you sign in and link a wallet, your account shows that wallet&apos;s records. You may ask us to delete the records kept for a wallet you control; its transactions remain public on chain.</p>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <SectionHeading index="04" title="Saved work names its owner address." question="What else can the account service retain?" />
+          <div className={styles.paperText}>
+            <p>When account storage is enabled, Seametry may also retain saved Allocation plans, Hallmarks, linked addresses and the network attached to each record. A reusable basket template copied to another wallet becomes a new plan for that wallet.</p>
             <p>We also process session cookies, request timestamps, IP-derived country codes, browser and device information, and security logs needed to operate, rate-limit and investigate the service. We do not create an account merely because you browse the public site or connect a wallet.</p>
           </div>
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="04" title="Providers receive only what their task requires." question="Who processes data for Seametry?" />
+          <SectionHeading index="05" title="Providers receive only what their task requires." question="Who processes data for Seametry?" />
           <div className={styles.paperText}>
             <p>Google processes account sign-in. Better Auth supplies account software and its infrastructure connection supplies account management and service analytics. Database, hosting, network and security providers process the data required to run the service. Wallets, Solana RPC providers, issuers and trading venues receive transaction or public-chain data when you use their services.</p>
             <p>We may disclose data when required by law, to protect the service and its users, or as part of a business transfer subject to the protections applicable to the data.</p>
@@ -50,7 +59,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="05" title="You may delete your account." question="What control do you retain?" />
+          <SectionHeading index="06" title="You may delete your account." question="What control do you retain?" />
           <div className={styles.paperText}>
             <p>You may request access, correction or deletion of account data and may delete the account through Seametry when that control is available. Deletion removes the account and linked-address records held by Seametry, subject to records we must retain for security, disputes or legal obligations.</p>
             <p>Session records and operational logs are retained only for the period needed for their stated purpose. Public evidence and public blockchain history remain available independently of the account.</p>

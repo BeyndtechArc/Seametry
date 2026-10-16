@@ -241,9 +241,10 @@ test("the public site publishes the terms and privacy policy used for account co
 
   await page.goto("/privacy-policy");
   await expect(page.getByRole("heading", { level: 1, name: "Privacy policy" })).toBeVisible();
-  await expect(page.getByText("Effective 9 October 2026", { exact: true })).toBeVisible();
+  await expect(page.getByText("Effective 16 October 2026", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Google returns account identity data." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A linked wallet remains public." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Trades through Seametry are recorded by wallet." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "You may delete your account." })).toBeVisible();
 });
 

@@ -140,6 +140,12 @@ five are set the page says which are missing and nothing can be bought.
   forge there; on any other host it could be forged.
 - `ALLOCATION_ASSUME_COUNTRY`: local runs only, where no host sets the
   country header.
+- `ACTIVITY_INGEST_SECRET`: the same value as the Gateway's
+  `SEAMETRY_ACTIVITY_INGEST_SECRET`. Prepare, sell prepare, submit and
+  `/api/activity/funnel` report to Execution's activity record at
+  `SEAMETRY_API_URL` over it, after each response, so a trade never waits on
+  or fails with the record. Unset, nothing is recorded and one warning is
+  logged.
 
 ### Helius Sender delivery
 

@@ -1,8 +1,10 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
+import { ConnectionProvider, WalletProvider, useWallet } from "@solana/wallet-adapter-react";
+import { captureFirstTouch } from "./first-touch";
+import { funnel } from "./funnel";
 import type { WalletError } from "@solana/wallet-adapter-base";
 import { clusterApiUrl } from "@solana/web3.js";
 
@@ -41,6 +43,29 @@ export function useWalletFailure() {
   return useContext(ConnectionFailureContext);
 }
 
+/**
+ * Keeps this browser's first touch, and reports a mainnet wallet connecting
+ * once per wallet per browser session. The devnet Hall demo is left out, so
+ * its wallets never mix with mainnet's in the record.
+ */
+function ActivitySignals({ network }: { network: "mainnet" | "devnet" }) {
+  const { publicKey } = useWallet();
+  const wallet = publicKey?.toBase58();
+  useEffect(captureFirstTouch, []);
+  useEffect(() => {
+    if (!wallet || network !== "mainnet") return;
+    const key = `seametry:connected:${wallet}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // Storage blocked: the step may be reported again this session.
+    }
+    funnel("wallet_connected", { wallet });
+  }, [wallet, network]);
+  return null;
+}
+
 export function SiteWalletProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const wallets = useMemo(() => [], []);
@@ -54,6 +79,7 @@ export function SiteWalletProvider({ children }: { children: React.ReactNode }) 
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect onError={onError}>
+        <ActivitySignals network={walletNetwork(pathname)} />
         <ConnectionFailureContext.Provider value={failureValue}>{children}</ConnectionFailureContext.Provider>
       </WalletProvider>
     </ConnectionProvider>

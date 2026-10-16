@@ -90,6 +90,7 @@ Literal names live in code and in every external contract.
 
 | Document | What it is |
 |---|---|
+| [decisions/2026-10-16-activity-record.md](decisions/2026-10-16-activity-record.md) | Why Seametry began recording quotes, refusals, legs and funnel steps by wallet in Execution's schema, the three sources a row can have, and why a Vercel-reachable database, third-party analytics and page-view tracking were rejected |
 | [decisions/2026-10-11-reference-market-data.md](decisions/2026-10-11-reference-market-data.md) | Why an oracle-free, fixed-notional Jupiter quote history replaces the Pyth adapter; the Hall remains price-blind and execution requires fresh simulation |
 | [decisions/2026-09-27-explorer-stays-separate.md](decisions/2026-09-27-explorer-stays-separate.md) | Why the Explorer was pulled back out of the Next.js app days after joining it: a real, Chromium-proven CSP conflict with React's inline hydration script, and the Cloudflare Pages plus Vercel split that resolved it |
 | [decisions/2026-09-27-web-app-and-payments.md](decisions/2026-09-27-web-app-and-payments.md) | Why the Explorer, Terminal and business pages briefly became one Next.js app (partly reversed above), why the Explorer narrowed to evidence only, and why Vercel, Fly and x402 with USDC replaced the earlier hosting and payment shape |

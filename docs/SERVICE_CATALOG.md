@@ -5,7 +5,7 @@ inter service contracts, deployment topology, and the criteria under which a
 module becomes a separately deployed service. It does not own product scope
 (`PRODUCT_ARCHITECTURE.md`) or engineering rules (`ENGINEERING_STANDARD.md`).
 
-**Last substantive change:** 9 October 2026.
+**Last substantive change:** 16 October 2026.
 
 ---
 
@@ -226,7 +226,14 @@ signs, and knowing exactly what happened to it.
 
 **Owns.** Intents; transaction construction; program and account allowlists;
 approval snapshots; simulation results; submission; confirmation and finality
-tracking.
+tracking. The activity record, in the `execution` schema: every wallet that
+asked for a quote, signed in or not, with its first-touch source; each quote
+prepared or refused and its reason; each leg's terms and what happened when it
+was sent; and the funnel steps a browser reports. Every row names its source:
+`server` rows come from the web routes over a service secret, `client` rows
+from a browser and never count as volume, a fee or an outcome, and only
+`chain` rows say what settled. The wallet is the subject, so an account that
+links a wallet reads its rows with nothing migrated.
 
 **Guarantees.** Quote expiry is checked at build and again at submission. The
 approval binds an immutable digest over instrument version, state snapshot,

@@ -1,6 +1,7 @@
 import bs58 from "bs58";
 import { VersionedTransaction } from "@solana/web3.js";
 import type { PreparedLeg } from "../allocation/execution";
+import { funnel } from "../funnel";
 import { executions } from "./store";
 import type { Execution, ExecutionKind, Leg } from "./record";
 
@@ -76,7 +77,15 @@ export async function approveAndSend({
 }): Promise<Execution> {
   const originals = prepared.map((leg) => VersionedTransaction.deserialize(fromBase64(leg.transaction)));
   const before = originals.map((transaction) => transaction.message.serialize().slice());
-  const signed = await sign(signer, originals);
+  const step = { wallet, quoteId: prepared[0]?.quoteId };
+  funnel("signature_requested", step);
+  let signed: VersionedTransaction[];
+  try {
+    signed = await sign(signer, originals);
+  } catch (error) {
+    funnel(error instanceof NotSent && error.declined ? "signature_declined" : "signature_failed", step);
+    throw error;
+  }
   if (signed.length !== originals.length) throw new NotSent(`The wallet returned ${signed.length} of ${originals.length} transactions. Nothing was sent.`);
   const changed = signed.findIndex((transaction, index) => !sameBytes(before[index], transaction.message.serialize()));
   if (changed >= 0) throw new NotSent(`The wallet changed the ${prepared[changed].symbol} transaction Seametry checked. Nothing was sent.`);

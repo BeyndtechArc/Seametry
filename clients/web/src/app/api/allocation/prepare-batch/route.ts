@@ -1,4 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { recordPrepared } from "@/lib/activity";
 import { allocationConfig, requestCountry } from "@/lib/allocation/config";
 import { prepareBatch } from "@/lib/allocation/execution";
 import { Refusal } from "@/lib/refusal";
@@ -12,7 +14,7 @@ export async function POST(request: NextRequest) {
   const gate = countryGate(requestCountry(request.headers), configured.config.blockedCountries);
   if (!gate.open) return NextResponse.json({ error: gate.reason }, { status: 451 });
 
-  let body: { wallet?: string; legs?: { mint?: string; usdcAtoms?: string }[]; planMints?: unknown };
+  let body: { wallet?: string; legs?: { mint?: string; usdcAtoms?: string }[]; planMints?: unknown; subject?: unknown; templateId?: unknown; firstTouch?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -26,15 +28,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Expected planMints as a non-empty array of strings." }, { status: 400 });
   }
 
+  const quoteId = randomUUID();
+  const reported = { quoteId, wallet: body.wallet, kind: "buy" as const, body, planSize: body.planMints.length };
   try {
-    return NextResponse.json(await prepareBatch(
+    const legs = await prepareBatch(
       configured.config,
       body.wallet,
       body.legs.map((leg) => ({ mint: leg.mint!, inAtoms: BigInt(leg.usdcAtoms!) })),
       body.planMints,
-    ));
+    );
+    recordPrepared({ ...reported, legs });
+    return NextResponse.json(legs.map((leg) => ({ ...leg, quoteId })));
   } catch (error) {
-    if (error instanceof Refusal) return NextResponse.json({ error: error.message }, { status: error.status });
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Preparing the Allocation failed." }, { status: 500 });
+    const status = error instanceof Refusal ? error.status : 500;
+    const message = error instanceof Error ? error.message : "Preparing the Allocation failed.";
+    recordPrepared({ ...reported, refusal: { status, text: message } });
+    return NextResponse.json({ error: message }, { status });
   }
 }
