@@ -1195,7 +1195,8 @@
   background: var(--sm-surface-sheet);
 }
 
-.fieldShell input {
+.fieldShell input,
+.fieldShell textarea {
   width: 100%;
   min-width: 0;
   border: 0;
@@ -1205,6 +1206,12 @@
   font-family: var(--sm-font-family-ui);
   font-size: max(16px, var(--sm-font-size-body));
   font-weight: var(--sm-font-weight-medium);
+}
+
+.fieldShell textarea {
+  min-height: calc(var(--sm-size-key) * 3);
+  padding: var(--sm-space-4) 0;
+  resize: vertical;
 }
 
 .fieldAdornment {
@@ -1786,6 +1793,26 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--sm-space-13)), 1fr));
   gap: var(--sm-space-8);
+}
+
+.footerAccounts {
+  display: flex;
+  gap: var(--sm-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The footer's text-link rule would otherwise draw these as green text links. */
+.registerFooter .footerAccounts a {
+  display: inline-grid;
+  width: var(--sm-size-target);
+  border-radius: 0;
+  color: var(--sm-text-secondary);
+}
+
+.registerFooter .footerAccounts a:hover {
+  color: var(--sm-text-primary);
 }
 
 .footerRegister section {

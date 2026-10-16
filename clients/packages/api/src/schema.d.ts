@@ -410,6 +410,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Feedback a visitor sent, forwarded by the web route that received it.
+         * @description Stored before anything else, then mailed to the team after the answer, so a mail server's delay or failure never reaches the visitor and loses nothing. The stored row records whether delivery succeeded.
+         */
+        post: operations["receiveFeedback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/activity/funnel": {
         parameters: {
             query?: never;
@@ -514,6 +534,17 @@ export interface components {
             wallet?: string;
             /** Format: uuid */
             quote_id?: string;
+        };
+        FeedbackSubmission: {
+            message: string;
+            /** @description An email address the visitor chose to give, for a reply. */
+            reply_to?: string;
+            /** @description The connected wallet, only when the visitor chose to include it. */
+            wallet?: string;
+            /** @description The path the visitor was on. */
+            page?: string;
+            /** @enum {string} */
+            deployment: "production" | "preview" | "development";
         };
         /** @description Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3). */
         Amount: {
@@ -1545,6 +1576,36 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    receiveFeedback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedbackSubmission"];
+            };
+        };
+        responses: {
+            /** @description Stored; delivery to the team follows. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            /** Format: uuid */
+                            id: string;
+                        };
+                    };
+                };
             };
             default: components["responses"]["Problem"];
         };

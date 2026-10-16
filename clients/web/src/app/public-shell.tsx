@@ -51,7 +51,15 @@ export function PublicShell({
               { label: "Privacy policy", href: "/privacy-policy" },
             ],
           },
+          {
+            title: "Contact",
+            links: [
+              { label: "Send feedback", href: "/feedback" },
+              { label: "seametry@beyndtech.com", href: "mailto:seametry@beyndtech.com" },
+            ],
+          },
         ]}
+        accounts={[{ label: "Seametry on X", href: "https://x.com/seametry_", icon: "x-account" }]}
         note="Seametry is operated by Beyndtech Arc from Port Harcourt. Public evidence requires no account."
       />
     </div>

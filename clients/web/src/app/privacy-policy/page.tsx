@@ -38,6 +38,7 @@ export default function PrivacyPolicyPage() {
           <div className={styles.paperText}>
             <p>When you ask Seametry for a quote, or buy or sell through it, we record the public address of the wallet that asked, whether or not you have signed in: each quote we prepared or refused and the reason we gave, the terms of each leg, and whether each leg was sent. Your browser also reports steps only it can see: a wallet connecting, a review opening, a signature being requested, declined or failing, and a review closed without signing.</p>
             <p>With a wallet&apos;s first quote, your browser sends where it first arrived on Seametry: the referring site&apos;s address, the first page you opened and any campaign tags in that link. It is held in your browser until then, sent once, and never sent if you do not trade. None of this uses a cookie, and we do not store your IP address with it.</p>
+            <p>When you send feedback, we keep your message, the page you came from, and the email address and wallet only if you chose to give them, and we mail them to the team&apos;s inbox.</p>
             <p>Trade records are kept as the history of what Seametry did for that wallet. Funnel steps are deleted after 24 months. If you sign in and link a wallet, your account shows that wallet&apos;s records. You may ask us to delete the records kept for a wallet you control; its transactions remain public on chain.</p>
           </div>
         </section>
@@ -53,7 +54,7 @@ export default function PrivacyPolicyPage() {
         <section className={styles.section}>
           <SectionHeading index="05" title="Providers receive only what their task requires." question="Who processes data for Seametry?" />
           <div className={styles.paperText}>
-            <p>Google processes account sign-in. Better Auth supplies account software and its infrastructure connection supplies account management and service analytics. Database, hosting, network and security providers process the data required to run the service. Wallets, Solana RPC providers, issuers and trading venues receive transaction or public-chain data when you use their services.</p>
+            <p>Google processes account sign-in. Better Auth supplies account software and its infrastructure connection supplies account management and service analytics. Database, hosting, network and security providers process the data required to run the service. Hostinger carries the team&apos;s email, including feedback. Wallets, Solana RPC providers, issuers and trading venues receive transaction or public-chain data when you use their services.</p>
             <p>We may disclose data when required by law, to protect the service and its users, or as part of a business transfer subject to the protections applicable to the data.</p>
           </div>
         </section>

@@ -36,6 +36,7 @@ export const appGroups: AppGroup[] = [
 export const readingRoutes = [
   { label: "How it works", href: "/docs/how-it-works", icon: "read" as const },
   { label: "The Key", href: "/docs/the-key", icon: "key" as const },
+  { label: "Send feedback", href: "/feedback", icon: "mail" as const },
 ];
 
 export const mobileRoutes = [

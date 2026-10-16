@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { PublicKey } from "@solana/web3.js";
 import { deployment, firstTouchFrom, quoteReport, type ActivityQuote, type ActivitySubmission } from "./activity-report";
 import type { PreparedLeg } from "./allocation/execution";
+import { postInternal } from "./internal-gateway";
 
 // Sends activity reports to Execution's record on the Go Gateway, after the
 // response, so recording never delays or fails a trade. One retry covers a
@@ -14,34 +15,11 @@ import type { PreparedLeg } from "./allocation/execution";
 
 export const currentDeployment = deployment(process.env.VERCEL_ENV);
 
-let warnedUnconfigured = false;
-
-function target(path: string): { url: string; secret: string } | undefined {
-  const origin = process.env.SEAMETRY_API_URL?.trim();
-  const secret = process.env.ACTIVITY_INGEST_SECRET?.trim();
-  if (!origin || !secret) {
-    if (!warnedUnconfigured) {
-      warnedUnconfigured = true;
-      console.warn(`Activity is not recorded: ${!origin ? "SEAMETRY_API_URL" : "ACTIVITY_INGEST_SECRET"} is not set.`);
-    }
-    return undefined;
-  }
-  return { url: `${origin.replace(/\/$/, "")}/v1/internal/activity/${path}`, secret };
-}
-
 async function send(path: string, body: unknown) {
-  const destination = target(path);
-  if (!destination) return;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const response = await fetch(destination.url, {
-        method: "POST",
-        headers: { "content-type": "application/json", "x-seametry-service-secret": destination.secret },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(5_000),
-        cache: "no-store",
-      });
-      if (response.ok) return;
+      const response = await postInternal(`activity/${path}`, body);
+      if (!response || response.ok) return;
       // A refused report will be refused again; only the Gateway's own failures are retried.
       if (response.status < 500) {
         console.warn(`Activity report ${path} refused with ${response.status}: ${(await response.text()).slice(0, 300)}`);

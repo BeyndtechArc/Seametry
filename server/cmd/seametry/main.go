@@ -33,6 +33,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/BeyndtechArc/Seametry/server/internal/alert"
 	"github.com/BeyndtechArc/Seametry/server/internal/basket"
 	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
@@ -126,6 +127,18 @@ func serve() error {
 	if hallEndpoint == "" {
 		hallEndpoint = "https://api.devnet.solana.com"
 	}
+	// No SEAMETRY_SMTP_HOST means feedback is kept and marked not_configured;
+	// a partial configuration stops the start, naming what is missing.
+	configured, err := alert.MailerFromEnv(os.Getenv)
+	if err != nil {
+		return err
+	}
+	var mailer alert.Sender
+	if configured != nil {
+		mailer = configured
+	} else {
+		slog.Warn("seametry: SEAMETRY_SMTP_HOST is not set; feedback is kept but not mailed")
+	}
 	hall, err := solana.New(hallEndpoint, solana.Options{})
 	if err != nil {
 		return fmt.Errorf("configuring the devnet Hall reader: %w", err)
@@ -133,7 +146,8 @@ func serve() error {
 	gwServer := gateway.NewServer(observationdb.New(pool), store.NewDirObjectStore(objectDir)).
 		WithHall(hall, basket.HallDevnetProgramID, "devnet").
 		WithReceipts(receipt.NewLedger(pool)).
-		WithActivity(execution.NewReport(pool))
+		WithActivity(execution.NewReport(pool)).
+		WithFeedback(alert.NewFeedback(pool, mailer))
 	authOrigin := strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_ORIGIN"))
 	if authOrigin == "" {
 		return errors.New("SEAMETRY_AUTH_ORIGIN is not set; serve needs the Better Auth issuer to verify account subjects")

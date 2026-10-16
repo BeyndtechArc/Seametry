@@ -287,7 +287,10 @@ still issued and are shown as unsealed, honestly, until sealing resumes.
 **Purpose.** Turning meaningful state transitions into delivered notifications.
 
 **Owns.** Subscriptions; rules; delivery attempts and retries; channel
-adapters for push, email, webhook, and in product notification.
+adapters for push, email, webhook, and in product notification. Built today:
+the email adapter (SMTP under implicit TLS or STARTTLS, never in the clear,
+configured only on the Gateway host) and visitor feedback in the `alert`
+schema, kept before it is mailed to the team, with each delivery's outcome.
 
 **Consumes transitions, not tables.** It reads outbox events. It does not poll
 every table looking for change.
