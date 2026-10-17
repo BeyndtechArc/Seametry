@@ -233,7 +233,13 @@ was sent; and the funnel steps a browser reports. Every row names its source:
 `server` rows come from the web routes over a service secret, `client` rows
 from a browser and never count as volume, a fee or an outcome, and only
 `chain` rows say what settled. The wallet is the subject, so an account that
-links a wallet reads its rows with nothing migrated.
+links a wallet reads its rows with nothing migrated. The reconciler, a loop in
+the Gateway process every 30 seconds, settles each sent leg against mainnet
+(landed or failed with what moved for the wallet and into the fee account, or
+dropped 20 blocks past its deadline unseen), and the chain's first answer
+stands. `seametry import-activity` records trades found only in the fee
+account's public history as `chain` legs. Funnel steps are deleted after 24
+months, the privacy policy's retention.
 
 **Guarantees.** Quote expiry is checked at build and again at submission. The
 approval binds an immutable digest over instrument version, state snapshot,
@@ -289,8 +295,11 @@ still issued and are shown as unsealed, honestly, until sealing resumes.
 **Owns.** Subscriptions; rules; delivery attempts and retries; channel
 adapters for push, email, webhook, and in product notification. Built today:
 the email adapter (SMTP under implicit TLS or STARTTLS, never in the clear,
-configured only on the Gateway host) and visitor feedback in the `alert`
-schema, kept before it is mailed to the team, with each delivery's outcome.
+configured only on the Gateway host); visitor feedback in the `alert`
+schema, kept before it is mailed to the team, with each delivery's outcome;
+and notices of settled activity worth a look (a leg that failed or did not
+land, a wallet's first landed trade), one per reconciler pass, kept the same
+way.
 
 **Consumes transitions, not tables.** It reads outbox events. It does not poll
 every table looking for change.

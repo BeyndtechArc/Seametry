@@ -54,18 +54,18 @@ type InsertLegParams struct {
 	QuoteID              pgtype.UUID    `db:"quote_id" json:"quote_id"`
 	Wallet               string         `db:"wallet" json:"wallet"`
 	Mint                 string         `db:"mint" json:"mint"`
-	Symbol               string         `db:"symbol" json:"symbol"`
+	Symbol               pgtype.Text    `db:"symbol" json:"symbol"`
 	InAtoms              pgtype.Numeric `db:"in_atoms" json:"in_atoms"`
-	InScale              int16          `db:"in_scale" json:"in_scale"`
+	InScale              pgtype.Int2    `db:"in_scale" json:"in_scale"`
 	OutAtoms             pgtype.Numeric `db:"out_atoms" json:"out_atoms"`
 	FloorAtoms           pgtype.Numeric `db:"floor_atoms" json:"floor_atoms"`
-	OutScale             int16          `db:"out_scale" json:"out_scale"`
-	RoutingFeeBps        int32          `db:"routing_fee_bps" json:"routing_fee_bps"`
-	TipOffsetBps         int32          `db:"tip_offset_bps" json:"tip_offset_bps"`
+	OutScale             pgtype.Int2    `db:"out_scale" json:"out_scale"`
+	RoutingFeeBps        pgtype.Int4    `db:"routing_fee_bps" json:"routing_fee_bps"`
+	TipOffsetBps         pgtype.Int4    `db:"tip_offset_bps" json:"tip_offset_bps"`
 	SimulatedFeeAtoms    pgtype.Numeric `db:"simulated_fee_atoms" json:"simulated_fee_atoms"`
 	TipLamports          pgtype.Numeric `db:"tip_lamports" json:"tip_lamports"`
-	Landing              string         `db:"landing" json:"landing"`
-	LastValidBlockHeight int64          `db:"last_valid_block_height" json:"last_valid_block_height"`
+	Landing              pgtype.Text    `db:"landing" json:"landing"`
+	LastValidBlockHeight pgtype.Int8    `db:"last_valid_block_height" json:"last_valid_block_height"`
 	MessageSha256        string         `db:"message_sha256" json:"message_sha256"`
 	Source               string         `db:"source" json:"source"`
 }
@@ -178,6 +178,7 @@ const touchWallet = `-- name: TouchWallet :exec
 INSERT INTO execution.wallets (address, first_seen_at, first_source, first_source_at)
 VALUES ($1, $2, $3, CASE WHEN $3::jsonb IS NULL THEN NULL ELSE $2::timestamptz END)
 ON CONFLICT (address) DO UPDATE SET
+    first_seen_at   = LEAST(execution.wallets.first_seen_at, EXCLUDED.first_seen_at),
     first_source    = COALESCE(execution.wallets.first_source, EXCLUDED.first_source),
     first_source_at = COALESCE(execution.wallets.first_source_at, EXCLUDED.first_source_at)
 `
@@ -188,7 +189,8 @@ type TouchWalletParams struct {
 	FirstSource []byte             `db:"first_source" json:"first_source"`
 }
 
-// The wallet's first quote creates it. A first-touch source arriving later
+// The wallet's first quote creates it, and a trade imported from chain that
+// predates it moves first_seen_at back. A first-touch source arriving later
 // fills an empty one and never replaces one already kept.
 func (q *Queries) TouchWallet(ctx context.Context, arg TouchWalletParams) error {
 	_, err := q.db.Exec(ctx, touchWallet, arg.Address, arg.SeenAt, arg.FirstSource)

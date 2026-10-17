@@ -65,8 +65,10 @@ func main() {
 		err = recordDemoBatch(".")
 	case "anchor":
 		err = anchor(".")
+	case "import-activity":
+		err = importActivity(os.Args[2:])
 	default:
-		err = fmt.Errorf("unknown command %q: usage is %q, %q, %q, %q or %q", cmd, "serve", "migrate", "replay", "record-demo-batch", "anchor")
+		err = fmt.Errorf("unknown command %q: usage is %q, %q, %q, %q, %q or %q", cmd, "serve", "migrate", "replay", "record-demo-batch", "anchor", "import-activity")
 	}
 	if err != nil {
 		slog.Error("seametry: exiting", "command", cmd, "error", err.Error())
@@ -139,6 +141,16 @@ func serve() error {
 	} else {
 		slog.Warn("seametry: SEAMETRY_SMTP_HOST is not set; feedback is kept but not mailed")
 	}
+	report := execution.NewReport(pool)
+	mainnet, err := solana.New(mainnetEndpoint(), solana.Options{})
+	if err != nil {
+		return fmt.Errorf("configuring the mainnet reader that settles legs: %w", err)
+	}
+	// Unset, legs still settle; only the fee each actually credited goes unread.
+	feeWallet := strings.TrimSpace(os.Getenv("SEAMETRY_FEE_WALLET"))
+	if feeWallet == "" {
+		slog.Warn("seametry: SEAMETRY_FEE_WALLET is not set; settled legs will not record the routing fee they credited")
+	}
 	hall, err := solana.New(hallEndpoint, solana.Options{})
 	if err != nil {
 		return fmt.Errorf("configuring the devnet Hall reader: %w", err)
@@ -146,7 +158,7 @@ func serve() error {
 	gwServer := gateway.NewServer(observationdb.New(pool), store.NewDirObjectStore(objectDir)).
 		WithHall(hall, basket.HallDevnetProgramID, "devnet").
 		WithReceipts(receipt.NewLedger(pool)).
-		WithActivity(execution.NewReport(pool)).
+		WithActivity(report).
 		WithFeedback(alert.NewFeedback(pool, mailer))
 	authOrigin := strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_ORIGIN"))
 	if authOrigin == "" {
@@ -173,6 +185,7 @@ func serve() error {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	go settle(ctx, report, mainnet, feeWallet, alert.NewNotices(pool, mailer))
 
 	serveErr := make(chan error, 1)
 	go func() {

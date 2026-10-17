@@ -20,3 +20,14 @@ type AlertFeedback struct {
 	DeliveryDetail pgtype.Text        `db:"delivery_detail" json:"delivery_detail"`
 	DeliveredAt    pgtype.Timestamptz `db:"delivered_at" json:"delivered_at"`
 }
+
+type AlertNotice struct {
+	ID             pgtype.UUID        `db:"id" json:"id"`
+	Kind           string             `db:"kind" json:"kind"`
+	Subject        string             `db:"subject" json:"subject"`
+	Body           string             `db:"body" json:"body"`
+	CreatedAt      pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	Delivery       string             `db:"delivery" json:"delivery"`
+	DeliveryDetail pgtype.Text        `db:"delivery_detail" json:"delivery_detail"`
+	DeliveredAt    pgtype.Timestamptz `db:"delivered_at" json:"delivered_at"`
+}

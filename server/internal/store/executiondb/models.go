@@ -24,24 +24,34 @@ type ExecutionLeg struct {
 	QuoteID              pgtype.UUID        `db:"quote_id" json:"quote_id"`
 	Wallet               string             `db:"wallet" json:"wallet"`
 	Mint                 string             `db:"mint" json:"mint"`
-	Symbol               string             `db:"symbol" json:"symbol"`
+	Symbol               pgtype.Text        `db:"symbol" json:"symbol"`
 	InAtoms              pgtype.Numeric     `db:"in_atoms" json:"in_atoms"`
-	InScale              int16              `db:"in_scale" json:"in_scale"`
+	InScale              pgtype.Int2        `db:"in_scale" json:"in_scale"`
 	OutAtoms             pgtype.Numeric     `db:"out_atoms" json:"out_atoms"`
 	FloorAtoms           pgtype.Numeric     `db:"floor_atoms" json:"floor_atoms"`
-	OutScale             int16              `db:"out_scale" json:"out_scale"`
-	RoutingFeeBps        int32              `db:"routing_fee_bps" json:"routing_fee_bps"`
-	TipOffsetBps         int32              `db:"tip_offset_bps" json:"tip_offset_bps"`
+	OutScale             pgtype.Int2        `db:"out_scale" json:"out_scale"`
+	RoutingFeeBps        pgtype.Int4        `db:"routing_fee_bps" json:"routing_fee_bps"`
+	TipOffsetBps         pgtype.Int4        `db:"tip_offset_bps" json:"tip_offset_bps"`
 	SimulatedFeeAtoms    pgtype.Numeric     `db:"simulated_fee_atoms" json:"simulated_fee_atoms"`
 	TipLamports          pgtype.Numeric     `db:"tip_lamports" json:"tip_lamports"`
-	Landing              string             `db:"landing" json:"landing"`
-	LastValidBlockHeight int64              `db:"last_valid_block_height" json:"last_valid_block_height"`
+	Landing              pgtype.Text        `db:"landing" json:"landing"`
+	LastValidBlockHeight pgtype.Int8        `db:"last_valid_block_height" json:"last_valid_block_height"`
 	MessageSha256        string             `db:"message_sha256" json:"message_sha256"`
 	Signature            pgtype.Text        `db:"signature" json:"signature"`
 	SubmittedAt          pgtype.Timestamptz `db:"submitted_at" json:"submitted_at"`
 	SubmitResult         pgtype.Text        `db:"submit_result" json:"submit_result"`
 	SubmitText           pgtype.Text        `db:"submit_text" json:"submit_text"`
 	Source               string             `db:"source" json:"source"`
+	ChainOutcome         pgtype.Text        `db:"chain_outcome" json:"chain_outcome"`
+	Slot                 pgtype.Int8        `db:"slot" json:"slot"`
+	BlockTime            pgtype.Timestamptz `db:"block_time" json:"block_time"`
+	ChainError           []byte             `db:"chain_error" json:"chain_error"`
+	NetworkFeeLamports   pgtype.Numeric     `db:"network_fee_lamports" json:"network_fee_lamports"`
+	WalletUsdcDelta      pgtype.Numeric     `db:"wallet_usdc_delta" json:"wallet_usdc_delta"`
+	WalletTokenDelta     pgtype.Numeric     `db:"wallet_token_delta" json:"wallet_token_delta"`
+	TokenScale           pgtype.Int2        `db:"token_scale" json:"token_scale"`
+	FeeCreditedAtoms     pgtype.Numeric     `db:"fee_credited_atoms" json:"fee_credited_atoms"`
+	ReconciledAt         pgtype.Timestamptz `db:"reconciled_at" json:"reconciled_at"`
 }
 
 type ExecutionQuote struct {
