@@ -1,9 +1,11 @@
 -- name: TouchWallet :exec
--- The wallet's first quote creates it. A first-touch source arriving later
+-- The wallet's first quote creates it, and a trade imported from chain that
+-- predates it moves first_seen_at back. A first-touch source arriving later
 -- fills an empty one and never replaces one already kept.
 INSERT INTO execution.wallets (address, first_seen_at, first_source, first_source_at)
 VALUES (sqlc.arg(address), sqlc.arg(seen_at), sqlc.narg(first_source), CASE WHEN sqlc.narg(first_source)::jsonb IS NULL THEN NULL ELSE sqlc.arg(seen_at)::timestamptz END)
 ON CONFLICT (address) DO UPDATE SET
+    first_seen_at   = LEAST(execution.wallets.first_seen_at, EXCLUDED.first_seen_at),
     first_source    = COALESCE(execution.wallets.first_source, EXCLUDED.first_source),
     first_source_at = COALESCE(execution.wallets.first_source_at, EXCLUDED.first_source_at);
 
