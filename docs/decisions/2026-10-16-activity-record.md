@@ -17,8 +17,10 @@ reads that wallet's rows.
 Until now execution records lived only in each visitor's browser
 (`clients/web/src/lib/execution/store.ts`), and the submit route returned a
 signature and kept nothing. The one record of volume, fees and wallets was the
-fee account's public history, read by hand on 16 October: 44 fee credits since
-11 October, 0.069144 USDC, all from one wallet. That record also cannot see a
+fee account's public history, read by hand on 16 October: 44 transactions
+since 11 October, 43 of them fee credits totalling 0.069144 USDC and one a
+failed leg, all from one wallet. (First written as 44 credits; the failed
+leg was miscounted as one, and recounted on 17 October.) That record also cannot see a
 leg whose tip took the whole routing fee, since such a leg is sent without the
 fee account. Storm asked for persistence and a go-to-market Admin built on it,
 in a form where signing in adds utility rather than changing what is known.
