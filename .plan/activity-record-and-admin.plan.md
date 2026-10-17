@@ -179,6 +179,30 @@ public chain history.
 - `docs/prd/ADMIN.md`, new, owner of the Admin and its metric definitions;
   `docs/README.md` map row.
 
+## Contact, feedback and the mailer (Storm, 16 October 2026)
+
+The site names how to reach the team: a Contact group in the footer (Send
+feedback, seametry@beyndtech.com) and the X account (x.com/seametry_) as an
+icon. Feedback takes no sign-in: a public `/feedback` page posts to
+`/api/feedback`, which forwards over the service secret to the Gateway's
+`/v1/internal/feedback`. Alert (SERVICE_CATALOG 3.8, "channel adapters for
+... email") owns the mailer: it stores each message in the `alert` schema and
+mails it to the team through Hostinger SMTP (smtp.hostinger.com, implicit TLS
+on 465, measured 16 October; authenticated as team@beyndtech.com, sent from
+the seametry@ alias). The SMTP password lives only in the Oracle host's
+`server/deploy/.env`. A message is stored before it is mailed, so a mail
+failure loses nothing; the delivery's outcome is stored beside it for the
+Admin. Admin alerts reuse this mailer once the reconciler (PR 2) knows what
+settled.
+
+## Prospects (later, with the Admin)
+
+Storm will supply an external source of prospects for outreach. The Admin
+will import it as its own table, marked with the source and the date it was
+received, matched to recorded wallets where a prospect names one, and never
+mixed into recorded activity. Before import: the lawful basis for holding
+each person's data, and the privacy policy's wording for it.
+
 ## Pull requests, in order
 
 1. **Record.** Migration, contract, Go ingest handlers and tests (including the

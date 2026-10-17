@@ -183,6 +183,27 @@ func (e DepthPointAvailability) Valid() bool {
 	}
 }
 
+// Defines values for FeedbackSubmissionDeployment.
+const (
+	FeedbackSubmissionDeploymentDevelopment FeedbackSubmissionDeployment = "development"
+	FeedbackSubmissionDeploymentPreview     FeedbackSubmissionDeployment = "preview"
+	FeedbackSubmissionDeploymentProduction  FeedbackSubmissionDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the FeedbackSubmissionDeployment enum.
+func (e FeedbackSubmissionDeployment) Valid() bool {
+	switch e {
+	case FeedbackSubmissionDeploymentDevelopment:
+		return true
+	case FeedbackSubmissionDeploymentPreview:
+		return true
+	case FeedbackSubmissionDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for FormulaEvaluateRequestCluster.
 const (
 	FormulaEvaluateRequestClusterDevnet  FormulaEvaluateRequestCluster = "devnet"
@@ -718,6 +739,24 @@ type DepthPoint struct {
 // DepthPointAvailability defines model for DepthPoint.Availability.
 type DepthPointAvailability string
 
+// FeedbackSubmission defines model for FeedbackSubmission.
+type FeedbackSubmission struct {
+	Deployment FeedbackSubmissionDeployment `json:"deployment"`
+	Message    string                       `json:"message"`
+
+	// Page The path the visitor was on.
+	Page *string `json:"page,omitempty"`
+
+	// ReplyTo An email address the visitor chose to give, for a reply.
+	ReplyTo *string `json:"reply_to,omitempty"`
+
+	// Wallet The connected wallet, only when the visitor chose to include it.
+	Wallet *string `json:"wallet,omitempty"`
+}
+
+// FeedbackSubmissionDeployment defines model for FeedbackSubmission.Deployment.
+type FeedbackSubmissionDeployment string
+
 // Finding defines model for Finding.
 type Finding struct {
 	DoesNotEstablish []string   `json:"does_not_establish"`
@@ -1161,3 +1200,6 @@ type RecordActivityQuoteJSONRequestBody = ActivityQuote
 
 // RecordActivitySubmissionJSONRequestBody defines body for RecordActivitySubmission for application/json ContentType.
 type RecordActivitySubmissionJSONRequestBody = ActivitySubmission
+
+// ReceiveFeedbackJSONRequestBody defines body for ReceiveFeedback for application/json ContentType.
+type ReceiveFeedbackJSONRequestBody = FeedbackSubmission

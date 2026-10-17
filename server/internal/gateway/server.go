@@ -23,6 +23,7 @@ type Server struct {
 	HallEvidenceDir string
 	Receipts        ReceiptLedger
 	Activity        ActivityReport
+	Feedback        FeedbackDesk
 	Now             func() time.Time
 }
 

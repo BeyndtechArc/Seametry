@@ -53,6 +53,10 @@ tags:
       over a service secret: what was quoted, refused and sent, and the
       funnel steps a browser reports. Internal; not part of the published
       reference.
+  - name: alert
+    description: >
+      Alert. Feedback a visitor sends, kept and mailed to the team. Internal;
+      not part of the published reference.
 
 paths:
   # --- instruments -----------------------------------------------------
@@ -684,6 +688,42 @@ paths:
           description: Recorded, or already recorded.
         default:
           $ref: '#/components/responses/Problem'
+  /internal/feedback:
+    post:
+      operationId: receiveFeedback
+      tags: [alert]
+      summary: Feedback a visitor sent, forwarded by the web route that received it.
+      description: >
+        Stored before anything else, then mailed to the team after the
+        answer, so a mail server's delay or failure never reaches the
+        visitor and loses nothing. The stored row records whether delivery
+        succeeded.
+      security:
+        - serviceSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackSubmission'
+      responses:
+        "202":
+          description: Stored; delivery to the team follows.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+        default:
+          $ref: '#/components/responses/Problem'
   /internal/activity/funnel:
     post:
       operationId: recordActivityFunnel
@@ -954,6 +994,29 @@ components:
         quote_id:
           type: string
           format: uuid
+    # --- alert ---------------------------------------------------------------
+    FeedbackSubmission:
+      type: object
+      required: [message, deployment]
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        reply_to:
+          type: string
+          maxLength: 254
+          description: An email address the visitor chose to give, for a reply.
+        wallet:
+          type: string
+          description: The connected wallet, only when the visitor chose to include it.
+        page:
+          type: string
+          maxLength: 500
+          description: The path the visitor was on.
+        deployment:
+          type: string
+          enum: [production, preview, development]
     # --- common ------------------------------------------------------------
     Amount:
       type: object

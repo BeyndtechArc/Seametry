@@ -4,6 +4,7 @@ import type {
   HTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
+  TextareaHTMLAttributes,
 } from "react";
 import { BlockedKey } from "./blocked-key";
 import { Icon, type IconName } from "./icons";
@@ -414,6 +415,15 @@ export function IconButton({ icon, label, ...buttonProps }: ButtonHTMLAttributes
   );
 }
 
+/** components.md, Icon button, as a link: it goes somewhere, such as one of Seametry's accounts elsewhere. */
+export function IconLink({ icon, label, href }: { icon: IconName; label: string; href: string }) {
+  return (
+    <a href={href} className={styles.iconButton} aria-label={label} title={label}>
+      <Icon name={icon} />
+    </a>
+  );
+}
+
 /** components.md, Route action: a step forward inside one page is navigation, so it wears the Route action as a button. */
 export function ContinueAction({ children, ...buttonProps }: ButtonHTMLAttributes<HTMLButtonElement> & { children: ReactNode }) {
   return (
@@ -554,6 +564,28 @@ export function Field({
           } : undefined}
         />
         {endAdornment ? <span className={styles.fieldAdornment} aria-hidden="true">{endAdornment}</span> : null}
+      </span>
+      {message ? <span className={styles.fieldMessage} id={`${id}-message`}>{message}</span> : null}
+    </label>
+  );
+}
+
+/** components.md, Field, as a text area: a value longer than a line, with the same label, rule and message. */
+export function FieldArea({
+  id,
+  label,
+  message,
+  invalid = false,
+  ...areaProps
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & { id: string; label: string; message?: string; invalid?: boolean }) {
+  return (
+    <label className={styles.fieldGroup} htmlFor={id} data-invalid={invalid || undefined}>
+      <span className={styles.fieldLabel}>
+        {label}
+        <span aria-hidden="true" />
+      </span>
+      <span className={styles.fieldShell}>
+        <textarea {...areaProps} id={id} aria-invalid={invalid || undefined} aria-describedby={message ? `${id}-message` : undefined} />
       </span>
       {message ? <span className={styles.fieldMessage} id={`${id}-message`}>{message}</span> : null}
     </label>
@@ -874,9 +906,12 @@ export function AgentPanel({
 
 export function RegisterFooter({
   groups,
+  accounts = [],
   note,
 }: {
   groups: Array<{ title: string; links: Array<{ label: string; href: string }> }>;
+  /** Seametry's accounts elsewhere, each an icon link named for assistive technology. */
+  accounts?: Array<{ label: string; href: string; icon: IconName }>;
   note: string;
 }) {
   return (
@@ -893,6 +928,13 @@ export function RegisterFooter({
           </section>
         ))}
       </div>
+      {accounts.length > 0 ? (
+        <ul className={styles.footerAccounts} aria-label="Seametry elsewhere">
+          {accounts.map((account) => (
+            <li key={account.href}><IconLink icon={account.icon} label={account.label} href={account.href} /></li>
+          ))}
+        </ul>
+      ) : null}
       <p>{note}</p>
     </footer>
   );

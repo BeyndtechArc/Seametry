@@ -1,0 +1,31 @@
+.form {
+  display: grid;
+  gap: var(--sm-space-7);
+  max-width: calc(var(--sm-space-13) * 6);
+  margin-top: var(--sm-space-10);
+}
+
+.wallet {
+  display: grid;
+  gap: var(--sm-space-4);
+  justify-items: start;
+}
+
+.wallet p,
+.elsewhere {
+  margin: 0;
+  color: var(--sm-text-secondary);
+}
+
+.tray {
+  display: flex;
+}
+
+.elsewhere a {
+  color: var(--sm-accent-touchText);
+}
+
+.elsewhere a:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
+}
