@@ -50,21 +50,18 @@ pub fn handle_create<'info>(
     let alloy_key = accounts.alloy.key();
     let now = Clock::get()?.unix_timestamp;
 
-    let (inputs, supply_after, signer_parts) = {
+    let (inputs, supply_after, signer_parts, leg_accounts, hook_accounts) = {
         let mut alloy = accounts.alloy.load_mut()?;
         let count = alloy.constituent_count as usize;
-        require_eq!(
-            ctx.remaining_accounts.len(),
-            count * ACCOUNTS_PER_LEG,
+        require!(
+            ctx.remaining_accounts.len() >= count * ACCOUNTS_PER_LEG,
             HallError::WrongAccountCount
         );
+        let (leg_accounts, hook_accounts) =
+            ctx.remaining_accounts.split_at(count * ACCOUNTS_PER_LEG);
         require_eq!(maximums.len(), count, HallError::WrongMaximumsCount);
 
-        for (index, chunk) in ctx
-            .remaining_accounts
-            .chunks_exact(ACCOUNTS_PER_LEG)
-            .enumerate()
-        {
+        for (index, chunk) in leg_accounts.chunks_exact(ACCOUNTS_PER_LEG).enumerate() {
             let record = &mut alloy.legs[index];
             let [mint, _source, hall, program] = chunk else {
                 return err!(HallError::WrongAccountCount);
@@ -90,15 +87,17 @@ pub fn handle_create<'info>(
             .supply
             .checked_add(shares)
             .ok_or(HallError::Overflow)?;
-        (inputs, alloy.supply, (alloy.sponsor, alloy.id, alloy.bump))
+        (
+            inputs,
+            alloy.supply,
+            (alloy.sponsor, alloy.id, alloy.bump),
+            leg_accounts,
+            hook_accounts,
+        )
     };
 
     let caller = accounts.caller.to_account_info();
-    for (chunk, input) in ctx
-        .remaining_accounts
-        .chunks_exact(ACCOUNTS_PER_LEG)
-        .zip(&inputs)
-    {
+    for (chunk, input) in leg_accounts.chunks_exact(ACCOUNTS_PER_LEG).zip(&inputs) {
         let [mint, source, hall, program] = chunk else {
             return err!(HallError::WrongAccountCount);
         };
@@ -109,6 +108,7 @@ pub fn handle_create<'info>(
                 source,
                 hall,
                 token_program: program,
+                hook_accounts,
             },
             *input,
         )?;

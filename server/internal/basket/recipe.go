@@ -43,9 +43,8 @@ type Constituent struct {
 	// from one to the other. Folding vested credit into the ledger moves
 	// VestStart forward to that instant and leaves VestEnd where it was, so
 	// what remains keeps vesting along the same line and no number of syncs can
-	// finish a vest early. A new credit restarts both over the whole Pending
-	// balance, which is what stops a donor timing a deposit to land just before
-	// their own strike.
+	// finish a vest early. A new credit sets VestEnd to the size-weighted
+	// average of the remainder's end and a full window for the credit; see Sync.
 	VestStart time.Time
 	VestEnd   time.Time
 
@@ -213,15 +212,30 @@ func Sync(c Constituent, actual amount.Amount, asOf time.Time, window time.Durat
 		}
 		result.Kind = SyncCredit
 		result.Delta = surplus
-		// The whole pending balance vests together, so a new credit restarts
-		// the window for what was already there. That is deliberate: it is the
-		// conservative direction, and it removes any benefit from timing a
-		// deposit against an existing vest.
-		if result.After.Pending, err = result.After.Pending.Add(surplus); err != nil {
+		// The vest ends at the size-weighted average of the remainder's own
+		// end and a full window for the surplus, rounded up to a whole second.
+		// Restarting the whole balance, as this did before 18 October 2026,
+		// let a one-atom donation postpone everyone else's credit by a full
+		// window each time. With the average a donation of s raises the rate
+		// pending vests at by at most s/W, so it still cannot lift share value
+		// faster than vesting it alone would (docs/decisions/
+		// 2026-10-18-hall-pre-audit-fixes.md).
+		remaining := result.After.Pending
+		left := int64(0)
+		if !remaining.IsZero() && result.After.VestEnd.After(asOf) {
+			left = int64(result.After.VestEnd.Sub(asOf) / time.Second)
+		}
+		if result.After.Pending, err = remaining.Add(surplus); err != nil {
 			return SyncResult{}, err
 		}
+		weighted := new(big.Int).Mul(remaining.Atoms(), big.NewInt(left))
+		weighted.Add(weighted, new(big.Int).Mul(surplus.Atoms(), big.NewInt(int64(window/time.Second))))
+		span, rest := new(big.Int).QuoRem(weighted, result.After.Pending.Atoms(), new(big.Int))
+		if rest.Sign() != 0 {
+			span.Add(span, big.NewInt(1))
+		}
 		result.After.VestStart = asOf
-		result.After.VestEnd = asOf.Add(window)
+		result.After.VestEnd = asOf.Add(time.Duration(span.Int64()) * time.Second)
 		return result, nil
 
 	default:
@@ -333,7 +347,15 @@ func Create(a *Alloy, shares *big.Int, maximums []amount.Amount) ([]amount.Amoun
 		}
 		inputs[i] = required
 	}
-	return inputs, nil
+	// Only when an issuer has seized every ledger to zero does a strike cost
+	// nothing; shares minted then would take a cut of any later restore or
+	// donation from the holders who were seized.
+	for _, input := range inputs {
+		if !input.IsZero() {
+			return inputs, nil
+		}
+	}
+	return nil, fmt.Errorf("basket: every constituent's ledger is zero, so this strike would deposit nothing and mint shares for free")
 }
 
 // Redeem computes what burning shares credits to a claim, one leg per

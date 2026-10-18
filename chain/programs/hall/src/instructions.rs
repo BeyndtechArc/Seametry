@@ -3,6 +3,7 @@ pub mod deposit;
 pub mod initialize_alloy;
 pub mod redeem;
 pub mod sync_leg;
+pub mod transfer;
 pub mod withdraw;
 
 pub use create::*;

@@ -82,17 +82,22 @@ Specified in Go in `server/internal/basket`, with shared vectors in `shared/spec
 
 **Mint by shares, never by amount.** The caller asks for `n` shares and states maximum inputs. The Hall pulls exactly the required units or fails. A depositor can never be rounded down to zero shares, which is the mechanism of the classic inflation attack.
 
+**A strike that deposits nothing is refused.** Only when an issuer has seized every ledger to zero does every required input round to zero; shares minted then would take a cut of any later restore or donation from the holders who were seized. Found in the 18 October 2026 pre-audit review and pinned by the vector "a strike against a fully seized alloy is refused".
+
 ### 4.5 Sync, vesting, and seizure
 
 ```
 expected = ledger + pending + unclaimed
 fold vested pending into ledger
-surplus  (actual > expected): pending += surplus; vest restarts over W
+surplus  (actual > expected): pending += surplus; vest restarts at now and
+                              ends at the size-weighted average of the
+                              remainder's end and now + W for the surplus
 deficit  (actual < expected): consumes pending first,
                               then falls pro rata on ledger and unclaimed
 ```
 
 - **Upward credits vest linearly over W** (compiled constant; proposed one hour). A donation cannot jump share value in a single block, so a lending market that prices shares cannot be hit the way Venus was. Donations are gifts to holders; the donor recovers at most their own pro-rata fraction, always less than they gave. `sync` is permissionless, so vesting depends on elapsed time and never on the number of calls: folding vested credit into the ledger moves the vest start forward and leaves its end, and a second sync at the same instant vests nothing more. An earlier version of the arithmetic let repeated syncs compound; a randomized test found it and `spec/recipe/vectors.json` now has a chained scenario that pins it.
+- **A new credit cannot postpone credit already vesting.** Until 18 October 2026 a credit restarted the whole pending balance over W, so a one-atom donation every few minutes kept everyone else's credit out of the ledger. Now the vest ends at `now + ceil((r * d + s * W) / (r + s))`, where `r` is the remainder with `d` seconds left and `s` the new credit: dust barely moves the end, a large credit gets nearly the full window, and by Cauchy-Schwarz a credit raises the vesting rate by at most `s / W`, the same bound as vesting it alone, so the Venus defence above still holds. Pinned by the vector "a dust donation cannot delay a running vest".
 - **Losses apply immediately.** Conservative in the direction that protects anyone relying on the share's value.
 - **Trade-off, stated:** a newcomer who strikes during a vest window shares in the remaining unvested credit. For multiplier-based issuers no raw credit exists, so this never arises. For mint-to issuers it is small and bounded by W. Revisit once Backpack's mechanism is confirmed.
 - **Claims are fixed quantities until a seizure.** Raw dividends attributable to unclaimed units accrue to holders. Withdraw promptly; the app notifies.
@@ -110,7 +115,7 @@ deficit  (actual < expected): consumes pending first,
 | Changes the Scaled UI multiplier | no raw change | none needed; value accrues automatically | dividend or split, with its effective time |
 | Mints new tokens into holders | actual rises above expected | `sync` credits holders through the vest | "Dividend reinvested", when traced to the issuer's mint authority |
 
-Transfer-hook support ships in version one even though no current constituent has an active hook, because xStocks hooks exist and are merely switched off.
+Transfer-hook support ships in version one even though no current constituent has an active hook, because xStocks hooks exist and are merely switched off. A caller passes each hook's validation account, the accounts it lists and the hook program after the per-constituent accounts of `initialize_alloy` and `create`, and as the remaining accounts of `withdraw`; the Hall resolves what each mint's hook needs from them with `spl-transfer-hook-interface`. The pre-audit review of 18 October 2026 found that, until then, no deposit or delivery forwarded these accounts at all: switching a hook on would have stopped every strike and left every claim on that leg undeliverable. `chain/programs/hall/tests/hooks.rs` now switches a live hook on (the test-only `programs/hall-test-hook`) and proves a strike and a delivery carry it, and that a refusing hook leaves the leg a claim while a melt still succeeds.
 
 ### 4.7 The share mint
 
@@ -118,7 +123,7 @@ Token-2022 with metadata only. No freeze authority. No permanent delegate. No pa
 
 ### 4.8 Limits
 
-At most twelve constituents. Derivation: `create` needs a mint and two token accounts per constituent plus roughly seven shared accounts, which fits well under 64, and the remaining headroom absorbs transfer-hook accounts. Verified by a devnet test with twelve constituents, half with hooks enabled.
+At most twelve constituents. Derivation: `create` needs a mint and two token accounts per constituent plus roughly seven shared accounts, which fits well under 64, and the remaining headroom absorbs transfer-hook accounts. Not yet verified at twelve: this section once claimed a devnet test with twelve constituents, half with hooks enabled, and no such test exists (found 18 October 2026). `tests/initialize_alloy.rs` notes a legacy transaction cannot carry twelve; a versioned transaction with lookup tables is needed to test the bound, and remains open.
 
 The account count is not the binding limit. Every account key costs 32 bytes and a legacy transaction is capped at 1,232 bytes. A size estimate for `initialize_alloy` (placeholder keys, one signature, measured on 25 September 2026) gave about 957 bytes at four constituents, 1,389 at eight and 1,822 at twelve. Above roughly six constituents a strike therefore needs a v0 transaction with an address lookup table. The twelve constituent test is not yet written, and the local test helper sends legacy transactions only.
 

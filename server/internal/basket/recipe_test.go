@@ -478,6 +478,8 @@ type vectorStep struct {
 	// they show one instant each. The chained scenario below exists because
 	// that convention cannot expose a defect that only repeated calls reach.
 	Chain bool `json:"chain,omitempty"`
+	// Refused means the operation must fail and leave the state as it was.
+	Refused bool `json:"refused,omitempty"`
 }
 
 type vectorScenario struct {
@@ -639,6 +641,61 @@ func buildVectors(t *testing.T) vectorFile {
 				Ledger: l, Pending: p, Unclaimed: u, Supply: sup,
 			})
 		}
+		file.Scenarios = append(file.Scenarios, s)
+	}
+
+	// Scenario: a dust donation late in a vest cannot postpone it. Under the
+	// rule before 18 October 2026, the one atom at 3500s restarted a full
+	// window for the whole remainder; now the end moves by about a second.
+	{
+		c := constituent(t, "X", "1000000", "0", "0", 6)
+		supply := big.NewInt(1000)
+		s := vectorScenario{
+			Name:    "a dust donation cannot delay a running vest",
+			Purpose: "A credit sets the vest end to the size-weighted average of the remainder's end and a full window for the credit, so one atom cannot restart everyone else's vest.",
+			Scale:   6,
+		}
+		l, p, u, sup := record(c, supply)
+		s.Steps = append(s.Steps, vectorStep{Op: "initial", Ledger: l, Pending: p, Unclaimed: u, Supply: sup})
+		for _, step := range []struct {
+			at     time.Duration
+			actual string
+		}{{0, "2000000"}, {3500 * time.Second, "2000001"}, {3601 * time.Second, "2000001"}} {
+			result, err := Sync(c, atoms(t, step.actual, 6), epoch.Add(step.at), vestWindow)
+			if err != nil {
+				t.Fatal(err)
+			}
+			c = result.After
+			l, p, u, sup = record(c, supply)
+			s.Steps = append(s.Steps, vectorStep{
+				Op: "sync", AtSeconds: int64(step.at.Seconds()), Actual: step.actual,
+				Kind: string(result.Kind), Ledger: l, Pending: p, Unclaimed: u, Supply: sup, Chain: true,
+			})
+		}
+		file.Scenarios = append(file.Scenarios, s)
+	}
+
+	// Scenario: once every ledger is seized to zero, a strike is refused.
+	{
+		a := &Alloy{Supply: big.NewInt(1000), Constituents: []Constituent{constituent(t, "X", "1000000", "0", "0", 6)}}
+		s := vectorScenario{
+			Name:    "a strike against a fully seized alloy is refused",
+			Purpose: "With every ledger at zero a strike would deposit nothing and mint shares for free, which would then take a cut of any later restore from the holders who were seized.",
+			Scale:   6,
+		}
+		l, p, u, sup := record(a.Constituents[0], a.Supply)
+		s.Steps = append(s.Steps, vectorStep{Op: "initial", Ledger: l, Pending: p, Unclaimed: u, Supply: sup})
+		seized, err := Sync(a.Constituents[0], atoms(t, "0", 6), epoch, vestWindow)
+		if err != nil {
+			t.Fatal(err)
+		}
+		a.Constituents[0] = seized.After
+		l, p, u, sup = record(a.Constituents[0], a.Supply)
+		s.Steps = append(s.Steps, vectorStep{Op: "sync", Actual: "0", Kind: string(seized.Kind), Ledger: l, Pending: p, Unclaimed: u, Supply: sup})
+		if _, err := Create(a, big.NewInt(1000), []amount.Amount{atoms(t, "999999999999", 6)}); err == nil {
+			t.Fatal("a strike against a fully seized alloy was accepted")
+		}
+		s.Steps = append(s.Steps, vectorStep{Op: "create", Shares: "1000", Refused: true, Ledger: l, Pending: p, Unclaimed: u, Supply: sup})
 		file.Scenarios = append(file.Scenarios, s)
 	}
 

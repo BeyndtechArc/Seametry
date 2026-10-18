@@ -89,8 +89,16 @@ fn every_scenario_matches() {
                 }
                 "create" => {
                     let shares = atoms(step, "shares");
-                    let inputs = recipe::create_inputs(&[leg], supply, shares, &[u64::MAX])
-                        .unwrap_or_else(|e| panic!("{context}: {e:?}"));
+                    let result = recipe::create_inputs(&[leg], supply, shares, &[u64::MAX]);
+                    if step["refused"].as_bool().unwrap_or(false) {
+                        assert!(
+                            result.is_err(),
+                            "{context}: the strike was accepted: {result:?}"
+                        );
+                        assert_state(&context, &leg, supply, step);
+                        continue;
+                    }
+                    let inputs = result.unwrap_or_else(|e| panic!("{context}: {e:?}"));
                     assert_eq!(
                         inputs[0],
                         atoms(step, "result"),

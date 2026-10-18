@@ -11,23 +11,24 @@ owned by `docs/prd/HALL.md`; this file only measures the code they apply to.
 - Program: `chain/programs/hall`, ID `GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE` on devnet
 - Framework: Anchor 1.2.0, anchor-spl with Token-2022 extensions
 - Instructions: `initialize_alloy`, `create`, `redeem`, `withdraw`, `sync`
-- Source: 1,228 lines of code in 12 files, 1,491 lines in all
-- Tests: 3,047 lines of code, 56 `#[test]` functions, run in CI by `cargo test --locked`
-- Fingerprint: sha256 `7e11630975322ce88057941f0992c118f33844458ebfde4a213edb030fc0cacb` over each source file's repository path and contents, LF line endings, in path order
+- Source: 1,308 lines of code in 13 files, 1,602 lines in all
+- Tests: 3,248 lines of code, 59 `#[test]` functions, run in CI by `cargo test --locked`
+- Fingerprint: sha256 `ffe0b9a6a356146cb340442b4febbd0e33679aa9ee0f788cde526386b2e1903e` over each source file's repository path and contents, LF line endings, in path order
 
 | File | Code | Comment | Blank |
 |---|---:|---:|---:|
-| `src/error.rs` | 76 | 0 | 4 |
+| `src/error.rs` | 79 | 0 | 4 |
 | `src/events.rs` | 46 | 2 | 6 |
-| `src/instructions.rs` | 11 | 0 | 1 |
+| `src/instructions.rs` | 12 | 0 | 1 |
 | `src/instructions/create.rs` | 122 | 4 | 13 |
-| `src/instructions/deposit.rs` | 53 | 6 | 5 |
-| `src/instructions/initialize_alloy.rs` | 253 | 14 | 19 |
+| `src/instructions/deposit.rs` | 51 | 7 | 5 |
+| `src/instructions/initialize_alloy.rs` | 254 | 14 | 19 |
 | `src/instructions/redeem.rs` | 95 | 7 | 14 |
 | `src/instructions/sync_leg.rs` | 57 | 3 | 4 |
-| `src/instructions/withdraw.rs` | 95 | 6 | 14 |
-| `src/lib.rs` | 34 | 0 | 9 |
-| `src/recipe.rs` | 278 | 70 | 30 |
+| `src/instructions/transfer.rs` | 59 | 13 | 2 |
+| `src/instructions/withdraw.rs` | 94 | 8 | 14 |
+| `src/lib.rs` | 38 | 0 | 9 |
+| `src/recipe.rs` | 293 | 83 | 30 |
 | `src/state.rs` | 108 | 16 | 16 |
 
 ## Known gaps before mainnet
@@ -36,6 +37,17 @@ owned by `docs/prd/HALL.md`; this file only measures the code they apply to.
   intake ceilings (`docs/prd/HALL.md` section 5) are specified, not built.
 - Trident fuzzing across instruction sequences (`docs/prd/HALL.md` section 5)
   is specified, not run.
+- The twelve-constituent bound (`docs/prd/HALL.md` section 4.8) has no test:
+  a legacy transaction cannot carry twelve constituents.
+
+## Found and fixed before the audit
+
+Seametry's own review of 18 October 2026, explained in plain words and in
+code in `docs/decisions/2026-10-18-hall-pre-audit-fixes.md`: transfer-hook
+accounts were never carried on a deposit or delivery (now carried, and tested
+against a live hook); a strike against fully seized ledgers minted shares for
+nothing (now refused); a dust credit restarted the vest for all pending
+credit (the vest end is now size-weighted).
 
 ## Vaultline audit grant application
 
@@ -53,8 +65,8 @@ Repository: https://github.com/BeyndtechArc/Seametry (public)
 
 Program to audit: the Hall, chain/programs/hall (Anchor 1.2.0, anchor-spl with Token-2022 extensions)
 Instructions: initialize_alloy, create, redeem, withdraw, sync
-Size: 1,228 lines of Rust code across 12 source files (1,491 including comments and blank lines). Tests are a further 3,047 lines: 56 test functions under LiteSVM covering claim arithmetic vectors, properties, and issuer powers (freeze, pause, permanent delegate, transfer hooks, default frozen accounts, Scaled UI multiplier changes).
-Scope fingerprint: sha256 7e11630975322ce88057941f0992c118f33844458ebfde4a213edb030fc0cacb, recomputed by node chain/tools/audit-scope.mjs --check
+Size: 1,308 lines of Rust code across 13 source files (1,602 including comments and blank lines). Tests are a further 3,248 lines: 59 test functions under LiteSVM covering claim arithmetic vectors, properties, and issuer powers (freeze, pause, permanent delegate, transfer hooks, default frozen accounts, Scaled UI multiplier changes).
+Scope fingerprint: sha256 ffe0b9a6a356146cb340442b4febbd0e33679aa9ee0f788cde526386b2e1903e, recomputed by node chain/tools/audit-scope.mjs --check
 
 Stage: devnet. Program GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE, upgrade authority still held. No mainnet deployment and no TVL. Devnet Alloys use stand-in tokens that carry each real stock's Token-2022 settings. Separately, a mainnet direct-purchase path routes through Jupiter into the buyer's own wallet; it uses no Seametry program and is outside this scope.
 
@@ -71,5 +83,6 @@ Anything else:
 Design spec for the Hall, including its security model and acceptance criteria: docs/prd/HALL.md
 Our own mainnet readiness assessment, including the audit scope we want covered: docs/decisions/2026-10-11-index-first-mainnet-assessment.md
 This scope, measured from the source: chain/AUDIT_SCOPE.md
-Tests run in CI with: cargo test --locked (from chain/)
+Our own pre-audit review and its fixes: docs/decisions/2026-10-18-hall-pre-audit-fixes.md
+Tests run in CI with: cargo-build-sbf --arch v0, then cargo test --locked (from chain/)
 ```
