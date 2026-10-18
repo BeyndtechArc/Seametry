@@ -13,7 +13,7 @@ mod common;
 
 use {
     anchor_lang::{prelude::Pubkey, solana_program::instruction::AccountMeta},
-    common::{alloy::*, fixture::*, stage::*},
+    common::{alloy::*, stage::*},
     solana_account::Account,
     spl_tlv_account_resolution::{account::ExtraAccountMeta, state::ExtraAccountMetaList},
     spl_transfer_hook_interface::{
