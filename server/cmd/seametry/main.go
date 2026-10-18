@@ -33,7 +33,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/BeyndtechArc/Seametry/server/internal/alert"
 	"github.com/BeyndtechArc/Seametry/server/internal/basket"
+	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
 	"github.com/BeyndtechArc/Seametry/server/internal/identity"
 	"github.com/BeyndtechArc/Seametry/server/internal/receipt"
@@ -125,13 +127,27 @@ func serve() error {
 	if hallEndpoint == "" {
 		hallEndpoint = "https://api.devnet.solana.com"
 	}
+	// No SEAMETRY_SMTP_HOST means feedback is kept and marked not_configured;
+	// a partial configuration stops the start, naming what is missing.
+	configured, err := alert.MailerFromEnv(os.Getenv)
+	if err != nil {
+		return err
+	}
+	var mailer alert.Sender
+	if configured != nil {
+		mailer = configured
+	} else {
+		slog.Warn("seametry: SEAMETRY_SMTP_HOST is not set; feedback is kept but not mailed")
+	}
 	hall, err := solana.New(hallEndpoint, solana.Options{})
 	if err != nil {
 		return fmt.Errorf("configuring the devnet Hall reader: %w", err)
 	}
 	gwServer := gateway.NewServer(observationdb.New(pool), store.NewDirObjectStore(objectDir)).
 		WithHall(hall, basket.HallDevnetProgramID, "devnet").
-		WithReceipts(receipt.NewLedger(pool))
+		WithReceipts(receipt.NewLedger(pool)).
+		WithActivity(execution.NewReport(pool)).
+		WithFeedback(alert.NewFeedback(pool, mailer))
 	authOrigin := strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_ORIGIN"))
 	if authOrigin == "" {
 		return errors.New("SEAMETRY_AUTH_ORIGIN is not set; serve needs the Better Auth issuer to verify account subjects")
@@ -140,7 +156,13 @@ func serve() error {
 	if err != nil {
 		return fmt.Errorf("configuring the account subject verifier: %w", err)
 	}
-	handler := gateway.NewHandler(gwServer, func(next http.Handler) http.Handler {
+	// Unset, every internal report is refused with a 503 naming it, and the
+	// web deployment's trades go on without being recorded.
+	ingestSecret := strings.TrimSpace(os.Getenv("SEAMETRY_ACTIVITY_INGEST_SECRET"))
+	if ingestSecret == "" {
+		slog.Warn("seametry: SEAMETRY_ACTIVITY_INGEST_SECRET is not set; activity reports will be refused")
+	}
+	handler := gateway.NewHandler(gwServer, gateway.ServiceSecret(ingestSecret), func(next http.Handler) http.Handler {
 		return verifier.Middleware(next, time.Now)
 	})
 	srv := &http.Server{

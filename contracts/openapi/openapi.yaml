@@ -47,6 +47,16 @@ tags:
     description: Gateway. Live change over server-sent events.
   - name: account
     description: Identity. The signed-in account subject accepted by the Go core.
+  - name: activity
+    description: >
+      Execution. The activity record, written by Seametry's own web routes
+      over a service secret: what was quoted, refused and sent, and the
+      funnel steps a browser reports. Internal; not part of the published
+      reference.
+  - name: alert
+    description: >
+      Alert. Feedback a visitor sends, kept and mailed to the team. Internal;
+      not part of the published reference.
 
 paths:
   # --- instruments -----------------------------------------------------
@@ -633,12 +643,121 @@ paths:
         default:
           $ref: '#/components/responses/Problem'
 
+  # --- activity (internal) ------------------------------------------------
+  /internal/activity/quotes:
+    post:
+      operationId: recordActivityQuote
+      tags: [activity]
+      summary: One prepare request, with every leg it returned or the refusal that stopped it.
+      description: >
+        Idempotent on the quote id: a retried report changes nothing. The
+        wallet is created by its first quote, and its first-touch source is
+        kept from the first report that carries one.
+      security:
+        - serviceSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityQuote'
+      responses:
+        "204":
+          description: Recorded, or already recorded.
+        default:
+          $ref: '#/components/responses/Problem'
+  /internal/activity/submissions:
+    post:
+      operationId: recordActivitySubmission
+      tags: [activity]
+      summary: What happened when a prepared leg was sent, found by the message digest its approval binds.
+      description: >
+        The first submission of a leg is kept and later ones change nothing.
+        A digest no recorded leg carries answers 404: its quote report was
+        lost or never sent.
+      security:
+        - serviceSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivitySubmission'
+      responses:
+        "204":
+          description: Recorded, or already recorded.
+        default:
+          $ref: '#/components/responses/Problem'
+  /internal/feedback:
+    post:
+      operationId: receiveFeedback
+      tags: [alert]
+      summary: Feedback a visitor sent, forwarded by the web route that received it.
+      description: >
+        Stored before anything else, then mailed to the team after the
+        answer, so a mail server's delay or failure never reaches the
+        visitor and loses nothing. The stored row records whether delivery
+        succeeded.
+      security:
+        - serviceSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackSubmission'
+      responses:
+        "202":
+          description: Stored; delivery to the team follows.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+        default:
+          $ref: '#/components/responses/Problem'
+  /internal/activity/funnel:
+    post:
+      operationId: recordActivityFunnel
+      tags: [activity]
+      summary: Funnel steps a browser reported, forwarded by the web route that received them.
+      description: >
+        A kind outside the known set is stored as unrecognised with the kind
+        that was sent, never dropped. These rows are the browser's word and
+        are never counted as volume, a fee or an outcome.
+      security:
+        - serviceSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityFunnel'
+      responses:
+        "204":
+          description: Recorded.
+        default:
+          $ref: '#/components/responses/Problem'
+
 components:
   securitySchemes:
     accountToken:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    serviceSecret:
+      type: apiKey
+      in: header
+      name: X-Seametry-Service-Secret
+      description: Shared between the web deployment and the Gateway; never sent to a browser.
   parameters:
     Mint:
       name: mint
@@ -702,6 +821,202 @@ components:
         id:
           type: string
           description: The opaque Better Auth account subject. No profile field is carried in the service token.
+    # --- activity ------------------------------------------------------------
+    ActivityQuote:
+      type: object
+      required: [id, wallet, network, kind, plan_size, deployment, prepared_at, legs]
+      properties:
+        id:
+          type: string
+          format: uuid
+        wallet:
+          type: string
+          description: The wallet's base58 address.
+        network:
+          type: string
+          enum: [mainnet, devnet]
+        kind:
+          type: string
+          enum: [buy, sell]
+        subject:
+          type: string
+          maxLength: 200
+          description: The Allocation or basket name the reader saw, when there is one.
+        template_id:
+          type: string
+          maxLength: 200
+        plan_size:
+          type: integer
+          minimum: 1
+        deployment:
+          type: string
+          enum: [production, preview, development]
+        prepared_at:
+          type: string
+          format: date-time
+        refusal:
+          $ref: '#/components/schemas/ActivityRefusal'
+        first_touch:
+          $ref: '#/components/schemas/ActivityFirstTouch'
+        legs:
+          type: array
+          description: Empty exactly when refusal is present.
+          items:
+            $ref: '#/components/schemas/ActivityLeg'
+    ActivityRefusal:
+      type: object
+      required: [status, text]
+      properties:
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        text:
+          type: string
+          maxLength: 2000
+    ActivityFirstTouch:
+      type: object
+      description: >
+        Where the browser first arrived, held in its own storage and sent
+        with a wallet's first quote. Every field is optional and capped.
+      properties:
+        referrer_host:
+          type: string
+          maxLength: 255
+        landing_path:
+          type: string
+          maxLength: 500
+        utm_source:
+          type: string
+          maxLength: 200
+        utm_medium:
+          type: string
+          maxLength: 200
+        utm_campaign:
+          type: string
+          maxLength: 200
+        utm_content:
+          type: string
+          maxLength: 200
+        utm_term:
+          type: string
+          maxLength: 200
+    ActivityLeg:
+      type: object
+      required: [id, mint, symbol, in, out, floor, routing_fee_bps, tip_offset_bps, simulated_fee_atoms, tip_lamports, landing, last_valid_block_height, message_sha256]
+      properties:
+        id:
+          type: string
+          format: uuid
+        mint:
+          type: string
+        symbol:
+          type: string
+          maxLength: 40
+        in:
+          $ref: '#/components/schemas/Amount'
+        out:
+          $ref: '#/components/schemas/Amount'
+        floor:
+          $ref: '#/components/schemas/Amount'
+        routing_fee_bps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        tip_offset_bps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        simulated_fee_atoms:
+          type: string
+          pattern: '^-?[0-9]+$'
+          description: USDC atoms simulation moved into the fee account.
+        tip_lamports:
+          type: string
+          pattern: '^[0-9]+$'
+        landing:
+          type: string
+          enum: [sender, rpc]
+        last_valid_block_height:
+          type: integer
+          format: int64
+          minimum: 1
+        message_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+    ActivitySubmission:
+      type: object
+      required: [message_sha256, submitted_at, result]
+      properties:
+        message_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        signature:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+        result:
+          type: string
+          enum: [sent, refused_not_sent, uncertain]
+        text:
+          type: string
+          maxLength: 2000
+          description: The refusal sentence the holder saw, when the leg was not plainly sent.
+    ActivityFunnel:
+      type: object
+      required: [deployment, events]
+      properties:
+        deployment:
+          type: string
+          enum: [production, preview, development]
+        events:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/ActivityFunnelEvent'
+    ActivityFunnelEvent:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          maxLength: 80
+          description: >
+            wallet_connected, review_opened, signature_requested,
+            signature_declined, signature_failed or sheet_abandoned. Any
+            other value is kept as unrecognised. A string, not an enum, so a
+            newer browser's kind reaches the record instead of failing to
+            bind.
+        wallet:
+          type: string
+        quote_id:
+          type: string
+          format: uuid
+    # --- alert ---------------------------------------------------------------
+    FeedbackSubmission:
+      type: object
+      required: [message, deployment]
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        reply_to:
+          type: string
+          maxLength: 254
+          description: An email address the visitor chose to give, for a reply.
+        wallet:
+          type: string
+          description: The connected wallet, only when the visitor chose to include it.
+        page:
+          type: string
+          maxLength: 500
+          description: The path the visitor was on.
+        deployment:
+          type: string
+          enum: [production, preview, development]
     # --- common ------------------------------------------------------------
     Amount:
       type: object

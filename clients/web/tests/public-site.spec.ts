@@ -241,9 +241,10 @@ test("the public site publishes the terms and privacy policy used for account co
 
   await page.goto("/privacy-policy");
   await expect(page.getByRole("heading", { level: 1, name: "Privacy policy" })).toBeVisible();
-  await expect(page.getByText("Effective 9 October 2026", { exact: true })).toBeVisible();
+  await expect(page.getByText("Effective 16 October 2026", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Google returns account identity data." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A linked wallet remains public." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Trades through Seametry are recorded by wallet." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "You may delete your account." })).toBeVisible();
 });
 
@@ -528,7 +529,7 @@ test("the app keeps its reading pages in the status bar", async ({ page }) => {
   await page.goto("/app");
   await expect(page.locator("aside")).toHaveCount(0);
   const reading = page.getByRole("contentinfo").getByRole("navigation", { name: "Reading" });
-  await expect(reading.getByRole("link")).toHaveText(["How it works", "The Key"]);
+  await expect(reading.getByRole("link")).toHaveText(["How it works", "The Key", "Send feedback"]);
 });
 
 test("the app header connects a wallet and keeps the mode control beside it", async ({ page }) => {
@@ -621,7 +622,7 @@ test("the app shell marks only the current tab with an icon, and keeps one globa
   await page.goto("/app");
 
   const reading = page.getByRole("navigation", { name: "Reading" });
-  await expect(reading.locator("svg")).toHaveCount(2);
+  await expect(reading.locator("svg")).toHaveCount(3);
 
   for (const path of ["/app/baskets/build", "/app/compose"]) {
     await page.goto(path);

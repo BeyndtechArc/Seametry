@@ -258,6 +258,8 @@ export type PreparedLeg = {
   simulated: BalanceChange[];
   transaction: string;
   approval: string;
+  /** Set by the prepare route: the activity record's id for this request, which the browser's funnel steps name. */
+  quoteId?: string;
 };
 
 /**

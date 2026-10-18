@@ -5,7 +5,126 @@ package api
 
 import (
 	"time"
+
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
+
+// Defines values for ActivityFunnelDeployment.
+const (
+	ActivityFunnelDeploymentDevelopment ActivityFunnelDeployment = "development"
+	ActivityFunnelDeploymentPreview     ActivityFunnelDeployment = "preview"
+	ActivityFunnelDeploymentProduction  ActivityFunnelDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the ActivityFunnelDeployment enum.
+func (e ActivityFunnelDeployment) Valid() bool {
+	switch e {
+	case ActivityFunnelDeploymentDevelopment:
+		return true
+	case ActivityFunnelDeploymentPreview:
+		return true
+	case ActivityFunnelDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ActivityLegLanding.
+const (
+	Rpc    ActivityLegLanding = "rpc"
+	Sender ActivityLegLanding = "sender"
+)
+
+// Valid indicates whether the value is a known member of the ActivityLegLanding enum.
+func (e ActivityLegLanding) Valid() bool {
+	switch e {
+	case Rpc:
+		return true
+	case Sender:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ActivityQuoteDeployment.
+const (
+	ActivityQuoteDeploymentDevelopment ActivityQuoteDeployment = "development"
+	ActivityQuoteDeploymentPreview     ActivityQuoteDeployment = "preview"
+	ActivityQuoteDeploymentProduction  ActivityQuoteDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the ActivityQuoteDeployment enum.
+func (e ActivityQuoteDeployment) Valid() bool {
+	switch e {
+	case ActivityQuoteDeploymentDevelopment:
+		return true
+	case ActivityQuoteDeploymentPreview:
+		return true
+	case ActivityQuoteDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ActivityQuoteKind.
+const (
+	ActivityQuoteKindBuy  ActivityQuoteKind = "buy"
+	ActivityQuoteKindSell ActivityQuoteKind = "sell"
+)
+
+// Valid indicates whether the value is a known member of the ActivityQuoteKind enum.
+func (e ActivityQuoteKind) Valid() bool {
+	switch e {
+	case ActivityQuoteKindBuy:
+		return true
+	case ActivityQuoteKindSell:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ActivityQuoteNetwork.
+const (
+	ActivityQuoteNetworkDevnet  ActivityQuoteNetwork = "devnet"
+	ActivityQuoteNetworkMainnet ActivityQuoteNetwork = "mainnet"
+)
+
+// Valid indicates whether the value is a known member of the ActivityQuoteNetwork enum.
+func (e ActivityQuoteNetwork) Valid() bool {
+	switch e {
+	case ActivityQuoteNetworkDevnet:
+		return true
+	case ActivityQuoteNetworkMainnet:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ActivitySubmissionResult.
+const (
+	RefusedNotSent ActivitySubmissionResult = "refused_not_sent"
+	Sent           ActivitySubmissionResult = "sent"
+	Uncertain      ActivitySubmissionResult = "uncertain"
+)
+
+// Valid indicates whether the value is a known member of the ActivitySubmissionResult enum.
+func (e ActivitySubmissionResult) Valid() bool {
+	switch e {
+	case RefusedNotSent:
+		return true
+	case Sent:
+		return true
+	case Uncertain:
+		return true
+	default:
+		return false
+	}
+}
 
 // Defines values for AlloyCluster.
 const (
@@ -58,6 +177,27 @@ func (e DepthPointAvailability) Valid() bool {
 	case DepthPointAvailabilityAvailable:
 		return true
 	case DepthPointAvailabilityUnavailable:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FeedbackSubmissionDeployment.
+const (
+	FeedbackSubmissionDeploymentDevelopment FeedbackSubmissionDeployment = "development"
+	FeedbackSubmissionDeploymentPreview     FeedbackSubmissionDeployment = "preview"
+	FeedbackSubmissionDeploymentProduction  FeedbackSubmissionDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the FeedbackSubmissionDeployment enum.
+func (e FeedbackSubmissionDeployment) Valid() bool {
+	switch e {
+	case FeedbackSubmissionDeploymentDevelopment:
+		return true
+	case FeedbackSubmissionDeploymentPreview:
+		return true
+	case FeedbackSubmissionDeploymentProduction:
 		return true
 	default:
 		return false
@@ -333,16 +473,16 @@ func (e GetHallDemonstrationParamsCluster) Valid() bool {
 
 // Defines values for GetInstrumentDepthParamsDirection.
 const (
-	Buy  GetInstrumentDepthParamsDirection = "buy"
-	Sell GetInstrumentDepthParamsDirection = "sell"
+	GetInstrumentDepthParamsDirectionBuy  GetInstrumentDepthParamsDirection = "buy"
+	GetInstrumentDepthParamsDirectionSell GetInstrumentDepthParamsDirection = "sell"
 )
 
 // Valid indicates whether the value is a known member of the GetInstrumentDepthParamsDirection enum.
 func (e GetInstrumentDepthParamsDirection) Valid() bool {
 	switch e {
-	case Buy:
+	case GetInstrumentDepthParamsDirectionBuy:
 		return true
-	case Sell:
+	case GetInstrumentDepthParamsDirectionSell:
 		return true
 	default:
 		return false
@@ -354,6 +494,114 @@ type AccountSubject struct {
 	// Id The opaque Better Auth account subject. No profile field is carried in the service token.
 	Id string `json:"id"`
 }
+
+// ActivityFirstTouch Where the browser first arrived, held in its own storage and sent with a wallet's first quote. Every field is optional and capped.
+type ActivityFirstTouch struct {
+	LandingPath  *string `json:"landing_path,omitempty"`
+	ReferrerHost *string `json:"referrer_host,omitempty"`
+	UtmCampaign  *string `json:"utm_campaign,omitempty"`
+	UtmContent   *string `json:"utm_content,omitempty"`
+	UtmMedium    *string `json:"utm_medium,omitempty"`
+	UtmSource    *string `json:"utm_source,omitempty"`
+	UtmTerm      *string `json:"utm_term,omitempty"`
+}
+
+// ActivityFunnel defines model for ActivityFunnel.
+type ActivityFunnel struct {
+	Deployment ActivityFunnelDeployment `json:"deployment"`
+	Events     []ActivityFunnelEvent    `json:"events"`
+}
+
+// ActivityFunnelDeployment defines model for ActivityFunnel.Deployment.
+type ActivityFunnelDeployment string
+
+// ActivityFunnelEvent defines model for ActivityFunnelEvent.
+type ActivityFunnelEvent struct {
+	// Kind wallet_connected, review_opened, signature_requested, signature_declined, signature_failed or sheet_abandoned. Any other value is kept as unrecognised. A string, not an enum, so a newer browser's kind reaches the record instead of failing to bind.
+	Kind    string              `json:"kind"`
+	QuoteId *openapi_types.UUID `json:"quote_id,omitempty"`
+	Wallet  *string             `json:"wallet,omitempty"`
+}
+
+// ActivityLeg defines model for ActivityLeg.
+type ActivityLeg struct {
+	// Floor Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	Floor Amount             `json:"floor"`
+	Id    openapi_types.UUID `json:"id"`
+
+	// In Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	In                   Amount             `json:"in"`
+	Landing              ActivityLegLanding `json:"landing"`
+	LastValidBlockHeight int64              `json:"last_valid_block_height"`
+	MessageSha256        string             `json:"message_sha256"`
+	Mint                 string             `json:"mint"`
+
+	// Out Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	Out           Amount `json:"out"`
+	RoutingFeeBps int    `json:"routing_fee_bps"`
+
+	// SimulatedFeeAtoms USDC atoms simulation moved into the fee account.
+	SimulatedFeeAtoms string `json:"simulated_fee_atoms"`
+	Symbol            string `json:"symbol"`
+	TipLamports       string `json:"tip_lamports"`
+	TipOffsetBps      int    `json:"tip_offset_bps"`
+}
+
+// ActivityLegLanding defines model for ActivityLeg.Landing.
+type ActivityLegLanding string
+
+// ActivityQuote defines model for ActivityQuote.
+type ActivityQuote struct {
+	Deployment ActivityQuoteDeployment `json:"deployment"`
+
+	// FirstTouch Where the browser first arrived, held in its own storage and sent with a wallet's first quote. Every field is optional and capped.
+	FirstTouch *ActivityFirstTouch `json:"first_touch,omitempty"`
+	Id         openapi_types.UUID  `json:"id"`
+	Kind       ActivityQuoteKind   `json:"kind"`
+
+	// Legs Empty exactly when refusal is present.
+	Legs       []ActivityLeg        `json:"legs"`
+	Network    ActivityQuoteNetwork `json:"network"`
+	PlanSize   int                  `json:"plan_size"`
+	PreparedAt time.Time            `json:"prepared_at"`
+	Refusal    *ActivityRefusal     `json:"refusal,omitempty"`
+
+	// Subject The Allocation or basket name the reader saw, when there is one.
+	Subject    *string `json:"subject,omitempty"`
+	TemplateId *string `json:"template_id,omitempty"`
+
+	// Wallet The wallet's base58 address.
+	Wallet string `json:"wallet"`
+}
+
+// ActivityQuoteDeployment defines model for ActivityQuote.Deployment.
+type ActivityQuoteDeployment string
+
+// ActivityQuoteKind defines model for ActivityQuote.Kind.
+type ActivityQuoteKind string
+
+// ActivityQuoteNetwork defines model for ActivityQuote.Network.
+type ActivityQuoteNetwork string
+
+// ActivityRefusal defines model for ActivityRefusal.
+type ActivityRefusal struct {
+	Status int    `json:"status"`
+	Text   string `json:"text"`
+}
+
+// ActivitySubmission defines model for ActivitySubmission.
+type ActivitySubmission struct {
+	MessageSha256 string                   `json:"message_sha256"`
+	Result        ActivitySubmissionResult `json:"result"`
+	Signature     *string                  `json:"signature,omitempty"`
+	SubmittedAt   time.Time                `json:"submitted_at"`
+
+	// Text The refusal sentence the holder saw, when the leg was not plainly sent.
+	Text *string `json:"text,omitempty"`
+}
+
+// ActivitySubmissionResult defines model for ActivitySubmission.Result.
+type ActivitySubmissionResult string
 
 // Alloy An alloy read from chain (chain/programs/hall/src/state.rs::Alloy).
 type Alloy struct {
@@ -490,6 +738,24 @@ type DepthPoint struct {
 
 // DepthPointAvailability defines model for DepthPoint.Availability.
 type DepthPointAvailability string
+
+// FeedbackSubmission defines model for FeedbackSubmission.
+type FeedbackSubmission struct {
+	Deployment FeedbackSubmissionDeployment `json:"deployment"`
+	Message    string                       `json:"message"`
+
+	// Page The path the visitor was on.
+	Page *string `json:"page,omitempty"`
+
+	// ReplyTo An email address the visitor chose to give, for a reply.
+	ReplyTo *string `json:"reply_to,omitempty"`
+
+	// Wallet The connected wallet, only when the visitor chose to include it.
+	Wallet *string `json:"wallet,omitempty"`
+}
+
+// FeedbackSubmissionDeployment defines model for FeedbackSubmission.Deployment.
+type FeedbackSubmissionDeployment string
 
 // Finding defines model for Finding.
 type Finding struct {
@@ -925,3 +1191,15 @@ type StreamEventsParams struct {
 
 // EvaluateFormulaJSONRequestBody defines body for EvaluateFormula for application/json ContentType.
 type EvaluateFormulaJSONRequestBody = FormulaEvaluateRequest
+
+// RecordActivityFunnelJSONRequestBody defines body for RecordActivityFunnel for application/json ContentType.
+type RecordActivityFunnelJSONRequestBody = ActivityFunnel
+
+// RecordActivityQuoteJSONRequestBody defines body for RecordActivityQuote for application/json ContentType.
+type RecordActivityQuoteJSONRequestBody = ActivityQuote
+
+// RecordActivitySubmissionJSONRequestBody defines body for RecordActivitySubmission for application/json ContentType.
+type RecordActivitySubmissionJSONRequestBody = ActivitySubmission
+
+// ReceiveFeedbackJSONRequestBody defines body for ReceiveFeedback for application/json ContentType.
+type ReceiveFeedbackJSONRequestBody = FeedbackSubmission

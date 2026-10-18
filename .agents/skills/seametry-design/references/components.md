@@ -125,6 +125,7 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 **Anatomy:** cornerless `surface.sheet` strip, label outside, value in `ui` medium; amounts use a custom keypad on mobile.
 **Identity:** a short rule joins the outside label to the field edge. Focus turns that rule to provenance blue before it outlines the field.
 **States:** default, focus, filled, invalid (message states what to change), disabled.
+**Text area:** a value longer than a line, such as a feedback message, is the same field as a text area (`FieldArea`): the same outside label, rule, strip and message, several lines tall, and its length limit stated in the message.
 
 ### Info note
 **Answers:** what does this page assume, for someone who wants to know before acting?
@@ -389,7 +390,7 @@ Top of every constituent and alloy page. Lot number; name in display serif; tick
 ### Icon button
 **Answers:** an action whose glyph says it all: back, next, close, copy, refresh.
 **Anatomy:** a square of one target, rules above and below like a Quiet action, one glyph. Its label is required and becomes the accessible name and the tooltip; it is never drawn.
-**Rules:** never for the page's decision (Buy, Sell all, Strike, Melt), which is a Key with its words.
+**Rules:** never for the page's decision (Buy, Sell all, Strike, Melt), which is a Key with its words. As a link (`IconLink`) it goes somewhere instead of doing something, such as an account elsewhere, and is drawn the same.
 
 ### Pagination
 **Answers:** which part of a long published register am I reading, and where can I continue?
@@ -452,7 +453,7 @@ Only verifiable facts, each a link: hallmarks sealed, last seal (relative), prog
 Copyable prompts and endpoints, the machine-readable site version, the API reference. The Langfuse pattern.
 
 ### Register footer
-Product, developers, the house (world pages), trust (the Key, audit, status, anchor keys). Every item is a real destination.
+Product, developers, the house (world pages), trust (the Key, audit, status, anchor keys), and Contact: Send feedback and the team's address. Every item is a real destination. Seametry's accounts elsewhere (X) sit in one row of Icon buttons, as links, under the groups: the glyph alone, labelled with the account's name for assistive technology and as a tooltip, never a written handle beside it.
 
 ### House rail
 **Answers:** where am I, and which public destination is available from here?
@@ -471,7 +472,7 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 ### App shell
 **Answers:** where am I in the product, on which network, with which wallet?
 **Anatomy:** no sidebar. Wide layouts: one sticky Top bar holding the Brand mark, every product route as a text tab, Wallet state and the Mode control; a quiet Status bar holds reading links. Narrow layouts: the mark, Wallet state and Mode control remain in the top bar. Five labelled product tabs sit at the bottom; the central green plus opens Baskets, the Allocation entry, whose register closes with a Text action to Build a basket. Narrow layouts carry no menu button and no overflow drawer. The Network badge sits in each page's Page header, because only the page knows which cluster it acts on.
-**Identity:** a terminal's top bar on the sheet surface, aligned to the content width so its edges meet the page. The current tab is a raised tone behind primary text, led by its group's icon in the action green (Desk, Buy, Hall, Assay), so the icon marks where you are rather than decorating every route; the House rail uses only the action-green label because its destinations share one line with no tab. The reading links in the Status bar keep their icons, which distinguish an exit from the operational routes.
+**Identity:** a terminal's top bar on the sheet surface, aligned to the content width so its edges meet the page. The current tab is a raised tone behind primary text, led by its group's icon in the action green (Desk, Buy, Hall, Assay), so the icon marks where you are rather than decorating every route; the House rail uses only the action-green label because its destinations share one line with no tab. The reading links in the Status bar keep their icons, which distinguish an exit from the operational routes; Send feedback closes the row, so the way to the team is never more than one press from any product page (Storm, 16 October 2026).
 **States:** current route; narrow; wallet disconnected or connected; each page's network.
 **Data:** one route list that drives the top bar tabs and the narrow navigation register, so they cannot disagree.
 **Rules:** the phone tab bar takes its height from `--shell-bottom-inset`, which the shell publishes and every sticky bar and the Toast region sit above, so nothing pinned to the bottom hides behind it. The mobile tabs reference the same route records as the wide bar. Every route resolves. The current route is named by its tab; a page header appears only when it adds network or decision context that the shell cannot carry. Reading links remain on the public pages and wide Status bar.
