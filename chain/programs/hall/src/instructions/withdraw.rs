@@ -1,9 +1,7 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{
-    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
-};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
-use super::sync_leg::reconcile;
+use super::{sync_leg::reconcile, transfer::transfer};
 use crate::{
     error::HallError,
     events::Withdrawn,
@@ -15,8 +13,10 @@ use crate::{
 ///
 /// The claim is settled against every seizure first, so what the owner may take
 /// is what the Hall still holds for them. If the issuer has frozen or paused
-/// this constituent the transfer fails and the whole instruction reverts, which
-/// leaves the claim exactly as it was until the issuer releases it.
+/// this constituent, or its transfer hook refuses, the transfer fails and the
+/// whole instruction reverts, which leaves the claim exactly as it was until
+/// the issuer releases it. A hook's extra accounts follow as remaining
+/// accounts.
 #[derive(Accounts)]
 pub struct Withdraw<'info> {
     pub owner: Signer<'info>,
@@ -48,7 +48,11 @@ pub struct Withdraw<'info> {
     pub token_program: Interface<'info, TokenInterface>,
 }
 
-pub fn handle_withdraw(mut ctx: Context<Withdraw>, leg_index: u8, units: u64) -> Result<()> {
+pub fn handle_withdraw<'info>(
+    mut ctx: Context<'info, Withdraw<'info>>,
+    leg_index: u8,
+    units: u64,
+) -> Result<()> {
     require!(units > 0, HallError::ZeroUnits);
     let accounts = &mut ctx.accounts;
     let alloy_key = accounts.alloy.key();
@@ -83,19 +87,16 @@ pub fn handle_withdraw(mut ctx: Context<Withdraw>, leg_index: u8, units: u64) ->
         (sponsor, id, bump, leg.expected()?)
     };
 
-    transfer_checked(
-        CpiContext::new_with_signer(
-            accounts.token_program.key(),
-            TransferChecked {
-                from: accounts.hall_account.to_account_info(),
-                mint: accounts.mint.to_account_info(),
-                to: accounts.destination.to_account_info(),
-                authority: accounts.alloy.to_account_info(),
-            },
-            &[&[ALLOY_SEED, sponsor.as_ref(), &id.to_le_bytes(), &[bump]]],
-        ),
+    transfer(
+        &accounts.token_program.to_account_info(),
+        &accounts.hall_account.to_account_info(),
+        &accounts.mint.to_account_info(),
+        &accounts.destination.to_account_info(),
+        &accounts.alloy.to_account_info(),
         units,
         accounts.mint.decimals,
+        ctx.remaining_accounts,
+        &[&[ALLOY_SEED, sponsor.as_ref(), &id.to_le_bytes(), &[bump]]],
     )?;
 
     accounts.hall_account.reload()?;

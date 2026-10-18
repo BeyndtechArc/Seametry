@@ -276,6 +276,84 @@
       ]
     },
     {
+      "name": "a dust donation cannot delay a running vest",
+      "purpose": "A credit sets the vest end to the size-weighted average of the remainder's end and a full window for the credit, so one atom cannot restart everyone else's vest.",
+      "scale": 6,
+      "steps": [
+        {
+          "op": "initial",
+          "ledger": "1000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "actual": "2000000",
+          "kind": "credit",
+          "ledger": "1000000",
+          "pending": "1000000",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        },
+        {
+          "op": "sync",
+          "at_seconds": 3500,
+          "actual": "2000001",
+          "kind": "credit",
+          "ledger": "1972222",
+          "pending": "27779",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        },
+        {
+          "op": "sync",
+          "at_seconds": 3601,
+          "actual": "2000001",
+          "kind": "unchanged",
+          "ledger": "2000001",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000",
+          "chain": true
+        }
+      ]
+    },
+    {
+      "name": "a strike against a fully seized alloy is refused",
+      "purpose": "With every ledger at zero a strike would deposit nothing and mint shares for free, which would then take a cut of any later restore from the holders who were seized.",
+      "scale": 6,
+      "steps": [
+        {
+          "op": "initial",
+          "ledger": "1000000",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "sync",
+          "actual": "0",
+          "kind": "deficit",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000"
+        },
+        {
+          "op": "create",
+          "shares": "1000",
+          "ledger": "0",
+          "pending": "0",
+          "unclaimed": "0",
+          "supply": "1000",
+          "refused": true
+        }
+      ]
+    },
+    {
       "name": "multiplier only issuer",
       "purpose": "A Scaled UI multiplier change moves no raw units, so sync finds nothing. This is the xStocks case and the common one.",
       "scale": 6,

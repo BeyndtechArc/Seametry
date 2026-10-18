@@ -118,6 +118,17 @@ ${fileRows}
   intake ceilings (\`docs/prd/HALL.md\` section 5) are specified, not built.
 - Trident fuzzing across instruction sequences (\`docs/prd/HALL.md\` section 5)
   is specified, not run.
+- The twelve-constituent bound (\`docs/prd/HALL.md\` section 4.8) has no test:
+  a legacy transaction cannot carry twelve constituents.
+
+## Found and fixed before the audit
+
+Seametry's own review of 18 October 2026, explained in plain words and in
+code in \`docs/decisions/2026-10-18-hall-pre-audit-fixes.md\`: transfer-hook
+accounts were never carried on a deposit or delivery (now carried, and tested
+against a live hook); a strike against fully seized ledgers minted shares for
+nothing (now refused); a dust credit restarted the vest for all pending
+credit (the vest end is now size-weighted).
 
 ## Vaultline audit grant application
 
@@ -135,7 +146,8 @@ Anything else:
 Design spec for the Hall, including its security model and acceptance criteria: docs/prd/HALL.md
 Our own mainnet readiness assessment, including the audit scope we want covered: docs/decisions/2026-10-11-index-first-mainnet-assessment.md
 This scope, measured from the source: chain/AUDIT_SCOPE.md
-Tests run in CI with: cargo test --locked (from chain/)
+Our own pre-audit review and its fixes: docs/decisions/2026-10-18-hall-pre-audit-fixes.md
+Tests run in CI with: cargo-build-sbf --arch v0, then cargo test --locked (from chain/)
 \`\`\`
 `;
 

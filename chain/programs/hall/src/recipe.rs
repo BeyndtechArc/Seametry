@@ -21,6 +21,7 @@ pub enum RecipeError {
     Overflow,
     DeficitExceedsHoldings { remaining: u64 },
     ExceedsMaximum { required: u64, maximum: u64 },
+    NothingToDeposit,
     ClaimHasNoIndex,
     ClaimEpochAhead,
     ClaimIndexBelowLeg,
@@ -37,9 +38,9 @@ pub type Result<T> = core::result::Result<T, RecipeError>;
 /// `pending` vests linearly from `vest_start` to `vest_end`. Folding vested
 /// credit into the ledger moves `vest_start` forward to that instant and leaves
 /// `vest_end`, so what remains keeps vesting along the same line and no number
-/// of syncs can finish a vest early. A new credit restarts both over the whole
-/// `pending` balance, which stops a donor timing a deposit against their own
-/// strike.
+/// of syncs can finish a vest early. A new credit sets the end to the average
+/// of the remainder's end and a full window for the credit, weighted by their
+/// sizes; see `sync`.
 ///
 /// `claim_index` and `claim_epoch` record how far seizures have shrunk every
 /// outstanding claim, see `ClaimLeg`. A zero index means no seizure has touched
@@ -143,9 +144,17 @@ pub fn vested(leg: &Leg, now: i64) -> Result<u64> {
 
 /// Reconciles one constituent against the balance actually held.
 ///
-/// Vested pending folds into the ledger first. A surplus becomes pending and
-/// restarts the vest for the whole pending balance. A deficit consumes pending
-/// first and only then falls on ledger and unclaimed in proportion.
+/// Vested pending folds into the ledger first. A surplus becomes pending, and
+/// the vest ends at the size-weighted average of the remainder's own end and
+/// a full window for the surplus, rounded up. Restarting the whole balance
+/// instead let a one-atom donation postpone everyone else's credit by a full
+/// window each time. With the average, a donation of `s` can raise the rate at
+/// which pending vests by at most `s / W`: by Cauchy-Schwarz,
+/// `(r + s)^2 / (r * d + s * W) <= r / d + s / W`, and `r / d` is the rate
+/// the remainder `r` was already vesting at over its `d` seconds left. So a
+/// donation still cannot lift share value faster than vesting it alone would.
+/// A deficit consumes pending first and only then falls on ledger and
+/// unclaimed in proportion.
 pub fn sync(leg: &Leg, actual: u64, now: i64) -> Result<SyncOutcome> {
     let vested_in = vested(leg, now)?;
     let mut after = *leg;
@@ -165,13 +174,22 @@ pub fn sync(leg: &Leg, actual: u64, now: i64) -> Result<SyncOutcome> {
         (SyncKind::Unchanged, 0)
     } else if actual > expected {
         let surplus = actual - expected;
-        after.pending = after
-            .pending
+        let remaining = after.pending;
+        let left = if remaining > 0 {
+            after.vest_end.saturating_sub(now).max(0)
+        } else {
+            0
+        };
+        after.pending = remaining
             .checked_add(surplus)
             .ok_or(RecipeError::Overflow)?;
+        let weighted = u128::from(remaining) * left as u128
+            + u128::from(surplus) * VEST_WINDOW_SECONDS as u128;
+        let total = u128::from(after.pending);
+        let span = weighted / total + u128::from(weighted % total != 0);
         after.vest_start = now;
         after.vest_end = now
-            .checked_add(VEST_WINDOW_SECONDS)
+            .checked_add(i64::try_from(span).map_err(|_| RecipeError::Overflow)?)
             .ok_or(RecipeError::Overflow)?;
         (SyncKind::Credit, surplus)
     } else {
@@ -319,6 +337,11 @@ pub fn withdraw_claim(claim: &ClaimLeg, leg: &mut Leg, units: u64) -> Result<Cla
 /// Deposits required to mint `shares`, refusing if any exceeds the caller's
 /// stated maximum. The caller names shares and limits, never an amount, so a
 /// depositor cannot be rounded down to zero shares.
+///
+/// A strike that deposits nothing at all is refused. It happens only when an
+/// issuer has seized every leg's ledger to zero, and shares minted for free
+/// then would take a cut of any later restore or donation from the holders
+/// who were seized.
 pub fn create_inputs(legs: &[Leg], supply: u64, shares: u64, maximums: &[u64]) -> Result<Vec<u64>> {
     if shares == 0 {
         return Err(RecipeError::ZeroShares);
@@ -326,7 +349,8 @@ pub fn create_inputs(legs: &[Leg], supply: u64, shares: u64, maximums: &[u64]) -
     if supply == 0 {
         return Err(RecipeError::ZeroSupply);
     }
-    legs.iter()
+    let inputs = legs
+        .iter()
         .zip(maximums)
         .map(|(leg, &maximum)| {
             let required = required_in(leg, shares, supply)?;
@@ -335,7 +359,11 @@ pub fn create_inputs(legs: &[Leg], supply: u64, shares: u64, maximums: &[u64]) -
             }
             Ok(required)
         })
-        .collect()
+        .collect::<Result<Vec<u64>>>()?;
+    if inputs.iter().all(|&input| input == 0) {
+        return Err(RecipeError::NothingToDeposit);
+    }
+    Ok(inputs)
 }
 
 /// What burning `shares` credits to a claim, one entry per constituent.

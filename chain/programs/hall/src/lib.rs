@@ -33,7 +33,11 @@ pub mod hall {
         instructions::redeem::handle_redeem(ctx, shares)
     }
 
-    pub fn withdraw(ctx: Context<Withdraw>, leg_index: u8, units: u64) -> Result<()> {
+    pub fn withdraw<'info>(
+        ctx: Context<'info, Withdraw<'info>>,
+        leg_index: u8,
+        units: u64,
+    ) -> Result<()> {
         instructions::withdraw::handle_withdraw(ctx, leg_index, units)
     }
 

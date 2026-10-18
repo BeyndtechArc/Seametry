@@ -198,6 +198,19 @@ impl Issuer {
         world.send_instructions(&[instruction], &[&self.key])
     }
 
+    /// Points the mint's transfer hook at `program`: what an xStocks issuer
+    /// does to switch on the hook its mints carry initialised and disabled.
+    pub fn set_hook_program(
+        &self,
+        world: &mut World,
+        mint: Pubkey,
+        program: Option<Pubkey>,
+    ) -> Outcome {
+        let instruction =
+            transfer_hook::update(&token_2022::ID, &mint, &self.authority(), &[], program).unwrap();
+        world.send_instructions(&[instruction], &[&self.key])
+    }
+
     pub fn pause(&self, world: &mut World, mint: Pubkey) -> Outcome {
         let instruction = pausable::pause(&token_2022::ID, &mint, &self.authority(), &[]).unwrap();
         world.send_instructions(&[instruction], &[&self.key])

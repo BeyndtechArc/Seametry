@@ -1,8 +1,7 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{
-    spl_token_2022::state::AccountState, transfer_checked, Mint, TokenAccount, TransferChecked,
-};
+use anchor_spl::token_interface::{spl_token_2022::state::AccountState, Mint, TokenAccount};
 
+use super::transfer::transfer;
 use crate::error::HallError;
 
 pub struct DepositAccounts<'info> {
@@ -11,6 +10,8 @@ pub struct DepositAccounts<'info> {
     pub source: &'info AccountInfo<'info>,
     pub hall: &'info AccountInfo<'info>,
     pub token_program: &'info AccountInfo<'info>,
+    /// What a transfer hook on any constituent needs, after the per-leg accounts.
+    pub hook_accounts: &'info [AccountInfo<'info>],
 }
 
 /// Moves `amount` from the caller's account into the Hall's, and returns the
@@ -41,18 +42,16 @@ pub fn deposit<'info>(accounts: &DepositAccounts<'info>, amount: u64) -> Result<
     );
     let before = hall.amount;
 
-    transfer_checked(
-        CpiContext::new(
-            *accounts.token_program.key,
-            TransferChecked {
-                from: accounts.source.clone(),
-                mint: accounts.mint.clone(),
-                to: accounts.hall.clone(),
-                authority: accounts.caller.clone(),
-            },
-        ),
+    transfer(
+        accounts.token_program,
+        accounts.source,
+        accounts.mint,
+        accounts.hall,
+        &accounts.caller,
         amount,
         mint.decimals,
+        accounts.hook_accounts,
+        &[],
     )?;
     hall.reload()?;
     require_eq!(

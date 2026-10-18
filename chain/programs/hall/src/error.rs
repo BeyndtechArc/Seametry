@@ -54,6 +54,8 @@ pub enum HallError {
     ZeroUnits,
     #[msg("The Hall's balance after a withdrawal differs from its ledger. A hook or fee changed the amount.")]
     HallBalanceMismatch,
+    #[msg("Every constituent's ledger is zero, so this strike would deposit nothing and mint shares for free.")]
+    NothingToDeposit,
 }
 
 impl From<RecipeError> for HallError {
@@ -66,6 +68,7 @@ impl From<RecipeError> for HallError {
             RecipeError::DeficitExceedsHoldings { .. } => Self::DeficitExceedsHoldings,
             RecipeError::ExceedsMaximum { .. } => Self::ExceedsMaximum,
             RecipeError::ExceedsUnclaimed { .. } => Self::ExceedsUnclaimed,
+            RecipeError::NothingToDeposit => Self::NothingToDeposit,
             RecipeError::ClaimHasNoIndex
             | RecipeError::ClaimEpochAhead
             | RecipeError::ClaimIndexBelowLeg => Self::ClaimIndexInconsistent,

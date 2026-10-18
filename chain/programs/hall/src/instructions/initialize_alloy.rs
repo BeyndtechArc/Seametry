@@ -89,11 +89,11 @@ pub fn handle_initialize_alloy<'info>(
         (1..=MAX_CONSTITUENTS).contains(&count),
         HallError::ConstituentCountOutOfRange
     );
-    require_eq!(
-        ctx.remaining_accounts.len(),
-        count * ACCOUNTS_PER_LEG,
+    require!(
+        ctx.remaining_accounts.len() >= count * ACCOUNTS_PER_LEG,
         HallError::WrongAccountCount
     );
+    let (leg_accounts, hook_accounts) = ctx.remaining_accounts.split_at(count * ACCOUNTS_PER_LEG);
     require!(
         args.genesis_shares > 0 && args.deposits.iter().all(|&deposit| deposit > 0),
         HallError::ZeroDeposit
@@ -122,13 +122,12 @@ pub fn handle_initialize_alloy<'info>(
     )?;
 
     let mut records = [LegRecord::default(); MAX_CONSTITUENTS];
-    for (index, (chunk, &deposit)) in ctx
-        .remaining_accounts
+    for (index, (chunk, &deposit)) in leg_accounts
         .chunks_exact(ACCOUNTS_PER_LEG)
         .zip(&args.deposits)
         .enumerate()
     {
-        records[index] = admit_constituent(accounts, chunk, deposit, now)?;
+        records[index] = admit_constituent(accounts, chunk, hook_accounts, deposit, now)?;
         require!(
             records[..index]
                 .iter()
@@ -235,6 +234,7 @@ fn initialize_share_metadata<'info>(
 fn admit_constituent<'info>(
     accounts: &InitializeAlloy<'info>,
     chunk: &'info [AccountInfo<'info>],
+    hook_accounts: &'info [AccountInfo<'info>],
     amount: u64,
     now: i64,
 ) -> Result<LegRecord> {
@@ -266,6 +266,7 @@ fn admit_constituent<'info>(
             source: source_info,
             hall: hall_info,
             token_program: program_info,
+            hook_accounts,
         },
         amount,
     )?;

@@ -243,6 +243,18 @@ impl Fixture {
     }
 
     pub fn withdraw_to(&mut self, leg_index: u8, units: u64, destination: Pubkey) -> Outcome {
+        self.withdraw_with(leg_index, units, destination, vec![])
+    }
+
+    /// A withdrawal carrying `remaining`, which is where a transfer hook's
+    /// extra accounts go.
+    pub fn withdraw_with(
+        &mut self,
+        leg_index: u8,
+        units: u64,
+        destination: Pubkey,
+        remaining: Vec<AccountMeta>,
+    ) -> Outcome {
         let leg = &self.sources[leg_index as usize];
         let (mint, token_program) = (leg.mint, leg.program);
         let owner = self.striker.pubkey();
@@ -258,7 +270,7 @@ impl Fixture {
                 destination,
                 token_program,
             },
-            vec![],
+            remaining,
         )
     }
 
