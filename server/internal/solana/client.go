@@ -349,23 +349,227 @@ type SignatureStatus struct {
 	Err                json.RawMessage `json:"err"`
 }
 
+// MaxSignaturesPerCall is the ceiling getSignatureStatuses accepts.
+const MaxSignaturesPerCall = 256
+
 // GetSignatureStatus returns nil, not an error, for a signature the cluster
 // has not seen: not yet landed is an answer, not a failure.
 func (c *Client) GetSignatureStatus(ctx context.Context, signature string) (*SignatureStatus, error) {
-	raw, err := c.Call(ctx, "getSignatureStatuses", []any{[]string{signature}, map[string]bool{"searchTransactionHistory": true}})
+	statuses, err := c.GetSignatureStatuses(ctx, []string{signature})
+	if err != nil {
+		return nil, err
+	}
+	return statuses[0], nil
+}
+
+// GetSignatureStatuses answers each signature at its own index, nil where the
+// cluster has not seen it, chunking at the RPC's ceiling. History is searched,
+// so a signature older than the node's recent cache is still found.
+func (c *Client) GetSignatureStatuses(ctx context.Context, signatures []string) ([]*SignatureStatus, error) {
+	out := make([]*SignatureStatus, 0, len(signatures))
+	for start := 0; start < len(signatures); start += MaxSignaturesPerCall {
+		chunk := signatures[start:min(start+MaxSignaturesPerCall, len(signatures))]
+		raw, err := c.Call(ctx, "getSignatureStatuses", []any{chunk, map[string]bool{"searchTransactionHistory": true}})
+		if err != nil {
+			return nil, err
+		}
+		var result contextResult
+		var statuses []*SignatureStatus
+		if err := json.Unmarshal(raw, &result); err != nil {
+			return nil, fmt.Errorf("solana: getSignatureStatuses: %w", err)
+		}
+		if err := json.Unmarshal(result.Value, &statuses); err != nil {
+			return nil, fmt.Errorf("solana: getSignatureStatuses: %w", err)
+		}
+		if len(statuses) != len(chunk) {
+			return nil, fmt.Errorf("solana: getSignatureStatuses returned %d statuses for %d signatures", len(statuses), len(chunk))
+		}
+		out = append(out, statuses...)
+	}
+	return out, nil
+}
+
+// GetBlockHeight returns the block height at a commitment, the measure a
+// transaction's last valid block height is compared with.
+func (c *Client) GetBlockHeight(ctx context.Context, commitment string) (uint64, error) {
+	if commitment == "" {
+		commitment = "confirmed"
+	}
+	raw, err := c.Call(ctx, "getBlockHeight", []any{map[string]string{"commitment": commitment}})
+	if err != nil {
+		return 0, err
+	}
+	var height uint64
+	if err := json.Unmarshal(raw, &height); err != nil {
+		return 0, fmt.Errorf("solana: getBlockHeight: %w", err)
+	}
+	return height, nil
+}
+
+// TokenBalance is one token account's balance before or after a transaction,
+// as the cluster records it in the transaction's metadata.
+type TokenBalance struct {
+	Mint     string
+	Owner    string
+	Atoms    string
+	Decimals int
+}
+
+// Transaction is what a settled transaction recorded: who paid, what it
+// cost, whether it failed, and every token balance it touched.
+type Transaction struct {
+	Signature  string
+	Slot       uint64
+	BlockTime  *int64
+	FeePayer   string
+	Fee        uint64
+	Err        json.RawMessage
+	PreTokens  []TokenBalance
+	PostTokens []TokenBalance
+}
+
+type parsedTokenBalance struct {
+	Mint          string `json:"mint"`
+	Owner         string `json:"owner"`
+	UITokenAmount struct {
+		Amount   string `json:"amount"`
+		Decimals int    `json:"decimals"`
+	} `json:"uiTokenAmount"`
+}
+
+func tokenBalances(parsed []parsedTokenBalance) []TokenBalance {
+	out := make([]TokenBalance, 0, len(parsed))
+	for _, b := range parsed {
+		out = append(out, TokenBalance{Mint: b.Mint, Owner: b.Owner, Atoms: b.UITokenAmount.Amount, Decimals: b.UITokenAmount.Decimals})
+	}
+	return out
+}
+
+// GetTransaction returns nil, not an error, for a transaction the cluster
+// cannot yet return: confirmed and not yet available is an answer.
+func (c *Client) GetTransaction(ctx context.Context, signature string) (*Transaction, error) {
+	raw, err := c.Call(ctx, "getTransaction", []any{signature, map[string]any{
+		"encoding": "jsonParsed", "commitment": "confirmed", "maxSupportedTransactionVersion": 0,
+	}})
+	if err != nil {
+		return nil, err
+	}
+	if string(raw) == "null" {
+		return nil, nil
+	}
+	var parsed struct {
+		Slot        uint64 `json:"slot"`
+		BlockTime   *int64 `json:"blockTime"`
+		Transaction struct {
+			Signatures []string `json:"signatures"`
+			Message    struct {
+				AccountKeys []struct {
+					Pubkey string `json:"pubkey"`
+				} `json:"accountKeys"`
+			} `json:"message"`
+		} `json:"transaction"`
+		Meta *struct {
+			Err               json.RawMessage      `json:"err"`
+			Fee               uint64               `json:"fee"`
+			PreTokenBalances  []parsedTokenBalance `json:"preTokenBalances"`
+			PostTokenBalances []parsedTokenBalance `json:"postTokenBalances"`
+		} `json:"meta"`
+	}
+	if err := json.Unmarshal(raw, &parsed); err != nil {
+		return nil, fmt.Errorf("solana: getTransaction %s: %w", signature, err)
+	}
+	if parsed.Meta == nil || len(parsed.Transaction.Message.AccountKeys) == 0 || len(parsed.Transaction.Signatures) == 0 {
+		return nil, fmt.Errorf("solana: getTransaction %s returned no metadata, account keys or signature", signature)
+	}
+	return &Transaction{
+		Signature: parsed.Transaction.Signatures[0], Slot: parsed.Slot, BlockTime: parsed.BlockTime,
+		FeePayer: parsed.Transaction.Message.AccountKeys[0].Pubkey, Fee: parsed.Meta.Fee, Err: parsed.Meta.Err,
+		PreTokens: tokenBalances(parsed.Meta.PreTokenBalances), PostTokens: tokenBalances(parsed.Meta.PostTokenBalances),
+	}, nil
+}
+
+// GetTransactionMessage returns a settled transaction's message bytes, the
+// bytes its signatures and an approval's digest are computed over.
+func (c *Client) GetTransactionMessage(ctx context.Context, signature string) ([]byte, error) {
+	raw, err := c.Call(ctx, "getTransaction", []any{signature, map[string]any{
+		"encoding": "base64", "commitment": "confirmed", "maxSupportedTransactionVersion": 0,
+	}})
+	if err != nil {
+		return nil, err
+	}
+	var parsed struct {
+		Transaction []string `json:"transaction"`
+	}
+	if err := json.Unmarshal(raw, &parsed); err != nil || len(parsed.Transaction) == 0 {
+		return nil, fmt.Errorf("solana: getTransaction %s returned no base64 transaction (%v)", signature, err)
+	}
+	wire, err := base64.StdEncoding.DecodeString(parsed.Transaction[0])
+	if err != nil {
+		return nil, fmt.Errorf("solana: getTransaction %s: %w", signature, err)
+	}
+	// A transaction is a compact-u16 count of signatures, 64 bytes each, then the message.
+	count, width := 0, 0
+	for shift := 0; width < len(wire) && width < 3; shift += 7 {
+		b := wire[width]
+		count |= int(b&0x7f) << shift
+		width++
+		if b&0x80 == 0 {
+			break
+		}
+	}
+	start := width + count*64
+	if count == 0 || start >= len(wire) {
+		return nil, fmt.Errorf("solana: getTransaction %s is %d bytes, too short for %d signatures and a message", signature, len(wire), count)
+	}
+	return wire[start:], nil
+}
+
+// SignatureInfo is one entry in an address's transaction history.
+type SignatureInfo struct {
+	Signature string          `json:"signature"`
+	Slot      uint64          `json:"slot"`
+	BlockTime *int64          `json:"blockTime"`
+	Err       json.RawMessage `json:"err"`
+}
+
+// GetSignaturesForAddress returns up to limit signatures touching address,
+// newest first, continuing before the given signature when one is named.
+func (c *Client) GetSignaturesForAddress(ctx context.Context, address, before string, limit int) ([]SignatureInfo, error) {
+	options := map[string]any{"limit": limit, "commitment": "confirmed"}
+	if before != "" {
+		options["before"] = before
+	}
+	raw, err := c.Call(ctx, "getSignaturesForAddress", []any{address, options})
+	if err != nil {
+		return nil, err
+	}
+	var out []SignatureInfo
+	if err := json.Unmarshal(raw, &out); err != nil {
+		return nil, fmt.Errorf("solana: getSignaturesForAddress: %w", err)
+	}
+	return out, nil
+}
+
+// GetTokenAccountsByOwnerAndMint returns the addresses of owner's token
+// accounts for one mint.
+func (c *Client) GetTokenAccountsByOwnerAndMint(ctx context.Context, owner, mint string) ([]string, error) {
+	raw, err := c.Call(ctx, "getTokenAccountsByOwner", []any{owner, map[string]string{"mint": mint}, map[string]string{"encoding": "base64", "commitment": "confirmed"}})
 	if err != nil {
 		return nil, err
 	}
 	var result contextResult
-	var statuses []*SignatureStatus
+	var accounts []struct {
+		Pubkey string `json:"pubkey"`
+	}
 	if err := json.Unmarshal(raw, &result); err != nil {
-		return nil, fmt.Errorf("solana: getSignatureStatuses: %w", err)
+		return nil, fmt.Errorf("solana: getTokenAccountsByOwner: %w", err)
 	}
-	if err := json.Unmarshal(result.Value, &statuses); err != nil {
-		return nil, fmt.Errorf("solana: getSignatureStatuses: %w", err)
+	if err := json.Unmarshal(result.Value, &accounts); err != nil {
+		return nil, fmt.Errorf("solana: getTokenAccountsByOwner: %w", err)
 	}
-	if len(statuses) != 1 {
-		return nil, fmt.Errorf("solana: getSignatureStatuses returned %d statuses for one signature", len(statuses))
+	out := make([]string, 0, len(accounts))
+	for _, account := range accounts {
+		out = append(out, account.Pubkey)
 	}
-	return statuses[0], nil
+	return out, nil
 }

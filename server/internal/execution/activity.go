@@ -279,7 +279,7 @@ func (r *Report) RecordQuote(ctx context.Context, quote Quote) (err error) {
 	if inserted == 1 {
 		for _, leg := range legs {
 			if err = q.InsertLeg(ctx, leg); err != nil {
-				return fmt.Errorf("execution: recording the %s leg: %w", leg.Symbol, err)
+				return fmt.Errorf("execution: recording the %s leg: %w", leg.Symbol.String, err)
 			}
 		}
 	}
@@ -339,9 +339,11 @@ func (leg Leg) params(index int, quote Quote) (executiondb.InsertLegParams, erro
 	}
 	return executiondb.InsertLegParams{
 		ID: pgtype.UUID{Bytes: leg.ID, Valid: true}, QuoteID: pgtype.UUID{Bytes: quote.ID, Valid: true}, Wallet: quote.Wallet,
-		Mint: leg.Mint, Symbol: leg.Symbol, InAtoms: in, InScale: inScale, OutAtoms: out, FloorAtoms: floor, OutScale: outScale,
-		RoutingFeeBps: int32(leg.RoutingFeeBps), TipOffsetBps: int32(leg.TipOffsetBps), SimulatedFeeAtoms: fee, TipLamports: tip,
-		Landing: leg.Landing, LastValidBlockHeight: leg.LastValidBlockHeight, MessageSha256: leg.MessageSHA256, Source: "server",
+		Mint: leg.Mint, Symbol: pgtype.Text{String: leg.Symbol, Valid: true}, InAtoms: in, InScale: pgtype.Int2{Int16: inScale, Valid: true},
+		OutAtoms: out, FloorAtoms: floor, OutScale: pgtype.Int2{Int16: outScale, Valid: true},
+		RoutingFeeBps: pgtype.Int4{Int32: int32(leg.RoutingFeeBps), Valid: true}, TipOffsetBps: pgtype.Int4{Int32: int32(leg.TipOffsetBps), Valid: true},
+		SimulatedFeeAtoms: fee, TipLamports: tip, Landing: pgtype.Text{String: leg.Landing, Valid: true},
+		LastValidBlockHeight: pgtype.Int8{Int64: leg.LastValidBlockHeight, Valid: true}, MessageSha256: leg.MessageSHA256, Source: "server",
 	}, nil
 }
 
