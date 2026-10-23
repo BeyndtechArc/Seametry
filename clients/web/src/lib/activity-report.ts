@@ -15,7 +15,7 @@ export type FirstTouch = components["schemas"]["ActivityFirstTouch"];
 type Deployment = ActivityQuote["deployment"];
 
 const FIRST_TOUCH_LIMITS: Record<keyof FirstTouch, number> = {
-  referrer_host: 255, landing_path: 500, utm_source: 200, utm_medium: 200, utm_campaign: 200, utm_content: 200, utm_term: 200,
+  referrer_host: 255, landing_path: 500, utm_source: 200, utm_medium: 200, utm_campaign: 200, utm_content: 200, utm_term: 200, ref_code: 40,
 };
 
 /**

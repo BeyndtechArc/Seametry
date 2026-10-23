@@ -40,7 +40,7 @@ const reportSecret = "fixture-activity-secret"
 const quoteBody = `{
   "id": "5f0c2f5e-7a1d-4c2b-9b8e-1d2c3b4a5f60", "wallet": "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM",
   "network": "mainnet", "kind": "sell", "plan_size": 1, "deployment": "production", "prepared_at": "2026-10-16T09:00:00Z",
-  "first_touch": {"referrer_host": "x.com", "utm_campaign": "colosseum"},
+  "first_touch": {"referrer_host": "x.com", "utm_campaign": "colosseum", "ref_code": "dm-colosseum_fan"},
   "legs": [{
     "id": "0d6a4d2e-1b3c-4e5f-8a7b-9c0d1e2f3a4b", "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh", "symbol": "NVDAx",
     "in": {"atoms": "450000", "scale": 8}, "out": {"atoms": "996449", "scale": 6}, "floor": {"atoms": "986484", "scale": 6},
@@ -97,7 +97,7 @@ func TestAQuoteReportReachesTheRecordWhole(t *testing.T) {
 		t.Fatalf("held %+v", held.quotes)
 	}
 	quote, leg := held.quotes[0], held.quotes[0].Legs[0]
-	if quote.Kind != "sell" || quote.FirstTouch == nil || quote.FirstTouch.UTMCampaign != "colosseum" {
+	if quote.Kind != "sell" || quote.FirstTouch == nil || quote.FirstTouch.UTMCampaign != "colosseum" || quote.FirstTouch.RefCode != "dm-colosseum_fan" {
 		t.Fatalf("quote fields lost on the way: %+v", quote)
 	}
 	if leg.Out != (execution.Amount{Atoms: "996449", Scale: 6}) || leg.TipOffsetBps != 6 || leg.Landing != "sender" {

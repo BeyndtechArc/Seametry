@@ -66,6 +66,7 @@ type FirstTouch struct {
 	UTMCampaign  string `json:"utm_campaign,omitempty"`
 	UTMContent   string `json:"utm_content,omitempty"`
 	UTMTerm      string `json:"utm_term,omitempty"`
+	RefCode      string `json:"ref_code,omitempty"`
 }
 
 type Amount struct {
@@ -176,6 +177,9 @@ func (f *FirstTouch) check() error {
 		if err := capped("first_touch."+field, value, limit); err != nil {
 			return err
 		}
+	}
+	if err := capped("first_touch.ref_code", f.RefCode, 40); err != nil {
+		return err
 	}
 	return capped("first_touch.landing_path", f.LandingPath, 500)
 }
