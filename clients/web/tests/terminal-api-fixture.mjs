@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { gzipSync } from "node:zlib";
 import { PublicKey } from "@solana/web3.js";
 import admissions from "../../../shared/evidence/admissions.json" with { type: "json" };
 
@@ -186,6 +187,22 @@ const server = createServer((request, response) => {
       contextSlot: 400000000,
       routePlan: [{ swapInfo: { label: "Fixture" } }],
     });
+    return;
+  }
+  // The auth service as the web proxy reaches it through Caddy, which
+  // compresses (server/deploy/Caddyfile), plus a header that Connection marks
+  // hop-by-hop. tests/auth-proxy.spec.ts reads it back through the proxy.
+  if (path === "/api/auth/get-session") {
+    const body = gzipSync(JSON.stringify({ session: null, served_by: "fixture" }));
+    response.writeHead(200, {
+      "Content-Type": "application/json",
+      "Content-Encoding": "gzip",
+      "Content-Length": String(body.length),
+      Connection: "keep-alive, X-Fixture-Hop",
+      "X-Fixture-Hop": "upstream connection only",
+      "Set-Cookie": ["fixture-a=1; Path=/; HttpOnly", "fixture-b=2; Path=/; HttpOnly"],
+    });
+    response.end(body);
     return;
   }
   if (path === "/health") {
