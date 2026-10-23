@@ -162,6 +162,38 @@ jobs:
       - name: Design lint
         run: node .claude/skills/seametry-design/scripts/design-lint.mjs clients/web
 
+  auth:
+    name: Account service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      # The wallet-link routes, the origin rule and the service-token payload
+      # are tested in server/auth/test; until this step nothing ran them.
+      - name: Tests
+        run: npm test --workspace=@seametry/auth
+
+      # Every other install here passes --no-audit, so this is the only place
+      # an advisory against a shipped dependency fails the build. The auth
+      # image installs exactly this workspace's production tree
+      # (server/deploy/Auth.Dockerfile), so it is held to high.
+      - name: Account service production dependencies have no high advisory
+        run: npm audit --omit=dev --audit-level=high --workspace=@seametry/auth
+
+      # The whole production tree is held to critical, not high: on 23 October
+      # 2026 it carries 18 high advisories with no fix inside their declared
+      # ranges (bigint-buffer under @solana/spl-token, toml under
+      # @coral-xyz/anchor, braces under react-native's metro). Raise this to
+      # high once those chains are replaced or an allowlist exists.
+      - name: Production dependencies have no critical advisory
+        run: npm audit --omit=dev --audit-level=critical
+
   go:
     name: Go
     runs-on: ubuntu-latest
