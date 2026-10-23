@@ -282,38 +282,86 @@
   outline-offset: var(--sm-space-2);
 }
 
+/* The entry (Storm's mockup, 23 October 2026): the promise on the page
+   ground at left, the Hall's assay line at right, and below them a band
+   where three touch-scale discs rise and are cut off by the band's edge,
+   so the next section starts on a clean ground. */
 .hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
-  gap: var(--sm-space-9);
-  min-height: calc(var(--sm-space-13) * 3);
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  grid-template-rows: auto var(--hero-band);
+  column-gap: var(--sm-space-8);
+  align-items: center;
   margin-top: var(--sm-space-8);
-  padding: var(--sm-space-8) var(--sm-space-10);
-  overflow: hidden;
-  color: var(--sm-feature-text-secondary);
-  background: var(--sm-feature-ground);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-6)) 0, 100% var(--sm-space-6), 100% 100%, 0 100%);
-  --sm-text-primary: var(--sm-feature-text-primary);
-  --sm-text-secondary: var(--sm-feature-text-secondary);
-  --sm-text-tertiary: var(--sm-feature-text-secondary);
-  --sm-line-rule: var(--sm-feature-raised);
-  --sm-line-strong: var(--sm-feature-text-secondary);
-  --sm-text-faint: var(--sm-feature-raised);
-}
-
-.hero::after {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 41%;
-  border-left: 0.5px solid var(--sm-feature-raised);
-  pointer-events: none;
+  padding-top: var(--sm-space-10);
+  /* The disc unit: radii 5, 8 and 13 of it, tops inset 1 and 2 of it. */
+  --disc: 5.3vw;
+  --hero-band: calc(var(--disc) * 6.5);
 }
 
 .heroCopy {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  grid-row: 1;
+  padding-left: var(--sm-space-6);
 }
+
+/* The machine stands over the discs' rising edge. */
+.heroFigure {
+  position: relative;
+  z-index: 2;
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  align-self: start;
+  margin-bottom: calc(var(--hero-band) * -0.15);
+}
+
+/* Full bleed: the band reaches both edges of the window, whatever the
+   page's width, and clips the discs at its bottom edge. */
+.heroDiscs {
+  position: relative;
+  z-index: 1;
+  grid-row: 2;
+  grid-column: 1 / -1;
+  align-self: stretch;
+  width: 100vw;
+  margin-top: var(--sm-space-9);
+  margin-left: calc(50% - 50vw);
+  overflow: hidden;
+}
+
+.heroDiscs span {
+  position: absolute;
+  left: 50%;
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.heroDiscs span:nth-child(1) {
+  top: 0;
+  width: calc(var(--disc) * 26);
+  aspect-ratio: 1;
+  background: var(--sm-scale-touch-800);
+}
+
+.heroDiscs span:nth-child(2) {
+  top: var(--disc);
+  width: calc(var(--disc) * 16);
+  aspect-ratio: 1;
+  background: var(--sm-scale-touch-700);
+}
+
+.heroDiscs span:nth-child(3) {
+  top: calc(var(--disc) * 3);
+  width: calc(var(--disc) * 10);
+  aspect-ratio: 1;
+  background: var(--sm-scale-touch-600);
+}
+
+:global(:root[data-theme="dark"]) .heroDiscs span:nth-child(1) { background: var(--sm-scale-touch-50); }
+:global(:root[data-theme="dark"]) .heroDiscs span:nth-child(2) { background: var(--sm-scale-touch-100); }
+:global(:root[data-theme="dark"]) .heroDiscs span:nth-child(3) { background: var(--sm-scale-touch-200); }
 
 .heroCopy {
   display: grid;
@@ -334,7 +382,7 @@
 .heroCopy h1 {
   max-width: calc(var(--sm-space-13) * 4);
   display: grid;
-  margin-left: calc(var(--sm-space-8) * -1);
+  margin-left: var(--sm-space-10);
   color: var(--sm-feature-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: clamp(var(--sm-font-size-display), 7vw, calc(var(--sm-font-size-display-l) * 1.35));
@@ -939,16 +987,27 @@
 }
 
 @media (max-width: 900px) {
-  .hero,
   .accessPanel {
     grid-template-columns: 1fr;
   }
 
-  .accessThreshold {
-    display: none;
+  .hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto var(--hero-band);
+    --disc: 8.5vw;
   }
 
-  .hero::after {
+  .heroFigure {
+    grid-row: 2;
+    grid-column: 1;
+    margin-bottom: calc(var(--hero-band) * -0.55);
+  }
+
+  .heroDiscs {
+    grid-row: 3;
+  }
+
+  .accessThreshold {
     display: none;
   }
 
@@ -967,9 +1026,12 @@
   }
 
   .hero {
-    min-height: 0;
     margin-top: var(--sm-space-5);
-    padding: var(--sm-space-8) var(--sm-space-6);
+    padding-top: var(--sm-space-8);
+  }
+
+  .heroCopy {
+    padding-left: 0;
   }
 
   .heroCopy h1 {

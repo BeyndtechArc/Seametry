@@ -40,9 +40,9 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1, name: "Open AP ETFs" })).toBeVisible();
-  const press = page.getByRole("figure", { name: "The Hall's press" });
-  await expect(press.getByRole("img", { name: "The Hall's press" })).toBeVisible();
-  await expect(press.locator("button, input, [role=status], figcaption")).toHaveCount(0);
+  const line = page.getByRole("figure", { name: "The Hall's assay line" });
+  await expect(line.getByRole("img", { name: "The Hall's assay line" })).toBeVisible();
+  await expect(line.locator("button, input, [role=status], figcaption")).toHaveCount(0);
   await expect(page.getByText("Recorded on Solana devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A melt survives the freeze." })).toBeVisible();
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
@@ -416,12 +416,12 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   expect(bounds.right).toBeLessThanOrEqual(360);
   await page.goto("/");
   await expect(page.getByTestId("change-register").getByTestId("mechanism-plate")).toHaveCount(4);
-  // The press drawing stays inside a 360px screen.
-  const pressBounds = await page.getByRole("figure", { name: "The Hall's press" }).evaluate((element) => {
+  // The assay line's drawing stays inside a 360px screen.
+  const lineBounds = await page.getByRole("figure", { name: "The Hall's assay line" }).evaluate((element) => {
     const parts = [element, ...element.querySelectorAll("svg")].map((child) => child.getBoundingClientRect());
     return parts.every((box) => box.left >= 0 && box.right <= window.innerWidth + 0.5);
   });
-  expect(pressBounds).toBe(true);
+  expect(lineBounds).toBe(true);
   const instrumentHeading = await page.locator("section").filter({ hasText: "The instrument, opened" }).evaluate((element) => {
     const title = element.querySelector("h2")?.getBoundingClientRect();
     const question = element.querySelector("header p")?.getBoundingClientRect();
@@ -465,23 +465,29 @@ test("desktop rails share the page content edge", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
 
-  const publicRail = page.getByRole("banner");
-  const publicRailChrome = await publicRail.evaluate((element) => {
-    const style = getComputedStyle(element);
-    return { paddingInline: style.paddingInline, borderTopWidth: style.borderTopWidth };
+  // The public rail is a toned bar whose outer edges are the page content's
+  // edges, its contents inset within it, and the current route sits on a
+  // chip in primary text (Storm's mockup, 23 October 2026).
+  const publicEdges = await page.evaluate(() => {
+    const rail = document.querySelector<HTMLElement>("header")!.getBoundingClientRect();
+    const main = document.querySelector<HTMLElement>("main")!.getBoundingClientRect();
+    return { railLeft: rail.left, railRight: rail.right, mainLeft: main.left, mainRight: main.right };
   });
-  expect(publicRailChrome).toEqual({ paddingInline: "0px", borderTopWidth: "0px" });
+  expect(publicEdges.railLeft).toBe(publicEdges.mainLeft);
+  expect(publicEdges.railRight).toBe(publicEdges.mainRight);
   const active = page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Home" });
   const activeTreatment = await active.evaluate((element) => {
     const probe = document.createElement("span");
-    probe.style.color = "var(--sm-accent-touchText)";
+    probe.style.color = "var(--sm-text-primary)";
+    probe.style.background = "var(--sm-surface-tray)";
     document.body.append(probe);
-    const result = { color: getComputedStyle(element).color, expected: getComputedStyle(probe).color, rule: getComputedStyle(element, "::after").content };
+    const style = getComputedStyle(element);
+    const expected = getComputedStyle(probe);
+    const result = { color: style.color === expected.color, chip: style.backgroundColor === expected.backgroundColor, rule: getComputedStyle(element, "::after").content };
     probe.remove();
     return result;
   });
-  expect(activeTreatment.color).toBe(activeTreatment.expected);
-  expect(activeTreatment.rule).toBe("none");
+  expect(activeTreatment).toEqual({ color: true, chip: true, rule: "none" });
   await page.goto("/app");
   const edges = await page.evaluate(() => {
     const header = document.querySelector<HTMLElement>("[data-testid='app-header-inner']");
@@ -496,32 +502,33 @@ test("desktop rails share the page content edge", async ({ page }) => {
   expect(edges?.headerRight).toBe(edges?.mainRight);
 });
 
-test("the landing's press plays on its own, and a pointer over it does not stop it", async ({ page }) => {
+test("the landing's assay line holds a station, then turns to the next on its own, a pointer over it notwithstanding", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/", { waitUntil: "networkidle" });
-  const press = page.getByRole("figure", { name: "The Hall's press" });
-  await press.hover();
-  await press.click();
-  // The first tour move is a Strike, which drops the ram.
-  await expect(press.locator("[data-part='ram-lower']")).toHaveAttribute("transform", /translate\((?!0\.00 0\.00)/, { timeout: 8000 });
+  const line = page.getByRole("figure", { name: "The Hall's assay line" });
+  const stage = line.locator("[data-station]");
+  await expect(stage).toHaveAttribute("data-station", "Formula");
+  await expect(line.locator("svg [data-stop='0']")).not.toHaveAttribute("data-hidden");
+  await expect(line.locator("svg [data-stop='0'] text")).toContainText(["Formula: fixed per share"]);
+  await line.hover();
+  await expect(stage).toHaveAttribute("data-station", "Issuer powers", { timeout: 9000 });
+  await expect(line.locator("svg [data-stop='1']")).not.toHaveAttribute("data-hidden");
+  await expect(line.locator("svg [data-stop='0']")).toHaveAttribute("data-hidden", "");
+  await expect(line.locator("svg [data-stop='1'] text")).toContainText(["Freeze: gate shut, leg held"]);
 });
 
-test("under reduced motion the press holds still on a Melt that delivered around a frozen leg", async ({ page }) => {
+test("under reduced motion the assay line holds still on its first station, callouts drawn", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/", { waitUntil: "networkidle" });
-  const press = page.getByRole("figure", { name: "The Hall's press" });
-  const held = press.locator("[data-part='chit-1']");
-  const ingots = (leg: number) => press.locator(`[data-part^='ingot-${leg}-']:not([data-hidden])`);
-  await expect(held).toHaveAttribute("data-held", "");
-  await expect(held).not.toHaveAttribute("data-hidden");
-  await expect(press.locator("[data-part='band-1']")).not.toHaveAttribute("data-hidden");
-  await expect(press.locator("[data-part='padlock-1']")).not.toHaveAttribute("data-hidden");
-  // The wallet began with two of each; the frozen vault has not paid its leg back.
-  await expect(ingots(0)).toHaveCount(2);
-  await expect(ingots(1)).toHaveCount(1);
-  await expect(ingots(2)).toHaveCount(2);
-  await expect(press.locator("[data-part='frozen-note-1']")).not.toHaveAttribute("data-hidden");
-  await expect(press.locator("[data-part^='frozen-note-']:not([data-hidden])")).toHaveCount(1);
-  await expect(press.locator("[data-part^='chit-']:not([data-hidden])")).toHaveCount(1);
+  const line = page.getByRole("figure", { name: "The Hall's assay line" });
+  const before = await line.locator("[data-machine]").innerHTML();
+  await page.waitForTimeout(7000);
+  await expect(line.locator("[data-station]")).toHaveAttribute("data-station", "Formula");
+  await expect(line.locator("svg [data-stop='0']")).not.toHaveAttribute("data-hidden");
+  expect(await line.locator("[data-machine]").innerHTML()).toBe(before);
+  // The frozen leg is drawn: its padlock, its lowered blade and its held Claim.
+  await expect(line.locator("[data-machine] .frozen")).toHaveCount(4);
 });
 
 test("the app keeps its reading pages in the status bar", async ({ page }) => {

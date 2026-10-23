@@ -1,0 +1,198 @@
+/* The anatomy kit's tone classes on the house tokens, as the earlier press
+   drew them: faces step from the darkest surface to the lightest, so the
+   machine is lit by tone, with no shadow, blur or gradient (foundations
+   section 7). One part, the share on the die, is the lit accent in the
+   action green, and a frozen leg takes figure.frozen. */
+.line {
+  --line-paper: var(--sm-surface-raised);
+  --line-top: var(--sm-surface-raised);
+  --line-shade-0: var(--sm-surface-tray);
+  --line-shade-1: color-mix(in srgb, var(--sm-surface-tray) 55%, var(--sm-surface-ground));
+  --line-shade-2: var(--sm-surface-ground);
+  --line-shade-3: var(--sm-surface-sheet);
+  --line-hi: var(--sm-text-primary);
+  --line-mid: var(--sm-text-secondary);
+  --line-lo: var(--sm-line-strong);
+  --line-faint: var(--sm-line-rule);
+  --line-lit: var(--sm-accent-touch);
+  --line-lit-shade: var(--sm-accent-touchPressed);
+  --line-frozen-ink: var(--sm-figure-frozen);
+  --line-frozen: color-mix(in srgb, var(--line-frozen-ink) 72%, var(--line-paper));
+  position: relative;
+  min-width: 0;
+  margin: 0;
+}
+
+:global(:root[data-theme="dark"]) .line {
+  --line-paper: var(--sm-surface-sheet);
+  --line-top: var(--sm-surface-tray);
+  --line-shade-0: var(--sm-surface-ground);
+  --line-shade-1: color-mix(in srgb, var(--sm-surface-ground) 50%, var(--sm-surface-sheet));
+  --line-shade-2: var(--sm-surface-sheet);
+  --line-shade-3: var(--sm-surface-raised);
+  --line-mid: var(--sm-text-tertiary);
+}
+
+.stage {
+  position: relative;
+  min-width: 0;
+}
+
+.stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.stage :global(.iso-fill) { fill: var(--line-paper); stroke: none; }
+.stage :global(.iso-shade),
+.stage :global(.iso-top) { stroke: none; }
+.stage :global(.iso-shade[data-shade="0"]) { fill: var(--line-shade-0); }
+.stage :global(.iso-shade[data-shade="1"]) { fill: var(--line-shade-1); }
+.stage :global(.iso-shade[data-shade="2"]) { fill: var(--line-shade-2); }
+.stage :global(.iso-shade[data-shade="3"]) { fill: var(--line-shade-3); }
+.stage :global(.iso-top) { fill: var(--line-top); }
+.stage :global(.iso-solid[data-lit] > .iso-fill),
+.stage :global(.iso-solid[data-lit] > .iso-top) { fill: var(--line-lit); }
+.stage :global(.iso-solid[data-lit] > .iso-shade) { fill: var(--line-lit-shade); }
+.stage :global(.iso-solid[data-lit] > .iso-edge) { stroke: var(--sm-text-onTouch); }
+.stage :global(.iso-solid.frozen > .iso-fill),
+.stage :global(.iso-solid.frozen > .iso-top) { fill: var(--line-frozen); }
+.stage :global(.iso-solid.frozen > .iso-shade) { fill: var(--line-frozen-ink); }
+.stage :global(.iso-solid.frozen > .iso-edge) { stroke: var(--line-frozen-ink); }
+.stage :global(.iso-line) {
+  fill: none;
+  stroke: var(--line-lo);
+  stroke-width: 0.6px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.stage :global(.iso-line[data-tone="hi"]) { stroke: var(--line-hi); }
+.stage :global(.iso-line[data-tone="mid"]) { stroke: var(--line-mid); }
+.stage :global(.iso-line[data-tone="lo"]) { stroke: var(--line-lo); }
+.stage :global(.iso-line[data-tone="faint"]) { stroke: var(--line-faint); }
+.stage :global(.iso-dots circle) { fill: var(--line-hi); stroke: none; opacity: 0.32; }
+.stage :global(.iso-dots[data-tone="lo"] circle) { opacity: 0.22; }
+
+/* Where turning is too costly, the next station's picture fades in over
+   the current one for the length of a move. */
+.stage [data-machine],
+.stage [data-incoming] {
+  transition: opacity calc(var(--sm-motion-duration-sheet) * 2) var(--sm-motion-easing-standard);
+}
+
+.stage [data-incoming] { opacity: 0; }
+.stage[data-fading] [data-incoming] { opacity: 1; }
+.stage[data-fading] [data-machine] { opacity: 0; }
+.stage[data-swapping] [data-machine],
+.stage[data-swapping] [data-incoming] { transition: none; }
+
+/* Callouts: a ringed dot on the part, a rule drawn out from it once the
+   camera holds, and the label after the rule. A hidden station's callouts
+   are undrawn, so the next arrival draws them again. */
+.callout {
+  transition: opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+}
+
+.calloutRing {
+  fill: none;
+  stroke: var(--line-hi);
+  stroke-width: 0.75px;
+  vector-effect: non-scaling-stroke;
+}
+
+.calloutDot {
+  fill: var(--line-hi);
+}
+
+/* The plate keeps its label legible over the drawing: page ground with a
+   hairline on its top and outer edges; the rule is its bottom edge. */
+.calloutPlate {
+  fill: var(--sm-surface-ground);
+  stroke: var(--sm-line-strong);
+  stroke-width: 0.5px;
+  vector-effect: non-scaling-stroke;
+  transition: opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard) var(--sm-motion-duration-sheet);
+}
+
+.calloutRule {
+  fill: none;
+  stroke: var(--line-hi);
+  stroke-width: 0.75px;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--sm-motion-duration-sheet) var(--sm-motion-easing-glide);
+}
+
+.calloutText,
+.calloutNumber {
+  font-family: var(--sm-font-family-digest);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums lining-nums;
+  transition: opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard) var(--sm-motion-duration-sheet);
+}
+
+.calloutText { fill: var(--line-hi); }
+.calloutNumber { fill: var(--line-mid); }
+
+.callout[data-order="1"] .calloutRule,
+.callout[data-order="1"] .calloutPlate,
+.callout[data-order="1"] .calloutText,
+.callout[data-order="1"] .calloutNumber {
+  transition-delay: var(--sm-motion-duration-base);
+}
+
+.stage [data-hidden] .calloutRule { stroke-dashoffset: 1; transition: none; }
+.stage [data-hidden] .callout,
+.stage [data-hidden] .calloutPlate,
+.stage [data-hidden] .calloutText,
+.stage [data-hidden] .calloutNumber { opacity: 0; transition: none; }
+
+/* On a phone the drawing is too small for its labels: the ringed dots stay
+   on the parts, and the station's notes are read below it. A rule without
+   its plate would end on nothing, so it goes too. */
+.notes {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .calloutText,
+  .calloutNumber,
+  .calloutPlate,
+  .calloutRule {
+    display: none;
+  }
+
+  .notes {
+    display: grid;
+    gap: var(--sm-space-2);
+    margin: var(--sm-space-4) 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--sm-text-primary);
+    font-family: var(--sm-font-family-digest);
+    font-size: var(--sm-font-size-small);
+  }
+
+  .notes[data-hidden] {
+    display: none;
+  }
+
+  .notes small {
+    margin-right: var(--sm-space-3);
+    color: var(--sm-text-secondary);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .callout,
+  .calloutRule,
+  .calloutPlate,
+  .calloutText,
+  .calloutNumber {
+    transition: none;
+  }
+}

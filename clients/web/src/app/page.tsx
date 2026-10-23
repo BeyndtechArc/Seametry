@@ -11,7 +11,7 @@ import {
   Stamp,
 } from "@seametry/ui";
 import { MechanismPlate } from "@seametry/ui/plates";
-import { HallPress } from "./components/figures/hall-press/figure";
+import { HallLine } from "./components/figures/hall-line/figure";
 import { IncidentLedger, PublicShell, SectionHeading } from "./public-shell";
 import styles from "./site.module.css";
 
@@ -50,7 +50,14 @@ export default async function Home() {
             <QuietLink className={styles.inkAction} href="/docs/how-it-works" icon="arrow-up-right">Read mechanism</QuietLink>
           </div>
         </div>
-        <HallPress />
+        <div className={styles.heroFigure}>
+          <HallLine />
+        </div>
+        <div className={styles.heroDiscs} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
       </section>
 
       <section className={`${styles.section} ${styles.incidentSection}`}>

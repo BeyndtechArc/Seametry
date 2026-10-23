@@ -5,21 +5,23 @@
   padding-top: var(--sm-space-4);
 }
 
+/* One toned bar across the content width: the brand, the public routes as
+   one inset group in the centre, and the tools (Storm's mockup, 23 October
+   2026). The two outer columns share the space, so the group sits on the
+   bar's centre whatever the brand and tools measure. */
 .houseRail {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: var(--sm-space-6);
   min-height: var(--sm-space-11);
-  padding: var(--sm-space-3) 0;
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  background: var(--sm-surface-ground);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-3)) 0, 100% var(--sm-space-3), 100% 100%, var(--sm-space-3) 100%, 0 calc(100% - var(--sm-space-3)));
+  padding: var(--sm-space-3) var(--sm-space-4);
+  background: var(--sm-surface-tray);
   transition: background var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
 }
 
 .houseRail[data-scrolled] {
-  background: color-mix(in srgb, var(--sm-surface-ground) 82%, transparent);
+  background: color-mix(in srgb, var(--sm-surface-tray) 86%, transparent);
   backdrop-filter: blur(var(--sm-space-5)) saturate(1.12);
 }
 
@@ -30,15 +32,17 @@
 }
 
 .primaryNav {
-  justify-content: flex-end;
-  gap: var(--sm-space-2);
+  justify-self: center;
+  gap: var(--sm-space-1);
+  padding: var(--sm-space-1);
+  background: var(--sm-surface-sheet);
 }
 
 .primaryNav a {
   position: relative;
   display: inline-flex;
   align-items: center;
-  min-height: var(--sm-size-target);
+  min-height: calc(var(--sm-size-target) - var(--sm-space-3));
   padding: 0 var(--sm-space-4);
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
@@ -46,7 +50,8 @@
 }
 
 .primaryNav a[aria-current="page"] {
-  color: var(--sm-accent-touchText);
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-tray);
 }
 
 .primaryNav a:hover {
@@ -64,6 +69,13 @@
   padding-right: 0;
 }
 
+@media (min-width: 901px) {
+  .railTools {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+  }
+}
+
 .menuControl,
 .mobileRegister {
   display: none;
@@ -72,7 +84,7 @@
 @media (max-width: 900px) {
   .houseRail {
     grid-template-columns: auto auto minmax(0, 1fr) auto;
-    padding-inline: 0;
+    padding-inline: var(--sm-space-3);
   }
 
   .primaryNav {
@@ -148,7 +160,7 @@
 
   .houseRail {
     gap: 0;
-    padding: var(--sm-space-2) 0;
+    padding: var(--sm-space-2) var(--sm-space-3);
   }
 
   .menuControl {
