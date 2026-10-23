@@ -147,7 +147,7 @@ func TestAWalletKeepsTheFirstSourceItWasSeenWith(t *testing.T) {
 	if n := count(t, pool, "SELECT count(*) FROM execution.wallets WHERE first_source IS NULL"); n != 1 {
 		t.Fatal("an empty first touch was kept as a source")
 	}
-	if err := report.RecordQuote(ctx, preparedQuote(t, &FirstTouch{ReferrerHost: "x.com", UTMCampaign: "colosseum"})); err != nil {
+	if err := report.RecordQuote(ctx, preparedQuote(t, &FirstTouch{ReferrerHost: "x.com", UTMCampaign: "colosseum", RefCode: "x"})); err != nil {
 		t.Fatal(err)
 	}
 	if err := report.RecordQuote(ctx, preparedQuote(t, &FirstTouch{ReferrerHost: "google.com"})); err != nil {
@@ -157,8 +157,8 @@ func TestAWalletKeepsTheFirstSourceItWasSeenWith(t *testing.T) {
 	if err := pool.QueryRow(ctx, "SELECT first_source::text FROM execution.wallets").Scan(&source); err != nil {
 		t.Fatal(err)
 	}
-	if source != `{"utm_campaign": "colosseum", "referrer_host": "x.com"}` {
-		t.Fatalf("first source: got %s, want the first one kept, x.com with campaign colosseum", source)
+	if source != `{"ref_code": "x", "utm_campaign": "colosseum", "referrer_host": "x.com"}` {
+		t.Fatalf("first source: got %s, want the first one kept, x.com with campaign colosseum and ref x", source)
 	}
 }
 
@@ -206,6 +206,7 @@ func TestAReportIsRefusedNamingWhatIsWrong(t *testing.T) {
 		"digest":   func(q *Quote) { q.Legs[0].MessageSHA256 = "ABC" },
 		"subject":  func(q *Quote) { q.Subject = strings.Repeat("s", 201) },
 		"referrer": func(q *Quote) { q.FirstTouch = &FirstTouch{ReferrerHost: strings.Repeat("h", 256)} },
+		"ref code": func(q *Quote) { q.FirstTouch = &FirstTouch{RefCode: strings.Repeat("r", 41)} },
 	}
 	for name, change := range cases {
 		quote := preparedQuote(t, nil)
