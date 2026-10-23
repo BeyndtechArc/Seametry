@@ -363,6 +363,99 @@ export function painter(root: SVGGElement, scene: Scene) {
   };
 }
 
+/** The colours a canvas paints with, resolved from the page's tokens so they follow the theme. */
+export interface Palette {
+  paper: string;
+  top: string;
+  shades: [string, string, string, string];
+  hi: string;
+  mid: string;
+  lo: string;
+  faint: string;
+  lit: string;
+  litShade: string;
+  litEdge: string;
+  frozen: string;
+  frozenInk: string;
+}
+
+const LINE = /<path[^>]*?data-tone="(\w+)"[^>]*?\sd="([^"]+)"/g;
+const DOTS = /<g class="iso-dots" data-tone="(\w+)">(.*?)<\/g>/g;
+const CIRCLE = /<circle cx="([-\d.]+)" cy="([-\d.]+)" r="([-\d.]+)"/g;
+const DOT_ALPHA: Record<string, number> = { hi: 0.85, mid: 0.45, lo: 0.22 };
+
+/**
+ * Draws the machine onto a canvas, part by part in the same order and from
+ * the same kit geometry the SVG painter writes. A turn redraws every part,
+ * and as SVG that meant re-parsing and laying out some 600 paths a frame: a
+ * phone at 4x CPU managed about two pictures a second and stretched a 2.4 s
+ * move to 7 s (23 October 2026). On a canvas a frame is only draw calls.
+ * Marks arrive as the kit's line and dot markup, read back here: only the
+ * kit writes them, in a fixed form. `width` is the figure's viewBox width,
+ * the units the projection works in.
+ */
+export function canvasPainter(canvas: HTMLCanvasElement, scene: Scene, width: number) {
+  const context = canvas.getContext("2d");
+  return (projection: Projection, poses: Poses, palette: Palette) => {
+    if (!context) return;
+    const ratio = Math.min(2, window.devicePixelRatio || 1);
+    const box = canvas.getBoundingClientRect();
+    const [w, h] = [Math.round(box.width * ratio), Math.round(box.height * ratio)];
+    if (canvas.width !== w || canvas.height !== h) [canvas.width, canvas.height] = [w, h];
+    const unit = box.width / width;
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, w, h);
+    context.setTransform(unit * ratio, 0, 0, unit * ratio, 0, 0);
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    const hairline = 0.6 / unit;
+    const tone = (name: string) => (name === "hi" ? palette.hi : name === "mid" ? palette.mid : name === "lo" ? palette.lo : palette.faint);
+    const stroke = (d: string | undefined, colour: string) => {
+      if (!d) return;
+      context.strokeStyle = colour;
+      context.lineWidth = hairline;
+      context.stroke(new Path2D(d));
+    };
+    const fill = (d: string | undefined, colour: string) => {
+      if (!d) return;
+      context.fillStyle = colour;
+      context.fill(new Path2D(d));
+    };
+    for (const index of orderOf(scene, projection, poses).order) {
+      const solid = scene.solids[index]!;
+      const pose = poseOf(scene, solid, poses);
+      const shift = k.iso([pose.dx, pose.dy, pose.dz], { ...projection, origin: [0, 0] });
+      const at: Projection = { ...projection, origin: [projection.origin[0] + shift[0], projection.origin[1] + shift[1]] };
+      const paths = k.extrude(solid.ring, solid.z, solid.h, at, { convex: true, bevel: solid.bevel });
+      const frozen = [solid.className, pose.className].some((name) => name?.split(" ").includes("frozen"));
+      const face = solid.lit ? palette.lit : frozen ? palette.frozen : palette.paper;
+      fill(paths.fill, face);
+      if (!solid.flat) {
+        paths.shades.forEach((d, shade) => fill(d, solid.lit ? palette.litShade : frozen ? palette.frozenInk : palette.shades[shade]!));
+        fill(paths.top, solid.lit ? palette.lit : frozen ? palette.frozen : palette.top);
+      }
+      const crease = solid.crease ?? "faint";
+      if (crease !== "none") {
+        stroke(paths.crease, tone(crease));
+        stroke(paths.bevel, tone(crease));
+      }
+      const marks = solid.marks?.(at) ?? "";
+      for (const [, name, d] of marks.matchAll(LINE)) stroke(d, tone(name!));
+      for (const [, name, circles] of marks.matchAll(DOTS)) {
+        context.globalAlpha = DOT_ALPHA[name!] ?? 0.32;
+        context.fillStyle = palette.hi;
+        for (const [, cx, cy, r] of circles!.matchAll(CIRCLE)) {
+          context.beginPath();
+          context.arc(Number(cx), Number(cy), Number(r), 0, Math.PI * 2);
+          context.fill();
+        }
+        context.globalAlpha = 1;
+      }
+      stroke(paths.outline, solid.lit ? palette.litEdge : frozen ? palette.frozenInk : tone(solid.tone ?? "hi"));
+    }
+  };
+}
+
 /**
  * A camera pose: a world point the camera looks at, where on the figure it
  * lands, and from which azimuth, elevation and scale. Blending two stations

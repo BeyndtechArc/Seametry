@@ -510,13 +510,16 @@ test("the landing's assay line tells the Strike on its own after the Formula, a 
   await expect(stage).toHaveAttribute("data-station", "Formula");
   await expect(line.locator("svg [data-callout='0-1']")).not.toHaveAttribute("data-hidden");
   await expect(line.locator("svg [data-callout='0-1'] text").last()).toHaveText("Formula: a fixed amount per share");
+  // The moving machine is drawn on a canvas; the server's drawing steps aside once it has drawn.
+  await expect(line.locator("canvas")).toHaveCount(1);
+  await expect(line.locator("[data-machine]")).toHaveAttribute("data-hidden", "");
   await line.hover();
   await expect(stage).toHaveAttribute("data-station", "Strike", { timeout: 9000 });
   await expect(line.locator("svg [data-callout^='0-']:not([data-hidden])")).toHaveCount(0);
-  // The Strike takes one of each constituent from the wallet, carries it in, and strikes a share.
-  await expect(line.locator("[data-solid='ingot-0-spent']")).toHaveAttribute("data-hidden", "", { timeout: 3000 });
-  await expect(line.locator("[data-solid='share-new']")).not.toHaveAttribute("data-hidden", { timeout: 6000 });
-  await expect(line.locator("svg [data-callout='1-1']")).not.toHaveAttribute("data-hidden");
+  // The Strike's callouts appear as their events happen: the deposit first, the struck share later.
+  await expect(line.locator("svg [data-callout='1-0']")).not.toHaveAttribute("data-hidden", { timeout: 3000 });
+  await expect(line.locator("svg [data-callout='1-1']")).toHaveAttribute("data-hidden", "");
+  await expect(line.locator("svg [data-callout='1-1']")).not.toHaveAttribute("data-hidden", { timeout: 6000 });
 });
 
 test("under reduced motion the assay line holds still on the Melt delivered around the frozen leg", async ({ page }) => {

@@ -39,11 +39,29 @@
 }
 
 .stage svg {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: auto;
   overflow: visible;
 }
+
+/* The moving machine, under the SVG that keeps the callouts. A canvas
+   cannot paint outside its box as the SVG does, so it is half as large
+   again to the right and below, where the stations let the machine run
+   off the figure; its top left and its scale are the drawing's. Once it
+   has drawn, the SVG's own machine layer steps aside. */
+.stage canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 150%;
+  aspect-ratio: 720 / 600;
+  pointer-events: none;
+}
+
+.stage [data-machine][data-hidden] { display: none; }
 
 .stage :global(.iso-fill) { fill: var(--line-paper); stroke: none; }
 .stage :global(.iso-shade),
@@ -75,19 +93,6 @@
 .stage :global(.iso-line[data-tone="faint"]) { stroke: var(--line-faint); }
 .stage :global(.iso-dots circle) { fill: var(--line-hi); stroke: none; opacity: 0.32; }
 .stage :global(.iso-dots[data-tone="lo"] circle) { opacity: 0.22; }
-
-/* Where turning is too costly, the next station's picture fades in over
-   the current one for the length of a move. */
-.stage [data-machine],
-.stage [data-incoming] {
-  transition: opacity calc(var(--sm-motion-duration-sheet) * 2) var(--sm-motion-easing-standard);
-}
-
-.stage [data-incoming] { opacity: 0; }
-.stage[data-fading] [data-incoming] { opacity: 1; }
-.stage[data-fading] [data-machine] { opacity: 0; }
-.stage[data-swapping] [data-machine],
-.stage[data-swapping] [data-incoming] { transition: none; }
 
 /* A part the story has taken out of the picture. */
 .stage [data-solid][data-hidden] { display: none; }
