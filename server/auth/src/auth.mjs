@@ -1,4 +1,3 @@
-import { dash } from "@better-auth/infra";
 import { betterAuth } from "better-auth";
 import { jwt } from "better-auth/plugins";
 import pg from "pg";
@@ -9,7 +8,6 @@ const { Pool } = pg;
 const required = [
   "AUTH_DATABASE_URL",
   "BETTER_AUTH_SECRET",
-  "BETTER_AUTH_API_KEY",
   "BETTER_AUTH_URL",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
@@ -50,7 +48,6 @@ export const auth = betterAuth({
     customRules: { "/sign-in/social": { window: 60, max: 5 } },
   },
   plugins: [
-    dash({ apiKey: process.env.BETTER_AUTH_API_KEY }),
     jwt({ jwt: { definePayload: serviceTokenPayload } }),
   ],
 });

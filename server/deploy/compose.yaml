@@ -46,7 +46,6 @@ services:
       AUTH_DATABASE_URL: postgres://seametry_auth:${SEAMETRY_AUTH_POSTGRES_PASSWORD}@postgres:5432/seametry_auth?sslmode=disable
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in server/deploy/.env}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-https://seametry.xyz}
-      BETTER_AUTH_API_KEY: ${BETTER_AUTH_API_KEY:?set BETTER_AUTH_API_KEY in server/deploy/.env}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?set GOOGLE_CLIENT_ID in server/deploy/.env}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?set GOOGLE_CLIENT_SECRET in server/deploy/.env}
       SEAMETRY_APP_ORIGINS: ${SEAMETRY_APP_ORIGINS:-https://seametry.xyz,http://localhost:3000}
