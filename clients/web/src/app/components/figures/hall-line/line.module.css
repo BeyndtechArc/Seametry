@@ -89,9 +89,12 @@
 .stage[data-swapping] [data-machine],
 .stage[data-swapping] [data-incoming] { transition: none; }
 
-/* Callouts: a ringed dot on the part, a rule drawn out from it once the
-   camera holds, and the label after the rule. A hidden station's callouts
-   are undrawn, so the next arrival draws them again. */
+/* A part the story has taken out of the picture. */
+.stage [data-solid][data-hidden] { display: none; }
+
+/* Callouts: a ringed dot on the part, a rule drawn out from it when the
+   event it names happens, and the label after the rule. A hidden callout
+   is undrawn, so its next moment draws it again. */
 .callout {
   transition: opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
 }
@@ -138,18 +141,11 @@
 .calloutText { fill: var(--line-hi); }
 .calloutNumber { fill: var(--line-mid); }
 
-.callout[data-order="1"] .calloutRule,
-.callout[data-order="1"] .calloutPlate,
-.callout[data-order="1"] .calloutText,
-.callout[data-order="1"] .calloutNumber {
-  transition-delay: var(--sm-motion-duration-base);
-}
-
-.stage [data-hidden] .calloutRule { stroke-dashoffset: 1; transition: none; }
-.stage [data-hidden] .callout,
-.stage [data-hidden] .calloutPlate,
-.stage [data-hidden] .calloutText,
-.stage [data-hidden] .calloutNumber { opacity: 0; transition: none; }
+.callout[data-hidden] .calloutRule { stroke-dashoffset: 1; transition: none; }
+.callout[data-hidden],
+.callout[data-hidden] .calloutPlate,
+.callout[data-hidden] .calloutText,
+.callout[data-hidden] .calloutNumber { opacity: 0; transition: none; }
 
 /* On a phone the drawing is too small for its labels: the ringed dots stay
    on the parts, and the station's notes are read below it. A rule without
@@ -169,6 +165,8 @@
   .notes {
     display: grid;
     gap: var(--sm-space-2);
+    /* Room for a station's two notes, so the page does not move as they appear. */
+    min-height: calc(var(--sm-font-size-small) * 3.6);
     margin: var(--sm-space-4) 0 0;
     padding: 0;
     list-style: none;
@@ -177,7 +175,7 @@
     font-size: var(--sm-font-size-small);
   }
 
-  .notes[data-hidden] {
+  .notes li[data-hidden] {
     display: none;
   }
 

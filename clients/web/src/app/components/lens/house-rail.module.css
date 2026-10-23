@@ -3,6 +3,12 @@
   top: 0;
   z-index: 10;
   padding-top: var(--sm-space-4);
+  /* The bar is a step of the page ground toward its own ink, not a separate
+     surface, so it reads as the page while it scrolls over every section;
+     the tray tone it first took sat apart from the ground (Storm, 23 October
+     2026). The current route's chip is one step deeper. */
+  --rail-bar: color-mix(in srgb, var(--sm-surface-ground) 93%, var(--sm-text-primary));
+  --rail-chip: color-mix(in srgb, var(--sm-surface-ground) 86%, var(--sm-text-primary));
 }
 
 /* One toned bar across the content width: the brand, the public routes as
@@ -16,12 +22,12 @@
   gap: var(--sm-space-6);
   min-height: var(--sm-space-11);
   padding: var(--sm-space-3) var(--sm-space-4);
-  background: var(--sm-surface-tray);
+  background: var(--rail-bar);
   transition: background var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
 }
 
 .houseRail[data-scrolled] {
-  background: color-mix(in srgb, var(--sm-surface-tray) 86%, transparent);
+  background: color-mix(in srgb, var(--rail-bar) 86%, transparent);
   backdrop-filter: blur(var(--sm-space-5)) saturate(1.12);
 }
 
@@ -51,7 +57,7 @@
 
 .primaryNav a[aria-current="page"] {
   color: var(--sm-text-primary);
-  background: var(--sm-surface-tray);
+  background: var(--rail-chip);
 }
 
 .primaryNav a:hover {

@@ -295,9 +295,11 @@
   align-items: center;
   margin-top: var(--sm-space-8);
   padding-top: var(--sm-space-10);
-  /* The disc unit: radii 5, 8 and 13 of it, tops inset 1 and 2 of it. */
-  --disc: 5.3vw;
-  --hero-band: calc(var(--disc) * 6.5);
+  /* The disc unit. The discs share one centre at radii 13, 8 and 5 of it,
+     so each ring is the same width all the way round: 5, then 3. The band
+     shows the inner disc's top 2.5 units before it is cut. */
+  --disc: 4vw;
+  --hero-band: calc(var(--disc) * 10.5);
 }
 
 .heroCopy {
@@ -346,14 +348,14 @@
 }
 
 .heroDiscs span:nth-child(2) {
-  top: var(--disc);
+  top: calc(var(--disc) * 5);
   width: calc(var(--disc) * 16);
   aspect-ratio: 1;
   background: var(--sm-scale-touch-700);
 }
 
 .heroDiscs span:nth-child(3) {
-  top: calc(var(--disc) * 3);
+  top: calc(var(--disc) * 8);
   width: calc(var(--disc) * 10);
   aspect-ratio: 1;
   background: var(--sm-scale-touch-600);
@@ -422,7 +424,13 @@
   margin-top: var(--sm-space-13);
 }
 
+/* The section after the hero starts over the discs' band, two disc units
+   up (the hero's unit, 4vw), so the page reads as one piece rather than a
+   banner and then a page (Storm, 23 October 2026). */
 .incidentSection {
+  position: relative;
+  z-index: 3;
+  margin-top: -8vw;
   padding: var(--sm-space-8);
   background: var(--sm-surface-sheet);
   clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
@@ -994,7 +1002,7 @@
   .hero {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto var(--hero-band);
-    --disc: 8.5vw;
+    --disc: 6.5vw;
   }
 
   .heroFigure {
@@ -1040,6 +1048,10 @@
 
   .section {
     margin-top: var(--sm-space-12);
+  }
+
+  .section.incidentSection {
+    margin-top: -13vw;
   }
 
   .incidentSection,

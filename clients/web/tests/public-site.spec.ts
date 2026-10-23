@@ -479,7 +479,7 @@ test("desktop rails share the page content edge", async ({ page }) => {
   const activeTreatment = await active.evaluate((element) => {
     const probe = document.createElement("span");
     probe.style.color = "var(--sm-text-primary)";
-    probe.style.background = "var(--sm-surface-tray)";
+    probe.style.background = "color-mix(in srgb, var(--sm-surface-ground) 86%, var(--sm-text-primary))";
     document.body.append(probe);
     const style = getComputedStyle(element);
     const expected = getComputedStyle(probe);
@@ -502,33 +502,39 @@ test("desktop rails share the page content edge", async ({ page }) => {
   expect(edges?.headerRight).toBe(edges?.mainRight);
 });
 
-test("the landing's assay line holds a station, then turns to the next on its own, a pointer over it notwithstanding", async ({ page }) => {
+test("the landing's assay line tells the Strike on its own after the Formula, a pointer over it notwithstanding", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/", { waitUntil: "networkidle" });
   const line = page.getByRole("figure", { name: "The Hall's assay line" });
   const stage = line.locator("[data-station]");
   await expect(stage).toHaveAttribute("data-station", "Formula");
-  await expect(line.locator("svg [data-stop='0']")).not.toHaveAttribute("data-hidden");
-  await expect(line.locator("svg [data-stop='0'] text")).toContainText(["Formula: fixed per share"]);
+  await expect(line.locator("svg [data-callout='0-1']")).not.toHaveAttribute("data-hidden");
+  await expect(line.locator("svg [data-callout='0-1'] text").last()).toHaveText("Formula: a fixed amount per share");
   await line.hover();
-  await expect(stage).toHaveAttribute("data-station", "Issuer powers", { timeout: 9000 });
-  await expect(line.locator("svg [data-stop='1']")).not.toHaveAttribute("data-hidden");
-  await expect(line.locator("svg [data-stop='0']")).toHaveAttribute("data-hidden", "");
-  await expect(line.locator("svg [data-stop='1'] text")).toContainText(["Freeze: gate shut, leg held"]);
+  await expect(stage).toHaveAttribute("data-station", "Strike", { timeout: 9000 });
+  await expect(line.locator("svg [data-callout^='0-']:not([data-hidden])")).toHaveCount(0);
+  // The Strike takes one of each constituent from the wallet, carries it in, and strikes a share.
+  await expect(line.locator("[data-solid='ingot-0-spent']")).toHaveAttribute("data-hidden", "", { timeout: 3000 });
+  await expect(line.locator("[data-solid='share-new']")).not.toHaveAttribute("data-hidden", { timeout: 6000 });
+  await expect(line.locator("svg [data-callout='1-1']")).not.toHaveAttribute("data-hidden");
 });
 
-test("under reduced motion the assay line holds still on its first station, callouts drawn", async ({ page }) => {
+test("under reduced motion the assay line holds still on the Melt delivered around the frozen leg", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/", { waitUntil: "networkidle" });
   const line = page.getByRole("figure", { name: "The Hall's assay line" });
+  await expect(line.locator("[data-station]")).toHaveAttribute("data-station", "Melt");
   const before = await line.locator("[data-machine]").innerHTML();
   await page.waitForTimeout(7000);
-  await expect(line.locator("[data-station]")).toHaveAttribute("data-station", "Formula");
-  await expect(line.locator("svg [data-stop='0']")).not.toHaveAttribute("data-hidden");
+  await expect(line.locator("[data-station]")).toHaveAttribute("data-station", "Melt");
   expect(await line.locator("[data-machine]").innerHTML()).toBe(before);
-  // The frozen leg is drawn: its padlock, its lowered blade and its held Claim.
-  await expect(line.locator("[data-machine] .frozen")).toHaveCount(4);
+  await expect(line.locator("svg [data-callout^='3-']:not([data-hidden])")).toHaveCount(2);
+  // The frozen leg: its lowered blade, its padlock and shackle, and the Claim it holds.
+  await expect(line.locator("[data-solid]:not([data-hidden]) .frozen")).toHaveCount(4);
+  await expect(line.locator("[data-solid='claim-2']:not([data-hidden])")).toHaveCount(1);
+  await expect(line.locator("[data-solid='claim-0'][data-hidden]")).toHaveCount(1);
+  await expect(line.locator("[data-solid='ingot-2-spent'][data-hidden]")).toHaveCount(1);
 });
 
 test("the app keeps its reading pages in the status bar", async ({ page }) => {
