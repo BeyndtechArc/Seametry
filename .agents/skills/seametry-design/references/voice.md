@@ -47,6 +47,7 @@ No sentence recommends direction, size, timing or suitability.
 | Stale value | Stale, 3 days |
 | Silent source | No observation |
 | Quote expired | This quote expired. Refresh to see current terms. |
+| Signed after the window | Your approval reached Seametry 14 seconds after this quote's 30-second signing window closed, so it was not sent. Buy again for a fresh quote, then approve in your wallet without waiting. Nothing moved. |
 | Material requote | Terms changed since you reviewed them: expected output fell 1.2 percent. Review again. |
 | Melt with a held leg | 3 of 4 legs delivered. The issuer has frozen AAPLx; it is held as a claim. |
 | Claim released | Your AAPLx claim can now be withdrawn. |

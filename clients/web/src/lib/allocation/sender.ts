@@ -1,5 +1,5 @@
-import { AddressLookupTableAccount, PublicKey, SystemProgram, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, TRANSACTION_SIZE_LIMIT } from "./rules";
+import { AddressLookupTableAccount, ComputeBudgetProgram, PublicKey, SystemProgram, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { LOADED_DATA_LIMIT_MAX_BYTES, SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, TRANSACTION_SIZE_LIMIT } from "./rules";
 import bs58 from "bs58";
 import { Refusal } from "../refusal";
 
@@ -29,6 +29,49 @@ function instruction(raw: JupiterInstruction): TransactionInstruction {
   });
 }
 
+const SET_LOADED_DATA_LIMIT = 4;
+
+function isLoadedDataLimit(programId: PublicKey, data: Uint8Array): boolean {
+  return programId.equals(ComputeBudgetProgram.programId) && data.length === 5 && data[0] === SET_LOADED_DATA_LIMIT;
+}
+
+/** Compute budget SetLoadedAccountsDataSizeLimit; web3.js 1.x has no builder for it. */
+export function loadedDataLimitInstruction(bytes: number): TransactionInstruction {
+  const data = Buffer.alloc(5);
+  data.writeUInt8(SET_LOADED_DATA_LIMIT, 0);
+  data.writeUInt32LE(bytes, 1);
+  return new TransactionInstruction({ programId: ComputeBudgetProgram.programId, keys: [], data });
+}
+
+function loadedDataLimitIndex(transaction: VersionedTransaction): number {
+  const { staticAccountKeys: keys, compiledInstructions } = transaction.message;
+  return compiledInstructions.findIndex((ix) => isLoadedDataLimit(keys[ix.programIdIndex], ix.data));
+}
+
+/** The loaded account data limit the transaction sets, if it sets one. */
+export function loadedDataLimitOf(transaction: VersionedTransaction): number | undefined {
+  const index = loadedDataLimitIndex(transaction);
+  return index < 0 ? undefined : Buffer.from(transaction.message.compiledInstructions[index].data).readUInt32LE(1);
+}
+
+/**
+ * A copy of an unsigned transaction with its loaded account data limit set
+ * to `bytes`. The instruction's data is a fixed five bytes, so the message
+ * keeps its size and every other byte.
+ */
+export function withLoadedDataLimit(transaction: VersionedTransaction, bytes: number): VersionedTransaction {
+  if (transaction.signatures.some((signature) => signature.some((byte) => byte !== 0))) {
+    throw new Error("A signed transaction's loaded account data limit cannot be changed: the signature covers it.");
+  }
+  const index = loadedDataLimitIndex(transaction);
+  if (index < 0) throw new Error("The transaction sets no loaded account data limit to change; build it with composeSwap.");
+  const copy = VersionedTransaction.deserialize(transaction.serialize());
+  const data = Buffer.from(copy.message.compiledInstructions[index].data);
+  data.writeUInt32LE(bytes, 1);
+  copy.message.compiledInstructions[index].data = data;
+  return copy;
+}
+
 /** One of Sender's tip accounts, chosen by the caller so tests can fix it. */
 export function senderTipAccount(index: number): PublicKey {
   return new PublicKey(SENDER_TIP_ACCOUNTS[Math.abs(index) % SENDER_TIP_ACCOUNTS.length]);
@@ -37,8 +80,11 @@ export function senderTipAccount(index: number): PublicKey {
 /**
  * The leg as one versioned transaction the holder signs alone: compute
  * budget, account setup, the swap, cleanup, and last the tip, so the swap's
- * own instruction indices are the ones Jupiter built. Undefined when it would
- * not fit a packet, which the caller answers with Jupiter's RPC build.
+ * own instruction indices are the ones Jupiter built. The compute budget
+ * gains a loaded account data limit at the runtime's ceiling, unless Jupiter
+ * set one (a second would fail as a duplicate), for the caller to tighten
+ * once simulation has measured the leg. Undefined when it would not fit a
+ * packet, which the caller answers with Jupiter's RPC build.
  */
 export function composeSwap({ wallet, tipAccount, parts, lookupTables, blockhash }: {
   wallet: PublicKey;
@@ -47,8 +93,10 @@ export function composeSwap({ wallet, tipAccount, parts, lookupTables, blockhash
   lookupTables: AddressLookupTableAccount[];
   blockhash: string;
 }): VersionedTransaction | undefined {
+  const budget = parts.computeBudgetInstructions.map(instruction);
   const route = [
-    ...parts.computeBudgetInstructions.map(instruction),
+    ...budget,
+    ...(budget.some((ix) => isLoadedDataLimit(ix.programId, ix.data)) ? [] : [loadedDataLimitInstruction(LOADED_DATA_LIMIT_MAX_BYTES)]),
     ...parts.setupInstructions.map(instruction),
     instruction(parts.swapInstruction),
     ...(parts.cleanupInstruction ? [instruction(parts.cleanupInstruction)] : []),

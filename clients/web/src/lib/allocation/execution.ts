@@ -6,10 +6,10 @@ import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
 import type { AllocationConfig } from "./config";
-import { MIN_LEG_USDC_ATOMS, PRIORITY_FEE, SENDER_MAX_ACCOUNTS, SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, SLIPPAGE_BPS, failedVenueProgram, preflightRefusal, QUOTE_TTL_MS, TIP_VALUE_TTL_MS, USDC_MINT, USDC_SCALE, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, tipOffsetBps, unlistedProgram } from "./rules";
+import { MIN_LEG_USDC_ATOMS, PRIORITY_FEE, SENDER_MAX_ACCOUNTS, SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, SLIPPAGE_BPS, failedVenueProgram, preflightRefusal, SIGNING_WINDOW_MS, TIP_VALUE_TTL_MS, loadedDataLimit, USDC_MINT, USDC_SCALE, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, tipOffsetBps, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
 import { Refusal } from "../refusal";
-import { broadcastSender, carriesSenderTip, composeSwap, senderTipAccount, signatureFeeLamports, type JupiterInstructions } from "./sender";
+import { broadcastSender, carriesSenderTip, composeSwap, loadedDataLimitOf, senderTipAccount, signatureFeeLamports, withLoadedDataLimit, type JupiterInstructions } from "./sender";
 import { randomInt } from "node:crypto";
 
 function admittedLot(mint: string): Admission {
@@ -87,9 +87,11 @@ type JupiterSwap = { swapTransaction: string; lastValidBlockHeight: number; prio
 /**
  * A leg ready to simulate and sign. landing "sender" carries the holder's
  * tip to Helius Sender and is sent there; "rpc" is Jupiter's own
- * transaction, sent through the RPC.
+ * transaction, sent through the RPC. blockhashBy is taken just before the
+ * blockhash is fetched, so a signing window counted from it closes no later
+ * than the blockhash does.
  */
-type Built = { transaction: VersionedTransaction; lastValidBlockHeight: number; prioritizationFeeLamports: number; landing: "sender" | "rpc" };
+type Built = { transaction: VersionedTransaction; lastValidBlockHeight: number; blockhashBy: Date; prioritizationFeeLamports: number; landing: "sender" | "rpc" };
 type Routed = { quote: JupiterQuote; built: Built; simulation: Awaited<ReturnType<Connection["simulateTransaction"]>>; receivedAt: Date };
 
 /** SOL the holder's wallet pays to send the leg: signatures, the route's priority fee and, through Sender, the tip. */
@@ -129,17 +131,20 @@ async function buildForSender(config: AllocationConfig, connection: Connection, 
     if (!table) throw new Refusal(502, `The route Jupiter built names lookup table ${address}, which mainnet does not hold, so it was not offered for signing.`);
     return table;
   }));
+  const blockhashBy = new Date();
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
   const transaction = composeSwap({ wallet, tipAccount: senderTipAccount(randomInt(SENDER_TIP_ACCOUNTS.length)), parts, lookupTables: tables, blockhash });
   if (!transaction) return undefined;
-  return { transaction, lastValidBlockHeight, prioritizationFeeLamports: parts.prioritizationFeeLamports ?? 0, landing: "sender" };
+  return { transaction, lastValidBlockHeight, blockhashBy, prioritizationFeeLamports: parts.prioritizationFeeLamports ?? 0, landing: "sender" };
 }
 
 async function buildWithJupiter(config: AllocationConfig, swapBody: string): Promise<Built> {
+  const blockhashBy = new Date();
   const swap = await jupiter<JupiterSwap>(config.jupiterApiKey, "/swap", { method: "POST", body: swapBody });
   return {
     transaction: VersionedTransaction.deserialize(Buffer.from(swap.swapTransaction, "base64")),
     lastValidBlockHeight: swap.lastValidBlockHeight,
+    blockhashBy,
     prioritizationFeeLamports: swap.prioritizationFeeLamports ?? 0,
     landing: "rpc",
   };
@@ -196,13 +201,25 @@ async function routeAndSimulate(
     if (unlisted) throw new Refusal(502, `The route Jupiter built for ${subject} invokes ${unlisted}, which is not on this deployment's program allowlist, so it was not offered for signing.`);
     if (!transaction.message.staticAccountKeys[0]?.equals(wallet)) throw new Refusal(502, `The route Jupiter built for ${subject} is not paid for by the connected wallet, so it was not offered for signing.`);
     await beforeSimulating(built);
-    const simulation = await connection.simulateTransaction(transaction, {
+    const simulate = (candidate: VersionedTransaction) => connection.simulateTransaction(candidate, {
       sigVerify: false,
       replaceRecentBlockhash: false,
       commitment: "confirmed",
       accounts: { encoding: "base64", addresses: watched.map((key) => key.toBase58()) },
     });
-    if (!simulation.value.err) return { quote, built, simulation, receivedAt };
+    let signable = transaction;
+    let simulation = await simulate(signable);
+    // A Sender leg was built at the loaded data ceiling; this run measured
+    // it, so the leg the holder signs carries the measurement, and is
+    // simulated again because the approval covers only what was simulated.
+    // An RPC that does not report the measurement leaves the ceiling, which
+    // is still explicit. Jupiter's own RPC build carries no limit to tighten.
+    const measured = (simulation.value as { loadedAccountsDataSize?: number }).loadedAccountsDataSize;
+    if (!simulation.value.err && loadedDataLimitOf(signable) !== undefined && typeof measured === "number" && measured > 0) {
+      signable = withLoadedDataLimit(signable, loadedDataLimit(measured));
+      simulation = await simulate(signable);
+    }
+    if (!simulation.value.err) return { quote, built: { ...built, transaction: signable }, simulation, receivedAt };
 
     const logs = simulation.value.logs ?? [];
     const venue = await refusingVenue(config, logs);
@@ -317,7 +334,7 @@ export async function prepareLeg(config: AllocationConfig, walletText: string, m
     // which names neither the shortfall nor what to do about it.
     async (candidate) => { solNeeded = await refuseUnfunded(connection, lot, mint, inAtoms, sendingLamports(candidate), before); },
   );
-  const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
+  const expiresAt = new Date(built.blockhashBy.getTime() + SIGNING_WINDOW_MS);
   const after = simulation.value.accounts ?? [];
   const accountData = (index: number) => {
     const data = after[index]?.data;
@@ -454,7 +471,7 @@ export async function prepareSale(config: AllocationConfig, walletText: string, 
       if (solHeld < needed) throw new Refusal(402, `This wallet holds ${formatAmount(solHeld, 9)} SOL; the sale needs ${formatAmount(needed, 9)} SOL for network fees${rent ? " and a USDC token account" : ""}. Add SOL before selling.`);
     },
   );
-  const expiresAt = new Date(receivedAt.getTime() + QUOTE_TTL_MS);
+  const expiresAt = new Date(built.blockhashBy.getTime() + SIGNING_WINDOW_MS);
   const after = simulation.value.accounts ?? [];
   const accountData = (index: number) => {
     const data = after[index]?.data;

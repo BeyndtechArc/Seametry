@@ -5,7 +5,7 @@ import { admissions, isAdmitted, partitionAdmissions } from "../src/lib/allocati
 import { findAllocationIndex } from "../src/lib/allocation/indexes";
 import { messageDigest, openApproval, signApproval, type ApprovalTerms } from "../src/lib/allocation/approval";
 import { carriesSenderTip, composeSwap, senderTipAccount } from "../src/lib/allocation/sender";
-import { SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, TRANSACTION_SIZE_LIMIT, countryGate, failedVenueProgram, preflightRefusal, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, tipOffsetBps, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
+import { LOADED_DATA_LIMIT_MAX_BYTES, SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, TRANSACTION_SIZE_LIMIT, countryGate, loadedDataLimit, failedVenueProgram, preflightRefusal, feeSchedule, lotCapAtoms, minimumPlanAtoms, quoteParams, routingFeeAtoms, routingFeeBps, sellQuoteParams, tipOffsetBps, unlistedProgram, USDC_MINT } from "../src/lib/allocation/rules";
 import { listedPositions } from "../src/lib/allocation/positions";
 import { registerTestWallet } from "./test-wallet";
 import { acceptSubmits, answerChain, preparedLeg } from "./execution-fixture";
@@ -182,10 +182,28 @@ test("changing any bound input invalidates the approval", () => {
 
 test("an approval from another secret, or past its expiry, is refused", () => {
   expect("refused" in openApproval(signApproval(terms, "another-secret"), secret, before)).toBe(true);
-  expect(openApproval(signApproval(terms, secret), secret, new Date("2026-10-01T12:00:31.000Z"))).toEqual({
-    refused: "This quote expired. Refresh to see current terms.",
-  });
   expect("refused" in openApproval("not-a-token", secret, before)).toBe(true);
+});
+
+test("an approval that arrives late says by how much, and which action fetches a fresh quote", () => {
+  expect(openApproval(signApproval(terms, secret), secret, new Date("2026-10-01T12:00:30.000Z"))).toEqual({ terms });
+  expect(openApproval(signApproval(terms, secret), secret, new Date("2026-10-01T12:00:30.200Z"))).toEqual({
+    refused: "Your approval reached Seametry 1 second after this quote's 30-second signing window closed, so it was not sent. Buy again for a fresh quote, then approve in your wallet without waiting.",
+  });
+  const sale = { ...terms, direction: "sell" as const };
+  expect(openApproval(signApproval(sale, secret), secret, new Date("2026-10-01T12:00:44.000Z"))).toEqual({
+    refused: "Your approval reached Seametry 14 seconds after this quote's 30-second signing window closed, so it was not sent. Sell again for a fresh quote, then approve in your wallet without waiting.",
+  });
+});
+
+test("a leg's loaded data limit is its measurement plus an eighth, in whole 32 KiB pages, within the runtime's ceiling", () => {
+  const page = 32 * 1024;
+  expect(loadedDataLimit(1)).toBe(page);
+  expect(loadedDataLimit(235)).toBe(page);
+  // 1,000,000 bytes plus 125,000 is 1,125,000: 35 pages (1,146,880 bytes).
+  expect(loadedDataLimit(1_000_000)).toBe(35 * page);
+  expect(loadedDataLimit(28 * page)).toBe(32 * page);
+  expect(loadedDataLimit(LOADED_DATA_LIMIT_MAX_BYTES)).toBe(LOADED_DATA_LIMIT_MAX_BYTES);
 });
 
 test("the country gate fails closed and honours the operator's list", () => {
