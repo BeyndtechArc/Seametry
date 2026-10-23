@@ -57,14 +57,17 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 camera moves. A device whose turn frames, past the first,
                 take over 30 ms (a phone at 4x CPU) crossfades between
                 stations instead, decided within its first move.
-             3. The discs are flat touch-scale tones (no gradient) sharing
-                one centre at radii 13, 8 and 5 of a 4vw unit, so each ring
-                is the same width all the way round (5 then 3 units); the
-                band shows the inner disc's top before it is cut, and the
-                next section rises two units over it. Storm, 23 October
-                2026: green on the hero ground is not new, and only a
-                fraction of the discs shows; muted tones replace them if the
-                composition fails.
+             3. The discs are flat touch-scale tones (no gradient) nested in
+                equal steps measured from Storm's mockup: each 22.7vw larger
+                in radius and 15.8vw lower than the one inside it, so the
+                gaps are even at the top and even at the bottom. They are
+                never cut by a straight edge (Storm, 23 October 2026): they
+                flow behind the sections, whose grounds cover them, and
+                below the first sections break into square fragments that
+                thin with depth, a few falling away as small isometric
+                cubes in the discs' own tones. Recorded as a named exception
+                in foundations section 7; muted tones replace the scale's if
+                the composition fails.
              4. Callouts dock to the figure's left or right side: placed
                 beside their parts they covered the machine they named and
                 left the frame. On a phone the notes read below the drawing.

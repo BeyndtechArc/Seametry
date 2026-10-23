@@ -11,6 +11,7 @@ import {
   Stamp,
 } from "@seametry/ui";
 import { MechanismPlate } from "@seametry/ui/plates";
+import { Discs } from "./components/figures/discs/discs";
 import { HallLine } from "./components/figures/hall-line/figure";
 import { IncidentLedger, PublicShell, SectionHeading } from "./public-shell";
 import styles from "./site.module.css";
@@ -53,10 +54,8 @@ export default async function Home() {
         <div className={styles.heroFigure}>
           <HallLine />
         </div>
-        <div className={styles.heroDiscs} aria-hidden="true">
-          <span />
-          <span />
-          <span />
+        <div className={styles.heroDiscs}>
+          <Discs />
         </div>
       </section>
 

@@ -1,0 +1,37 @@
+/* The landing's discs (foundations section 7): flat touch-scale tones, the
+   outer disc lightest in light mode and darkest in dark. A falling cube's
+   top takes its disc's tone and its two sides the next steps away from the
+   ground, so it reads as a solid in the house's light without a shadow. */
+.field {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 50vw);
+  width: 100vw;
+  pointer-events: none;
+}
+
+.field svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.tone2 { fill: var(--sm-scale-touch-800); }
+.tone1 { fill: var(--sm-scale-touch-700); }
+.tone0 { fill: var(--sm-scale-touch-600); }
+.side2 { fill: var(--sm-scale-touch-700); }
+.side1 { fill: var(--sm-scale-touch-600); }
+.side0 { fill: var(--sm-scale-touch-500); }
+.shade2 { fill: var(--sm-scale-touch-600); }
+.shade1 { fill: var(--sm-scale-touch-500); }
+.shade0 { fill: var(--sm-scale-touch-400); }
+
+:global(:root[data-theme="dark"]) .tone2 { fill: var(--sm-scale-touch-50); }
+:global(:root[data-theme="dark"]) .tone1 { fill: var(--sm-scale-touch-100); }
+:global(:root[data-theme="dark"]) .tone0 { fill: var(--sm-scale-touch-200); }
+:global(:root[data-theme="dark"]) .side2 { fill: var(--sm-scale-touch-100); }
+:global(:root[data-theme="dark"]) .side1 { fill: var(--sm-scale-touch-200); }
+:global(:root[data-theme="dark"]) .side0 { fill: var(--sm-scale-touch-300); }
+:global(:root[data-theme="dark"]) .shade2 { fill: var(--sm-scale-touch-200); }
+:global(:root[data-theme="dark"]) .shade1 { fill: var(--sm-scale-touch-300); }
+:global(:root[data-theme="dark"]) .shade0 { fill: var(--sm-scale-touch-400); }

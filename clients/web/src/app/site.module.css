@@ -283,9 +283,8 @@
 }
 
 /* The entry (Storm's mockup, 23 October 2026): the promise on the page
-   ground at left, the Hall's assay line at right, and below them a band
-   where three touch-scale discs rise and are cut off by the band's edge,
-   so the next section starts on a clean ground. */
+   ground at left, the Hall's assay line at right, and below them the
+   landing's discs rising behind the sections that follow. */
 .hero {
   position: relative;
   display: grid;
@@ -295,11 +294,8 @@
   align-items: center;
   margin-top: var(--sm-space-8);
   padding-top: var(--sm-space-10);
-  /* The disc unit. The discs share one centre at radii 13, 8 and 5 of it,
-     so each ring is the same width all the way round: 5, then 3. The band
-     shows the inner disc's top 2.5 units before it is cut. */
-  --disc: 4vw;
-  --hero-band: calc(var(--disc) * 10.5);
+  /* Room for the discs' tops to show before the next section rises over them. */
+  --hero-band: 26vw;
 }
 
 .heroCopy {
@@ -319,51 +315,17 @@
   margin-bottom: calc(var(--hero-band) * -0.15);
 }
 
-/* Full bleed: the band reaches both edges of the window, whatever the
-   page's width, and clips the discs at its bottom edge. */
+/* Where the discs begin: the field is drawn from here down, behind the
+   sections that follow, which paint over it with their own grounds
+   (foundations section 7). Nothing here clips it. */
 .heroDiscs {
   position: relative;
-  z-index: 1;
+  z-index: 0;
   grid-row: 2;
   grid-column: 1 / -1;
   align-self: stretch;
-  width: 100vw;
   margin-top: var(--sm-space-9);
-  margin-left: calc(50% - 50vw);
-  overflow: hidden;
 }
-
-.heroDiscs span {
-  position: absolute;
-  left: 50%;
-  border-radius: 50%;
-  transform: translateX(-50%);
-}
-
-.heroDiscs span:nth-child(1) {
-  top: 0;
-  width: calc(var(--disc) * 26);
-  aspect-ratio: 1;
-  background: var(--sm-scale-touch-800);
-}
-
-.heroDiscs span:nth-child(2) {
-  top: calc(var(--disc) * 5);
-  width: calc(var(--disc) * 16);
-  aspect-ratio: 1;
-  background: var(--sm-scale-touch-700);
-}
-
-.heroDiscs span:nth-child(3) {
-  top: calc(var(--disc) * 8);
-  width: calc(var(--disc) * 10);
-  aspect-ratio: 1;
-  background: var(--sm-scale-touch-600);
-}
-
-:global(:root[data-theme="dark"]) .heroDiscs span:nth-child(1) { background: var(--sm-scale-touch-50); }
-:global(:root[data-theme="dark"]) .heroDiscs span:nth-child(2) { background: var(--sm-scale-touch-100); }
-:global(:root[data-theme="dark"]) .heroDiscs span:nth-child(3) { background: var(--sm-scale-touch-200); }
 
 .heroCopy {
   display: grid;
@@ -421,12 +383,15 @@
 }
 
 .section {
+  /* Above the landing's discs, which run behind the first sections. */
+  position: relative;
+  z-index: 1;
   margin-top: var(--sm-space-13);
 }
 
-/* The section after the hero starts over the discs' band, two disc units
-   up (the hero's unit, 4vw), so the page reads as one piece rather than a
-   banner and then a page (Storm, 23 October 2026). */
+/* The section after the hero starts a little over the discs' rising edge,
+   so the page reads as one piece rather than a banner and then a page
+   (Storm, 23 October 2026). */
 .incidentSection {
   position: relative;
   z-index: 3;
@@ -1002,7 +967,7 @@
   .hero {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto var(--hero-band);
-    --disc: 6.5vw;
+    --hero-band: 40vw;
   }
 
   .heroFigure {
@@ -1051,7 +1016,7 @@
   }
 
   .section.incidentSection {
-    margin-top: -13vw;
+    margin-top: -8vw;
   }
 
   .incidentSection,
