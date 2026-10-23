@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { BREAK, CELL, DISCS, END, HEIGHT, discAt, fragmentsOf } from "../src/app/components/figures/discs/geometry";
+import { BREAK, DISCS, END, discAt, fragmentsOf } from "../src/app/components/figures/discs/geometry";
 
 // Pure geometry: the landing's discs (foundations section 7). Nested in
-// equal steps, never cut by a straight edge, and breaking into fragments
-// and cubes that stay inside the field and are the same on every render.
+// equal steps, never cut by a straight edge, breaking above the field's
+// middle into fragments that fade out well before the discs' bottom, the
+// same on every render.
 
 test("the discs are nested in equal steps, so the gaps are even at the top and even at the bottom", () => {
   const [outer, middle, inner] = DISCS;
@@ -23,22 +24,30 @@ test("the discs are nested in equal steps, so the gaps are even at the top and e
   expect(drop / step).toBeLessThan(0.75);
 });
 
-test("the discs break below their break line into fragments that lie in a disc and thin out with depth", () => {
-  const { fragments, cubes } = fragmentsOf();
+test("the discs break above the field's middle and are gone well before their bottom", () => {
+  const [outer] = DISCS;
+  expect(BREAK).toBeLessThan(outer!.cy);
+  // Nothing shows in the lower third of the field (Storm, 24 October 2026).
+  expect(END).toBeLessThan(outer!.cy + outer!.r * (1 / 3));
+});
+
+test("the fragments lie in a disc, thin out and fade with depth, and none reach the end", () => {
+  const fragments = fragmentsOf();
   expect(fragments.length).toBeGreaterThan(100);
   for (const fragment of fragments) {
     expect(fragment.y).toBeGreaterThan(BREAK);
     expect(fragment.y).toBeLessThan(END);
     expect(discAt(fragment.x, fragment.y)?.tone).toBe(fragment.tone);
+    expect(fragment.opacity).toBeGreaterThan(0);
   }
   const half = (BREAK + END) / 2;
-  expect(fragments.filter((f) => f.y < half).length).toBeGreaterThan(fragments.filter((f) => f.y >= half).length * 2);
-  for (const cube of cubes) {
-    expect(cube.y).toBeGreaterThan(BREAK);
-    expect(cube.y + cube.size).toBeLessThanOrEqual(HEIGHT);
-  }
-  expect(cubes.length).toBeGreaterThan(5);
-  expect(CELL).toBeGreaterThan(0);
+  const upper = fragments.filter((f) => f.y < half);
+  const lower = fragments.filter((f) => f.y >= half);
+  expect(upper.length).toBeGreaterThan(lower.length * 2);
+  const mean = (list: typeof fragments) => list.reduce((sum, f) => sum + f.opacity, 0) / list.length;
+  expect(mean(lower)).toBeLessThan(mean(upper));
+  const last = Math.max(...fragments.map((f) => f.y));
+  expect(Math.min(...fragments.filter((f) => f.y === last).map((f) => f.opacity))).toBeLessThan(0.5);
 });
 
 test("the field is the same on every render", () => {

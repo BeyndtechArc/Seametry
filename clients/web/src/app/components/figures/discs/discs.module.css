@@ -1,7 +1,12 @@
-/* The landing's discs (foundations section 7): flat touch-scale tones, the
-   outer disc lightest in light mode and darkest in dark. A falling cube's
-   top takes its disc's tone and its two sides the next steps away from the
-   ground, so it reads as a solid in the house's light without a shadow. */
+/* The landing's discs (foundations section 7): the house green blended into
+   the page's ground, not steps of the touch scale. Storm's mockup measures
+   that way: solving each disc's colour as touch-500 mixed into its grey
+   ground (#cbcbcb), the green's share came out 0 to 20% by channel for the
+   outer disc, 30 to 58% for the middle and 75 to 91% for the inner (24
+   October 2026); 15, 45 and 80 sit inside those ranges. The scale's own
+   light steps (touch-800 to 600) were tried first and read as saturated
+   lime beside the ground. Blending into the ground keeps the same
+   relationship in dark mode, where the ground is dark. */
 .field {
   position: absolute;
   top: 0;
@@ -16,22 +21,6 @@
   height: auto;
 }
 
-.tone2 { fill: var(--sm-scale-touch-800); }
-.tone1 { fill: var(--sm-scale-touch-700); }
-.tone0 { fill: var(--sm-scale-touch-600); }
-.side2 { fill: var(--sm-scale-touch-700); }
-.side1 { fill: var(--sm-scale-touch-600); }
-.side0 { fill: var(--sm-scale-touch-500); }
-.shade2 { fill: var(--sm-scale-touch-600); }
-.shade1 { fill: var(--sm-scale-touch-500); }
-.shade0 { fill: var(--sm-scale-touch-400); }
-
-:global(:root[data-theme="dark"]) .tone2 { fill: var(--sm-scale-touch-50); }
-:global(:root[data-theme="dark"]) .tone1 { fill: var(--sm-scale-touch-100); }
-:global(:root[data-theme="dark"]) .tone0 { fill: var(--sm-scale-touch-200); }
-:global(:root[data-theme="dark"]) .side2 { fill: var(--sm-scale-touch-100); }
-:global(:root[data-theme="dark"]) .side1 { fill: var(--sm-scale-touch-200); }
-:global(:root[data-theme="dark"]) .side0 { fill: var(--sm-scale-touch-300); }
-:global(:root[data-theme="dark"]) .shade2 { fill: var(--sm-scale-touch-200); }
-:global(:root[data-theme="dark"]) .shade1 { fill: var(--sm-scale-touch-300); }
-:global(:root[data-theme="dark"]) .shade0 { fill: var(--sm-scale-touch-400); }
+.tone2 { fill: color-mix(in srgb, var(--sm-scale-touch-500) 15%, var(--sm-surface-ground)); }
+.tone1 { fill: color-mix(in srgb, var(--sm-scale-touch-500) 45%, var(--sm-surface-ground)); }
+.tone0 { fill: color-mix(in srgb, var(--sm-scale-touch-500) 80%, var(--sm-surface-ground)); }
