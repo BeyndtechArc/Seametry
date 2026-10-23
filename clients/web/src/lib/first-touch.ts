@@ -1,4 +1,5 @@
 import type { FirstTouch } from "./activity-report";
+import { recordedRef } from "./ref-link";
 
 // Where this browser first arrived, kept in its own storage and sent once
 // per wallet, with that wallet's first quote. A visitor who never trades
@@ -22,6 +23,10 @@ export function captureFirstTouch() {
       const value = url.searchParams.get(key)?.trim();
       if (value) touch[key] = value.slice(0, 200);
     }
+    // Set by a /r/{code} link. Read through recordedRef again, since anyone
+    // can type ?ref= into a URL by hand.
+    const ref = url.searchParams.get("ref")?.trim();
+    if (ref) touch.ref_code = recordedRef(ref);
     localStorage.setItem(TOUCH, JSON.stringify(touch));
   } catch {
     // Storage blocked: this visit is not attributed.
