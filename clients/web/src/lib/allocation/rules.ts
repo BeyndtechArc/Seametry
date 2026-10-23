@@ -201,12 +201,39 @@ export function routingFeeAtoms(inAtoms: bigint, bps: number): bigint {
 }
 
 /**
- * How long a prepared leg may be signed and submitted. liquidity.DefaultTTL
- * is 15 seconds for quotes measured by a program; this path waits on a
- * person reading the simulated result and then their wallet's own prompt, so
- * it is longer. It stays well inside a blockhash's own lifetime.
+ * How long a prepared leg may be signed and submitted, counted from when its
+ * transaction's blockhash was fetched. The blockhash is the real deadline: a
+ * transaction lands only within 150 blocks of it, and on 23 October 2026
+ * mainnet made 96 blocks in 20.5 seconds, so 150 lasted 32 seconds, not the
+ * minute 400 millisecond slots gave. A longer window would only send
+ * transactions that cannot land; a holder who needs longer needs a durable
+ * nonce, not a larger number here. It used to count from the Jupiter quote,
+ * which spent up to ten seconds of it before the wallet opened while a
+ * basket's later swap builds waited for the Jupiter pacer; the quote's age
+ * stays on the order sheet, and the floor bounds what a few seconds' drift
+ * can cost.
  */
-export const QUOTE_TTL_MS = 30_000;
+export const SIGNING_WINDOW_MS = 30_000;
+
+/**
+ * Compute budget instruction 4, SetLoadedAccountsDataSizeLimit, and the
+ * runtime's ceiling for it. Phantom marks a transaction whose outcome it
+ * cannot simulate as "This dApp could be malicious", and its documented
+ * remedy is a transaction that sets both its compute unit limit and its
+ * loaded account data limit explicitly
+ * (docs.phantom.com/developer-powertools/domain-and-transaction-warnings).
+ * Jupiter sets the first only. A leg is first simulated at the ceiling to
+ * measure what it loads, then built with that measurement plus a margin
+ * against an account growing between simulation and landing.
+ */
+export const LOADED_DATA_LIMIT_MAX_BYTES = 64 * 1024 * 1024;
+
+/** The loaded account data limit for a leg that loaded `measured` bytes in simulation: an eighth more, in whole 32 KiB pages, never past the ceiling. */
+export function loadedDataLimit(measured: number): number {
+  const page = 32 * 1024;
+  const padded = Math.ceil((measured + Math.ceil(measured / 8)) / page) * page;
+  return Math.min(Math.max(padded, page), LOADED_DATA_LIMIT_MAX_BYTES);
+}
 
 /**
  * Top-level programs a prepared swap may invoke. Jupiter's aggregator reaches

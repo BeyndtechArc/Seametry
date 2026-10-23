@@ -1,4 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { SIGNING_WINDOW_MS } from "./rules";
 
 // ENGINEERING_STANDARD.md section 11: "Approval binds an immutable digest over
 // instrument version, market state snapshot, quote, policy version, wallet,
@@ -51,6 +52,17 @@ export function signApproval(terms: ApprovalTerms, secret: string): string {
   return `${Buffer.from(body).toString("base64url")}.${mac(secret, body).toString("base64url")}`;
 }
 
+/**
+ * A signed leg that arrived after its window, in words the holder can act
+ * on. The window is the blockhash's, so the only remedy is a fresh quote
+ * approved sooner; "refresh" alone did not say the approval was the late part.
+ */
+export function signedTooLate(direction: "buy" | "sell", lateMs: number): string {
+  const late = Math.ceil(lateMs / 1_000);
+  const window = SIGNING_WINDOW_MS / 1_000;
+  return `Your approval reached Seametry ${late} ${late === 1 ? "second" : "seconds"} after this quote's ${window}-second signing window closed, so it was not sent. ${direction === "buy" ? "Buy again" : "Sell again"} for a fresh quote, then approve in your wallet without waiting.`;
+}
+
 export type OpenedApproval = { terms: ApprovalTerms } | { refused: string };
 
 /**
@@ -71,8 +83,7 @@ export function openApproval(token: string, secret: string, now: Date): OpenedAp
   const [direction, wallet, mint, inputDigest, policyVersion, inAtoms, outAtoms, floorAtoms, messageSha256, expiresAt] = JSON.parse(body) as string[];
   if (direction !== "buy" && direction !== "sell") return { refused: "The approval has no recognized trade direction. Prepare the leg again." };
   const terms: ApprovalTerms = { direction, wallet, mint, inputDigest, policyVersion, inAtoms, outAtoms, floorAtoms, messageSha256, expiresAt };
-  if (now.getTime() > Date.parse(expiresAt)) {
-    return { refused: "This quote expired. Refresh to see current terms." };
-  }
+  const late = now.getTime() - Date.parse(expiresAt);
+  if (late > 0) return { refused: signedTooLate(direction, late) };
   return { terms };
 }

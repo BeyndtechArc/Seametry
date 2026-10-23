@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { Keypair, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { SENDER_TIP_LAMPORTS } from "../src/lib/allocation/rules";
-import { broadcastSender, carriesSenderTip, composeSwap, senderEndpoint, senderTipAccount, signatureFeeLamports } from "../src/lib/allocation/sender";
+import { ComputeBudgetProgram, Keypair, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { LOADED_DATA_LIMIT_MAX_BYTES, SENDER_TIP_LAMPORTS } from "../src/lib/allocation/rules";
+import { broadcastSender, carriesSenderTip, composeSwap, loadedDataLimitInstruction, loadedDataLimitOf, senderEndpoint, senderTipAccount, signatureFeeLamports, withLoadedDataLimit } from "../src/lib/allocation/sender";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 
@@ -37,6 +37,35 @@ test("the holder's one signature survives the wallet round trip and is the only 
   expect(signed.signatures).toHaveLength(1);
   expect(nacl.sign.detached.verify(signed.message.serialize(), signed.signatures[0], wallet.publicKey.toBytes())).toBe(true);
   expect(signatureFeeLamports(signed)).toBe(5_000n);
+});
+
+test("a leg sets its loaded account data limit at the ceiling, once, for simulation to measure", () => {
+  const { options } = fixture();
+  const leg = composeSwap(options)!;
+  expect(loadedDataLimitOf(leg)).toBe(LOADED_DATA_LIMIT_MAX_BYTES);
+
+  // Jupiter's own limit is kept, never joined by a second: the runtime refuses a duplicate compute budget instruction.
+  const jupiters = Buffer.from(loadedDataLimitInstruction(2_000_000).data).toString("base64");
+  const withJupiters = { ...options, parts: { ...options.parts, computeBudgetInstructions: [{ programId: ComputeBudgetProgram.programId.toBase58(), accounts: [], data: jupiters }] } };
+  const kept = composeSwap(withJupiters)!;
+  expect(loadedDataLimitOf(kept)).toBe(2_000_000);
+  const budget = kept.message.compiledInstructions.filter((ix) => kept.message.staticAccountKeys[ix.programIdIndex].equals(ComputeBudgetProgram.programId));
+  expect(budget).toHaveLength(1);
+});
+
+test("tightening the limit changes those four bytes and nothing else, and never a signed leg", () => {
+  const { wallet, options } = fixture();
+  const leg = composeSwap(options)!;
+  const tightened = withLoadedDataLimit(leg, 1_146_880);
+  expect(loadedDataLimitOf(tightened)).toBe(1_146_880);
+  expect(loadedDataLimitOf(leg)).toBe(LOADED_DATA_LIMIT_MAX_BYTES);
+  const [a, b] = [leg.message.serialize(), tightened.message.serialize()];
+  expect(b.length).toBe(a.length);
+  expect(a.filter((byte, index) => byte !== b[index]).length).toBeLessThanOrEqual(4);
+  expect(carriesSenderTip(tightened)).toBe(true);
+
+  tightened.sign([wallet]);
+  expect(() => withLoadedDataLimit(tightened, 2_000_000)).toThrow(/signature covers it/);
 });
 
 test("Sender configuration always selects keyed SWQOS and rejects lookalike RPC hosts", () => {

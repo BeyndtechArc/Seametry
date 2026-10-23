@@ -48,6 +48,15 @@ States:      default (admitted lots listed, nothing selected);
              reason from the route handler, verbatim, beside the leg).
              Quote expired is its own leg state: "This quote expired.
              Refresh to see current terms." and the Key is disabled.
+             Signed after the window is another: the wallet approved, but
+             the approval reached Seametry after the leg's 30-second
+             signing window, which is the blockhash's own lifetime counted
+             from when it was fetched (rules.ts SIGNING_WINDOW_MS). The leg
+             says by how many seconds, that it was not sent, and to "Buy
+             again" or "Sell again" for a fresh quote (voice.md, "Signed
+             after the window"). Added 23 October 2026 after Phantom's
+             simulation warning held a holder past the window on every leg
+             of a basket and the old wording said only "refresh".
 Ceremony:    None. The Strike belongs to the Hall; an Allocation settles as
              ordinary swaps into the holder's wallet.
 Names:       Allocation (world name, beneath the operational label "Buy
