@@ -48,7 +48,7 @@ services:
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-https://seametry.xyz}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?set GOOGLE_CLIENT_ID in server/deploy/.env}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?set GOOGLE_CLIENT_SECRET in server/deploy/.env}
-      SEAMETRY_APP_ORIGINS: ${SEAMETRY_APP_ORIGINS:-https://seametry.xyz,http://localhost:3000}
+      SEAMETRY_APP_ORIGINS: ${SEAMETRY_APP_ORIGINS:-https://seametry.xyz}
     command: ["node", "src/migrate.mjs"]
 
   auth:

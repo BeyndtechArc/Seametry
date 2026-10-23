@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { jwt } from "better-auth/plugins";
 import pg from "pg";
+import { appOrigins } from "./app-origins.mjs";
 import { serviceTokenPayload } from "./service-token.mjs";
 
 const { Pool } = pg;
@@ -19,10 +20,7 @@ for (const name of required) {
 
 export const pool = new Pool({ connectionString: process.env.AUTH_DATABASE_URL });
 
-export const trustedOrigins = (process.env.SEAMETRY_APP_ORIGINS ?? "https://www.seametry.xyz,https://seametry.xyz,http://localhost:3000")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+export const trustedOrigins = appOrigins(process.env);
 
 export const auth = betterAuth({
   appName: "Seametry",
