@@ -43,15 +43,15 @@ test("a first touch keeps only capped strings, and an empty one is none", () => 
 
 test("a submission report says sent, not sent or uncertain, with the signature only when signed", () => {
   const unsigned = preparedLeg().transaction;
-  const refused = submissionReport(unsigned, new Date("2026-10-16T09:00:05Z"), { sent: false, definitelyNotSent: true, text: "This quote expired." });
+  const refused = submissionReport(unsigned, unsigned, new Date("2026-10-16T09:00:05Z"), { sent: false, definitelyNotSent: true, text: "This quote expired." });
   expect(refused).toEqual({ message_sha256: digestOf(unsigned), submitted_at: "2026-10-16T09:00:05.000Z", result: "refused_not_sent", text: "This quote expired." });
   const transaction = VersionedTransaction.deserialize(Buffer.from(unsigned, "base64"));
   const holder = Keypair.generate();
   transaction.signatures[0] = holder.secretKey.slice(0, 64);
   const signed = Buffer.from(transaction.serialize()).toString("base64");
-  expect(submissionReport(signed, new Date(), { sent: true })).toMatchObject({ result: "sent", signature: expect.any(String) });
-  expect(submissionReport(signed, new Date(), { sent: false, definitelyNotSent: false, text: "lost" })?.result).toBe("uncertain");
-  expect(submissionReport("not a transaction", new Date(), { sent: true })).toBeUndefined();
+  expect(submissionReport(signed, unsigned, new Date(), { sent: true })).toMatchObject({ result: "sent", signature: expect.any(String) });
+  expect(submissionReport(signed, unsigned, new Date(), { sent: false, definitelyNotSent: false, text: "lost" })?.result).toBe("uncertain");
+  expect(submissionReport("not a transaction", unsigned, new Date(), { sent: true })).toBeUndefined();
 });
 
 test("funnel steps reach the record through the server, with its secret and never the browser's", async ({ request }) => {
@@ -85,7 +85,7 @@ test("a refused purchase is recorded with its reason, its wallet and no legs", a
 
 test("a submission the server refuses before sending is recorded as not sent, by its digest", async ({ request }) => {
   const transaction = preparedLeg().transaction;
-  const response = await request.post("/api/allocation/submit", { data: { transaction, approval: "not-an-approval" } });
+  const response = await request.post("/api/allocation/submit", { data: { transaction, approved: transaction, approval: "not-an-approval" } });
   expect(response.status()).toBeGreaterThanOrEqual(400);
   expect((await response.json()).sent).toBe(false);
   const digest = digestOf(transaction);

@@ -6,7 +6,7 @@ import { submitLeg } from "@/lib/allocation/execution";
 import { Refusal } from "@/lib/refusal";
 import { countryGate } from "@/lib/allocation/rules";
 
-/** Sends a leg the holder signed, only if it is exactly the one approved and its quote has not expired. */
+/** Sends a leg the holder signed, only if its trade is exactly the one approved and its quote has not expired. */
 export async function POST(request: NextRequest) {
   const configured = allocationConfig();
   if ("missing" in configured) {
@@ -15,20 +15,21 @@ export async function POST(request: NextRequest) {
   const gate = countryGate(requestCountry(request.headers), configured.config.blockedCountries);
   if (!gate.open) return NextResponse.json({ error: gate.reason }, { status: 451 });
 
-  let body: { transaction?: string; approval?: string };
+  let body: { transaction?: string; approved?: string; approval?: string };
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Expected a JSON body with transaction and approval." }, { status: 400 });
+    return NextResponse.json({ error: "Expected a JSON body with transaction, approved and approval." }, { status: 400 });
   }
-  if (!body.transaction || !body.approval) {
-    return NextResponse.json({ error: "Expected transaction (the signed transaction, base64) and approval." }, { status: 400 });
+  if (!body.transaction || !body.approved || !body.approval) {
+    return NextResponse.json({ error: "Expected transaction (the signed transaction, base64), approved (the transaction as prepared, base64) and approval." }, { status: 400 });
   }
+  const { transaction, approved, approval } = body;
 
   const submittedAt = new Date();
   try {
-    const signature = await submitLeg(configured.config, body.transaction, body.approval);
-    recordSubmission(submissionReport(body.transaction, submittedAt, { sent: true }));
+    const signature = await submitLeg(configured.config, transaction, approved, approval);
+    recordSubmission(submissionReport(transaction, approved, submittedAt, { sent: true }));
     return NextResponse.json({ signature });
   } catch (error) {
     if (error instanceof Refusal) {
@@ -38,8 +39,10 @@ export async function POST(request: NextRequest) {
       // again; any other RPC failure stays uncertain, because the RPC can
       // lose its response after broadcast.
       const definitelyNotSent = error.status === 400 || error.status === 409 || error.status === 410 || error.detail.notSent === true;
-      // A changed transaction's digest is no recorded leg's, so it is not reported.
-      if (!changed) recordSubmission(submissionReport(body.transaction, submittedAt, { sent: false, definitelyNotSent, text: error.message }));
+      // A wallet's change to an approved leg is reported against that leg, so
+      // the team can read what the wallet changed; a transaction naming no
+      // approved leg has nothing to be reported against.
+      if (!error.detail.unknownLeg) recordSubmission(submissionReport(transaction, approved, submittedAt, { sent: false, definitelyNotSent, text: error.message }));
       return NextResponse.json({
         error: error.message,
         ...(changed ? { code: "SIGNED_MESSAGE_CHANGED" } : {}),
@@ -48,7 +51,7 @@ export async function POST(request: NextRequest) {
       }, { status: error.status });
     }
     const message = error instanceof Error ? error.message : "Sending the leg failed.";
-    recordSubmission(submissionReport(body.transaction, submittedAt, { sent: false, definitelyNotSent: false, text: message }));
+    recordSubmission(submissionReport(transaction, approved, submittedAt, { sent: false, definitelyNotSent: false, text: message }));
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -5,6 +5,7 @@ import { ExtensionType, getAccountLen, getAccountTypeOfMintType, getAssociatedTo
 import { formatAmount } from "../amount";
 import { findAdmission, isAdmitted, type Admission } from "./admissions";
 import { messageDigest, openApproval, signApproval } from "./approval";
+import { walletChanges } from "./wallet-changes";
 import type { AllocationConfig } from "./config";
 import { MIN_LEG_USDC_ATOMS, PRIORITY_FEE, SENDER_MAX_ACCOUNTS, SENDER_TIP_ACCOUNTS, SENDER_TIP_LAMPORTS, SLIPPAGE_BPS, failedVenueProgram, preflightRefusal, SIGNING_WINDOW_MS, TIP_VALUE_TTL_MS, loadedDataLimit, USDC_MINT, USDC_SCALE, USDC_TOKEN_PROGRAM, lotCapAtoms, quoteParams, routingFeeBps, sellQuoteParams, tipOffsetBps, unlistedProgram } from "./rules";
 import { jupiter, type JupiterQuote } from "../jupiter";
@@ -515,19 +516,28 @@ export async function prepareSales(config: AllocationConfig, walletText: string,
  * server approved, unchanged, still inside its quote's lifetime, and still
  * judged on the same evidence. Returns the signature.
  */
-export async function submitLeg(config: AllocationConfig, signedBase64: string, approvalToken: string): Promise<string> {
+export async function submitLeg(config: AllocationConfig, signedBase64: string, approvedBase64: string, approvalToken: string): Promise<string> {
   const opened = openApproval(approvalToken, config.approvalSecret, new Date());
   if ("refused" in opened) throw new Refusal(410, opened.refused);
   const { terms } = opened;
 
   let transaction: VersionedTransaction;
+  let approved: VersionedTransaction;
   try {
     transaction = VersionedTransaction.deserialize(Buffer.from(signedBase64, "base64"));
+    approved = VersionedTransaction.deserialize(Buffer.from(approvedBase64, "base64"));
   } catch {
-    throw new Refusal(400, "The signed transaction could not be read.");
+    throw new Refusal(400, "The signed or the approved transaction could not be read.");
   }
-  if (messageDigest(transaction.message.serialize()) !== terms.messageSha256) {
-    throw new Refusal(409, "The transaction was changed after it was approved, so it was not sent. Prepare the leg again.");
+  // The approval names the approved message by its digest; the caller brings
+  // that message back, and the signed one may differ from it only as
+  // wallet-changes.ts allows (Phantom's guard instructions, the fee budget).
+  if (messageDigest(approved.message.serialize()) !== terms.messageSha256) {
+    throw new Refusal(409, "The transaction was changed after it was approved, so it was not sent. Prepare the leg again.", { unknownLeg: true });
+  }
+  const change = walletChanges(approved.message, transaction.message);
+  if (change) {
+    throw new Refusal(409, `The transaction was changed after it was approved (${change}), so it was not sent. Prepare the leg again.`);
   }
   const lot = terms.direction === "sell" ? listedLot(terms.mint) : admittedLot(terms.mint);
   if (lot.capacity_decision.input_digest !== terms.inputDigest || lot.capacity_decision.policy_version !== terms.policyVersion) {
