@@ -12,8 +12,9 @@ returns a signature and forgets it, and the Go server's tables hold account
 links, observations and receipts, no trades. The only record of volume, fees
 and wallets is the fee account's public history on chain
 (`J3obWpydMEgZpX2BoZvNBpZ4VKXceYVV8yuRDcEuXw8h`), read by hand on 16 October:
-44 fee credits since 11 October, 0.069144 USDC, every one from a single
-wallet. That record also misses a leg whose tip took the whole fee, because
+44 transactions since 11 October, 43 of them fee credits totalling 0.069144
+USDC and one a failed leg, every one from a single wallet (first stated as
+44 credits; recounted 17 October). That record also misses a leg whose tip took the whole fee, because
 such a leg is sent without the fee account.
 
 ## The shape
@@ -216,8 +217,10 @@ each person's data, and the privacy policy's wording for it.
    answers, backfill command, run once against mainnet, and the job that
    deletes funnel steps older than 24 months, which the privacy policy states
    from PR 1. Acceptance: the
-   backfill's totals equal the hand count of 16 October (44 credits, 69,144
-   atoms) and its rerun adds nothing.
+   backfill's totals equal the independent count (43 credits, 69,144 atoms,
+   one failed leg skipped) and its rerun adds nothing. Met 17 October against
+   mainnet into a local database: 43 imported, 69144 fee atoms, the failure
+   skipped; the rerun imported 0 and found 43 already recorded.
 3. **Admin API.** Token claims, admin check, aggregate endpoints with tests
    for every definition above on a seeded database. Acceptance: a non-admin
    account gets 404; each metric reproduces from its seed by hand.
