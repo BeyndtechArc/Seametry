@@ -6,6 +6,7 @@ import { Discs } from "./components/figures/discs/discs";
 import { HallLine } from "./components/figures/hall-line/figure";
 import { AnchorChain } from "./components/landing/anchor-chain";
 import { BasketCards } from "./components/landing/basket-cards";
+import { ClosingBand } from "./components/landing/closing-band";
 import { OpenedAlloy } from "./components/landing/opened-alloy";
 import { QuestionList } from "./components/landing/question-list";
 import { StrikeSteps } from "./components/landing/strike-steps";
@@ -89,6 +90,8 @@ export default async function Home() {
         <SectionHeading index="06" title={["Questions people ask", "before they hold an Alloy share."]} />
         <QuestionList />
       </section>
+
+      <ClosingBand />
 
     </PublicShell>
   );

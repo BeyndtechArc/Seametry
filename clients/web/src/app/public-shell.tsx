@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Digest, RegisterFooter, Rule } from "@seametry/ui";
 import { publicIncident, publicIncidentAge } from "@/lib/public-evidence";
 import { FooterScene } from "./components/footer/footer-scene";
+import { ClosingWordmark } from "./components/footer/wordmark";
 import { HouseRail, type PublicDestination } from "./components/lens/house-rail";
 import styles from "./site.module.css";
 
@@ -23,12 +24,12 @@ export function PublicShell({
           { label: "Source", href: "https://github.com/BeyndtechArc/Seametry" },
           { label: "API contract", href: "https://github.com/BeyndtechArc/Seametry/blob/main/contracts/openapi/openapi.yaml" },
           { label: "Send feedback", href: "/feedback" },
-          { label: "seametry@beyndtech.com", href: "mailto:seametry@beyndtech.com" },
           { label: "Terms", href: "/terms" },
           { label: "Privacy policy", href: "/privacy-policy" },
         ]}
         accounts={[{ label: "Seametry on X", href: "https://x.com/seametry_", icon: "x-account" }]}
         note="Seametry is operated by Beyndtech Arc from Port Harcourt. Public evidence requires no account."
+        finale={<ClosingWordmark />}
       >
         <FooterScene />
       </RegisterFooter>

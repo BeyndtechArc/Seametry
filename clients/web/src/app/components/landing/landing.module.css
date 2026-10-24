@@ -490,55 +490,72 @@
   font-size: var(--sm-font-size-small);
 }
 
-/* components.md, Question list. The questions run down the left as a
-   ruled index; the open answer sits large on the right, its opening set in
-   the display face like a lot entry's first line. */
-.ask {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: var(--sm-space-10);
-  align-items: start;
+/* components.md, Question list. */
+.questions {
+  margin: 0;
+  padding: 0;
   border-top: 0.5px solid var(--sm-line-strong);
+  list-style: none;
 }
 
-.askList {
-  display: grid;
-}
-
-.askList a {
-  position: relative;
-  display: grid;
-  grid-template-columns: var(--sm-space-9) minmax(0, 1fr);
-  align-items: baseline;
-  gap: var(--sm-space-4);
-  padding: var(--sm-space-6) var(--sm-space-4) var(--sm-space-6) 0;
+.questions li {
   border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-text-secondary);
+}
+
+.questions summary {
+  display: grid;
+  grid-template-columns: var(--sm-space-10) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-5);
+  min-height: var(--sm-size-target);
+  padding: var(--sm-space-6) 0;
+  color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title-s);
-  line-height: 1.3;
-  text-decoration: none;
-  transition: color var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+  cursor: pointer;
+  list-style: none;
 }
 
-.askList a:hover,
-.askList a[aria-selected="true"] {
-  color: var(--sm-text-primary);
+.questions summary::-webkit-details-marker {
+  display: none;
 }
 
-/* The open question carries a heavier rule along its foot. */
-.askList a[aria-selected="true"]::after {
+/* A plus drawn from two rules, the vertical one dropping when open. */
+.toggle {
+  position: relative;
+  flex: none;
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+}
+
+.toggle::before,
+.toggle::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  border-bottom: 2px solid var(--sm-text-primary);
+  background: var(--sm-text-primary);
 }
 
-.askList a:focus-visible {
+.toggle::before {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+}
+
+.toggle::after {
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+}
+
+.questions details[open] .toggle::after {
+  display: none;
+}
+
+.questions summary:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-1);
+  outline-offset: var(--sm-space-2);
 }
 
 .questionIndex {
@@ -547,26 +564,75 @@
   font-size: var(--sm-font-size-micro);
 }
 
-.askAnswer {
+.questions details > div {
   display: grid;
+  margin-left: calc(var(--sm-space-10) + var(--sm-space-5));
   justify-items: start;
-  gap: var(--sm-space-6);
-  padding-top: var(--sm-space-7);
+  gap: var(--sm-space-5);
+  max-width: var(--sm-size-readable);
+  padding-bottom: var(--sm-space-7);
   color: var(--sm-text-secondary);
   line-height: 1.65;
 }
 
-.askAnswer p:first-child {
+/* The one change from a plain accordion: an open answer leads with its
+   first paragraph in the display face, so the answer reads as an answer
+   and not as more small print, and its row closes on a heavier rule. */
+.questions details > div p:first-child {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title);
-  font-weight: var(--sm-font-weight-light);
-  letter-spacing: var(--sm-font-tracking-title);
-  line-height: 1.35;
+  font-size: var(--sm-font-size-title-s);
+  line-height: 1.45;
 }
 
-.askAnswer p + p {
-  max-width: var(--sm-size-readable);
+.questions li:has(details[open]) {
+  border-bottom: 1px solid var(--sm-text-primary);
+}
+
+/* components.md, Closing band. */
+.closing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-10);
+  margin-top: var(--sm-space-12);
+  padding: var(--sm-space-11) 0;
+  border-top: 0.5px solid var(--sm-line-strong);
+}
+
+.closingText {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-8);
+}
+
+.closing h2 {
+  max-width: 14em;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-display);
+  font-weight: var(--sm-font-weight-light);
+  letter-spacing: var(--sm-font-tracking-display);
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+/* The heading's quieter clause, as a section heading's (site.module.css). */
+.closing h2 span {
+  color: color-mix(in srgb, var(--sm-text-tertiary) 75%, var(--sm-surface-ground));
+}
+
+.closingText > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-7);
+}
+
+.closingOrbit {
+  display: block;
+  width: calc(var(--sm-space-13) * 2.5);
+  height: auto;
 }
 
 @media (max-width: 1050px) {
@@ -596,15 +662,24 @@
     row-gap: var(--sm-space-7);
   }
 
-  .ask {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-  }
 }
 
 @media (max-width: 700px) {
   .baskets {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .closing {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--sm-space-10) 0;
+  }
+
+  .closingOrbit {
+    display: none;
+  }
+
+  .closing h2 {
+    font-size: var(--sm-font-size-figure);
   }
 
   .openedCard header {

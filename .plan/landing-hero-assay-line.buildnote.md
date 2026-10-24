@@ -31,13 +31,15 @@ Sections:    1. House rail: one bar across the content width, a step of the
                 verified?
              10. 06 Question list. Answers: what do people ask before they
                 trust this?
-             11. Register footer, opening on the Hall bench. Answers: what
-                does the Hall do when I work it?
+             11. Closing band. Answers: where do I go now?
+             12. Register footer, opening on the Hall bench and ending on the
+                Closing wordmark. Answers: what does the Hall do when I work
+                it?
 Components:  House rail, Hero instrument, Incident ledger, Mechanism plate,
              Opened Alloy, Photo frame, Basket card, Basket plate, Lot mark,
              Condition report facts, Grade, Stamp, Digest, Strike steps,
-             Proof strip, Anchor chain, Question list, Hall bench,
-             Register footer, RouteAction,
+             Proof strip, Anchor chain, Question list, Closing band,
+             Hall bench, Register footer, Closing wordmark, RouteAction,
              QuietLink. Section heading: patterns.md composition rule 9.
 Data:        Founding record of Stoic Crew (shared/evidence/alloys/index.json,
              Solana devnet, recorded 6 October 2026); the admissions
@@ -137,7 +139,7 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 at 1200px; phones are unchanged. The closing band is gone:
                 the footer's Hall bench closes every public page, and a band
                 with the hero's actions beside it said the same thing twice.
-                The footer keeps eight links, dropping what the House rail
+                The footer keeps seven links, the team's address removed too, dropping what the House rail
                 and the app already reach. The Q&A asks four questions as a
                 tab list (Storm, 24 October 2026).
              13. Write-ups cut (Storm, 24 October 2026): the Opened Alloy shows
@@ -146,3 +148,10 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 "illustrative" labels and the eligibility clause left the
                 page. The orbit holds only while the card or a coin is
                 pointed at or focused, and a tap on a coin opens that leg.
+             14. Storm, 24 October 2026: the closing band returns (it "wasn't
+                bad"); the page ends on a Closing wordmark below the links,
+                the hero's discs rising into the letters of "Seametry" and
+                breaking into squares above it. A gradient was suggested and
+                not used: the system bans them, and the discs carry the same
+                pull without one. The tab Q&A went back to the accordion with
+                short question labels; the team's address left the footer.

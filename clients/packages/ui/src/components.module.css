@@ -1786,9 +1786,11 @@
    separates it from the page. */
 .registerFooter {
   display: grid;
+  /* One column at the page's width, so a full-window piece inside it
+     overflows to the window's edges instead of widening the column. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sm-space-8);
   margin-top: var(--sm-space-12);
-  padding-bottom: var(--sm-space-8);
 }
 
 /* One line: the links, then Seametry's accounts elsewhere at its end. */

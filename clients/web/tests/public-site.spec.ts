@@ -47,7 +47,10 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   await expect(page.getByText("Recorded on Solana devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A melt survives the freeze." })).toBeVisible();
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
-  await expect(page.getByRole("main").getByRole("link", { name: "Open app" })).toHaveAttribute("href", "/app");
+  // The hero and the closing band offer the same way in.
+  const openApp = page.getByRole("main").getByRole("link", { name: "Open app" });
+  await expect(openApp).toHaveCount(2);
+  for (const link of await openApp.all()) await expect(link).toHaveAttribute("href", "/app");
 
   for (const section of ["Four things the Hall makes checkable", "One Alloy, opened to every leg", "Strike a share from its stocks.", "Baskets a wallet can buy today", "Four public artifacts back this page.", "Questions people ask"]) {
     await expect(page.getByRole("heading", { level: 2, name: section })).toBeVisible();
@@ -897,35 +900,50 @@ test("the anchor chain shows the Hallmark verified to its path and the root on c
   await expect(chain.filter({ has: page.locator("[data-unbuilt]") })).toHaveCount(0);
 });
 
-test("the question list asks How it works' questions and opens each answer with that section's opening", async ({ page }) => {
+test("the question list asks a few short questions and answers each with its How it works section's opening", async ({ page }) => {
   await page.goto("/docs/how-it-works");
   const sections = await page.getByRole("article").getByRole("heading", { level: 2 }).evaluateAll((headings) =>
     headings.map((heading) => {
       let next = heading.nextElementSibling;
       while (next && next.tagName !== "P") next = next.nextElementSibling;
-      return { id: heading.id, question: heading.textContent!.trim(), opening: next?.textContent?.trim() ?? "" };
+      return { id: heading.id, opening: next?.textContent?.trim() ?? "" };
     }));
 
   await page.goto("/");
-  const tabs = page.getByRole("tablist", { name: "Questions" }).getByRole("tab");
-  const asked = await tabs.count();
+  const rows = page.locator("main details");
+  const asked = await rows.count();
   expect(asked).toBeGreaterThanOrEqual(3);
   expect(asked).toBeLessThan(sections.length);
-  const answer = page.getByRole("tabpanel");
   for (let index = 0; index < asked; index++) {
-    const tab = tabs.nth(index);
-    const href = await tab.getAttribute("href");
+    const row = rows.nth(index);
+    const question = (await row.locator("summary > span:nth-child(2)").textContent()) ?? "";
+    expect(question.split(" ").length, question).toBeLessThanOrEqual(7);
+    await row.locator("summary").click();
+    const href = await row.getByRole("link", { name: "Read the full answer" }).getAttribute("href");
     const section = sections.find((candidate) => href === `/docs/how-it-works#${candidate.id}`);
     expect(section, `${href} is a section of How it works`).toBeDefined();
-    await expect(tab).toContainText(section!.question);
-    await tab.click();
-    await expect(tab).toHaveAttribute("aria-selected", "true");
-    await expect(answer.locator("p").first()).toHaveText(section!.opening);
-    await expect(answer.getByRole("link", { name: "Read the full answer" })).toHaveAttribute("href", href!);
+    await expect(row.locator("p").first()).toHaveText(section!.opening);
   }
-  await tabs.last().press("ArrowDown");
-  await expect(tabs.first()).toHaveAttribute("aria-selected", "true");
-  await expect(tabs.first()).toBeFocused();
+});
+
+test("the page ends on the house name, the discs rising into its letters as it comes into view", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/terms");
+  const wordmark = page.getByRole("contentinfo").locator(":scope > div[aria-hidden=true]").last();
+  await expect(wordmark).toHaveCount(1);
+  expect(await wordmark.evaluate((element) => element === element.parentElement!.lastElementChild)).toBe(true);
+  await expect(wordmark.locator("text").first()).toHaveText("Seametry");
+  const rise = () => wordmark.locator(":scope > div").evaluate((element) => element.getBoundingClientRect().top - element.parentElement!.getBoundingClientRect().top);
+  await wordmark.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - window.innerHeight + 20));
+  await page.waitForTimeout(200);
+  const entering = await rise();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(200);
+  expect(entering).toBeGreaterThan(await rise() + 20);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/terms");
+  expect(await rise()).toBe(0);
 });
 
 test("the basket cards feature wholly admitted baskets, count them from the records, and load their photographs", async ({ page }) => {

@@ -454,7 +454,7 @@ Copyable prompts and endpoints, the machine-readable site version, the API refer
 
 ### Register footer
 **Answers:** what can I try for myself, and where are the few things not linked elsewhere?
-**Anatomy:** it opens on its scene, the Hall bench, in a band of the sheet across the whole window; then one line of links (the Key, the exit paper, source, API contract, Send feedback and the team's address, terms, privacy policy) with Seametry's accounts elsewhere (X) as Icon buttons at its end; then the operator's note. Destinations the House rail or the app already carry (Docs, How it works, Thesis, Open app, Allocation, Alloys) are not repeated here (Storm, 24 October 2026). The X glyph alone, labelled with the account's name for assistive technology and as a tooltip, never a written handle beside it.
+**Anatomy:** it opens on its scene, the Hall bench, in a band of the sheet across the whole window; then one line of links (the Key, the exit paper, source, API contract, Send feedback, terms, privacy policy) with Seametry's accounts elsewhere (X) as Icon buttons at its end; then the operator's note; then the Closing wordmark. The team's address is not shown (Storm, 24 October 2026); Send feedback reaches the team, and its page names the address if a message cannot be sent. Destinations the House rail or the app already carry (Docs, How it works, Thesis, Open app, Allocation, Alloys) are not repeated here (Storm, 24 October 2026). The X glyph alone, labelled with the account's name for assistive technology and as a tooltip, never a written handle beside it.
 **Rules:** every item is a real destination. A new link earns its place only if no other route on the page reaches it.
 
 ### Hall bench
@@ -587,11 +587,24 @@ Copyable prompts and endpoints, the machine-readable site version, the API refer
 
 ### Question list
 **Answers:** what do people ask before they trust this?
-**Anatomy:** a few questions down the left as a ruled, numbered index, the open one in full ink over a heavier rule; the open answer large on the right, its first paragraph set in the display face and the next in body text, with a Quiet link to the full answer. Four at most, each well answered (Storm, 24 October 2026: fewer questions, and an accordion read as generic).
-**Identity:** a tab list in the reader's words; arrow keys move between questions.
-**States:** the first open; another open; no script, where each question is a link to its section of How it works and the first answer shows.
-**Data:** the how-it-works page's own sections, read from the docs source: each question is a heading there and its answer is that section's opening, up to two paragraphs, stopping before one that introduces a figure, so the two never disagree.
-**Rules:** never write an answer that the owning page does not state.
+**Anatomy:** a ruled list of numbered disclosure rows, four at most, each a short question of a few words that opens to its answer and a Quiet link to the full answer. The one change from a plain accordion: an open answer leads with its first paragraph in the display face, and its row closes on a heavier rule (Storm, 24 October 2026, after a tab layout read worse than the accordion).
+**Identity:** native disclosure, one hairline per row, a plus drawn from two rules whose upright drops when open.
+**States:** closed; open; no script leaves every row working.
+**Data:** the how-it-works page's own sections, read from the docs source. The landing words each question briefly in its own words, since the page's headings run long; the answer is that section's opening, up to two paragraphs, stopping before one that introduces a figure, so the landing never states an answer the page does not.
+**Rules:** never write an answer that the owning page does not state. A question whose section is gone is dropped, not answered from memory.
+
+### Closing band
+**Answers:** where do I go now?
+**Anatomy:** one display line and the hero's two actions, beside the Opened Alloy's orbit drawn small and without words, so the page closes on the object it opened. On a phone the orbit is left out.
+**States:** default only.
+**Rules:** no new claim; the actions are the hero's.
+
+### Closing wordmark
+**Answers:** none; it is the house's signature at the foot of every public page.
+**Anatomy:** "Seametry" in the display face across the whole window, its descender running off the page's foot, cut as a stencil from the ground with a hairline outline. Through the letters show the hero's discs, which rise into them as the foot of the page comes into view; above the word the discs break into squares, the hero's fragments in reverse, dense near the word and thinning upward.
+**Identity:** the hero's disc tones and nesting, so the page ends where it began; no gradient, shadow or glow.
+**States:** rising, on a CSS view timeline the compositor runs, finishing as the page's end is reached; risen, where view timelines are missing or the reader asks for less motion.
+**Rules:** decorative and hidden from assistive technology, since the House rail names the house. Never a second wordmark on a page.
 
 ### Pattern Register
 **Answers:** does each shared component retain Seametry's identity across states, themes, widths and difficult content?
