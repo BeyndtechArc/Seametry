@@ -819,7 +819,7 @@ test("the opened Alloy draws the founded Alloy and its first leg from their reco
   const admission = (mint: string) => admissions.find((entry) => entry.instrument.mint === mint)!;
 
   const holds = record.legs.map((leg: { symbol: string; real_mint: string; atoms_per_share: string }) => `${units(leg.atoms_per_share, admission(leg.real_mint).decimals)} ${leg.symbol}`).join(", ");
-  const orbit = page.getByRole("img", { name: `One ${record.symbol} share holds ${holds}.` });
+  const orbit = page.getByRole("group", { name: `One ${record.symbol} share holds ${holds}.` });
   await expect(orbit).toBeVisible();
   for (const leg of record.legs) await expect(orbit).toContainText(units(leg.atoms_per_share, admission(leg.real_mint).decimals));
 
@@ -858,13 +858,27 @@ test("the opened Alloy turns one leg at a time to the card, and holds still unde
   await page.clock.install();
   await page.goto("/");
   const opened = page.locator("[aria-label$=', opened']");
-  const orbit = page.getByRole("img", { name: /share holds/ });
+  const orbit = page.getByRole("group", { name: /share holds/ });
   await orbit.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await expect(opened).toHaveAttribute("aria-label", `${first}, opened`);
   await page.clock.runFor(4500 + 200 + 900 + 100);
   await expect(opened).toHaveAttribute("aria-label", `${second}, opened`);
   await page.clock.runFor(4500 + 200 + 900 + 100);
   await expect(opened).toHaveAttribute("aria-label", `${third}, opened`);
+
+  // A tap on a coin turns that coin to the card, however far round it is.
+  await page.getByRole("button", { name: `Open ${first}` }).click();
+  await page.clock.runFor(200 + 900 + 4 * 260 + 100);
+  await expect(opened).toHaveAttribute("aria-label", `${first}, opened`);
+
+  // It holds while the card is pointed at, and only then: pointing at the
+  // section's heading lets it turn.
+  await opened.hover();
+  await page.clock.runFor(2 * (4500 + 200 + 900 + 100));
+  await expect(opened).toHaveAttribute("aria-label", `${first}, opened`);
+  await page.getByRole("heading", { level: 2, name: /^One Alloy, opened/ }).hover();
+  await page.clock.runFor(4500 + 200 + 900 + 100);
+  await expect(opened).toHaveAttribute("aria-label", `${second}, opened`);
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
@@ -934,7 +948,7 @@ test("the basket cards feature wholly admitted baskets, count them from the reco
     await card.scrollIntoViewIfNeeded();
     await expect.poll(() => card.locator("img").first().evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBeGreaterThan(0);
   }
-  await expect(section).toContainText(`${buyable.length} published baskets are wholly admitted`);
+  await expect(section).toContainText(`${buyable.length} baskets wholly admitted`);
 });
 
 test("the footer's bench plays by the Hall's rules: a freeze refuses a Strike, a Melt holds the frozen leg as a Claim", async ({ page }) => {

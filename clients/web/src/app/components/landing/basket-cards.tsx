@@ -58,7 +58,7 @@ export function BasketCards() {
       </ul>
       <p className={styles.basketsNote}>
         <span>
-          {buyable.length} published baskets are wholly admitted under {offer.policyVersion}, snapshot of {evidenceDate.format(new Date(offer.asOf))}. Buying one purchases each stock into your wallet on Solana mainnet where eligibility allows; no basket token is issued. Photographs are illustrative.
+          {buyable.length} baskets wholly admitted under {offer.policyVersion}, {evidenceDate.format(new Date(offer.asOf))}. Each stock settles straight to your wallet; no basket token is issued.
         </span>
         <QuietLink href="/app/baskets" icon="arrow-up-right">All baskets</QuietLink>
       </p>

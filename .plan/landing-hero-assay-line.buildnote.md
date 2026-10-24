@@ -140,3 +140,9 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 The footer keeps eight links, dropping what the House rail
                 and the app already reach. The Q&A asks four questions as a
                 tab list (Storm, 24 October 2026).
+             13. Write-ups cut (Storm, 24 October 2026): the Opened Alloy shows
+                no caption, its sources moved into the drawing's description;
+                the steps' and baskets' notes are two lines each, so the
+                "illustrative" labels and the eligibility clause left the
+                page. The orbit holds only while the card or a coin is
+                pointed at or focused, and a tap on a coin opens that leg.

@@ -64,13 +64,13 @@ export function OpenedAlloy() {
     });
   }
 
+  // The figure shows no caption (Storm, 24 October 2026); its sources travel
+  // as the drawing's description, where assistive technology reads them.
+  const provenance = `${alloy.name}, from its founding record on Solana ${alloy.cluster}, ${alloy.foundedOn}, slot ${alloy.slot}; each leg is a devnet stand-in for the token named. Each leg as ${offer.policyVersion} read its mint, snapshot of ${evidenceDate.format(new Date(admissions.as_of))}. Photographs are illustrative.`;
+
   return (
     <figure className={styles.opened}>
-      <OpenedOrbit legs={legs} symbol={alloy.symbol} artwork={alloy.artwork} policyVersion={offer.policyVersion} />
-      <figcaption className={styles.openedCaption}>
-        {alloy.name}, from its founding record on Solana {alloy.cluster}, {alloy.foundedOn}, slot {alloy.slot}; each leg is a devnet stand-in for the token named.
-        {" "}Each leg as {offer.policyVersion} read its mint, snapshot of {evidenceDate.format(new Date(admissions.as_of))}. Photographs are illustrative.
-      </figcaption>
+      <OpenedOrbit legs={legs} symbol={alloy.symbol} artwork={alloy.artwork} policyVersion={offer.policyVersion} provenance={provenance} />
     </figure>
   );
 }

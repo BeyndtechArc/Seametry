@@ -27,7 +27,7 @@ export function StrikeSteps() {
         ))}
       </ol>
       <p className={styles.stepsNote}>
-        <span>A bundle buys several tokens and stops there: no share exists. An Alloy share exists because a Formula entered the Hall, and any wallet can Strike or Melt it. Which leg is held is illustrative; the recorded freeze is the ledger above.</span>
+        <span>A bundle stops when the tokens arrive. An Alloy stays open: any wallet holding its stocks can Strike, any holder can Melt.</span>
         <QuietLink href="/docs/how-it-works#why-is-a-bundle-of-tokens-not-an-etf" icon="arrow-up-right">Why a bundle is not an ETF</QuietLink>
       </p>
     </>
