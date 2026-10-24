@@ -153,3 +153,4 @@ Held legs, each with the issuer action that holds it and the time it began. Noti
 6. **Empty is an invitation.** "No hallmarks yet. Your first trade produces one." Never "Nothing here".
 7. **Density goes in tables, air goes around them.** A catalogue page can be dense; its margins cannot.
 8. **Mobile first for the app, content first for the Explorer.** The Explorer is read before it is used.
+9. **A section heading is its own answer.** One title of 8 to 20 words, two lines at most: the statement in `text.primary`, its qualifying clause after it in `text.tertiary`, left aligned, no subtitle. The section number sits at the right end, heavy and in `line.rule`, a mark of place that is not read (Storm, 24 October 2026). The question the section answers is named in its build note.

@@ -15,6 +15,24 @@
   pointer-events: none;
 }
 
+/* The field rises a little faster than the page it sits in, about 13% over
+   the first 120vh of scroll (Storm, 24 October 2026). A scroll timeline
+   runs on the compositor, so scrolling costs no script; a browser without
+   one, or a reader who asks for less motion, sees the field still. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .field {
+      animation: rise linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 120vh;
+    }
+  }
+}
+
+@keyframes rise {
+  to { translate: 0 -16vh; }
+}
+
 .field svg {
   display: block;
   width: 100%;

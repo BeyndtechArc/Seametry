@@ -32,7 +32,7 @@ export default async function SignInPage() {
       </header>
 
       <section className={styles.section}>
-        <SectionHeading index="01" title="Account and wallet" question="What does each connection authorize?" />
+        <SectionHeading index="01" title={["An account and a wallet", "each authorize something different."]} />
         <div className={styles.accessGrid}>
           <article className={styles.accessStep}>
             <b>Sign in to your account.</b>
@@ -54,7 +54,7 @@ export default async function SignInPage() {
       </section>
 
       <section className={styles.section}>
-        <SectionHeading index="02" title="Data boundary" question="What does the account retain?" />
+        <SectionHeading index="02" title={["The data boundary,", "what the account retains."]} />
         <div className={styles.boundary}>
           <p>
             If you sign in, the account service stores the identifier, name and email returned by Google, a session record, and

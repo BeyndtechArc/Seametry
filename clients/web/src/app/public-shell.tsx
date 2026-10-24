@@ -66,20 +66,24 @@ export function PublicShell({
   );
 }
 
+/**
+ * One title that is its own answer, with no subtitle under it (Storm, 24
+ * October 2026): the statement, then its qualifying clause a step quieter,
+ * two lines at most. The number is a mark of place, not something to read.
+ */
 export function SectionHeading({
   index,
-  title,
-  question,
+  title: [statement, qualifier],
 }: {
   index: string;
-  title: string;
-  question: string;
+  title: readonly [string, string];
 }) {
   return (
     <header className={styles.sectionHeading}>
-      <span>{index}</span>
-      <h2>{title}</h2>
-      <p>{question}</p>
+      <h2>
+        {statement} <span>{qualifier}</span>
+      </h2>
+      <span aria-hidden="true">{index}</span>
     </header>
   );
 }

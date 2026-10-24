@@ -48,7 +48,7 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
   await expect(page.getByRole("main").getByRole("link", { name: "Open app" })).toHaveAttribute("href", "/app");
 
-  for (const section of ["What changes", "The instrument, opened", "Why an ETF", "What you can inspect now"]) {
+  for (const section of ["Four things the Hall makes checkable", "Between a company and your wallet", "A bundle hands you tokens.", "Four public artifacts stand behind"]) {
     await expect(page.getByRole("heading", { level: 2, name: section })).toBeVisible();
   }
 });
@@ -236,16 +236,16 @@ test("the public site publishes the terms and privacy policy used for account co
   await page.goto("/terms");
   await expect(page.getByRole("heading", { level: 1, name: "Terms of service" })).toBeVisible();
   await expect(page.getByText("Effective 9 October 2026", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Accounts return you to Seametry." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Accounts return you to Seametry, and what signing in creates." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Wallets remain under their owners' control." })).toBeVisible();
 
   await page.goto("/privacy-policy");
   await expect(page.getByRole("heading", { level: 1, name: "Privacy policy" })).toBeVisible();
   await expect(page.getByText("Effective 16 October 2026", { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Google returns account identity data." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Google returns account identity data when you sign in." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A linked wallet remains public." })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Trades through Seametry are recorded by wallet." })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "You may delete your account." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Trades through Seametry are recorded by the wallet that asked for them." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "You may delete your account, and the control you keep over your data." })).toBeVisible();
 });
 
 test("the wallet state lives in the app's top bar, and connecting signs nothing", async ({ page }) => {
@@ -422,12 +422,29 @@ test("narrow shells give the mark room and disclose one complete navigation regi
     return parts.every((box) => box.left >= 0 && box.right <= window.innerWidth + 0.5);
   });
   expect(lineBounds).toBe(true);
-  const instrumentHeading = await page.locator("section").filter({ hasText: "The instrument, opened" }).evaluate((element) => {
-    const title = element.querySelector("h2")?.getBoundingClientRect();
-    const question = element.querySelector("header p")?.getBoundingClientRect();
-    return { titleBottom: title?.bottom ?? 0, questionTop: question?.top ?? 0 };
-  });
-  expect(instrumentHeading.questionTop).toBeGreaterThanOrEqual(instrumentHeading.titleBottom);
+});
+
+test("each section heading is one title of two lines at most, its number at the right end", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const headings = await page.locator("main header:has(> h2 > span)").evaluateAll((headers) => headers.map((header) => {
+    const title = header.querySelector("h2")!;
+    const number = header.querySelector(":scope > span")!;
+    const lineHeight = parseFloat(getComputedStyle(title).lineHeight);
+    return {
+      text: title.textContent,
+      lines: Math.round(title.getBoundingClientRect().height / lineHeight),
+      numberRight: Math.round(number.getBoundingClientRect().right),
+      headerRight: Math.round(header.getBoundingClientRect().right),
+      subtitles: header.querySelectorAll("p").length,
+    };
+  }));
+  expect(headings).toHaveLength(7);
+  for (const heading of headings) {
+    expect(heading.lines, heading.text ?? "").toBeLessThanOrEqual(2);
+    expect(heading.numberRight, heading.text ?? "").toBe(heading.headerRight);
+    expect(heading.subtitles, heading.text ?? "").toBe(0);
+  }
 });
 
 test("each mechanism plate title stays on one line at desktop width", async ({ page }) => {
@@ -764,4 +781,22 @@ test("an unknown public route returns a useful route index", async ({ page }) =>
   await expect(page.getByRole("heading", { level: 1, name: "That route is not in the register." })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open the overview" })).toHaveAttribute("href", "/");
   await expect(page.getByRole("main").getByRole("link", { name: "Open the app" })).toHaveAttribute("href", "/app");
+});
+
+test("the disc field rises a little faster than the page, and stays still under reduced motion", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const fieldTopOnPage = async (scroll: number) => {
+    await page.evaluate((y) => window.scrollTo(0, y), scroll);
+    await page.waitForTimeout(200);
+    return page.locator("main section").first().locator("svg").last().evaluate((svg) => svg.getBoundingClientRect().top + window.scrollY);
+  };
+  await page.goto("/");
+  const rest = await fieldTopOnPage(0);
+  const risen = rest - (await fieldTopOnPage(1080));
+  expect(risen).toBeGreaterThan(100);
+  expect(risen).toBeLessThan(200);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  expect(await fieldTopOnPage(1080)).toBe(await fieldTopOnPage(0));
 });

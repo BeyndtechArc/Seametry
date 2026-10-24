@@ -401,10 +401,6 @@
   clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
 }
 
-.instrumentSection .sectionHeading {
-  grid-template-columns: minmax(0, 0.35fr) minmax(0, 2fr) minmax(0, 1fr);
-}
-
 .comparisonSection {
   padding: var(--sm-space-8);
   background: var(--sm-surface-raised);
@@ -428,16 +424,35 @@
 
 .sectionHeading {
   display: grid;
-  grid-template-columns: minmax(0, 0.4fr) minmax(0, 1.3fr) minmax(0, 2fr);
-  align-items: baseline;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: var(--sm-space-8);
-  padding-bottom: var(--sm-space-7);
+  padding-bottom: var(--sm-space-8);
 }
 
-.sectionHeading > span {
+/* 22em holds about 15 words on two lines of the display face; the
+   longest title in the register is 15 words (Storm, 24 October 2026). */
+.sectionHeading h2 {
+  max-width: 22em;
+  font-size: var(--sm-font-size-figure);
+  line-height: 1.06;
+  text-wrap: pretty;
+}
+
+.sectionHeading h2 span {
   color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
+}
+
+/* A place mark that sits heavy and almost unseen at the right end: in a
+   rule's tone, not a text tone, because it is not read. */
+.sectionHeading > span {
+  color: var(--sm-line-rule);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-display-l);
+  font-weight: var(--sm-font-weight-bold);
   font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: var(--sm-font-tracking-display);
+  line-height: 0.8;
 }
 
 .sectionHeading h2,
@@ -450,11 +465,6 @@
   letter-spacing: var(--sm-font-tracking-display);
 }
 
-.sectionHeading h2 {
-  font-size: var(--sm-font-size-figure);
-}
-
-.sectionHeading p,
 .storyHero p,
 .chapter p,
 .accessPanel p,
@@ -688,12 +698,6 @@
 .loopStep > span {
   color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
-}
-
-.agentSection {
-  display: grid;
-  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
-  gap: var(--sm-space-8);
 }
 
 .storyHero,
@@ -984,10 +988,6 @@
     display: none;
   }
 
-  .agentSection {
-    grid-template-columns: 1fr;
-  }
-
   .claimGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1025,7 +1025,6 @@
     padding: var(--sm-space-6);
   }
 
-  .sectionHeading,
   .incidentHeader,
   .incidentBoundary,
   .unavailablePanel {
@@ -1036,12 +1035,12 @@
     gap: var(--sm-space-4);
   }
 
-  .instrumentSection .sectionHeading {
-    grid-template-columns: 1fr;
+  .sectionHeading h2 {
+    font-size: clamp(var(--sm-font-size-title), 7vw, var(--sm-font-size-figure));
   }
 
-  .sectionHeading h2 {
-    font-size: clamp(var(--sm-font-size-title), 12vw, var(--sm-font-size-figure));
+  .sectionHeading > span {
+    font-size: var(--sm-font-size-figure-l);
   }
 
   .incidentSource {

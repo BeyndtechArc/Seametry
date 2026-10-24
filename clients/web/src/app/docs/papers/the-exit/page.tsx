@@ -36,7 +36,7 @@ export default async function TheExitPage() {
         </header>
 
         <section className={styles.section}>
-          <SectionHeading index="00" title="The Open AP proposition." question="What does Solana change about who may create and redeem?" />
+          <SectionHeading index="00" title={["The Open AP proposition:", "Solana changes who may create and redeem."]} />
           <div className={styles.paperText}>
             <p>An authorized participant delivers the prescribed basket and receives fund shares; returning those shares releases the basket, and that loop is how arbitrage closes the gap between a share and its constituents. On Solana the participant can be a protocol role rather than a named institution: any wallet able to satisfy the Formula can create shares, and any holder able to return them can redeem.</p>
             <p>The complication is the constituent set. A tokenized equity may settle through the same runtime as an ordinary SPL token while retaining freeze authority, a permanent delegate, transfer-hook configuration, mutable supply, pause state and a time-dependent Scaled UI multiplier. Those controls remain attached to the asset after it enters a basket. Opening the AP set does not remove them.</p>
@@ -45,7 +45,7 @@ export default async function TheExitPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="01" title="Issuer controls in the constituent set." question="What powers did the captured mints carry?" />
+          <SectionHeading index="01" title={["Issuer controls in the constituent set,", "the powers the captured mints carried."]} />
           <div className={styles.paperText}>
             <p>
               On {survey.date}, Seametry captured {survey.decoded} xStocks mints from Solana mainnet at slot <span className={styles.paperFigure}>{survey.slot}</span> and decoded their Token-2022 state directly from the mint accounts.
@@ -59,7 +59,7 @@ export default async function TheExitPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="02" title="Atomic redemption failure." question="Why does one frozen leg revert an obvious redemption?" />
+          <SectionHeading index="02" title={["Atomic redemption fails", "when one frozen leg reverts the whole transaction."]} />
           <div className={styles.paperText}>
             <p>Take a basket with eight constituents and implement redemption in the obvious way: burn the basket share and transfer all eight assets to the redeemer in one Solana transaction.</p>
             <p>Now freeze the basket&apos;s token account for constituent eight.</p>
@@ -69,7 +69,7 @@ export default async function TheExitPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="03" title="The Hall settles into claims." question="Where does the Hall draw the settlement boundary instead?" />
+          <SectionHeading index="03" title={["The Hall settles into claims,", "and draws the settlement boundary there instead."]} />
           <div className={styles.paperText}>
             <p>
               <code>redeem</code> burns the Alloy share and calculates the units owed for every constituent, but it does not invoke any constituent token program. The obligation is written into a per-holder Claim. The constituent transfers occur later through <code>withdraw</code>, one leg at a time.
@@ -117,7 +117,7 @@ export default async function TheExitPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="04" title="The multiplier is temporal state." question="Why does a displayed quantity depend on a clock?" />
+          <SectionHeading index="04" title={["The multiplier is temporal state,", "so a displayed quantity depends on a clock."]} />
           <div className={styles.paperText}>
             <p>Transfer authority is not the only condition a basket has to interpret.</p>
             <p>
@@ -144,7 +144,7 @@ export default async function TheExitPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="05" title="Admission cannot begin at the ticker." question="What did executable depth show, and how is it kept?" />
+          <SectionHeading index="05" title={["Admission cannot begin at the ticker,", "as executable depth showed, and how it is kept."]} />
           <div className={styles.paperText}>
             <p>
               A second capture, on {firstDepth.date}, measured executable depth through Jupiter for {firstDepth.measured} tokenized equities at {list(firstDepth.sizes)} USDC. {firstDepth.routedAtSmallest} produced a route at the smallest size. {firstDepth.unrouted} did not.
@@ -193,7 +193,7 @@ export default async function TheExitPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="06" title="Deterministic admission." question="What does an admission decision record?" />
+          <SectionHeading index="06" title={["Deterministic admission,", "and what each admission decision records."]} />
           <div className={styles.paperText}>
             <p>
               <code>server/internal/policy</code> evaluates an explicit input object against a versioned policy document. It has no network dependency, database access or ambient clock. <code>AsOf</code> is part of the input rather than something the evaluator discovers for itself.
@@ -211,7 +211,7 @@ export default async function TheExitPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="07" title="The Open AP mechanism." question="Where may a price enter, and where may it not?" />
+          <SectionHeading index="07" title={["The Open AP mechanism,", "where a price may enter and where it may not."]} />
           <div className={styles.paperText}>
             <p>The Hall&apos;s ownership arithmetic operates on quantities, not valuations.</p>
             <p>Strike determines the constituent units required for the requested number of shares. Melt determines the constituent units represented by shares being destroyed. No oracle price participates in either operation.</p>
@@ -222,7 +222,7 @@ export default async function TheExitPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="08" title="Receipts." question="What can a reader verify after a decision is made?" />
+          <SectionHeading index="08" title={["Receipts,", "what a reader can verify after a decision is made."]} />
           <div className={styles.paperText}>
             <p>Seametry applies the same reproducibility requirement after a decision has been made.</p>
             <p>Domain objects are canonicalized before hashing. Receipt bodies form leaves in an RFC 6962-style Merkle tree. Policy decisions retain their input digests and versions. Batches can be anchored separately.</p>
@@ -232,7 +232,7 @@ export default async function TheExitPage() {
         </section>
 
         <section className={styles.section}>
-          <SectionHeading index="09" title="Current boundary." question="What exists today, and what does not?" />
+          <SectionHeading index="09" title={["The current boundary,", "what exists today and what does not."]} />
           <div className={styles.chapterGrid}>
             <div className={styles.paperText}>
               <p>The project is not a mainnet fund.</p>

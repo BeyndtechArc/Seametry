@@ -64,7 +64,7 @@ export default async function Home() {
       </section>
 
       <section className={styles.section}>
-        <SectionHeading index="01" title="What changes" question="What does the Hall make observable or structurally different?" />
+        <SectionHeading index="01" title={["Four things the Hall makes checkable", "before any basket moves."]} />
         <div className={styles.claimGrid} data-testid="change-register">
           {changes.map(([kind, subject, title, description], index) => (
             <MechanismPlate key={kind} kind={kind} index={index + 1} subject={subject} title={title}>{description}</MechanismPlate>
@@ -73,7 +73,7 @@ export default async function Home() {
       </section>
 
       <section className={`${styles.section} ${styles.instrumentSection}`}>
-        <SectionHeading index="02" title="The instrument, opened" question="What sits between a company and the wallet holding its token?" />
+        <SectionHeading index="02" title={["Between a company and your wallet", "stand an issuer, a token program and the Hall."]} />
         <div className={styles.fragmentGrid}>
           <article className={styles.fragmentPlate}>
             <span className={styles.plateLabel}>Living product fragment</span>
@@ -101,7 +101,7 @@ export default async function Home() {
       </section>
 
       <section className={`${styles.section} ${styles.comparisonSection}`}>
-        <SectionHeading index="03" title="Why an ETF" question="Where does the mechanism begin after one-step assembly ends?" />
+        <SectionHeading index="03" title={["A bundle hands you tokens.", "An ETF hands you a loop that creates and redeems."]} />
         <div className={styles.comparison}>
           <article>
             <span className={styles.plateLabel}>Bundle</span>
@@ -117,7 +117,7 @@ export default async function Home() {
       </section>
 
       <section className={`${styles.section} ${styles.workingSection}`}>
-        <SectionHeading index="04" title="The working" question="How does evidence travel from observation to a checkable record?" />
+        <SectionHeading index="04" title={["Evidence travels from observation", "to a record you check in your own browser."]} />
         <div className={styles.loop}>
           {loop.map(([title, description], index) => (
             <article className={styles.loopStep} key={title}>
@@ -130,7 +130,7 @@ export default async function Home() {
       </section>
 
       <section className={`${styles.section} ${styles.proofSection}`}>
-        <SectionHeading index="05" title="What you can inspect now" question="Which claims have a public artifact behind them today?" />
+        <SectionHeading index="05" title={["Four public artifacts stand behind", "the claims on this page today."]} />
         <ProofStrip items={[
           { label: "Hall program", value: "Devnet program", href: "https://explorer.solana.com/address/GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE?cluster=devnet" },
           { label: "Issuer-power demonstration", value: "Read the recorded run", href: "/docs/papers/the-exit" },
@@ -140,7 +140,7 @@ export default async function Home() {
       </section>
 
       <section className={`${styles.section} ${styles.boundarySection}`}>
-        <SectionHeading index="06" title="Verification boundary" question="What can a visitor verify, and what remains unanchored?" />
+        <SectionHeading index="06" title={["A visitor recomputes each Hallmark in the browser.", "No batch root is anchored on chain yet."]} />
         <div className={styles.unavailablePanel}>
           <div>
             <h3>The ritual is built. The anchor is not.</h3>
@@ -150,8 +150,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.agentSection}`}>
-        <SectionHeading index="07" title="For agents and code" question="Where is the contract another system can build against?" />
+      <section className={styles.section}>
+        <SectionHeading index="07" title={["Other systems build against one contract,", "generated for Go and TypeScript."]} />
         <AgentPanel
           title="The contract comes first."
           description="Terminal resource shapes are generated for Go and TypeScript. The current Alloy handlers still name their unbuilt stage rather than returning invented data."

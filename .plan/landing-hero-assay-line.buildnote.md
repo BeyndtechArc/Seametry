@@ -76,3 +76,13 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 left the frame. On a phone the notes read below the drawing.
              5. Labels stay sentence case: the mockup's capitals were not
                 confirmed, and foundations bans all-caps labels.
+             6. The disc field rises about 13% faster than the page over
+                the first 120vh of scroll, on a CSS scroll timeline so no
+                script runs per scroll; still where scroll timelines are
+                missing and under reduced motion (Storm, 24 October 2026).
+             7. Every public page's section heading is now one title that
+                is its own answer, the question folded into a quieter
+                second clause, two lines at most, the number heavy and in
+                a rule's tone at the right end (patterns.md, composition
+                rule 9). The alloy page in the app keeps its own heading,
+                which this note does not cover.
