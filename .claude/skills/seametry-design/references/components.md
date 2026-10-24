@@ -534,7 +534,53 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **States:** playing (strike, strike, melt, freeze, a refused strike whose units halt at the closed gate and vanish while the wallet keeps its ingots, a melt whose vaults pay every leg but the frozen one, then the freeze lifts and the held Claim is paid); nothing a reader does stops it; offscreen (the loop rests, unseen); reduced motion (a still picture of the freeze and the Melt that delivered around it).
 **Data:** the product's own arithmetic (`lib/hall/recipe.ts`, tested against the shared vectors) decides what a Melt credits; the Formula is illustrative, and the docs' frozen-leg bench states its quantities.
 **Rules:** the static art is built on the server from `clients/web/src/lib/iso`; the client only writes attributes (`transform`, `data-hidden`, `data-held`), never style. Every refusal and outcome the motion shows is the Hall's real behaviour, cited in code to `HALL.md`. One hero instrument per surface.
-**Camera tour (Storm, 23 October 2026):** the landing's instrument is the Hall as an assay line, seen from a few camera stations in turn instead of one fixed view, one composition at a time: the camera holds while that station's part of the story plays, then turns and reframes to the next, the turn itself visible, every line kept. The story is the one above, told across the stations: the Formula (the vault and its meters); the Strike (one unit of each constituent from the wallet through the open gates into the vault, the ram's stroke, a share onto the holder's stack); issuer powers (a gate lowered and padlocked); the Melt (the share returned, a Claim on every leg, every open leg out to the wallet, the frozen leg's unit halted at its gate and its Claim held); and, leaving the Melt, the freeze lifted and the held Claim delivered, so the loop ends where it began. It shows one unit per leg and no quantity, so it needs no arithmetic. At a station, up to two callouts name what it shows in the register's words, each appearing when the event it names happens: a terminal dot on its part, a rule leaving at the drawing's own 30 degrees and running level to a cut-corner plate docked against the figure's side, so no plate covers the machine. The client redraws only what the camera or a part moved; order comes from each pair's separating plane over its parts' whole travel, so the machine is built of upright prisms. A device too slow to turn crossfades between stations instead. Reduced motion shows the Melt delivered around the frozen leg, still, with its callouts; no script shows the first station. The tour supersedes "nothing beside it" for this instrument only.
+**Camera tour (Storm, 23 October 2026):** the landing's instrument is the Hall as an assay line, seen from a few camera stations in turn instead of one fixed view, one composition at a time: the camera holds while that station's part of the story plays, then turns and reframes to the next, the turn itself visible, every line kept. The story is the one above, told across the stations: the Formula (the vault and its meters); the Strike (one unit of each constituent from the wallet through the open gates into the vault, the ram's stroke, a share onto the holder's stack); issuer powers (a gate lowered and padlocked); the Melt (the share returned, a Claim on every leg, every open leg out to the wallet, the frozen leg's unit halted at its gate and its Claim held); and, leaving the Melt, the freeze lifted and the held Claim delivered, so the loop ends where it began. It shows one unit per leg and no quantity, so it needs no arithmetic. At a station, up to two callouts name what it shows in the register's words, each appearing when the event it names happens: a terminal dot on its part, a rule leaving at the drawing's own 30 degrees and running level to a cut-corner plate docked against the figure's side, so no plate covers the machine. The client redraws only what the camera or a part moved; order comes from each pair's separating plane over its parts' whole travel, so the machine is built of upright prisms. A device too slow to draw every frame skips frames rather than stopping, so the turn stays visible. Reduced motion shows the Melt delivered around the frozen leg, still, with its callouts; no script shows the first station. The tour supersedes "nothing beside it" for this instrument only.
+
+### Product shot
+**Answers:** what does Seametry show about one real Alloy and one of its constituents, before I open the app?
+**Anatomy:** layered fragments of the app, cropped by the section like a window seen through a door: at the back, an Alloy record (artwork, name, symbol, then what one share holds, leg by leg with its logo, units per share and issuer); over its right edge, a Condition report card for one leg (logo, symbol, issuer, Grade, the issuer's prerogatives as sentences, the policy's Stamp and version, the capture slot); in front, a Photo frame of that leg's underlying business; at the top left, a founding chip with the founding transaction's Digest.
+**Identity:** real components in the app's own grammar, not drawings of screens. Layers lift by tone and the single top hairline, never shadow. The back fragment is cut by the section's edges, the cards overlap it and each other, so it reads as a working desk, not a gallery of cards.
+**States:** default; on a phone the layers stack in reading order and nothing is cropped; a missing logo draws the lettered Lot mark; the founding record or admissions snapshot missing removes the shot rather than drawing an empty one.
+**Data:** the founding record (`shared/evidence/alloys/index.json`, devnet), the admissions snapshot through `allocationOffer()`, so the card states a lot exactly as the Allocation does. Units per share are integer atoms at the leg's decimals.
+**Rules:** no live figure (supply, Claims, price) unless read live with its age; every fragment names its source and capture. The photo is illustrative and says so.
+
+### Photo frame
+**Answers:** what kind of business sits under this instrument or theme?
+**Anatomy:** a cropped photograph at a fixed ratio inside a ruled frame; under it, one caption line (what it shows, "Illustrative") and the credit (photographer, Unsplash).
+**Identity:** the house duotone: the photograph's luminosity over a touch-scale ground, so every photo sits in the palette in both modes. Square corners, the frame's hairline, no shadow or rounded card.
+**States:** default; image unavailable keeps the frame and caption with the ground showing.
+**Data:** an entry of `clients/web/src/lib/photos.ts`: file, alt text, photographer, source page, licence.
+**Rules:** landing only (foundations section 9). Never a person presented as a user or holder, a screen, or a named company's own premises.
+
+### Basket card
+**Answers:** which published basket could my wallet buy today, and what does it hold?
+**Anatomy:** a Photo frame of the basket's theme with the Basket plate set over its lower left edge; code and name; category; the round Lot mark stack and the constituent count; the admission line; the whole card one route link to the basket's record.
+**Identity:** the Basket register's facts in a card, for the landing only. The plate overlaps the photo so the two read as one object.
+**States:** default; hover or focus steps the surface tone; a basket not wholly admitted is not featured.
+**Data:** `allocationIndexes`, admission from `allocationOffer()` with its policy version and snapshot date stated once under the row.
+**Rules:** no price, return, chart or performance. The count of all published baskets is computed, never written.
+
+### Strike steps
+**Answers:** what happens when I Strike a share, Melt it, and an issuer freezes one leg?
+**Anatomy:** three ruled columns, each a step number, a title, one sentence and a small fragment of the record it produces: the Formula going in, the legs coming out, the frozen leg's Claim. Under them, one ruled note on why a bundle is not this.
+**Identity:** fragments use the same rows as the product shot, so the steps read as the same Alloy moving.
+**States:** default; narrow layouts stack the steps.
+**Data:** the founding record's legs and units per share; the Hall's rules as HALL.md states them.
+**Rules:** never imply a wallet without the constituents can Strike, or that a Claim is delivered stock.
+
+### Question list
+**Answers:** what do people ask before they trust this?
+**Anatomy:** a ruled list of disclosure rows, each a question in the reader's words that opens to its answer and a Quiet link to the full answer.
+**Identity:** native disclosure, one hairline per row, no cards or plus signs that spin.
+**States:** closed; open; no script leaves every row working.
+**Data:** the how-it-works page's own sections, read from the docs source: each question is a heading there and its answer is that section's first paragraph, so the two never disagree.
+**Rules:** never write an answer that the owning page does not state.
+
+### Closing band
+**Answers:** where do I go now?
+**Anatomy:** one display line and the hero's two actions, on the page's ground above the footer.
+**States:** default only.
+**Rules:** no new claim; the actions are the hero's.
 
 ### Pattern Register
 **Answers:** does each shared component retain Seametry's identity across states, themes, widths and difficult content?

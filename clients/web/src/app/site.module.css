@@ -335,7 +335,6 @@
 }
 
 .heroCopy > span,
-.plateLabel,
 .storyHero > span,
 .chapterLabel,
 .accessPanel > span {
@@ -401,22 +400,13 @@
   clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
 }
 
-.comparisonSection {
-  padding: var(--sm-space-8);
-  background: var(--sm-surface-raised);
-  clip-path: polygon(var(--sm-space-5) 0, 100% 0, 100% 100%, 0 100%, 0 var(--sm-space-5));
-}
-
-.workingSection .sectionHeading {
-  border-bottom: 0.5px solid var(--sm-line-strong);
-}
-
 .proofSection {
   padding-top: var(--sm-space-8);
   border-top: var(--sm-space-2) solid var(--sm-line-strong);
 }
 
-.boundarySection .unavailablePanel {
+.proofSection .unavailablePanel {
+  margin-top: var(--sm-space-9);
   padding: var(--sm-space-8);
   background: var(--sm-surface-sheet);
   border-top-color: var(--sm-accent-touch);
@@ -585,7 +575,6 @@
   border-top: 0.5px solid var(--sm-line-strong);
 }
 
-.fragmentGrid,
 .comparison,
 .chapterGrid,
 .accessGrid {
@@ -609,23 +598,8 @@
   border-bottom: 0.5px solid var(--sm-line-rule);
 }
 
-.fragmentPlate {
-  display: grid;
-  gap: var(--sm-space-7);
-  padding: var(--sm-space-8);
-  background: var(--sm-surface-sheet);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
-}
-
-.fragmentIdentity {
-  display: grid;
-  gap: var(--sm-space-4);
-}
-
-.fragmentIdentity h3,
 .comparison article h3,
-.unavailablePanel h3,
-.loopStep h3 {
+.unavailablePanel h3 {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title);
@@ -633,10 +607,8 @@
   letter-spacing: var(--sm-font-tracking-title);
 }
 
-.fragmentIdentity p,
 .comparison article p,
-.unavailablePanel p,
-.loopStep p {
+.unavailablePanel p {
   color: var(--sm-text-secondary);
   line-height: 1.6;
 }
@@ -671,33 +643,6 @@
 .unavailablePanel > div {
   display: grid;
   gap: var(--sm-space-5);
-}
-
-.loop {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.loopStep {
-  display: grid;
-  gap: var(--sm-space-4);
-  padding: var(--sm-space-7);
-  border-right: 0.5px solid var(--sm-line-rule);
-}
-
-.loopStep:nth-child(3n) {
-  border-right: 0;
-}
-
-.loopStep:nth-child(n + 4) {
-  border-top: 0.5px solid var(--sm-line-rule);
-}
-
-.loopStep > span {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
 }
 
 .storyHero,
@@ -1020,8 +965,7 @@
   }
 
   .incidentSection,
-  .comparisonSection,
-  .boundarySection .unavailablePanel {
+  .proofSection .unavailablePanel {
     padding: var(--sm-space-6);
   }
 
@@ -1057,11 +1001,9 @@
   }
 
   .claimGrid,
-  .fragmentGrid,
   .comparison,
   .chapterGrid,
-  .accessGrid,
-  .loop {
+  .accessGrid {
     grid-template-columns: 1fr;
   }
 
@@ -1071,12 +1013,4 @@
     border-left: 0;
   }
 
-  .loopStep {
-    border-right: 0;
-    border-bottom: 0.5px solid var(--sm-line-rule);
-  }
-
-  .loopStep:last-child {
-    border-bottom: 0;
-  }
 }

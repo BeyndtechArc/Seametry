@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { PublicKey } from "@solana/web3.js";
+import { allocationIndexes } from "../src/lib/allocation/indexes";
 
 test("saved to a home screen, the site opens on Baskets with icons at the sizes it names", async ({ page, request }) => {
   await page.goto("/");
@@ -46,9 +47,12 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   await expect(page.getByText("Recorded on Solana devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A melt survives the freeze." })).toBeVisible();
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
-  await expect(page.getByRole("main").getByRole("link", { name: "Open app" })).toHaveAttribute("href", "/app");
+  // The hero and the closing band offer the same way in.
+  const openApp = page.getByRole("main").getByRole("link", { name: "Open app" });
+  await expect(openApp).toHaveCount(2);
+  for (const link of await openApp.all()) await expect(link).toHaveAttribute("href", "/app");
 
-  for (const section of ["Four things the Hall makes checkable", "Between a company and your wallet", "A bundle hands you tokens.", "Four public artifacts stand behind"]) {
+  for (const section of ["Four things the Hall makes checkable", "One Alloy, opened to every leg", "Strike a share from its stocks.", "Baskets a wallet can buy today", "Four public artifacts back this page.", "Questions people ask"]) {
     await expect(page.getByRole("heading", { level: 2, name: section })).toBeVisible();
   }
 });
@@ -439,7 +443,7 @@ test("each section heading is one title of two lines at most, its number at the 
       subtitles: header.querySelectorAll("p").length,
     };
   }));
-  expect(headings).toHaveLength(7);
+  expect(headings).toHaveLength(6);
   for (const heading of headings) {
     expect(heading.lines, heading.text ?? "").toBeLessThanOrEqual(2);
     expect(heading.numberRight, heading.text ?? "").toBe(heading.headerRight);
@@ -799,4 +803,95 @@ test("the disc field rises a little faster than the page, and stays still under 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   expect(await fieldTopOnPage(1080)).toBe(await fieldTopOnPage(0));
+});
+
+// The founding record's atoms, written at the real mint's decimals without
+// the page's formatter, so a formatter that drifts cannot agree with itself.
+function units(atoms: string, decimals: number) {
+  const padded = atoms.padStart(decimals + 1, "0");
+  return `${padded.slice(0, -decimals)}.${padded.slice(-decimals)}`;
+}
+
+test("the product shot states the founded Alloy and its first leg from their records, and no layer covers another's words", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const record = evidence("alloys/index.json").alloys[0];
+  const admissions = evidence("admissions.json").instruments as { decimals: number; instrument: { mint: string; prerogatives: { sentence: string }[] } }[];
+  const admission = (mint: string) => admissions.find((entry) => entry.instrument.mint === mint)!;
+
+  const shot = page.getByRole("article", { name: `${record.name}, from its founding record` });
+  for (const leg of record.legs) {
+    const row = shot.getByRole("row").filter({ hasText: leg.symbol });
+    await expect(row).toContainText(units(leg.atoms_per_share, admission(leg.real_mint).decimals));
+    await expect(row).toContainText(leg.issuer);
+  }
+  const first = record.legs[0];
+  const condition = page.getByRole("article", { name: `${first.symbol}, condition` });
+  await expect(condition.getByRole("listitem")).toHaveText(admission(first.real_mint).instrument.prerogatives.map((power) => power.sentence));
+
+  const layers = shot.locator("xpath=..").locator(":scope > *");
+  // Centred, so the house rail, which stays over the top of the page, covers none of it.
+  await layers.first().evaluate((element) => element.parentElement!.scrollIntoView({ block: "center" }));
+  const covered = await layers.evaluateAll((elements) => {
+    const found: string[] = [];
+    const shotElement = elements[0].parentElement!;
+    for (const layer of elements) {
+      const walker = document.createTreeWalker(layer, NodeFilter.SHOW_TEXT);
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (!node.textContent?.trim()) continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        for (const box of range.getClientRects()) {
+          if (box.width < 2 || box.bottom < 0 || box.top > innerHeight) continue;
+          const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          if (top && shotElement.contains(top) && !layer.contains(top)) found.push(node.textContent.trim().slice(0, 40));
+        }
+      }
+    }
+    return found;
+  });
+  expect(covered).toEqual([]);
+});
+
+test("the question list asks How it works' questions and answers with its first paragraphs", async ({ page }) => {
+  await page.goto("/docs/how-it-works");
+  const sections = await page.getByRole("article").getByRole("heading", { level: 2 }).evaluateAll((headings) =>
+    headings.map((heading) => {
+      let next = heading.nextElementSibling;
+      while (next && next.tagName !== "P") next = next.nextElementSibling;
+      return { question: heading.textContent!.trim(), answer: next?.textContent?.trim() ?? "" };
+    }));
+  expect(sections.length).toBeGreaterThan(0);
+
+  await page.goto("/");
+  const list = page.locator("main details");
+  await expect(list.locator("summary")).toHaveText(sections.map((section) => section.question));
+  const last = list.last();
+  await last.locator("summary").click();
+  await expect(last.locator("p")).toHaveText(sections.at(-1)!.answer);
+  await expect(last.getByRole("link", { name: "Read the full answer" })).toHaveAttribute("href", /^\/docs\/how-it-works#/);
+});
+
+test("the basket cards feature wholly admitted baskets, count them from the records, and load their photographs", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const admitted = new Set(
+    (evidence("admissions.json").instruments as { capacity_usdc: number; capacity_decision: { decision: string }; instrument: { symbol: string } }[])
+      .filter((entry) => entry.capacity_usdc > 0 && entry.capacity_decision.decision !== "BLOCK")
+      .map((entry) => entry.instrument.symbol),
+  );
+  const buyable = allocationIndexes.filter((basket) => !basket.researchOnly && basket.members.every((member) => admitted.has(member.symbol)));
+
+  await page.goto("/");
+  const section = page.locator("section").filter({ has: page.getByRole("heading", { level: 2, name: /^Baskets a wallet can buy today/ }) });
+  const cards = section.getByRole("link").filter({ has: page.locator("img") });
+  await expect(cards).toHaveCount(4);
+  for (const card of await cards.all()) {
+    const name = await card.getAttribute("aria-label");
+    const basket = buyable.find((candidate) => candidate.name === name);
+    expect(basket, `${name} is wholly admitted`).toBeDefined();
+    await expect(card).toHaveAttribute("href", `/app/baskets/${basket!.id}`);
+    await card.scrollIntoViewIfNeeded();
+    await expect.poll(() => card.locator("img").first().evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBeGreaterThan(0);
+  }
+  await expect(section).toContainText(`${buyable.length} published baskets are wholly admitted`);
 });

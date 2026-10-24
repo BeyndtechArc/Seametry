@@ -1,10 +1,9 @@
 Surface:     Explorer (clients/web), the public landing page.
-Template:    Landing (patterns.md), hero and house rail only. Every section
-             below the hero is unchanged in this note but the first, which
-             now rises over the hero's disc band; the full-page review of
-             23 October 2026 found spacing, heading indents, the notched
-             "Why an ETF" card and two narrow headings ("What you can inspect
-             now", "For agents and code") to revisit after the entry.
+Template:    Landing (patterns.md), rewritten to this order on 24 October
+             2026 after Storm's review: section 02 was the most broken, the
+             sections below it lacked layers and real product, the loop,
+             the agent panel and the bundle comparison did not need to be on
+             the landing, and baskets, questions and a close were missing.
 Question:    What is an open-AP ETF, and what happens to a holder's basket
              when an issuer uses its powers?
 Sections:    1. House rail: one bar across the content width, a step of the
@@ -17,27 +16,43 @@ Sections:    1. House rail: one bar across the content width, a step of the
                 the one-sentence promise, Open app and Read mechanism.
              3. Hero instrument (right): the Hall as an assay line telling
                 the Hall's story from four camera stations in turn, over
-                three concentric touch-scale discs.
+                the disc field.
              4. The recorded incident, its card starting over the disc band.
-Components:  House rail (amended: segmented route group, ground-step bar),
-             Hero instrument (amended in components.md the same day: a
-             camera tour of four stations, the story told across them, and
-             callouts docked to the figure's sides on rules from their
-             parts), RouteAction, QuietLink.
-Data:        None live. The instrument's notes are the register's words; it
-             shows no quantity, so no figure needs provenance. The story is
-             the Hall's behaviour as HALL.md states it.
-States:      default: each station holds while its part of the story plays
-             and its callouts appear as their events happen, then the camera
-             turns and reframes to the next; offscreen: the story waits
-             where it is; reduced motion: one still of the Melt delivered
-             around the frozen leg, with its callouts; no script: the
-             server-drawn first station with its callouts; loading, empty,
-             stale, unavailable, error: not applicable, the instrument reads
-             no data.
+                Answers: does a Melt survive an issuer's freeze?
+             5. 01 Claim grid. Answers: what does the Hall make checkable?
+             6. 02 Product shot. Answers: what does Seametry show about one
+                real Alloy and one of its legs?
+             7. 03 Strike steps. Answers: what happens when I Strike, Melt,
+                and an issuer freezes a leg?
+             8. 04 Basket cards. Answers: which baskets can a wallet buy
+                today, and what do they hold?
+             9. 05 Proof strip and the verification boundary. Answers: which
+                claims have a public artifact today, and what is not built?
+             10. 06 Question list. Answers: what do people ask before they
+                trust this?
+             11. Closing band. Answers: where do I go now?
+Components:  House rail, Hero instrument, Incident ledger, Mechanism plate,
+             Product shot, Photo frame, Basket card, Basket plate, Lot mark,
+             Condition report facts, Grade, Stamp, Digest, Strike steps,
+             Proof strip, Question list, Closing band, RouteAction,
+             QuietLink. Section heading: patterns.md composition rule 9.
+Data:        Founding record of Stoic Crew (shared/evidence/alloys/index.json,
+             Solana devnet, recorded 6 October 2026); the admissions
+             snapshot through allocationOffer() (policy-2026.10.1); the
+             published baskets (allocationIndexes); How it works, read from
+             the docs source; photographs listed in src/lib/photos.ts. No
+             live market figure is shown, so none needs a live age; every
+             fragment names its record and capture.
+States:      instrument: as in its contract. Product shot and basket cards
+             read files compiled into the build, so they have no loading
+             state; a missing record removes the fragment rather than
+             drawing it empty, and a missing logo draws the lettered Lot
+             mark. Photo unavailable: the frame and caption remain over the
+             touch ground. Question list: closed, open, and working without
+             script. Phone: every layered fragment stacks in reading order.
 Ceremony:    None. The tour is the instrument's own motion, not a ceremony.
-Names:       Formula, Strike, Melt, Claim, Hall, issuer powers, freeze
-             (foundations section 3).
+Names:       Formula, Strike, Melt, Claim, Hall, Alloy, issuer powers,
+             freeze, Grade, basket (foundations section 3).
 Assumptions: 1. Four stations and their story: the Formula (the vault and
                 its meters, at rest); the Strike (one of each constituent
                 leaves the wallet, travels through the open gates into the
@@ -53,10 +68,10 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 machine is built from upright prisms; moving parts ride in
                 groups with declared travel, and each pair's separating plane
                 is found over the whole travel, so a test proves no cycle at
-                every frame of the story. Every line stays drawn while the
-                camera moves. A device whose turn frames, past the first,
-                take over 30 ms (a phone at 4x CPU) crossfades between
-                stations instead, decided within its first move.
+                every frame of the story. While it turns it is drawn on a
+                canvas, and a device too slow to draw every frame skips
+                frames rather than stopping, so the turn stays visible; the
+                crossfade that preceded this was removed.
              3. The discs are flat (no gradient), nested in equal steps
                 measured from Storm's mockup: each 22.7vw larger in radius
                 and 15.8vw lower than the one inside it, so the gaps are
@@ -70,7 +85,7 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 fragments that thin out and fade, gone well before the
                 discs' bottom. Falling isometric cubes were tried and
                 removed (Storm, 24 October 2026). Recorded as a named
-                exception in foundations section 7.
+                exception in foundations section 9.
              4. Callouts dock to the figure's left or right side: placed
                 beside their parts they covered the machine they named and
                 left the frame. On a phone the notes read below the drawing.
@@ -80,9 +95,18 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 the first 120vh of scroll, on a CSS scroll timeline so no
                 script runs per scroll; still where scroll timelines are
                 missing and under reduced motion (Storm, 24 October 2026).
-             7. Every public page's section heading is now one title that
-                is its own answer, the question folded into a quieter
-                second clause, two lines at most, the number heavy and in
-                a rule's tone at the right end (patterns.md, composition
-                rule 9). The alloy page in the app keeps its own heading,
-                which this note does not cover.
+             7. Every public page's section heading is one title that is
+                its own answer, the question folded into a quieter second
+                clause, two lines at most, the number heavy and in a rule's
+                tone at the right end (patterns.md, composition rule 9). The
+                alloy page in the app keeps its own heading, which this note
+                does not cover.
+             8. Stock photographs appear only in Photo frames, by Storm's
+                decision of 24 October 2026, recorded in foundations section
+                9; five, under the Unsplash License, shown through the house
+                duotone and captioned as illustrative.
+             9. The product shot uses Stoic Crew because it is the one Alloy
+                with a founding record, and AMZNx as the featured leg because
+                it is the first leg of that record. The featured baskets are
+                the first four of the published order, all wholly admitted
+                in the snapshot.
