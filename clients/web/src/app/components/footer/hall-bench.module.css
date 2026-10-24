@@ -72,9 +72,76 @@
   stroke-dasharray: 2 3;
 }
 
+/* A seated coin fills its slot's ring; a frozen slot is hatched like frost. */
+.slot[data-filled] {
+  fill: var(--sm-surface-raised);
+  stroke: var(--sm-line-strong);
+  stroke-dasharray: none;
+}
+
 .slot[data-frozen] {
   stroke: var(--sm-text-primary);
   stroke-width: 1.25;
+}
+
+.frost {
+  stroke: var(--sm-text-tertiary);
+  stroke-width: 0.75;
+}
+
+.frostField {
+  pointer-events: none;
+}
+
+/* A refusal shakes the vault once, as the Hall refuses the transaction. */
+.vaultGroup[data-shake] {
+  animation: refuse var(--sm-motion-duration-overlay) var(--sm-motion-easing-standard);
+}
+
+@keyframes refuse {
+  20% { transform: translateX(-5px); }
+  45% { transform: translateX(4px); }
+  70% { transform: translateX(-2px); }
+  to { transform: none; }
+}
+
+/* A Strike punches the tray as its share lands, one ring that widens and
+   fades, as a hallmark punch strikes once. */
+.punch {
+  fill: none;
+  stroke: var(--sm-text-primary);
+  stroke-width: 1;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: punch var(--sm-motion-duration-sheet) var(--sm-motion-easing-standard) 520ms;
+}
+
+@keyframes punch {
+  from { opacity: 0.9; transform: scale(0.86); }
+  to { opacity: 0; transform: scale(1.18); }
+}
+
+/* A wallet coin lifts toward the reader and names itself when pointed at
+   or focused. */
+.lift {
+  transition: transform var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+}
+
+.tag {
+  fill: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+}
+
+.coin[data-place="wallet"]:focus-visible .lift {
+  transform: translateY(-5px);
+}
+
+.coin[data-place="wallet"]:focus-visible .tag {
+  opacity: 1;
 }
 
 /* A transparent target at least 44 units across behind each touchable part. */
@@ -95,6 +162,14 @@
 /* Only where a pointer can hover: on a touch screen the ring would stay lit
    after the tap. */
 @media (hover: hover) {
+  .coin[data-place="wallet"]:hover .lift {
+    transform: translateY(-5px);
+  }
+
+  .coin[data-place="wallet"]:hover .tag {
+    opacity: 1;
+  }
+
   .coin:hover .hit,
   .lock:hover .hit,
   .share:hover .hit {
@@ -150,11 +225,16 @@
   transform: none;
 }
 
+/* Two lines, always: what just happened, then what to try next. */
 .said {
-  min-height: calc(var(--sm-font-size-small) * 1.6 * 2);
+  display: grid;
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
   line-height: 1.6;
+}
+
+.said span:first-child {
+  color: var(--sm-text-primary);
 }
 
 /* The footer's scene: a band of the sheet across the whole window, a line
@@ -178,12 +258,7 @@
   background: var(--sm-surface-sheet);
 }
 
-.footerIntro {
-  display: grid;
-  gap: var(--sm-space-5);
-}
-
-.footerIntro h2 {
+.footerTitle {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-figure-l);
@@ -194,14 +269,8 @@
 }
 
 /* A heading's quieter clause, as a section heading's (site.module.css). */
-.footerIntro h2 span {
+.footerTitle span {
   color: color-mix(in srgb, var(--sm-text-tertiary) 75%, var(--sm-surface-ground));
-}
-
-.footerIntro p {
-  max-width: 34ch;
-  color: var(--sm-text-secondary);
-  line-height: 1.6;
 }
 
 @media (max-width: 900px) {
@@ -211,14 +280,21 @@
     padding: var(--sm-space-10) 0;
   }
 
-  .footerIntro h2 {
+  .footerTitle {
     font-size: var(--sm-font-size-figure);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .share,
-  .hit {
+  .hit,
+  .lift,
+  .tag {
     transition: none;
+  }
+
+  .vaultGroup[data-shake],
+  .punch {
+    animation: none;
   }
 }

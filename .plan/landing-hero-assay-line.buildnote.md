@@ -31,14 +31,13 @@ Sections:    1. House rail: one bar across the content width, a step of the
                 verified?
              10. 06 Question list. Answers: what do people ask before they
                 trust this?
-             11. Closing band. Answers: where do I go now?
-             12. Register footer, opening on the Hall bench and ending on the
+             11. Register footer, opening on the Hall bench and ending on the
                 Closing wordmark. Answers: what does the Hall do when I work
                 it?
 Components:  House rail, Hero instrument, Incident ledger, Mechanism plate,
              Opened Alloy, Photo frame, Basket card, Basket plate, Lot mark,
              Condition report facts, Grade, Stamp, Digest, Strike steps,
-             Proof strip, Anchor chain, Question list, Closing band,
+             Proof strip, Anchor chain, Question list,
              Hall bench, Register footer, Closing wordmark, RouteAction,
              QuietLink. Section heading: patterns.md composition rule 9.
 Data:        Founding record of Stoic Crew (shared/evidence/alloys/index.json,
@@ -155,3 +154,13 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 not used: the system bans them, and the discs carry the same
                 pull without one. The tab Q&A went back to the accordion with
                 short question labels; the team's address left the footer.
+             15. Storm, 24 October 2026: the closing band is off the page and
+                its contract marked reserved; the anchor chain's stamp is
+                gone; photographs are muted and the basket covers 21:9; a
+                basket card states its count on the code line and its marks
+                sit on a full-width tray; the footer's links are small and
+                quiet with no rule above, and the operator's note became one
+                small tracked line on the wordmark's top edge; the wordmark's squares now
+                scatter loose across the word instead of stacking in rows;
+                the bench lost its description, gained a two-line status and
+                answers each act (lift, seat, frost, punch, shake).

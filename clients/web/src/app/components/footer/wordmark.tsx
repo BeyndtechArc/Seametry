@@ -29,29 +29,41 @@ const rings = [2, 1, 0].map((index) => {
 
 /**
  * Above the letters the discs break into squares, the hero's fragments in
- * reverse: dense just over the word and thinning toward the top, each a
- * step deeper than the disc it falls in, since the outer disc's own tone is
- * too close to the ground to read as a fragment.
+ * reverse, scattered across the word's width rather than stacked in rows:
+ * each square sits loose in its cell, larger, deeper in tone and more
+ * likely near the word and its middle, smaller, fainter and rarer toward
+ * the top and the ends, so the field dissolves instead of drawing an edge.
+ * Opacity steps by tenths, so equal squares share one.
  */
-const CELL = 28;
+const CELL = 26;
 /** Down to just above the letters' cap height, so no square touches a letter. */
-const FIELD = 140;
-/** Even the row nearest the word is broken: a full row reads as a bar, not a fragment. */
-const DENSEST = 0.62;
-function hash(i: number, j: number) {
-  let h = (i * 374761393 + j * 668265263) | 0;
+const FIELD = 150;
+const ROWS = Math.floor(FIELD / CELL);
+/** Even nearest the word's middle, about one cell in two is empty. */
+const DENSEST = 0.55;
+function hash(i: number, j: number, salt: number) {
+  let h = (i * 374761393 + j * 668265263 + salt * 2147483647) | 0;
   h = Math.imul(h ^ (h >>> 13), 1274126177);
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
-const ROWS = Math.floor(FIELD / CELL);
-const fragments: { x: number; y: number; tone: number; faint: boolean }[] = [];
+const fragments: { x: number; y: number; size: number; tone: number; opacity: number }[] = [];
 for (let j = 0; j < ROWS; j++) {
-  const depth = (j + 1) / ROWS;
-  for (let i = 0; i * CELL < WIDTH; i++) {
-    const x = i * CELL;
-    const y = j * CELL;
-    const disc = [...rings].reverse().find((ring) => (x + CELL / 2 - CENTRE) ** 2 + (y + CELL / 2 - ring.cy) ** 2 <= ring.r ** 2);
-    if (disc && hash(i, j) <= DENSEST * depth ** 1.6) fragments.push({ x, y, tone: Math.max(0, disc.index - 1), faint: depth < 0.5 });
+  // 1 on the row nearest the word, falling toward 0 at the top.
+  const near = (j + 1) / ROWS;
+  for (let i = 0; (i + 1) * CELL <= WIDTH; i++) {
+    // 1 over the word's middle, 0 at its ends.
+    const middle = 1 - Math.abs((i + 0.5) * CELL - CENTRE) / CENTRE;
+    const weight = near ** 1.4 * middle ** 0.8;
+    if (hash(i, j, 1) > DENSEST * weight) continue;
+    const size = (CELL - 4) * (0.4 + 0.6 * weight * (0.7 + 0.3 * hash(i, j, 2)));
+    const slack = CELL - size;
+    fragments.push({
+      x: i * CELL + slack * hash(i, j, 3),
+      y: j * CELL + slack * hash(i, j, 4),
+      size,
+      tone: weight > 0.55 ? 0 : weight > 0.25 ? 1 : 2,
+      opacity: Math.round((0.35 + 0.65 * weight) * 10) / 10,
+    });
   }
 }
 
@@ -74,7 +86,7 @@ export function ClosingWordmark() {
         </defs>
         <rect width={WIDTH} height={HEIGHT} mask="url(#wordmark-letters)" className={styles.ground} />
         {fragments.map((square) => (
-          <rect key={`${square.x}-${square.y}`} x={square.x + 2} y={square.y + 2} width={CELL - 3} height={CELL - 3} className={discs[`tone${square.tone}`]} data-faint={square.faint ? "" : undefined} />
+          <rect key={`${square.x}-${square.y}`} x={square.x.toFixed(2)} y={square.y.toFixed(2)} width={square.size.toFixed(2)} height={square.size.toFixed(2)} fillOpacity={square.opacity} className={discs[`tone${square.tone}`]} />
         ))}
         <text x={MARGIN} y={HEIGHT - 24} textLength={WIDTH - MARGIN * 2} lengthAdjust="spacing" className={`${styles.letters} ${styles.outline}`}>Seametry</text>
       </svg>

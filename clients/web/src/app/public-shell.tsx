@@ -28,7 +28,7 @@ export function PublicShell({
           { label: "Privacy policy", href: "/privacy-policy" },
         ]}
         accounts={[{ label: "Seametry on X", href: "https://x.com/seametry_", icon: "x-account" }]}
-        note="Seametry is operated by Beyndtech Arc from Port Harcourt. Public evidence requires no account."
+        note="Know what it's made of. Operated by Beyndtech Arc from Port Harcourt."
         finale={<ClosingWordmark />}
       >
         <FooterScene />

@@ -41,15 +41,15 @@ export function BasketCards() {
                   <BasketPlate code={basket.code} members={basket.members.map((member) => ({ symbol: member.symbol, admitted: true }))} />
                 </span>
                 <span className={styles.basketText}>
-                  <span className={styles.basketCode}>{basket.code}</span>
+                  <span className={styles.basketCode}>
+                    <span>{basket.code}</span>
+                    <span>{basket.members.length} stocks</span>
+                  </span>
                   <b>{basket.name}</b>
                   <span>{basket.category}</span>
                 </span>
-                <span className={styles.basketHolds}>
-                  <span className={styles.basketStack}>
-                    {basket.members.map((member) => <LotMark key={member.symbol} symbol={member.symbol} src={offered.get(member.symbol)?.logo} />)}
-                  </span>
-                  <span>{basket.members.length} stocks, all admitted</span>
+                <span className={styles.basketStack}>
+                  {basket.members.map((member) => <LotMark key={member.symbol} symbol={member.symbol} src={offered.get(member.symbol)?.logo} />)}
                 </span>
               </Link>
             </li>

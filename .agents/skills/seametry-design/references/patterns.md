@@ -57,10 +57,9 @@ Banned sections: logo marquee (until real integrations exist), testimonial walls
 +---------------------------------------------------------------+
 | 06 Question list: four short questions, from How it works     |
 +---------------------------------------------------------------+
-| Closing band, with the orbit drawn small                      |
-+---------------------------------------------------------------+
-| Register footer: the Hall bench, one line of links, the note  |
-| Closing wordmark: "Seametry" across the window, discs within  |
+| Register footer: the Hall bench, one quiet line of links      |
+| Closing wordmark: "Seametry" across the window, discs within, |
+| and one short line under it                                   |
 +---------------------------------------------------------------+
 ```
 

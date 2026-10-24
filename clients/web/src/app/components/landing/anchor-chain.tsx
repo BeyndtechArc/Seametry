@@ -1,4 +1,3 @@
-import { Stamp } from "@seametry/ui";
 import styles from "./landing.module.css";
 
 // What the generated Explorer does with a Hallmark today, and the step it
@@ -15,17 +14,14 @@ const links = [
 /** components.md, Anchor chain. */
 export function AnchorChain() {
   return (
-    <div className={styles.anchor}>
-      <ol className={styles.chain} aria-label="How a Hallmark is verified today">
-        {links.map((link) => (
-          <li key={link.name} data-unbuilt={link.unbuilt ? "" : undefined}>
-            <span className={styles.chainNode} aria-hidden="true" />
-            <b>{link.name}</b>
-            <span>{link.state}</span>
-          </li>
-        ))}
-      </ol>
-      <Stamp kind="warn" reason="Until a root is anchored, the Explorer stops before claiming an on-chain Seal." />
-    </div>
+    <ol className={styles.chain} aria-label="How a Hallmark is verified today">
+      {links.map((link) => (
+        <li key={link.name} data-unbuilt={link.unbuilt ? "" : undefined}>
+          <span className={styles.chainNode} aria-hidden="true" />
+          <b>{link.name}</b>
+          <span>{link.state}</span>
+        </li>
+      ))}
+    </ol>
   );
 }

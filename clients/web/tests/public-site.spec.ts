@@ -47,10 +47,7 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   await expect(page.getByText("Recorded on Solana devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A melt survives the freeze." })).toBeVisible();
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
-  // The hero and the closing band offer the same way in.
-  const openApp = page.getByRole("main").getByRole("link", { name: "Open app" });
-  await expect(openApp).toHaveCount(2);
-  for (const link of await openApp.all()) await expect(link).toHaveAttribute("href", "/app");
+  await expect(page.getByRole("main").getByRole("link", { name: "Open app" })).toHaveAttribute("href", "/app");
 
   for (const section of ["Four things the Hall makes checkable", "One Alloy, opened to every leg", "Strike a share from its stocks.", "Baskets a wallet can buy today", "Four public artifacts back this page.", "Questions people ask"]) {
     await expect(page.getByRole("heading", { level: 2, name: section })).toBeVisible();
@@ -926,12 +923,13 @@ test("the question list asks a few short questions and answers each with its How
   }
 });
 
-test("the page ends on the house name, the discs rising into its letters as it comes into view", async ({ page }) => {
+test("the page ends on the house name with one short line on it, the discs rising into its letters as it comes into view", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/terms");
   const wordmark = page.getByRole("contentinfo").locator(":scope > div[aria-hidden=true]").last();
   await expect(wordmark).toHaveCount(1);
-  expect(await wordmark.evaluate((element) => element === element.parentElement!.lastElementChild)).toBe(true);
+  // The last thing on the page, with its one short line set on its top edge.
+  expect(await wordmark.evaluate((element) => element === element.parentElement!.lastElementChild && element.previousElementSibling?.tagName === "P")).toBe(true);
   await expect(wordmark.locator("text").first()).toHaveText("Seametry");
   const rise = () => wordmark.locator(":scope > div").evaluate((element) => element.getBoundingClientRect().top - element.parentElement!.getBoundingClientRect().top);
   await wordmark.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - window.innerHeight + 20));
@@ -974,24 +972,28 @@ test("the footer's bench plays by the Hall's rules: a freeze refuses a Strike, a
   await page.goto("/terms");
   const footer = page.getByRole("contentinfo");
   for (const gone of ["How it works", "Open the app", "Docs", "Thesis"]) await expect(footer.getByRole("link", { name: gone, exact: true })).toHaveCount(0);
-  const said = footer.getByRole("status");
+  // Two lines: what just happened, then what to try next.
+  const said = footer.getByRole("status").locator("span");
+  await expect(said).toHaveCount(2);
+  await expect(said.first()).toHaveText("Tap a stock to Strike a share.");
   const press = (name: string | RegExp) => footer.getByRole("button", { name }).first().click();
 
   await press("Strike with AMZNx");
-  await expect(said).toHaveText("Struck 1 STOIC. The Hall holds every leg.");
+  await expect(said.first()).toHaveText("Struck 1 STOIC. The Hall holds every leg.");
   await press(/^Freeze the Hall's account for GOOGLx$/);
   await press("Melt 1 STOIC");
-  await expect(said).toHaveText("Melted 1 STOIC. GOOGLx stays yours as a Claim while it is frozen.");
+  await expect(said.first()).toHaveText("Melted 1 STOIC. GOOGLx stays yours as a Claim.");
   await expect(footer.getByRole("button", { name: "Withdraw the GOOGLx Claim" })).toHaveCount(1);
   await press("Withdraw the GOOGLx Claim");
-  await expect(said).toHaveText("Refused. GOOGLx is still frozen; its Claim waits in the Hall.");
+  await expect(said.first()).toHaveText("Refused: GOOGLx is still frozen.");
   await press("Strike with AMZNx");
-  await expect(said).toHaveText("A Strike needs every leg. GOOGLx is still a Claim in the Hall.");
+  await expect(said.first()).toHaveText("A Strike needs every leg; GOOGLx is still a Claim.");
   await press(/^Lift the freeze on GOOGLx$/);
+  await expect(said.last()).toHaveText("Tap the Claim to withdraw it.");
   await press("Withdraw the GOOGLx Claim");
   await expect(footer.getByRole("button", { name: /^Strike with/ })).toHaveCount(6);
   await press(/^Freeze the Hall's account for GOOGLx$/);
   await press("Strike with METAx");
-  await expect(said).toHaveText("Refused. The issuer froze the Hall's account for GOOGLx, so nothing moved.");
+  await expect(said.first()).toHaveText("Refused: the Hall's account for GOOGLx is frozen. Nothing moved.");
   await expect(footer.getByRole("button", { name: /^Strike with/ })).toHaveCount(6);
 });
