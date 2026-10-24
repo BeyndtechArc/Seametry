@@ -31,11 +31,13 @@ Sections:    1. House rail: one bar across the content width, a step of the
                 verified?
              10. 06 Question list. Answers: what do people ask before they
                 trust this?
-             11. Closing band. Answers: where do I go now?
+             11. Register footer, opening on the Hall bench. Answers: what
+                does the Hall do when I work it?
 Components:  House rail, Hero instrument, Incident ledger, Mechanism plate,
              Opened Alloy, Photo frame, Basket card, Basket plate, Lot mark,
              Condition report facts, Grade, Stamp, Digest, Strike steps,
-             Proof strip, Anchor chain, Question list, Closing band, RouteAction,
+             Proof strip, Anchor chain, Question list, Hall bench,
+             Register footer, RouteAction,
              QuietLink. Section heading: patterns.md composition rule 9.
 Data:        Founding record of Stoic Crew (shared/evidence/alloys/index.json,
              Solana devnet, recorded 6 October 2026); the admissions
@@ -131,3 +133,10 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 clause of a heading is tertiary blended 75% into the ground,
                 3.28:1 light and 4.39:1 dark, display-size text at the
                 large-text floor; the section number is set in the sans.
+             12. The public pages are 1320px wide (size.public), the app stays
+                at 1200px; phones are unchanged. The closing band is gone:
+                the footer's Hall bench closes every public page, and a band
+                with the hero's actions beside it said the same thing twice.
+                The footer keeps eight links, dropping what the House rail
+                and the app already reach. The Q&A asks four questions as a
+                tab list (Storm, 24 October 2026).

@@ -5,9 +5,9 @@ import { findAdmission } from "@/lib/allocation/admissions";
 import { formatAmount } from "@/lib/amount";
 import { identityOf } from "@/lib/instrument-identity";
 
-// The landing's Alloy, as its founding record states it. Stoic Crew is the
-// one Alloy with a founding record (shared/evidence/alloys/index.json,
-// written by scripts/record-founding.ts from devnet); its legs are devnet
+// The Alloy the public pages draw, as its founding record states it. Stoic
+// Crew is the one Alloy with a founding record (shared/evidence/alloys/
+// index.json, written by scripts/record-founding.ts from devnet); its legs are devnet
 // stand-ins, each recorded against the real mint it stands in for, whose
 // decimals, name and logo come from the admissions snapshot and the logo
 // manifest rather than from this file.

@@ -1782,17 +1782,33 @@
   grid-column: 1 / -1;
 }
 
+/* The footer opens on its scene, whose band carries the rule that
+   separates it from the page. */
 .registerFooter {
   display: grid;
   gap: var(--sm-space-8);
-  padding: var(--sm-space-10) 0 var(--sm-space-8);
-  border-top: 0.5px solid var(--sm-line-strong);
+  margin-top: var(--sm-space-12);
+  padding-bottom: var(--sm-space-8);
 }
 
-.footerRegister {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--sm-space-13)), 1fr));
-  gap: var(--sm-space-8);
+/* One line: the links, then Seametry's accounts elsewhere at its end. */
+.footerLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sm-space-4) var(--sm-space-8);
+  padding-top: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sm-space-7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .footerAccounts {
@@ -1813,23 +1829,6 @@
 
 .registerFooter .footerAccounts a:hover {
   color: var(--sm-text-primary);
-}
-
-.footerRegister section {
-  display: grid;
-  align-content: start;
-  gap: var(--sm-space-4);
-}
-
-.footerRegister h2 {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.footerRegister ul {
-  display: grid;
-  list-style: none;
 }
 
 .registerFooter > p {

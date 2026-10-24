@@ -169,7 +169,8 @@ export const tokens = {
     "target": 44,
     "key": 50,
     "readable": "72ch",
-    "content": 1200
+    "content": 1200,
+    "public": 1320
   },
   "motion": {
     "duration": {

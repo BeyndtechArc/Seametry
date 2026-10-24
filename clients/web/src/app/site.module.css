@@ -1,5 +1,8 @@
+/* The public measure, wider than the app's so the landing's figures and
+   cards have room on a desktop screen; a phone fills its width inside the
+   gutters below. */
 .site {
-  width: min(100%, var(--sm-size-content));
+  width: min(100%, var(--sm-size-public));
   margin: 0 auto;
   padding: 0 var(--sm-space-7);
 }

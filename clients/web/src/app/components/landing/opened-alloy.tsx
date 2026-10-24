@@ -1,7 +1,7 @@
 import { admissions, findAdmission } from "@/lib/allocation/admissions";
 import { allocationOffer } from "@/lib/allocation/offer";
 import { photos, type Photo } from "@/lib/photos";
-import { evidenceDate, founded } from "./founding";
+import { evidenceDate, founded } from "../drawn/founding";
 import { OpenedOrbit, type OpenedLeg } from "./opened-orbit";
 import styles from "./landing.module.css";
 

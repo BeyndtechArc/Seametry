@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Grade, LotMark, Stamp, type GradeName } from "@seametry/ui";
 import type { Photo } from "@/lib/photos";
-import { Coin, Path, ShareTile, polar } from "./token-art";
+import { Coin, Path, ShareTile, polar } from "../drawn/token-art";
 import styles from "./landing.module.css";
 
 // components.md, Opened Alloy. The orbit turns one leg at a time to the

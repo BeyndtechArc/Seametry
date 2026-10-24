@@ -1,4 +1,4 @@
-import styles from "./landing.module.css";
+import styles from "./token-art.module.css";
 
 // The drawn vocabulary the landing's illustrations share, so the opened
 // Alloy, the Strike steps and the close read as one system: a constituent is
@@ -45,10 +45,10 @@ export function ShareTile({ x, y, size, artwork }: { x: number; y: number; size:
   );
 }
 
-/** A dotted rule between two points, bowed through the given control points when there are any. */
-export function Path({ from, to, via, className }: { from: { x: number; y: number }; to: { x: number; y: number }; via?: [{ x: number; y: number }, { x: number; y: number }]; className?: string }) {
+/** A dotted rule between two points, bowed through the given control points when there are any; a held flow is drawn in full ink. */
+export function Path({ from, to, via, held }: { from: { x: number; y: number }; to: { x: number; y: number }; via?: [{ x: number; y: number }, { x: number; y: number }]; held?: boolean }) {
   const d = via
     ? `M${from.x} ${from.y}C${via[0].x} ${via[0].y} ${via[1].x} ${via[1].y} ${to.x} ${to.y}`
     : `M${from.x} ${from.y}L${to.x} ${to.y}`;
-  return <path d={d} className={className ?? styles.flow} />;
+  return <path d={d} className={held ? styles.flowHeld : styles.flow} />;
 }

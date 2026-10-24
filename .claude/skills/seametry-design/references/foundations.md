@@ -226,7 +226,7 @@ Scale, in px: 12, 13, 15, 17, 20, 24, 30, 38, 48, 60, 76. Explorer display sizes
 
 **Space** on a 4px base: 2, 4, 8, 12, 16, 20, 24, 32, 40, 56, 72, 96, 128. Section rhythm on the Explorer is 96 or 128. Related items sit 8 to 16 apart; unrelated groups at least 32.
 
-**Layout.** Explorer: 12 columns, 1200px content, 24px gutters, left-aligned reading column. Mobile: single column, 18px side margins, primary action in the bottom third inside the tray.
+**Layout.** Explorer: 12 columns, 24px gutters, left-aligned reading column; the app at `size.content` (1200px), the public pages at `size.public` (1320px) so the landing's figures and cards have room on a desktop screen (Storm, 24 October 2026). Mobile: single column, 18px side margins, primary action in the bottom third inside the tray.
 
 **Edges carry meaning.** `data` 0 for rules, rows and figures; `surface` 4 for panels; `control` 0 for desktop actions; `sheet` 28 for mobile sheets; punches use their own shapes. Touchable controls are identified by green, an icon cell and short registration rules that protrude from the leading and trailing edges. Full-round controls are reserved for compact mobile layouts and named special cases. Never round a data row.
 

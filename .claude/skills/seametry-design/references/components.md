@@ -453,7 +453,18 @@ Only verifiable facts, each a link: hallmarks sealed, last seal (relative), prog
 Copyable prompts and endpoints, the machine-readable site version, the API reference. The Langfuse pattern.
 
 ### Register footer
-Product, developers, the house (world pages), trust (the Key, audit, status, anchor keys), and Contact: Send feedback and the team's address. Every item is a real destination. Seametry's accounts elsewhere (X) sit in one row of Icon buttons, as links, under the groups: the glyph alone, labelled with the account's name for assistive technology and as a tooltip, never a written handle beside it.
+**Answers:** what can I try for myself, and where are the few things not linked elsewhere?
+**Anatomy:** it opens on its scene, the Hall bench, in a band of the sheet across the whole window; then one line of links (the Key, the exit paper, source, API contract, Send feedback and the team's address, terms, privacy policy) with Seametry's accounts elsewhere (X) as Icon buttons at its end; then the operator's note. Destinations the House rail or the app already carry (Docs, How it works, Thesis, Open app, Allocation, Alloys) are not repeated here (Storm, 24 October 2026). The X glyph alone, labelled with the account's name for assistive technology and as a tooltip, never a written handle beside it.
+**Rules:** every item is a real destination. A new link earns its place only if no other route on the page reaches it.
+
+### Hall bench
+**Answers:** what does the Hall do when I work it, and what does a freeze change?
+**Anatomy:** one line and a hint beside a bench model of the Hall drawn in the landing's vocabulary on an engraved dot floor: the wallet's six coins on a ledge, the Hall as a riveted vault with a slot per leg, a lock marked Issuer under one leg's slot, and a tray where the struck share lands. Under it one status line says what the last action did.
+**Behaviour:** a tap on a wallet coin Strikes, every leg at once or none; a tap on the share Melts; a tap on the lock freezes or thaws the Hall's account for that leg. A frozen leg refuses a Strike (every coin bounces off the vault and returns) and its Claim stays in the Hall after a Melt, refused on withdrawal until the freeze lifts, as the recorded incident did.
+**Identity:** coins, tile and dotted rails as the Opened Alloy draws them; the touchable parts, coins, share and lock, ring in the action green on hover and focus. It moves only when the reader acts, so it is not a motion exception.
+**States:** wallet full; struck; frozen; melted with a held Claim; refused; reduced motion (every move lands at once); no script (the drawing at rest). Every touchable part is a button named for what it does, with a target at least 44px on a phone.
+**Data:** the founding record's legs and the Alloy's artwork; the Hall's rules as HALL.md states them. No quantity is shown, so no figure needs provenance.
+**Rules:** the bench never does what the Hall cannot. It is a model, and its line says so.
 
 ### House rail
 **Answers:** where am I, and which public destination is available from here?
@@ -576,17 +587,11 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### Question list
 **Answers:** what do people ask before they trust this?
-**Anatomy:** a ruled list of numbered disclosure rows, each a question in the reader's words that opens to its answer and a Quiet link to the full answer.
-**Identity:** native disclosure, one hairline per row, a plus drawn from two rules whose upright drops when open.
-**States:** closed; open; no script leaves every row working.
-**Data:** the how-it-works page's own sections, read from the docs source: each question is a heading there and its answer is that section's first paragraph, so the two never disagree.
+**Anatomy:** a few questions down the left as a ruled, numbered index, the open one in full ink over a heavier rule; the open answer large on the right, its first paragraph set in the display face and the next in body text, with a Quiet link to the full answer. Four at most, each well answered (Storm, 24 October 2026: fewer questions, and an accordion read as generic).
+**Identity:** a tab list in the reader's words; arrow keys move between questions.
+**States:** the first open; another open; no script, where each question is a link to its section of How it works and the first answer shows.
+**Data:** the how-it-works page's own sections, read from the docs source: each question is a heading there and its answer is that section's opening, up to two paragraphs, stopping before one that introduces a figure, so the two never disagree.
 **Rules:** never write an answer that the owning page does not state.
-
-### Closing band
-**Answers:** where do I go now?
-**Anatomy:** one display line and the hero's two actions, beside the Opened Alloy's orbit drawn small and without words, so the page closes on the object it opened. On a phone the orbit is left out.
-**States:** default only.
-**Rules:** no new claim; the actions are the hero's.
 
 ### Pattern Register
 **Answers:** does each shared component retain Seametry's identity across states, themes, widths and difficult content?

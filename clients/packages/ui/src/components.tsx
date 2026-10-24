@@ -905,36 +905,35 @@ export function AgentPanel({
 }
 
 export function RegisterFooter({
-  groups,
+  children,
+  links,
   accounts = [],
   note,
 }: {
-  groups: Array<{ title: string; links: Array<{ label: string; href: string }> }>;
+  /** The footer's scene, above its one line of links. */
+  children?: ReactNode;
+  links: Array<{ label: string; href: string }>;
   /** Seametry's accounts elsewhere, each an icon link named for assistive technology. */
   accounts?: Array<{ label: string; href: string; icon: IconName }>;
   note: string;
 }) {
   return (
     <footer className={styles.registerFooter}>
-      <div className={styles.footerRegister}>
-        {groups.map((group) => (
-          <section key={group.title}>
-            <h2>{group.title}</h2>
-            <ul>
-              {group.links.map((link) => (
-                <li key={`${link.label}-${link.href}`}><a href={link.href}>{link.label}</a></li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
-      {accounts.length > 0 ? (
-        <ul className={styles.footerAccounts} aria-label="Seametry elsewhere">
-          {accounts.map((account) => (
-            <li key={account.href}><IconLink icon={account.icon} label={account.label} href={account.href} /></li>
+      {children}
+      <div className={styles.footerLine}>
+        <ul className={styles.footerLinks} aria-label="Seametry">
+          {links.map((link) => (
+            <li key={`${link.label}-${link.href}`}><a href={link.href}>{link.label}</a></li>
           ))}
         </ul>
-      ) : null}
+        {accounts.length > 0 ? (
+          <ul className={styles.footerAccounts} aria-label="Seametry elsewhere">
+            {accounts.map((account) => (
+              <li key={account.href}><IconLink icon={account.icon} label={account.label} href={account.href} /></li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
       <p>{note}</p>
     </footer>
   );

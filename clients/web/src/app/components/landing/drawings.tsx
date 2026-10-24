@@ -1,11 +1,11 @@
 "use client";
 
-import { Coin, Path, ShareTile, polar } from "./token-art";
+import { Coin, Path, ShareTile } from "../drawn/token-art";
 import styles from "./landing.module.css";
 
-// The Strike steps' and the close's drawings, as client components so a
-// server page sends each as the legs it draws, not as its markup: server
-// rendered, every drawing was sent twice, in the HTML and again in the React payload. Their
+// The Strike steps' drawings, as client components so a server page sends
+// each as the legs it draws, not as its markup: server rendered, every
+// drawing was sent twice, in the HTML and again in the React payload. Their
 // data comes from the founding record through the server sections that use
 // them (founding.ts).
 
@@ -43,7 +43,7 @@ export function StepDrawing({ kind, legs, symbol, artwork }: { kind: StepKind; l
         const bow = (merge + end.x) / 2;
         return (
           <g key={leg.symbol}>
-            <Path from={{ x: merge, y: MID }} to={end} via={[{ x: bow, y: MID }, { x: bow, y }]} className={held ? styles.flowHeld : undefined} />
+            <Path from={{ x: merge, y: MID }} to={end} via={[{ x: bow, y: MID }, { x: bow, y }]} held={held} />
             {held ? (
               <g className={styles.gate}>
                 <line x1={gateX + (coinsLeft ? -6 : 6)} y1={y - 13} x2={gateX + (coinsLeft ? -6 : 6)} y2={y + 13} />
@@ -61,30 +61,6 @@ export function StepDrawing({ kind, legs, symbol, artwork }: { kind: StepKind; l
       {kind === "frozen" ? (
         <text x={coinX - STEP_COIN * 2.2} y={rowY(HELD, legs.length) + 4} textAnchor="end" className={styles.claimLabel}>Claim</text>
       ) : null}
-    </svg>
-  );
-}
-
-const CLOSE_SIZE = 320;
-const CLOSE_C = CLOSE_SIZE / 2;
-const CLOSE_ORBIT = 118;
-const CLOSE_COIN = 17;
-const CLOSE_TILE = 76;
-
-/** components.md, Closing band: the orbit drawn small and without words. */
-export function ClosingDrawing({ legs, artwork }: { legs: DrawnLeg[]; artwork: string }) {
-  return (
-    <svg viewBox={`0 0 ${CLOSE_SIZE} ${CLOSE_SIZE}`} className={styles.closingOrbit} aria-hidden="true">
-      <circle cx={CLOSE_C} cy={CLOSE_C} r={CLOSE_ORBIT} className={styles.ring} />
-      <circle cx={CLOSE_C} cy={CLOSE_C} r={CLOSE_ORBIT + 36} className={styles.ringOuter} />
-      {legs.map((leg, index) => (
-        <Path key={leg.symbol} from={polar(CLOSE_C, CLOSE_C, CLOSE_TILE * 0.62, index * 60 - 90)} to={polar(CLOSE_C, CLOSE_C, CLOSE_ORBIT - CLOSE_COIN * 1.3, index * 60 - 90)} />
-      ))}
-      <ShareTile x={CLOSE_C} y={CLOSE_C} size={CLOSE_TILE} artwork={artwork} />
-      {legs.map((leg, index) => {
-        const at = polar(CLOSE_C, CLOSE_C, CLOSE_ORBIT, index * 60 - 90);
-        return <Coin key={leg.symbol} id={`close-${leg.symbol}`} x={at.x} y={at.y} r={CLOSE_COIN} logo={leg.logo} symbol={leg.symbol} />;
-      })}
     </svg>
   );
 }

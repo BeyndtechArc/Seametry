@@ -442,7 +442,12 @@
       "$value": "72ch"
     },
     "content": {
-      "$value": "1200px"
+      "$value": "1200px",
+      "$description": "The app shell and its pages: dense tables read best at this measure."
+    },
+    "public": {
+      "$value": "1320px",
+      "$description": "The public pages: the landing's figures and cards need more room than the app's tables on a desktop screen (Storm, 24 October 2026). Phones are unaffected; below it the page fills the screen with its own gutters."
     }
   },
   "motion": {

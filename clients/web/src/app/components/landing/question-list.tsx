@@ -1,38 +1,38 @@
-import { QuietLink } from "@seametry/ui";
 import { source } from "@/lib/docs/source";
-import styles from "./landing.module.css";
+import { QuestionTabs, type Question } from "./question-tabs";
 
-// How it works owns these answers. Each question is one of its headings and
-// each answer is that section's first paragraph, read from the docs source,
-// so the landing can never state an answer the page does not.
+// How it works owns these answers. The landing asks four of its questions,
+// the ones a buyer asks before holding a share (Storm, 24 October 2026:
+// fewer questions, each well answered), and answers each with the opening
+// of that section, read from the docs source, so the landing can never
+// state an answer the page does not. A question the page no longer asks is
+// dropped rather than answered from memory.
 const PAGE = "how-it-works";
+const ASKED = [
+  "why-is-a-bundle-of-tokens-not-an-etf",
+  "what-can-the-issuer-still-do-to-my-token",
+  "what-happens-when-i-melt-and-what-if-an-issuer-freezes-one-constituent",
+  "who-is-allowed-to-strike-and-melt",
+];
+/** An answer is the section's opening, up to two paragraphs, stopping before one that introduces a figure. */
+const OPENING = 2;
 
 /** components.md, Question list. */
 export function QuestionList() {
   const page = source.getPage([PAGE]);
   if (!page) return null;
   const { headings, contents } = page.data.structuredData;
-  const questions = headings
-    .map((heading) => ({ heading, answer: contents.find((content) => content.heading === heading.id)?.content }))
-    .filter((question): question is { heading: (typeof headings)[number]; answer: string } => Boolean(question.answer));
 
-  return (
-    <ul className={styles.questions}>
-      {questions.map(({ heading, answer }, index) => (
-        <li key={heading.id}>
-          <details>
-            <summary>
-              <span className={styles.questionIndex}>{String(index + 1).padStart(2, "0")}</span>
-              <span>{heading.content}</span>
-              <span className={styles.toggle} aria-hidden="true" />
-            </summary>
-            <div>
-              <p>{answer}</p>
-              <QuietLink href={`${page.url}#${heading.id}`} icon="arrow-up-right">Read the full answer</QuietLink>
-            </div>
-          </details>
-        </li>
-      ))}
-    </ul>
-  );
+  const questions: Question[] = [];
+  for (const id of ASKED) {
+    const heading = headings.find((candidate) => candidate.id === id);
+    if (!heading) continue;
+    const answer: string[] = [];
+    for (const content of contents.filter((candidate) => candidate.heading === id)) {
+      if (answer.length === OPENING || content.content.trim().endsWith(":")) break;
+      answer.push(content.content);
+    }
+    if (answer.length) questions.push({ id, question: heading.content, answer, href: `${page.url}#${id}` });
+  }
+  return questions.length ? <QuestionTabs questions={questions} /> : null;
 }

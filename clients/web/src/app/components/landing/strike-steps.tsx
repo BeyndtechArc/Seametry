@@ -1,6 +1,6 @@
 import { QuietLink } from "@seametry/ui";
 import { StepDrawing, type StepKind } from "./drawings";
-import { founded } from "./founding";
+import { founded } from "../drawn/founding";
 import styles from "./landing.module.css";
 
 const steps: { kind: StepKind; title: string; line: string }[] = [

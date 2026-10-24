@@ -47,10 +47,7 @@ test("the landing leads with the recorded issuer-freeze incident", async ({ page
   await expect(page.getByText("Recorded on Solana devnet", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A melt survives the freeze." })).toBeVisible();
   await expect(page.getByText("HallAccountFrozen", { exact: true })).toBeVisible();
-  // The hero and the closing band offer the same way in.
-  const openApp = page.getByRole("main").getByRole("link", { name: "Open app" });
-  await expect(openApp).toHaveCount(2);
-  for (const link of await openApp.all()) await expect(link).toHaveAttribute("href", "/app");
+  await expect(page.getByRole("main").getByRole("link", { name: "Open app" })).toHaveAttribute("href", "/app");
 
   for (const section of ["Four things the Hall makes checkable", "One Alloy, opened to every leg", "Strike a share from its stocks.", "Baskets a wallet can buy today", "Four public artifacts back this page.", "Questions people ask"]) {
     await expect(page.getByRole("heading", { level: 2, name: section })).toBeVisible();
@@ -885,23 +882,35 @@ test("the anchor chain shows the Hallmark verified to its path and the root on c
   await expect(chain.filter({ has: page.locator("[data-unbuilt]") })).toHaveCount(0);
 });
 
-test("the question list asks How it works' questions and answers with its first paragraphs", async ({ page }) => {
+test("the question list asks How it works' questions and opens each answer with that section's opening", async ({ page }) => {
   await page.goto("/docs/how-it-works");
   const sections = await page.getByRole("article").getByRole("heading", { level: 2 }).evaluateAll((headings) =>
     headings.map((heading) => {
       let next = heading.nextElementSibling;
       while (next && next.tagName !== "P") next = next.nextElementSibling;
-      return { question: heading.textContent!.trim(), answer: next?.textContent?.trim() ?? "" };
+      return { id: heading.id, question: heading.textContent!.trim(), opening: next?.textContent?.trim() ?? "" };
     }));
-  expect(sections.length).toBeGreaterThan(0);
 
   await page.goto("/");
-  const list = page.locator("main details");
-  await expect(list.locator("summary > span:nth-child(2)")).toHaveText(sections.map((section) => section.question));
-  const last = list.last();
-  await last.locator("summary").click();
-  await expect(last.locator("p")).toHaveText(sections.at(-1)!.answer);
-  await expect(last.getByRole("link", { name: "Read the full answer" })).toHaveAttribute("href", /^\/docs\/how-it-works#/);
+  const tabs = page.getByRole("tablist", { name: "Questions" }).getByRole("tab");
+  const asked = await tabs.count();
+  expect(asked).toBeGreaterThanOrEqual(3);
+  expect(asked).toBeLessThan(sections.length);
+  const answer = page.getByRole("tabpanel");
+  for (let index = 0; index < asked; index++) {
+    const tab = tabs.nth(index);
+    const href = await tab.getAttribute("href");
+    const section = sections.find((candidate) => href === `/docs/how-it-works#${candidate.id}`);
+    expect(section, `${href} is a section of How it works`).toBeDefined();
+    await expect(tab).toContainText(section!.question);
+    await tab.click();
+    await expect(tab).toHaveAttribute("aria-selected", "true");
+    await expect(answer.locator("p").first()).toHaveText(section!.opening);
+    await expect(answer.getByRole("link", { name: "Read the full answer" })).toHaveAttribute("href", href!);
+  }
+  await tabs.last().press("ArrowDown");
+  await expect(tabs.first()).toHaveAttribute("aria-selected", "true");
+  await expect(tabs.first()).toBeFocused();
 });
 
 test("the basket cards feature wholly admitted baskets, count them from the records, and load their photographs", async ({ page }) => {
@@ -926,4 +935,30 @@ test("the basket cards feature wholly admitted baskets, count them from the reco
     await expect.poll(() => card.locator("img").first().evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBeGreaterThan(0);
   }
   await expect(section).toContainText(`${buyable.length} published baskets are wholly admitted`);
+});
+
+test("the footer's bench plays by the Hall's rules: a freeze refuses a Strike, a Melt holds the frozen leg as a Claim", async ({ page }) => {
+  await page.goto("/terms");
+  const footer = page.getByRole("contentinfo");
+  for (const gone of ["How it works", "Open the app", "Docs", "Thesis"]) await expect(footer.getByRole("link", { name: gone, exact: true })).toHaveCount(0);
+  const said = footer.getByRole("status");
+  const press = (name: string | RegExp) => footer.getByRole("button", { name }).first().click();
+
+  await press("Strike with AMZNx");
+  await expect(said).toHaveText("Struck 1 STOIC. The Hall holds every leg.");
+  await press(/^Freeze the Hall's account for GOOGLx$/);
+  await press("Melt 1 STOIC");
+  await expect(said).toHaveText("Melted 1 STOIC. GOOGLx stays yours as a Claim while it is frozen.");
+  await expect(footer.getByRole("button", { name: "Withdraw the GOOGLx Claim" })).toHaveCount(1);
+  await press("Withdraw the GOOGLx Claim");
+  await expect(said).toHaveText("Refused. GOOGLx is still frozen; its Claim waits in the Hall.");
+  await press("Strike with AMZNx");
+  await expect(said).toHaveText("A Strike needs every leg. GOOGLx is still a Claim in the Hall.");
+  await press(/^Lift the freeze on GOOGLx$/);
+  await press("Withdraw the GOOGLx Claim");
+  await expect(footer.getByRole("button", { name: /^Strike with/ })).toHaveCount(6);
+  await press(/^Freeze the Hall's account for GOOGLx$/);
+  await press("Strike with METAx");
+  await expect(said).toHaveText("Refused. The issuer froze the Hall's account for GOOGLx, so nothing moved.");
+  await expect(footer.getByRole("button", { name: /^Strike with/ })).toHaveCount(6);
 });

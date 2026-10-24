@@ -47,6 +47,7 @@
   --sm-size-key: 50px;
   --sm-size-readable: 72ch;
   --sm-size-content: 1200px;
+  --sm-size-public: 1320px;
   --sm-motion-duration-quick: 120ms;
   --sm-motion-duration-base: 180ms;
   --sm-motion-duration-settle: 220ms;

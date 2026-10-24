@@ -4,7 +4,7 @@ import { allocationIndexes } from "@/lib/allocation/indexes";
 import { allocationOffer } from "@/lib/allocation/offer";
 import { photos, type Photo } from "@/lib/photos";
 import { BasketPlate } from "../../app/baskets/basket-plate";
-import { evidenceDate } from "./founding";
+import { evidenceDate } from "../drawn/founding";
 import styles from "./landing.module.css";
 
 // A basket's theme photograph is a landing decision, not part of the

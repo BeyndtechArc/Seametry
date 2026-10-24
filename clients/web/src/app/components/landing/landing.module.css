@@ -20,59 +20,6 @@
   mix-blend-mode: luminosity;
 }
 
-/* The drawn vocabulary (token-art.tsx): coins, tiles and dotted flows. */
-.coinRing {
-  fill: none;
-  stroke: var(--sm-line-strong);
-  stroke-width: 0.75;
-}
-
-.coinFace {
-  fill: var(--sm-surface-raised);
-  stroke: var(--sm-line-strong);
-  stroke-width: 0.75;
-}
-
-.coinLetters {
-  fill: var(--sm-text-primary);
-  font-family: var(--sm-font-family-ui);
-  font-size: 11px;
-  font-weight: var(--sm-font-weight-semibold);
-}
-
-.coin[data-held] {
-  opacity: 0.45;
-}
-
-.coin[data-held] .coinRing {
-  stroke-dasharray: 2 2.5;
-}
-
-.tileFrame {
-  fill: var(--sm-surface-sheet);
-  stroke: var(--sm-line-strong);
-  stroke-width: 0.75;
-}
-
-.tileEdge {
-  fill: none;
-  stroke: var(--sm-text-primary);
-  stroke-width: 0.75;
-}
-
-.flow,
-.flowHeld {
-  fill: none;
-  stroke: var(--sm-text-secondary);
-  stroke-width: 1.2;
-  stroke-linecap: round;
-  stroke-dasharray: 0.1 5;
-}
-
-.flowHeld {
-  stroke: var(--sm-text-primary);
-}
-
 /* components.md, Opened Alloy. The orbit carries the composition; the opened
    leg's card overlaps its photograph and receives the leader that runs level
    out of the orbit's right edge, so the drawing and the card read as one
@@ -538,72 +485,55 @@
   font-size: var(--sm-font-size-small);
 }
 
-/* components.md, Question list. */
-.questions {
-  margin: 0;
-  padding: 0;
-  border-top: 0.5px solid var(--sm-line-strong);
-  list-style: none;
-}
-
-.questions li {
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.questions summary {
+/* components.md, Question list. The questions run down the left as a
+   ruled index; the open answer sits large on the right, its opening set in
+   the display face like a lot entry's first line. */
+.ask {
   display: grid;
-  grid-template-columns: var(--sm-space-10) minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--sm-space-5);
-  min-height: var(--sm-size-target);
-  padding: var(--sm-space-6) 0;
-  color: var(--sm-text-primary);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--sm-space-10);
+  align-items: start;
+  border-top: 0.5px solid var(--sm-line-strong);
+}
+
+.askList {
+  display: grid;
+}
+
+.askList a {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--sm-space-9) minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-6) var(--sm-space-4) var(--sm-space-6) 0;
+  border-bottom: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title-s);
-  cursor: pointer;
-  list-style: none;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: color var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
 }
 
-.questions summary::-webkit-details-marker {
-  display: none;
+.askList a:hover,
+.askList a[aria-selected="true"] {
+  color: var(--sm-text-primary);
 }
 
-/* A plus drawn from two rules, the vertical one dropping when open. */
-.toggle {
-  position: relative;
-  flex: none;
-  width: var(--sm-space-5);
-  height: var(--sm-space-5);
-}
-
-.toggle::before,
-.toggle::after {
+/* The open question carries a heavier rule along its foot. */
+.askList a[aria-selected="true"]::after {
   content: "";
   position: absolute;
-  background: var(--sm-text-primary);
-}
-
-.toggle::before {
-  top: 50%;
   left: 0;
-  width: 100%;
-  height: 1px;
+  right: 0;
+  bottom: -1px;
+  border-bottom: 2px solid var(--sm-text-primary);
 }
 
-.toggle::after {
-  top: 0;
-  left: 50%;
-  width: 1px;
-  height: 100%;
-}
-
-.questions details[open] .toggle::after {
-  display: none;
-}
-
-.questions summary:focus-visible {
+.askList a:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-2);
+  outline-offset: var(--sm-space-1);
 }
 
 .questionIndex {
@@ -612,61 +542,26 @@
   font-size: var(--sm-font-size-micro);
 }
 
-.questions details > div {
+.askAnswer {
   display: grid;
-  margin-left: calc(var(--sm-space-10) + var(--sm-space-5));
   justify-items: start;
-  gap: var(--sm-space-5);
-  max-width: var(--sm-size-readable);
-  padding-bottom: var(--sm-space-7);
+  gap: var(--sm-space-6);
+  padding-top: var(--sm-space-7);
   color: var(--sm-text-secondary);
   line-height: 1.65;
 }
 
-/* components.md, Closing band. */
-.closing {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--sm-space-10);
-  margin-top: var(--sm-space-12);
-  padding: var(--sm-space-11) 0;
-  border-top: 0.5px solid var(--sm-line-strong);
-}
-
-.closingText {
-  display: grid;
-  justify-items: start;
-  gap: var(--sm-space-8);
-}
-
-.closing h2 {
-  max-width: 14em;
+.askAnswer p:first-child {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-display);
+  font-size: var(--sm-font-size-title);
   font-weight: var(--sm-font-weight-light);
-  letter-spacing: var(--sm-font-tracking-display);
-  line-height: 1.02;
-  text-wrap: balance;
+  letter-spacing: var(--sm-font-tracking-title);
+  line-height: 1.35;
 }
 
-/* The heading's quieter clause, as a section heading's (site.module.css). */
-.closing h2 span {
-  color: color-mix(in srgb, var(--sm-text-tertiary) 75%, var(--sm-surface-ground));
-}
-
-.closingText > div {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sm-space-7);
-}
-
-.closingOrbit {
-  display: block;
-  width: calc(var(--sm-space-13) * 2.5);
-  height: auto;
+.askAnswer p + p {
+  max-width: var(--sm-size-readable);
 }
 
 @media (max-width: 1050px) {
@@ -695,6 +590,11 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     row-gap: var(--sm-space-7);
   }
+
+  .ask {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
 }
 
 @media (max-width: 700px) {
@@ -711,16 +611,4 @@
     justify-self: start;
   }
 
-  .closing {
-    grid-template-columns: minmax(0, 1fr);
-    padding: var(--sm-space-10) 0;
-  }
-
-  .closingOrbit {
-    display: none;
-  }
-
-  .closing h2 {
-    font-size: var(--sm-font-size-figure);
-  }
 }
