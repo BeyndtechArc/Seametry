@@ -7,11 +7,11 @@ async function feedbackReports(request: APIRequestContext): Promise<Report[]> {
   return all.filter((report) => report.kind === "feedback");
 }
 
-test("the footer names how to reach the team, and the X account is an icon with its name", async ({ page }) => {
+test("the footer reaches the team through Send feedback alone, and the X account is an icon with its name", async ({ page }) => {
   await page.goto("/");
   const footer = page.getByRole("contentinfo");
   await expect(footer.getByRole("link", { name: "Send feedback" })).toHaveAttribute("href", "/feedback");
-  await expect(footer.getByRole("link", { name: "seametry@beyndtech.com" })).toHaveAttribute("href", "mailto:seametry@beyndtech.com");
+  await expect(footer.getByRole("link", { name: /@/ })).toHaveCount(0);
   const x = footer.getByRole("list", { name: "Seametry elsewhere" }).getByRole("link", { name: "Seametry on X" });
   await expect(x).toHaveAttribute("href", "https://x.com/seametry_");
   await expect(x).toHaveText("");

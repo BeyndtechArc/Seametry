@@ -1782,17 +1782,45 @@
   grid-column: 1 / -1;
 }
 
+/* The footer opens on its scene, whose band carries the rule that
+   separates it from the page. */
 .registerFooter {
   display: grid;
-  gap: var(--sm-space-8);
-  padding: var(--sm-space-10) 0 var(--sm-space-8);
-  border-top: 0.5px solid var(--sm-line-strong);
+  /* One column at the page's width, so a full-window piece inside it
+     overflows to the window's edges instead of widening the column. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sm-space-5);
+  margin-top: var(--sm-space-12);
 }
 
-.footerRegister {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--sm-space-13)), 1fr));
-  gap: var(--sm-space-8);
+/* One quiet line: the links in small secondary text, then Seametry's
+   accounts elsewhere at its end (Storm, 24 October 2026: the footer should
+   not take much height or read busy). */
+.footerLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0 var(--sm-space-8);
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sm-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.registerFooter .footerLinks a {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  font-weight: var(--sm-font-weight-regular);
+}
+
+.registerFooter .footerLinks a:hover {
+  color: var(--sm-text-primary);
 }
 
 .footerAccounts {
@@ -1815,26 +1843,24 @@
   color: var(--sm-text-primary);
 }
 
-.footerRegister section {
-  display: grid;
-  align-content: start;
-  gap: var(--sm-space-4);
-}
-
-.footerRegister h2 {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.footerRegister ul {
-  display: grid;
-  list-style: none;
-}
-
+/* A small tracked line in the digest face, set down onto the top of the
+   piece that follows it (the Closing wordmark, whose foot is cropped, so a
+   line under it would sit on nothing) where its left end is clear. */
 .registerFooter > p {
+  position: relative;
+  z-index: 1;
+  margin-bottom: calc(var(--sm-space-10) * -1);
   color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-small);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+  letter-spacing: var(--sm-font-tracking-serial);
+}
+
+/* On a phone the wordmark is short, so the line keeps its own row. */
+@media (max-width: 700px) {
+  .registerFooter > p {
+    margin-bottom: 0;
+  }
 }
 
 @keyframes rule-breathe {

@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { TextAction } from "@seametry/ui";
 import { accountServiceConfigured } from "@/lib/auth-proxy";
 import { PublicShell, SectionHeading } from "../public-shell";
+import { SiteWalletProvider } from "@/lib/wallet-provider";
 import { SignInControl } from "./sign-in-control";
 import styles from "../site.module.css";
 
@@ -26,13 +27,15 @@ export default async function SignInPage() {
           </p>
         </div>
         <div className={styles.signInBoundary}>
-          <SignInControl configured={accountServiceConfigured()} />
+          <SiteWalletProvider>
+            <SignInControl configured={accountServiceConfigured()} />
+          </SiteWalletProvider>
           <TextAction href="/app/alloys">Inspect live Alloys</TextAction>
         </div>
       </header>
 
       <section className={styles.section}>
-        <SectionHeading index="01" title="Account and wallet" question="What does each connection authorize?" />
+        <SectionHeading index="01" title={["An account and a wallet", "each authorize something different."]} />
         <div className={styles.accessGrid}>
           <article className={styles.accessStep}>
             <b>Sign in to your account.</b>
@@ -54,7 +57,7 @@ export default async function SignInPage() {
       </section>
 
       <section className={styles.section}>
-        <SectionHeading index="02" title="Data boundary" question="What does the account retain?" />
+        <SectionHeading index="02" title={["The data boundary,", "what the account retains."]} />
         <div className={styles.boundary}>
           <p>
             If you sign in, the account service stores the identifier, name and email returned by Google, a session record, and

@@ -1,0 +1,53 @@
+/* The drawn vocabulary (token-art.tsx): coins, tiles and dotted flows,
+   shared by the landing's figures and the footer's bench. */
+.coinRing {
+  fill: none;
+  stroke: var(--sm-line-strong);
+  stroke-width: 0.75;
+}
+
+.coinFace {
+  fill: var(--sm-surface-raised);
+  stroke: var(--sm-line-strong);
+  stroke-width: 0.75;
+}
+
+.coinLetters {
+  fill: var(--sm-text-primary);
+  font-family: var(--sm-font-family-ui);
+  font-size: 11px;
+  font-weight: var(--sm-font-weight-semibold);
+}
+
+.coin[data-held] {
+  opacity: 0.45;
+}
+
+.coin[data-held] .coinRing {
+  stroke-dasharray: 2 2.5;
+}
+
+.tileFrame {
+  fill: var(--sm-surface-sheet);
+  stroke: var(--sm-line-strong);
+  stroke-width: 0.75;
+}
+
+.tileEdge {
+  fill: none;
+  stroke: var(--sm-text-primary);
+  stroke-width: 0.75;
+}
+
+.flow,
+.flowHeld {
+  fill: none;
+  stroke: var(--sm-text-secondary);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 5;
+}
+
+.flowHeld {
+  stroke: var(--sm-text-primary);
+}

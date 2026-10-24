@@ -1,0 +1,81 @@
+/* The plate is illustration, so it takes two steps of scale.touch, the
+   Fortune Five artwork's lime ground and olive-black ink (foundations.md 5b),
+   and keeps them in both modes as a printed plate would. */
+.plate {
+  display: block;
+  flex: none;
+  width: var(--sm-space-11);
+  height: var(--sm-space-11);
+}
+
+/* The Alloy record's artwork size, so a basket record and an Alloy record
+   carry their marks at one scale. */
+.plate[data-size="header"] {
+  width: var(--sm-space-12);
+  height: var(--sm-space-12);
+}
+
+.plate svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.plateGround {
+  fill: var(--sm-scale-touch-500);
+}
+
+.plateInk {
+  fill: var(--sm-scale-touch-50);
+}
+
+.plateHairline {
+  fill: none;
+  stroke: var(--sm-scale-touch-50);
+  stroke-width: 0.6;
+}
+
+.plateEngraving {
+  fill: none;
+  stroke: var(--sm-scale-touch-500);
+  stroke-width: 0.45;
+  opacity: 0.55;
+}
+
+.plateSpoke {
+  stroke: var(--sm-scale-touch-500);
+  stroke-width: 1.6;
+}
+
+.plateCentre {
+  fill: var(--sm-scale-touch-500);
+  stroke: var(--sm-scale-touch-50);
+  stroke-width: 1;
+}
+
+.plateNode {
+  fill: var(--sm-scale-touch-50);
+  stroke: var(--sm-scale-touch-500);
+  stroke-width: 1.4;
+}
+
+.plateSocket {
+  fill: var(--sm-scale-touch-500);
+  stroke: var(--sm-scale-touch-50);
+  stroke-width: 1.2;
+  stroke-dasharray: 2 1.6;
+}
+
+/* A phone sizes the plate down a step at each size, beside a register row
+   and beside a record title alike. */
+@media (max-width: 760px) {
+  .plate {
+    width: var(--sm-space-10);
+    height: var(--sm-space-10);
+  }
+
+  .plate[data-size="header"] {
+    width: var(--sm-space-11);
+    height: var(--sm-space-11);
+  }
+}

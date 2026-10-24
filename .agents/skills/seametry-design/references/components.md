@@ -453,7 +453,18 @@ Only verifiable facts, each a link: hallmarks sealed, last seal (relative), prog
 Copyable prompts and endpoints, the machine-readable site version, the API reference. The Langfuse pattern.
 
 ### Register footer
-Product, developers, the house (world pages), trust (the Key, audit, status, anchor keys), and Contact: Send feedback and the team's address. Every item is a real destination. Seametry's accounts elsewhere (X) sit in one row of Icon buttons, as links, under the groups: the glyph alone, labelled with the account's name for assistive technology and as a tooltip, never a written handle beside it.
+**Answers:** what can I try for myself, and where are the few things not linked elsewhere?
+**Anatomy:** it opens on its scene, the Hall bench, in a band of the sheet across the whole window; then one line of links (the Key, the exit paper, source, API contract, Send feedback, terms, privacy policy) in small secondary text with no rule above it, Seametry's accounts elsewhere (X) as Icon buttons at its end; then one short line, the house's line and its operator, small and tracked in the digest face and set on the top edge of the Closing wordmark, which ends the page (its foot is cropped, so a line under it would sit on nothing). It takes little height and reads quiet (Storm, 24 October 2026). The team's address is not shown (Storm, 24 October 2026); Send feedback reaches the team, and its page names the address if a message cannot be sent. Destinations the House rail or the app already carry (Docs, How it works, Thesis, Open app, Allocation, Alloys) are not repeated here (Storm, 24 October 2026). The X glyph alone, labelled with the account's name for assistive technology and as a tooltip, never a written handle beside it.
+**Rules:** every item is a real destination. A new link earns its place only if no other route on the page reaches it.
+
+### Hall bench
+**Answers:** what does the Hall do when I work it, and what does a freeze change?
+**Anatomy:** one line, "Work the Hall by hand.", beside a bench model of the Hall drawn in the landing's vocabulary on an engraved dot floor: the wallet's six coins on a ledge, the Hall as a riveted vault with a slot per leg, a lock marked Issuer under one leg's slot, and a tray where the struck share lands. Under it two status lines: what the last action did, then what to try next. No description: the second line teaches the bench (Storm, 24 October 2026).
+**Behaviour:** a tap on a wallet coin Strikes, every leg at once or none; a tap on the share Melts; a tap on the lock freezes or thaws the Hall's account for that leg. A frozen leg refuses a Strike and its Claim stays in the Hall after a Melt, refused on withdrawal until the freeze lifts, as the recorded incident did.
+**States and answers:** a wallet coin lifts and names its symbol when pointed at or focused; a seated coin fills its slot; a frozen slot is hatched like frost and the lock's shackle closes; a Strike punches the tray once as its share lands; a refusal bounces the refused coins off the vault and shakes the vault once; a held Claim carries a dashed ring and its word. Reduced motion lands every move at once and drops the shake and the punch; no script shows the drawing at rest. Every touchable part is a button named for what it does, with a target at least 44px on a phone.
+**Identity:** coins, tile and dotted rails as the Opened Alloy draws them; the touchable parts, coins, share and lock, ring in the action green on hover and focus. It moves only when the reader acts, so it is not a motion exception.
+**Data:** the founding record's legs and the Alloy's artwork; the Hall's rules as HALL.md states them. No quantity is shown, so no figure needs provenance.
+**Rules:** the bench never does what the Hall cannot.
 
 ### House rail
 **Answers:** where am I, and which public destination is available from here?
@@ -534,6 +545,66 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **States:** playing (strike, strike, melt, freeze, a refused strike whose units halt at the closed gate and vanish while the wallet keeps its ingots, a melt whose vaults pay every leg but the frozen one, then the freeze lifts and the held Claim is paid); nothing a reader does stops it; offscreen (the loop rests, unseen); reduced motion (a still picture of the freeze and the Melt that delivered around it).
 **Data:** the product's own arithmetic (`lib/hall/recipe.ts`, tested against the shared vectors) decides what a Melt credits; the Formula is illustrative, and the docs' frozen-leg bench states its quantities.
 **Rules:** the static art is built on the server from `clients/web/src/lib/iso`; the client only writes attributes (`transform`, `data-hidden`, `data-held`), never style. Every refusal and outcome the motion shows is the Hall's real behaviour, cited in code to `HALL.md`. One hero instrument per surface.
+**Camera tour (Storm, 23 October 2026):** the landing's instrument is the Hall as an assay line, seen from a few camera stations in turn instead of one fixed view, one composition at a time: the camera holds while that station's part of the story plays, then turns and reframes to the next, the turn itself visible, every line kept. The story is the one above, told across the stations: the Formula (the vault and its meters); the Strike (one unit of each constituent from the wallet through the open gates into the vault, the ram's stroke, a share onto the holder's stack); issuer powers (a gate lowered and padlocked); the Melt (the share returned, a Claim on every leg, every open leg out to the wallet, the frozen leg's unit halted at its gate and its Claim held); and, leaving the Melt, the freeze lifted and the held Claim delivered, so the loop ends where it began. It shows one unit per leg and no quantity, so it needs no arithmetic. At a station, up to two callouts name what it shows in the register's words, each appearing when the event it names happens: a terminal dot on its part, a rule leaving at the drawing's own 30 degrees and running level to a cut-corner plate docked against the figure's side, so no plate covers the machine. The client redraws only what the camera or a part moved; order comes from each pair's separating plane over its parts' whole travel, so the machine is built of upright prisms. A device too slow to draw every frame skips frames rather than stopping, so the turn stays visible. Reduced motion shows the Melt delivered around the frozen leg, still, with its callouts; no script shows the first station. The tour supersedes "nothing beside it" for this instrument only.
+
+### Opened Alloy
+**Answers:** what does one share of an Alloy hold, and what can each holding's issuer still do?
+**Anatomy:** an illustration, not a screen. At the centre the share, the Alloy's artwork on a tile with two frames stepping out behind it; around it an orbit of its constituents as coins carrying their issuers' logos, each joined to the share by a dotted rule and labelled with its symbol and units per share. The leg set level with the share runs a leader out of the orbit to its opened card, one object centred on the line: a duotone Photo frame of the leg's business as a strip across the top, then logo, symbol, Grade, the powers its issuer keeps as one-word chips two to a row, and the policy's Stamp. Every few seconds the orbit turns one leg on to the leader and the card opens that leg; a tap on any coin turns that coin there (Storm, 24 October 2026). The ring's labels hide for the whole turn, with each coin kept upright; the card's facts fade out for a moment and come back, for the leg now opening, while the ring still turns, and the photograph crossfades, every leg's photograph loaded in the strip from the start (Storm, 24 October 2026: the card stood empty too long and the images swapped late). No caption is shown: every source travels as the drawing's description.
+**Identity:** the drawn vocabulary the landing shares (coin, tile, dotted flow), hairlines and surface tones only; layers lift by tone and overlap, never shadow. Few words: symbols, units and chips, with the sentences behind the chips in their titles.
+**States:** turning, a hold of 4.5 s and a turn of 0.9 s, longer by 0.26 s for each further step of a tapped turn; held while a reader points at or focuses the card or a coin (not anywhere in the section), while it is offscreen and while the tab is hidden; each coin a button named for the leg it opens; reduced motion and no script, still on the first leg; narrower than 900px the card moves under the orbit and the leader is dropped; a missing logo draws the coin's letters; a leg without an admission removes the figure rather than drawing the Formula short.
+**Data:** the founding record (`shared/evidence/alloys/index.json`, devnet), decimals from the admissions snapshot, the leg through `allocationOffer()`. A chip names a power by the policy's reason code; a code this page does not know shows as the code itself.
+**Rules:** no live figure; every number exact at its decimals; the orbit's accessible name states the whole Formula in words. No layer covers another's words. The turn is written as transform attributes from one frame loop, never as style.
+
+### Photo frame
+**Answers:** what kind of business sits under this instrument or theme?
+**Anatomy:** a cropped photograph at a short fixed ratio (2:1 in the Opened Alloy, 16:9 on a Basket card) in the house duotone. Neither a credit nor an "illustrative" note is shown on the page (Storm, 24 October 2026); the Opened Alloy's description says its photographs are illustrative; the Unsplash License asks none, and `photos.ts` keeps each photograph's source.
+**Identity:** the photograph's luminosity, at slightly lowered contrast, over the house green blended half into the tertiary grey, so every photo sits muted in the palette in both modes (Storm, 24 October 2026). Square corners, no shadow or rounded card.
+**States:** default; image unavailable shows the ground.
+**Data:** an entry of `clients/web/src/lib/photos.ts`: file, alt text, photographer, source page.
+**Rules:** landing only (foundations section 9). Never a person presented as a user or holder, a screen, or a named company's own premises.
+
+### Basket card
+**Answers:** which published basket could my wallet buy today, and what does it hold?
+**Anatomy:** a short Photo frame (21:9) of the basket's theme with the Basket plate set across its lower left edge; the code with the count of stocks at the line's other end; name and category; the round Lot marks on a tray the card's full width, the marks at their own size from its start; the whole card one route link to the basket's record. Admission is stated once for the row, under it.
+**Identity:** the Basket register's facts in a card, for the landing only. The plate overlaps the photo so the two read as one object. Hover or focus steps the surface tone and eases the photograph a few percent closer, and reduced motion keeps it still.
+**States:** default; hover or focus; a basket not wholly admitted is not featured.
+**Data:** `allocationIndexes`, admission from the admissions snapshot, with its policy version and snapshot date stated once under the row.
+**Rules:** no price, return, chart or performance. The count of buyable baskets is computed, never written.
+
+### Strike steps
+**Answers:** what happens when I Strike a share, Melt it, and an issuer freezes one leg?
+**Anatomy:** three panels, each a small drawing in the Opened Alloy's vocabulary over a number, a title and one line: the Formula's coins flowing into the share; the share flowing out to its coins; the same with one leg's flow stopped at a gate and its coin, faded, in a dashed Claim box. Every flow meets at one point before the share. One ruled note under them on why a bundle is not this.
+**Identity:** the same Alloy as the Opened Alloy, drawn moving, so the section continues the one above.
+**States:** default; narrow layouts stack the steps.
+**Data:** the founding record's legs; the Hall's rules as HALL.md states them. The held leg is a drawing of the rule; the incident ledger above is the record.
+**Rules:** never imply a wallet without the constituents can Strike, or that a Claim is delivered stock. No hue on the held leg: red belongs to the hero instrument's drawing.
+
+### Anchor chain
+**Answers:** how far can a visitor verify a Hallmark today, and which step is not built?
+**Anatomy:** square nodes on one rule, each a step and its state: the Hallmark, published; the public digest and the Merkle path, recomputed in the visitor's browser; the root on chain, an empty dashed node on a dashed rule, not written yet.
+**States:** default; narrow layouts set the nodes two to a row. When a root is anchored, the last node fills.
+**Rules:** the unbuilt step is shown, never omitted; no node claims more than the Explorer computes.
+
+### Question list
+**Answers:** what do people ask before they trust this?
+**Anatomy:** a ruled list of numbered disclosure rows, four at most, each a short question of a few words that opens to its answer and a Quiet link to the full answer. The one change from a plain accordion: an open answer leads with its first paragraph in the display face, and its row closes on a heavier rule (Storm, 24 October 2026, after a tab layout read worse than the accordion).
+**Identity:** native disclosure, one hairline per row, a plus drawn from two rules whose upright drops when open.
+**States:** closed; open; no script leaves every row working.
+**Data:** the how-it-works page's own sections, read from the docs source. The landing words each question briefly in its own words, since the page's headings run long; the answer is that section's opening, up to two paragraphs, stopping before one that introduces a figure, so the landing never states an answer the page does not.
+**Rules:** never write an answer that the owning page does not state. A question whose section is gone is dropped, not answered from memory.
+
+### Closing band
+**Status:** reserved (Storm, 24 October 2026). Not on any page; kept for a later use, last built in commit b17b813 (`components/landing/closing-band.tsx`), which git keeps.
+**Answers:** where do I go now?
+**Anatomy:** one display line and the hero's two actions, beside the Opened Alloy's orbit drawn small and without words, so the page closes on the object it opened. On a phone the orbit is left out.
+**Rules:** no new claim; the actions are the hero's. Rebuild it from that commit rather than from memory.
+
+### Closing wordmark
+**Answers:** none; it is the house's signature at the foot of every public page.
+**Anatomy:** "Seametry" in the display face across the whole window, its descender running off the page's foot, cut as a stencil from the ground with a hairline outline. Through the letters show the hero's discs, which rise into them as the foot of the page comes into view; above the word the discs break into squares, the hero's fragments in reverse, each loose in its cell, larger, deeper and more likely near the word's middle and fainter, smaller and rarer toward the top and ends, so the field dissolves without an edge. The footer's short line sits on its top edge, clear of the letters.
+**Identity:** the hero's disc tones and nesting, so the page ends where it began; no gradient, shadow or glow.
+**States:** rising, on a CSS view timeline the compositor runs, finishing as the page's end is reached; risen, where view timelines are missing or the reader asks for less motion.
+**Rules:** decorative and hidden from assistive technology, since the House rail names the house. Never a second wordmark on a page.
 
 ### Pattern Register
 **Answers:** does each shared component retain Seametry's identity across states, themes, widths and difficult content?

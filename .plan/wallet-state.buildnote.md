@@ -12,7 +12,8 @@ Sections:    House rail: wordmark; destinations; Wallet state; Mode control.
              which wallet you connected, in this browser only).
 Components:  Wallet state (new, contract added to components.md first);
              Quiet action; Route action; Stamp; Rule.
-Data:        the site-wide wallet session (SiteWalletProvider); detected
+Data:        the wallet session (SiteWalletProvider, mounted on the app,
+             Send feedback and sign-in since 24 October 2026); detected
              Wallet Standard wallets. No server call, nothing stored off
              the device.
 States:      disconnected; no wallet detected; connecting; connected;

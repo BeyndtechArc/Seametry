@@ -1,5 +1,8 @@
+/* The public measure, wider than the app's so the landing's figures and
+   cards have room on a desktop screen; a phone fills its width inside the
+   gutters below. */
 .site {
-  width: min(100%, var(--sm-size-content));
+  width: min(100%, var(--sm-size-public));
   margin: 0 auto;
   padding: 0 var(--sm-space-7);
 }
@@ -282,37 +285,49 @@
   outline-offset: var(--sm-space-2);
 }
 
+/* The entry (Storm's mockup, 23 October 2026): the promise on the page
+   ground at left, the Hall's assay line at right, and below them the
+   landing's discs rising behind the sections that follow. */
 .hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
-  gap: var(--sm-space-9);
-  min-height: calc(var(--sm-space-13) * 3);
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  grid-template-rows: auto var(--hero-band);
+  column-gap: var(--sm-space-8);
+  align-items: center;
   margin-top: var(--sm-space-8);
-  padding: var(--sm-space-8) var(--sm-space-10);
-  overflow: hidden;
-  color: var(--sm-feature-text-secondary);
-  background: var(--sm-feature-ground);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-6)) 0, 100% var(--sm-space-6), 100% 100%, 0 100%);
-  --sm-text-primary: var(--sm-feature-text-primary);
-  --sm-text-secondary: var(--sm-feature-text-secondary);
-  --sm-text-tertiary: var(--sm-feature-text-secondary);
-  --sm-line-rule: var(--sm-feature-raised);
-  --sm-line-strong: var(--sm-feature-text-secondary);
-  --sm-text-faint: var(--sm-feature-raised);
-}
-
-.hero::after {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 41%;
-  border-left: 0.5px solid var(--sm-feature-raised);
-  pointer-events: none;
+  padding-top: var(--sm-space-10);
+  /* Room for the discs' tops to show before the next section rises over them. */
+  --hero-band: 26vw;
 }
 
 .heroCopy {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  grid-row: 1;
+  padding-left: var(--sm-space-6);
+}
+
+/* The machine stands over the discs' rising edge. */
+.heroFigure {
+  position: relative;
+  z-index: 2;
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  align-self: start;
+  margin-bottom: calc(var(--hero-band) * -0.15);
+}
+
+/* Where the discs begin: the field is drawn from here down, behind the
+   sections that follow, which paint over it with their own grounds
+   (foundations section 7). Nothing here clips it. */
+.heroDiscs {
+  position: relative;
+  z-index: 0;
+  grid-row: 2;
+  grid-column: 1 / -1;
+  align-self: stretch;
+  margin-top: var(--sm-space-9);
 }
 
 .heroCopy {
@@ -323,7 +338,6 @@
 }
 
 .heroCopy > span,
-.plateLabel,
 .storyHero > span,
 .chapterLabel,
 .accessPanel > span {
@@ -334,7 +348,7 @@
 .heroCopy h1 {
   max-width: calc(var(--sm-space-13) * 4);
   display: grid;
-  margin-left: calc(var(--sm-space-8) * -1);
+  margin-left: var(--sm-space-10);
   color: var(--sm-feature-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: clamp(var(--sm-font-size-display), 7vw, calc(var(--sm-font-size-display-l) * 1.35));
@@ -371,27 +385,22 @@
 }
 
 .section {
+  /* Above the landing's discs, which run behind the first sections. */
+  position: relative;
+  z-index: 1;
   margin-top: var(--sm-space-13);
 }
 
+/* The section after the hero starts a little over the discs' rising edge,
+   so the page reads as one piece rather than a banner and then a page
+   (Storm, 23 October 2026). */
 .incidentSection {
+  position: relative;
+  z-index: 3;
+  margin-top: -8vw;
   padding: var(--sm-space-8);
   background: var(--sm-surface-sheet);
   clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
-}
-
-.instrumentSection .sectionHeading {
-  grid-template-columns: minmax(0, 0.35fr) minmax(0, 2fr) minmax(0, 1fr);
-}
-
-.comparisonSection {
-  padding: var(--sm-space-8);
-  background: var(--sm-surface-raised);
-  clip-path: polygon(var(--sm-space-5) 0, 100% 0, 100% 100%, 0 100%, 0 var(--sm-space-5));
-}
-
-.workingSection .sectionHeading {
-  border-bottom: 0.5px solid var(--sm-line-strong);
 }
 
 .proofSection {
@@ -399,24 +408,43 @@
   border-top: var(--sm-space-2) solid var(--sm-line-strong);
 }
 
-.boundarySection .unavailablePanel {
-  padding: var(--sm-space-8);
-  background: var(--sm-surface-sheet);
-  border-top-color: var(--sm-accent-touch);
-}
-
 .sectionHeading {
   display: grid;
-  grid-template-columns: minmax(0, 0.4fr) minmax(0, 1.3fr) minmax(0, 2fr);
-  align-items: baseline;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: var(--sm-space-8);
-  padding-bottom: var(--sm-space-7);
+  padding-bottom: var(--sm-space-8);
 }
 
+/* 22em holds about 15 words on two lines of the display face. Balanced,
+   so the two lines come out near the same length rather than a full line
+   over a short one (Storm, 24 October 2026). */
+.sectionHeading h2 {
+  max-width: 22em;
+  font-size: var(--sm-font-size-figure);
+  line-height: 1.06;
+  text-wrap: balance;
+}
+
+/* The quieter clause sits well below the statement (Storm, 24 October
+   2026: the two read at almost one contrast). Display-size text only, so
+   it holds the 3:1 large-text floor, not 4.5:1: 3.28 on the light ground
+   and 4.39 on the dark (foundations sections 5 and 10). */
+.sectionHeading h2 span {
+  color: color-mix(in srgb, var(--sm-text-tertiary) 75%, var(--sm-surface-ground));
+}
+
+/* A place mark that sits heavy and almost unseen at the right end: in a
+   rule's tone, not a text tone, because it is not read, and in the sans,
+   against the title's serif (Storm, 24 October 2026). */
 .sectionHeading > span {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
+  color: var(--sm-line-rule);
+  font-family: var(--sm-font-family-ui);
+  font-size: var(--sm-font-size-display-l);
+  font-weight: var(--sm-font-weight-bold);
   font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: var(--sm-font-tracking-display);
+  line-height: 0.8;
 }
 
 .sectionHeading h2,
@@ -429,11 +457,6 @@
   letter-spacing: var(--sm-font-tracking-display);
 }
 
-.sectionHeading h2 {
-  font-size: var(--sm-font-size-figure);
-}
-
-.sectionHeading p,
 .storyHero p,
 .chapter p,
 .accessPanel p,
@@ -554,7 +577,6 @@
   border-top: 0.5px solid var(--sm-line-strong);
 }
 
-.fragmentGrid,
 .comparison,
 .chapterGrid,
 .accessGrid {
@@ -578,23 +600,7 @@
   border-bottom: 0.5px solid var(--sm-line-rule);
 }
 
-.fragmentPlate {
-  display: grid;
-  gap: var(--sm-space-7);
-  padding: var(--sm-space-8);
-  background: var(--sm-surface-sheet);
-  clip-path: polygon(0 0, calc(100% - var(--sm-space-5)) 0, 100% var(--sm-space-5), 100% 100%, 0 100%);
-}
-
-.fragmentIdentity {
-  display: grid;
-  gap: var(--sm-space-4);
-}
-
-.fragmentIdentity h3,
-.comparison article h3,
-.unavailablePanel h3,
-.loopStep h3 {
+.comparison article h3 {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title);
@@ -602,10 +608,7 @@
   letter-spacing: var(--sm-font-tracking-title);
 }
 
-.fragmentIdentity p,
-.comparison article p,
-.unavailablePanel p,
-.loopStep p {
+.comparison article p {
   color: var(--sm-text-secondary);
   line-height: 1.6;
 }
@@ -625,54 +628,6 @@
 .comparison article + article {
   padding-left: var(--sm-space-8);
   border-left: 0.5px solid var(--sm-line-rule);
-}
-
-.unavailablePanel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-  gap: var(--sm-space-8);
-  align-items: start;
-  padding: var(--sm-space-8) 0;
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.unavailablePanel > div {
-  display: grid;
-  gap: var(--sm-space-5);
-}
-
-.loop {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.loopStep {
-  display: grid;
-  gap: var(--sm-space-4);
-  padding: var(--sm-space-7);
-  border-right: 0.5px solid var(--sm-line-rule);
-}
-
-.loopStep:nth-child(3n) {
-  border-right: 0;
-}
-
-.loopStep:nth-child(n + 4) {
-  border-top: 0.5px solid var(--sm-line-rule);
-}
-
-.loopStep > span {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.agentSection {
-  display: grid;
-  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
-  gap: var(--sm-space-8);
 }
 
 .storyHero,
@@ -939,21 +894,28 @@
 }
 
 @media (max-width: 900px) {
-  .hero,
   .accessPanel {
     grid-template-columns: 1fr;
   }
 
+  .hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto var(--hero-band);
+    --hero-band: 40vw;
+  }
+
+  .heroFigure {
+    grid-row: 2;
+    grid-column: 1;
+    margin-bottom: calc(var(--hero-band) * -0.55);
+  }
+
+  .heroDiscs {
+    grid-row: 3;
+  }
+
   .accessThreshold {
     display: none;
-  }
-
-  .hero::after {
-    display: none;
-  }
-
-  .agentSection {
-    grid-template-columns: 1fr;
   }
 
   .claimGrid {
@@ -967,9 +929,12 @@
   }
 
   .hero {
-    min-height: 0;
     margin-top: var(--sm-space-5);
-    padding: var(--sm-space-8) var(--sm-space-6);
+    padding-top: var(--sm-space-8);
+  }
+
+  .heroCopy {
+    padding-left: 0;
   }
 
   .heroCopy h1 {
@@ -980,16 +945,16 @@
     margin-top: var(--sm-space-12);
   }
 
-  .incidentSection,
-  .comparisonSection,
-  .boundarySection .unavailablePanel {
+  .section.incidentSection {
+    margin-top: -8vw;
+  }
+
+  .incidentSection {
     padding: var(--sm-space-6);
   }
 
-  .sectionHeading,
   .incidentHeader,
-  .incidentBoundary,
-  .unavailablePanel {
+  .incidentBoundary {
     grid-template-columns: 1fr;
   }
 
@@ -997,12 +962,12 @@
     gap: var(--sm-space-4);
   }
 
-  .instrumentSection .sectionHeading {
-    grid-template-columns: 1fr;
+  .sectionHeading h2 {
+    font-size: clamp(var(--sm-font-size-title), 7vw, var(--sm-font-size-figure));
   }
 
-  .sectionHeading h2 {
-    font-size: clamp(var(--sm-font-size-title), 12vw, var(--sm-font-size-figure));
+  .sectionHeading > span {
+    font-size: var(--sm-font-size-figure-l);
   }
 
   .incidentSource {
@@ -1019,11 +984,9 @@
   }
 
   .claimGrid,
-  .fragmentGrid,
   .comparison,
   .chapterGrid,
-  .accessGrid,
-  .loop {
+  .accessGrid {
     grid-template-columns: 1fr;
   }
 
@@ -1033,12 +996,4 @@
     border-left: 0;
   }
 
-  .loopStep {
-    border-right: 0;
-    border-bottom: 0.5px solid var(--sm-line-rule);
-  }
-
-  .loopStep:last-child {
-    border-bottom: 0;
-  }
 }

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Digest, RegisterFooter, Rule } from "@seametry/ui";
 import { publicIncident, publicIncidentAge } from "@/lib/public-evidence";
+import { FooterScene } from "./components/footer/footer-scene";
+import { ClosingWordmark } from "./components/footer/wordmark";
 import { HouseRail, type PublicDestination } from "./components/lens/house-rail";
 import styles from "./site.module.css";
 
@@ -16,70 +18,43 @@ export function PublicShell({
       <HouseRail current={current} />
       <main>{children}</main>
       <RegisterFooter
-        groups={[
-          {
-            title: "Product",
-            links: [
-              { label: "Docs", href: "/docs" },
-              { label: "How it works", href: "/docs/how-it-works" },
-              { label: "Thesis", href: "/thesis" },
-              { label: "Open the app", href: "/app" },
-              { label: "Allocation", href: "/app/allocation" },
-              { label: "Alloys", href: "/app/alloys" },
-            ],
-          },
-          {
-            title: "The house",
-            links: [
-              { label: "The Key", href: "/docs/the-key" },
-              { label: "The exit", href: "/docs/papers/the-exit" },
-              { label: "Pattern Register", href: "/patterns" },
-            ],
-          },
-          {
-            title: "Developers",
-            links: [
-              { label: "Source", href: "https://github.com/BeyndtechArc/Seametry" },
-              { label: "API contract", href: "https://github.com/BeyndtechArc/Seametry/blob/main/contracts/openapi/openapi.yaml" },
-            ],
-          },
-          {
-            title: "Access",
-            links: [
-              { label: "Sign in", href: "/sign-in" },
-              { label: "Terms", href: "/terms" },
-              { label: "Privacy policy", href: "/privacy-policy" },
-            ],
-          },
-          {
-            title: "Contact",
-            links: [
-              { label: "Send feedback", href: "/feedback" },
-              { label: "seametry@beyndtech.com", href: "mailto:seametry@beyndtech.com" },
-            ],
-          },
+        links={[
+          { label: "The Key", href: "/docs/the-key" },
+          { label: "The exit", href: "/docs/papers/the-exit" },
+          { label: "Source", href: "https://github.com/BeyndtechArc/Seametry" },
+          { label: "API contract", href: "https://github.com/BeyndtechArc/Seametry/blob/main/contracts/openapi/openapi.yaml" },
+          { label: "Send feedback", href: "/feedback" },
+          { label: "Terms", href: "/terms" },
+          { label: "Privacy policy", href: "/privacy-policy" },
         ]}
         accounts={[{ label: "Seametry on X", href: "https://x.com/seametry_", icon: "x-account" }]}
-        note="Seametry is operated by Beyndtech Arc from Port Harcourt. Public evidence requires no account."
-      />
+        note="Know what it's made of. Operated by Beyndtech Arc from Port Harcourt."
+        finale={<ClosingWordmark />}
+      >
+        <FooterScene />
+      </RegisterFooter>
     </div>
   );
 }
 
+/**
+ * One title that is its own answer, with no subtitle under it (Storm, 24
+ * October 2026): the statement, then its qualifying clause a step quieter,
+ * two lines at most. The number is a mark of place, not something to read.
+ */
 export function SectionHeading({
   index,
-  title,
-  question,
+  title: [statement, qualifier],
 }: {
   index: string;
-  title: string;
-  question: string;
+  title: readonly [string, string];
 }) {
   return (
     <header className={styles.sectionHeading}>
-      <span>{index}</span>
-      <h2>{title}</h2>
-      <p>{question}</p>
+      <h2>
+        {statement} <span>{qualifier}</span>
+      </h2>
+      <span aria-hidden="true">{index}</span>
     </header>
   );
 }

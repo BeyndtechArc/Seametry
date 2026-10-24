@@ -1,0 +1,649 @@
+/* The landing's sections below the claim grid (patterns.md, Landing). Layers
+   lift by surface tone and one top hairline, never shadow (foundations
+   section 7). */
+
+/* components.md, Photo frame. The duotone: the photograph's luminosity over
+   a ground of the house green half blended into the tertiary grey, so any
+   photograph takes a muted house hue (Storm, 24 October 2026: the full
+   touch hue read loud) and sits at the same weight in both modes. Only the
+   ground's hue and saturation reach the picture, so the mix behaves alike
+   on the light and the dark ground. */
+.photoGround {
+  display: block;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--sm-scale-touch-200) 50%, var(--sm-text-tertiary));
+}
+
+.photoGround img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(0.9);
+  mix-blend-mode: luminosity;
+}
+
+/* components.md, Opened Alloy. The orbit carries the composition; the opened
+   leg's card overlaps its photograph and receives the leader that runs level
+   out of the orbit's right edge, so the drawing and the card read as one
+   piece. */
+.opened {
+  display: grid;
+  gap: var(--sm-space-7);
+  margin: 0;
+}
+
+.openedStage {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center;
+}
+
+.orbit {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.ring,
+.ringInner,
+.ringOuter {
+  fill: none;
+  stroke: var(--sm-line-strong);
+  stroke-width: 0.75;
+}
+
+.ringInner {
+  stroke: var(--sm-line-rule);
+}
+
+.ringOuter {
+  stroke: var(--sm-line-rule);
+  stroke-dasharray: 1 6;
+}
+
+.tileLabel,
+.stepTileLabel {
+  fill: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: 22px;
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.stepTileLabel {
+  font-size: 15px;
+}
+
+/* A knockout in the ground's tone, so rules passing behind a label stop
+   short of its letters instead of striking through them. */
+.tileLabel {
+  paint-order: stroke;
+  stroke: var(--sm-surface-ground);
+  stroke-width: 8px;
+  stroke-linejoin: round;
+}
+
+.coinSymbol {
+  fill: var(--sm-text-primary);
+  font-family: var(--sm-font-family-ui);
+  font-size: 15px;
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.coinUnits {
+  fill: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.leader {
+  fill: var(--sm-text-primary);
+  stroke: var(--sm-text-primary);
+  stroke-width: 0.75;
+}
+
+/* A coin is a button: tap it to open its leg. Its ring answers hover and
+   focus in the action green, as every touchable thing does. */
+.orbitCoin {
+  cursor: pointer;
+  outline: none;
+}
+
+.orbitHit {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 1.5;
+  transition: stroke var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+}
+
+@media (hover: hover) {
+  .orbitCoin:hover .orbitHit {
+    stroke: var(--sm-accent-touch);
+  }
+}
+
+.orbitCoin:focus-visible .orbitHit {
+  stroke: var(--sm-accent-provenance);
+  stroke-width: 2;
+}
+
+/* The orbit's labels stay hidden for the whole turn, so none is drawn
+   mid-orbit; the card's facts fade out only briefly and come back, for the
+   leg now opening, while the ring still turns. */
+.orbitLabel,
+.openedBody {
+  transition: opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+}
+
+[data-turning] .orbitLabel,
+[data-fading] .openedBody {
+  opacity: 0;
+}
+
+/* One object at the end of the leader: the leg's photograph as a strip
+   across the card's top, its facts beneath, the card centred on the line. */
+.openedCard {
+  display: grid;
+  overflow: hidden;
+  border: 0.5px solid var(--sm-line-rule);
+  border-top: 0.5px solid var(--sm-line-strong);
+  background: var(--sm-surface-raised);
+}
+
+/* The strip holds every leg's photograph, stacked; the shown one crossfades in. */
+.openedPhoto {
+  position: relative;
+  aspect-ratio: 3 / 1;
+}
+
+.openedPhoto img {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--sm-motion-duration-sheet) var(--sm-motion-easing-standard);
+}
+
+.openedPhoto img[data-shown] {
+  opacity: 1;
+}
+
+.openedBody {
+  display: grid;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-6);
+}
+
+.openedCard header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-4);
+}
+
+.openedCard header div {
+  display: grid;
+  gap: var(--sm-space-1);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.openedCard header b {
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-lead);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.openedLabel {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-micro);
+}
+
+/* Each power a square registration mark and a word, as the plates mark a
+   recorded fact, two to a row so the card keeps one width for every leg. */
+.powers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sm-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.powers li {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+  padding: var(--sm-space-3) var(--sm-space-4);
+  border: 0.5px solid var(--sm-line-strong);
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+}
+
+.powers li::before {
+  content: "";
+  flex: none;
+  width: var(--sm-space-2);
+  height: var(--sm-space-2);
+  background: var(--sm-text-primary);
+}
+
+/* components.md, Strike steps. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sm-space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps > li {
+  display: grid;
+  align-content: start;
+  gap: var(--sm-space-3);
+  padding-bottom: var(--sm-space-5);
+}
+
+.stepDiagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--sm-space-5);
+  padding: var(--sm-space-6) var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-strong);
+  background: var(--sm-surface-sheet);
+}
+
+.stepIndex {
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+}
+
+.steps h3 {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.steps > li > p {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.6;
+}
+
+.stem {
+  stroke: var(--sm-text-primary);
+  stroke-width: 1.2;
+}
+
+.mergePoint {
+  fill: var(--sm-text-primary);
+}
+
+.gate line {
+  stroke: var(--sm-text-primary);
+  stroke-width: 1.5;
+}
+
+.claimBox {
+  fill: none;
+  stroke: var(--sm-text-primary);
+  stroke-width: 0.75;
+  stroke-dasharray: 3 2.5;
+}
+
+.claimLabel {
+  fill: var(--sm-text-primary);
+  font-family: var(--sm-font-family-digest);
+  font-size: 11px;
+}
+
+.stepsNote,
+.basketsNote {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sm-space-4) var(--sm-space-8);
+  margin-top: var(--sm-space-7);
+  padding-top: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.6;
+}
+
+.stepsNote > span,
+.basketsNote > span {
+  max-width: var(--sm-size-readable);
+}
+
+/* components.md, Basket card. The plate sits across the photograph's lower
+   edge, half on it and half on the card, so the two read as one object. */
+.baskets {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sm-space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.basketCard {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: var(--sm-space-5);
+  height: 100%;
+  padding-bottom: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-strong);
+  background: var(--sm-surface-sheet);
+  color: inherit;
+  text-decoration: none;
+  transition: background var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+}
+
+.basketCard:hover,
+.basketCard:focus-visible {
+  background: var(--sm-surface-raised);
+}
+
+.basketCard:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}
+
+.basketCover {
+  position: relative;
+  display: block;
+  margin-bottom: var(--sm-space-8);
+}
+
+.basketCover .photoGround {
+  aspect-ratio: 21 / 9;
+}
+
+.basketCover img {
+  transition: transform var(--sm-motion-duration-sheet) var(--sm-motion-easing-standard);
+}
+
+.basketCard:hover .basketCover img,
+.basketCard:focus-visible .basketCover img {
+  transform: scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .basketCover img,
+  .orbitLabel,
+  .openedBody,
+  .openedPhoto img {
+    transition: none;
+  }
+}
+
+.basketCover > span:last-child {
+  position: absolute;
+  left: var(--sm-space-5);
+  bottom: calc(var(--sm-space-11) / -2);
+  outline: var(--sm-space-2) solid var(--sm-surface-sheet);
+}
+
+.basketCard:hover .basketCover > span:last-child,
+.basketCard:focus-visible .basketCover > span:last-child {
+  outline-color: var(--sm-surface-raised);
+}
+
+.basketText {
+  display: grid;
+  gap: var(--sm-space-2);
+  padding: 0 var(--sm-space-5);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.basketText b {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+/* The code at one end, the count of stocks at the other. */
+.basketCode {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sm-space-4);
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+}
+
+/* The tray runs the card's width; the marks keep their size at its start. */
+.basketStack {
+  display: flex;
+  align-self: end;
+  margin: 0 var(--sm-space-5);
+  padding: var(--sm-space-2) var(--sm-space-3);
+  background: var(--sm-surface-tray);
+}
+
+.basketStack > * {
+  flex: none;
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
+  border-radius: 50%;
+  outline: 2px solid var(--sm-surface-tray);
+}
+
+.basketStack > * + * {
+  margin-left: calc(var(--sm-space-3) * -1);
+}
+
+/* components.md, Anchor chain. Square nodes on one rule; the step not built
+   is an empty dashed node on a dashed rule. */
+.chain {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  margin: var(--sm-space-10) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chain li {
+  position: relative;
+  display: grid;
+  gap: var(--sm-space-2);
+  padding-top: var(--sm-space-8);
+  padding-right: var(--sm-space-5);
+}
+
+.chain li::before {
+  content: "";
+  position: absolute;
+  top: var(--sm-space-3);
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--sm-text-primary);
+}
+
+.chain li[data-unbuilt]::before {
+  border-top-style: dashed;
+  border-top-color: var(--sm-line-strong);
+}
+
+.chainNode {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+  margin-top: calc(var(--sm-space-3) - var(--sm-space-5) / 2);
+  background: var(--sm-text-primary);
+}
+
+.chain li[data-unbuilt] .chainNode {
+  border: 1px dashed var(--sm-text-primary);
+  background: var(--sm-surface-ground);
+}
+
+.chain b {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-regular);
+}
+
+.chain li > span:last-child {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+/* components.md, Question list. */
+.questions {
+  margin: 0;
+  padding: 0;
+  border-top: 0.5px solid var(--sm-line-strong);
+  list-style: none;
+}
+
+.questions li {
+  border-bottom: 0.5px solid var(--sm-line-rule);
+}
+
+.questions summary {
+  display: grid;
+  grid-template-columns: var(--sm-space-10) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-5);
+  min-height: var(--sm-size-target);
+  padding: var(--sm-space-6) 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  cursor: pointer;
+  list-style: none;
+}
+
+.questions summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A plus drawn from two rules, the vertical one dropping when open. */
+.toggle {
+  position: relative;
+  flex: none;
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+}
+
+.toggle::before,
+.toggle::after {
+  content: "";
+  position: absolute;
+  background: var(--sm-text-primary);
+}
+
+.toggle::before {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+}
+
+.toggle::after {
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+}
+
+.questions details[open] .toggle::after {
+  display: none;
+}
+
+.questions summary:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
+}
+
+.questionIndex {
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+}
+
+.questions details > div {
+  display: grid;
+  margin-left: calc(var(--sm-space-10) + var(--sm-space-5));
+  justify-items: start;
+  gap: var(--sm-space-5);
+  max-width: var(--sm-size-readable);
+  padding-bottom: var(--sm-space-7);
+  color: var(--sm-text-secondary);
+  line-height: 1.65;
+}
+
+/* The one change from a plain accordion: an open answer leads with its
+   first paragraph in the display face, so the answer reads as an answer
+   and not as more small print, and its row closes on a heavier rule. */
+.questions details > div p:first-child {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  line-height: 1.45;
+}
+
+.questions li:has(details[open]) {
+  border-bottom: 1px solid var(--sm-text-primary);
+}
+
+@media (max-width: 1050px) {
+  .baskets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Narrower, the opened leg moves under its orbit and the leader, which
+   pointed at it across, is dropped. */
+@media (max-width: 900px) {
+  .openedStage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sm-space-7);
+  }
+
+  .leader {
+    display: none;
+  }
+
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chain {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--sm-space-7);
+  }
+}
+
+@media (max-width: 700px) {
+  .baskets {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+
+  .openedCard header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .openedCard header > :last-child {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+}

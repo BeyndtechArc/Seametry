@@ -36,32 +36,34 @@ Banned sections: logo marquee (until real integrations exist), testimonial walls
 
 ```
 +---------------------------------------------------------------+
-| Seametry            Catalogue  Verify  Glossary  API   [Key]  |
+| Seametry           [ Home | Docs | Thesis ]    mode  Open app |
 +---------------------------------------------------------------+
-| Know what it's made of.                                       |
-| One sentence: what Seametry is.                               |
-|                                                               |
-| [ REPLAY: UNHx, 12 September 2026 ------------------------- ] |
-| [ corporate action | issuer halt | oracles | executable route]|
-| scrub; events link to evidence                                |
+| Open AP ETFs                    |  Hero instrument: the Hall  |
+| One sentence: what Seametry is. |  as an assay line, toured   |
+| Open app   Read mechanism       |  from four camera stations  |
+|            ( discs, breaking into fragments, behind )         |
 +---------------------------------------------------------------+
-| Claim grid: keyless / graded / sealed / survives issuers      |
+| Incident ledger: a melt survives the freeze (over the discs)  |
 +---------------------------------------------------------------+
-| Living fragment: a lot entry with provenance and condition    |
+| 01 Claim grid: the four mechanism plates                      |
 +---------------------------------------------------------------+
-| Living fragment: live assay feed                              |
+| 02 Opened Alloy: one share's orbit of legs, one leg opened    |
 +---------------------------------------------------------------+
-| Ritual: verify a hallmark                                     |
+| 03 Strike steps: Strike, Melt, a frozen leg's Claim           |
 +---------------------------------------------------------------+
-| The loop                                                      |
+| 04 Basket cards: baskets a wallet can buy today               |
 +---------------------------------------------------------------+
-| Proof strip          | Agent panel                            |
+| 05 Proof strip and the anchor chain                           |
 +---------------------------------------------------------------+
-| Register footer                                               |
+| 06 Question list: four short questions, from How it works     |
++---------------------------------------------------------------+
+| Register footer: the Hall bench, one quiet line of links      |
+| Closing wordmark: "Seametry" across the window, discs within, |
+| and one short line under it                                   |
 +---------------------------------------------------------------+
 ```
 
-The hero's first screen answers one question: what goes wrong without Seametry. The replay shows it before a word is read. Halftone texture sits behind the replay only.
+The hero's first screen answers one question: what is an open-AP ETF, and what happens to a holder's basket when an issuer uses its powers. The instrument shows it before a word is read, and the incident ledger proves it on the next scroll (Storm, 24 October 2026, replacing the replay landing). The loop, the agent panel and the comparison with a bundle live in the docs; the Strike steps keep the comparison as one note.
 
 ### Lot (constituent)
 
@@ -153,3 +155,4 @@ Held legs, each with the issuer action that holds it and the time it began. Noti
 6. **Empty is an invitation.** "No hallmarks yet. Your first trade produces one." Never "Nothing here".
 7. **Density goes in tables, air goes around them.** A catalogue page can be dense; its margins cannot.
 8. **Mobile first for the app, content first for the Explorer.** The Explorer is read before it is used.
+9. **A section heading is its own answer.** One title of 8 to 20 words, two lines at most and balanced so the lines come out near one length: the statement in `text.primary`, its qualifying clause after it in `text.tertiary`, left aligned, no subtitle. The section number sits at the right end, heavy and in `line.rule`, a mark of place that is not read (Storm, 24 October 2026). The question the section answers is named in its build note.

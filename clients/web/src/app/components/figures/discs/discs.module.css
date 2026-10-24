@@ -1,0 +1,44 @@
+/* The landing's discs (foundations section 7): the house green blended into
+   the page's ground, not steps of the touch scale. Storm's mockup measures
+   that way: solving each disc's colour as touch-500 mixed into its light
+   grey ground, the green's share came out 0 to 20% by channel for the
+   outer disc, 30 to 58% for the middle and 75 to 91% for the inner (24
+   October 2026); 15, 45 and 80 sit inside those ranges. The scale's own
+   light steps (touch-800 to 600) were tried first and read as saturated
+   lime beside the ground. Blending into the ground keeps the same
+   relationship in dark mode, where the ground is dark. */
+.field {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 50vw);
+  width: 100vw;
+  pointer-events: none;
+}
+
+/* The field rises a little faster than the page it sits in, about 13% over
+   the first 120vh of scroll (Storm, 24 October 2026). A scroll timeline
+   runs on the compositor, so scrolling costs no script; a browser without
+   one, or a reader who asks for less motion, sees the field still. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .field {
+      animation: rise linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 120vh;
+    }
+  }
+}
+
+@keyframes rise {
+  to { translate: 0 -16vh; }
+}
+
+.field svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.tone2 { fill: color-mix(in srgb, var(--sm-scale-touch-500) 15%, var(--sm-surface-ground)); }
+.tone1 { fill: color-mix(in srgb, var(--sm-scale-touch-500) 45%, var(--sm-surface-ground)); }
+.tone0 { fill: color-mix(in srgb, var(--sm-scale-touch-500) 80%, var(--sm-surface-ground)); }

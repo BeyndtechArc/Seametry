@@ -1,4 +1,11 @@
-import styles from "./baskets.module.css";
+"use client";
+
+// A client component so a server page sends the plate as its code and
+// members, not as its engraving: rendered on the server, each plate was sent
+// twice, in the HTML and again in the React payload, and the landing with
+// four plates weighed 475,087 bytes against 388,775 this way (production
+// build, 24 October 2026).
+import styles from "./basket-plate.module.css";
 
 export type PlateMember = { symbol: string; admitted: boolean };
 

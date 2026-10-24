@@ -32,8 +32,7 @@ export default async function ThesisPage() {
       <section className={styles.section}>
         <SectionHeading
           index="01"
-          title="The AP function does not disappear."
-          question="What changes when settlement machinery becomes software?"
+          title={["The AP function does not disappear", "when settlement machinery becomes software."]}
         />
         <div className={styles.chapterGrid}>
           <article className={styles.chapter}>
@@ -60,8 +59,7 @@ export default async function ThesisPage() {
       <section className={styles.section}>
         <SectionHeading
           index="02"
-          title="The Hall knows quantities, not prices."
-          question="Why can Strike and Melt keep working without an oracle?"
+          title={["The Hall knows quantities, not prices,", "so Strike and Melt keep working without an oracle."]}
         />
         <div className={styles.chapterGrid}>
           <article className={styles.chapter}>
@@ -91,8 +89,7 @@ export default async function ThesisPage() {
       <section className={styles.section}>
         <SectionHeading
           index="03"
-          title="Price and value are separate observations."
-          question="Who sets the Alloy price, and where does NAV come from?"
+          title={["Price and value are separate observations:", "who sets the Alloy price, and where NAV comes from."]}
         />
         <div className={styles.comparison}>
           <article>
@@ -123,8 +120,7 @@ export default async function ThesisPage() {
       <section className={styles.section}>
         <SectionHeading
           index="04"
-          title="NAV is not an executable promise."
-          question="Why can the number on a wallet differ from what a trader can actually realize?"
+          title={["NAV is not an executable promise.", "A wallet's number can differ from what a trader realizes."]}
         />
         <div className={styles.chapterGrid}>
           <article className={styles.chapter}>
@@ -151,8 +147,7 @@ export default async function ThesisPage() {
       <section className={styles.section}>
         <SectionHeading
           index="05"
-          title="Before secondary liquidity, there is no real Alloy market price."
-          question="What happens before an Alloy share pool or order book exists?"
+          title={["Before secondary liquidity, there is no real Alloy market price,", "until a share pool or order book exists."]}
         />
         <div className={styles.chapterGrid}>
           <article className={styles.chapter}>
@@ -180,8 +175,7 @@ export default async function ThesisPage() {
       <section className={styles.section}>
         <SectionHeading
           index="06"
-          title="A Claim preserves an entitlement when delivery cannot finish."
-          question="What exactly happens during a Melt?"
+          title={["A Claim preserves an entitlement", "when a Melt cannot finish its delivery."]}
         />
         <div className={styles.paperText}>
           <p><strong>1.</strong> The Hall syncs the Alloy&apos;s constituent accounting.</p>
@@ -199,8 +193,7 @@ export default async function ThesisPage() {
       <section className={styles.section}>
         <SectionHeading
           index="07"
-          title="The Terminal exists to make the open AP function practical."
-          question="What does an arbitrageur actually need to know before acting?"
+          title={["The Terminal exists to make the open AP function practical:", "what an arbitrageur needs to know before acting."]}
         />
         <div className={styles.chapterGrid}>
           <article className={styles.chapter}>
@@ -225,8 +218,7 @@ export default async function ThesisPage() {
       <section className={styles.section}>
         <SectionHeading
           index="08"
-          title="The thesis remains falsifiable."
-          question="What still has to be proven?"
+          title={["The thesis remains falsifiable,", "and this is what still has to be proven."]}
         />
         <div className={styles.chapterGrid}>
           <article className={styles.chapter}>

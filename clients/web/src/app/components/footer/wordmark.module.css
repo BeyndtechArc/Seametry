@@ -1,0 +1,61 @@
+/* components.md, Closing wordmark. Across the whole window, the last thing
+   on the page; the word's descender runs off its foot. */
+.wordmark {
+  position: relative;
+  left: calc(50% - 50vw);
+  width: 100vw;
+  aspect-ratio: 1600 / 420;
+  /* clip, not hidden: hidden would make this box a scroll container, and the
+     discs' view timeline would then watch a box that never scrolls. */
+  overflow: clip;
+}
+
+.rise,
+.stencil {
+  position: absolute;
+  inset: 0;
+}
+
+.rise svg,
+.stencil {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.letters {
+  font-family: var(--sm-font-family-display);
+  font-size: 360px;
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-display);
+}
+
+.ground {
+  fill: var(--sm-surface-ground);
+}
+
+.outline {
+  fill: none;
+  stroke: var(--sm-line-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The discs rise into the letters as the foot of the page comes into view,
+   on a view timeline the compositor runs, so scrolling costs no script. A
+   browser without view timelines, or a reader who asks for less motion,
+   sees them risen. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .rise {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+
+@keyframes rise {
+  from { translate: 0 60%; }
+  to { translate: 0 0; }
+}
