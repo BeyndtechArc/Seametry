@@ -536,49 +536,55 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 **Rules:** the static art is built on the server from `clients/web/src/lib/iso`; the client only writes attributes (`transform`, `data-hidden`, `data-held`), never style. Every refusal and outcome the motion shows is the Hall's real behaviour, cited in code to `HALL.md`. One hero instrument per surface.
 **Camera tour (Storm, 23 October 2026):** the landing's instrument is the Hall as an assay line, seen from a few camera stations in turn instead of one fixed view, one composition at a time: the camera holds while that station's part of the story plays, then turns and reframes to the next, the turn itself visible, every line kept. The story is the one above, told across the stations: the Formula (the vault and its meters); the Strike (one unit of each constituent from the wallet through the open gates into the vault, the ram's stroke, a share onto the holder's stack); issuer powers (a gate lowered and padlocked); the Melt (the share returned, a Claim on every leg, every open leg out to the wallet, the frozen leg's unit halted at its gate and its Claim held); and, leaving the Melt, the freeze lifted and the held Claim delivered, so the loop ends where it began. It shows one unit per leg and no quantity, so it needs no arithmetic. At a station, up to two callouts name what it shows in the register's words, each appearing when the event it names happens: a terminal dot on its part, a rule leaving at the drawing's own 30 degrees and running level to a cut-corner plate docked against the figure's side, so no plate covers the machine. The client redraws only what the camera or a part moved; order comes from each pair's separating plane over its parts' whole travel, so the machine is built of upright prisms. A device too slow to draw every frame skips frames rather than stopping, so the turn stays visible. Reduced motion shows the Melt delivered around the frozen leg, still, with its callouts; no script shows the first station. The tour supersedes "nothing beside it" for this instrument only.
 
-### Product shot
-**Answers:** what does Seametry show about one real Alloy and one of its constituents, before I open the app?
-**Anatomy:** layered fragments of the app, cropped by the section like a window seen through a door: at the back, an Alloy record (artwork, name, symbol, then what one share holds, leg by leg with its logo, units per share and issuer); over its right edge, a Condition report card for one leg (logo, symbol, issuer, Grade, the issuer's prerogatives as sentences, the policy's Stamp and version, the capture slot); in front, a Photo frame of that leg's underlying business; at the top left, a founding chip with the founding transaction's Digest.
-**Identity:** real components in the app's own grammar, not drawings of screens. Layers lift by tone and the single top hairline, never shadow. The back fragment is cut by the section's edges, the cards overlap it and each other, so it reads as a working desk, not a gallery of cards.
-**States:** default; on a phone the layers stack in reading order and nothing is cropped; a missing logo draws the lettered Lot mark; the founding record or admissions snapshot missing removes the shot rather than drawing an empty one.
-**Data:** the founding record (`shared/evidence/alloys/index.json`, devnet), the admissions snapshot through `allocationOffer()`, so the card states a lot exactly as the Allocation does. Units per share are integer atoms at the leg's decimals.
-**Rules:** no live figure (supply, Claims, price) unless read live with its age; every fragment names its source and capture. The photo is illustrative and says so.
+### Opened Alloy
+**Answers:** what does one share of an Alloy hold, and what can each holding's issuer still do?
+**Anatomy:** an illustration, not a screen. At the centre the share, the Alloy's artwork on a tile with two frames stepping out behind it; around it an orbit of its constituents as coins carrying their issuers' logos, each joined to the share by a dotted rule and labelled with its symbol and units per share. One leg, set level with the share, runs a leader out of the orbit to its opened card: logo, symbol, Grade, the powers its issuer keeps as one-word chips, and the policy's Stamp. A duotone Photo frame of that leg's business sits behind the card. One caption under the figure carries every source.
+**Identity:** the drawn vocabulary the landing shares (coin, tile, dotted flow), hairlines and surface tones only; layers lift by tone and overlap, never shadow. Few words: symbols, units and chips, with the sentences behind the chips in their titles.
+**States:** default; narrower than 900px the card moves under the orbit and the leader is dropped; a missing logo draws the coin's letters; a missing founding record or admission removes the figure rather than drawing it empty.
+**Data:** the founding record (`shared/evidence/alloys/index.json`, devnet), decimals from the admissions snapshot, the leg through `allocationOffer()`. A chip names a power by the policy's reason code; a code this page does not know shows as the code itself.
+**Rules:** no live figure; every number exact at its decimals; the orbit's accessible name states the whole Formula in words. No layer covers another's words.
 
 ### Photo frame
 **Answers:** what kind of business sits under this instrument or theme?
-**Anatomy:** a cropped photograph at a fixed ratio inside a ruled frame; under it, one caption line (what it shows, "Illustrative") and the credit (photographer, Unsplash).
-**Identity:** the house duotone: the photograph's luminosity over a touch-scale ground, so every photo sits in the palette in both modes. Square corners, the frame's hairline, no shadow or rounded card.
-**States:** default; image unavailable keeps the frame and caption with the ground showing.
-**Data:** an entry of `clients/web/src/lib/photos.ts`: file, alt text, photographer, source page, licence.
+**Anatomy:** a cropped photograph at a fixed ratio in the house duotone; its credit (photographer, Unsplash) and the word illustrative stated where it is shown, in the figure's caption or the card's credit line.
+**Identity:** the photograph's luminosity over a touch-scale ground, so every photo sits in the palette in both modes. Square corners, no shadow or rounded card.
+**States:** default; image unavailable shows the ground.
+**Data:** an entry of `clients/web/src/lib/photos.ts`: file, alt text, photographer, source page.
 **Rules:** landing only (foundations section 9). Never a person presented as a user or holder, a screen, or a named company's own premises.
 
 ### Basket card
 **Answers:** which published basket could my wallet buy today, and what does it hold?
-**Anatomy:** a Photo frame of the basket's theme with the Basket plate set over its lower left edge; code and name; category; the round Lot mark stack and the constituent count; the admission line; the whole card one route link to the basket's record.
-**Identity:** the Basket register's facts in a card, for the landing only. The plate overlaps the photo so the two read as one object.
-**States:** default; hover or focus steps the surface tone; a basket not wholly admitted is not featured.
-**Data:** `allocationIndexes`, admission from `allocationOffer()` with its policy version and snapshot date stated once under the row.
-**Rules:** no price, return, chart or performance. The count of all published baskets is computed, never written.
+**Anatomy:** a Photo frame of the basket's theme with the Basket plate set across its lower left edge; code, name and category; the round Lot mark stack with the count and admission; the photograph's credit; the whole card one route link to the basket's record.
+**Identity:** the Basket register's facts in a card, for the landing only. The plate overlaps the photo so the two read as one object. Hover or focus steps the surface tone and eases the photograph a few percent closer, and reduced motion keeps it still.
+**States:** default; hover or focus; a basket not wholly admitted is not featured.
+**Data:** `allocationIndexes`, admission from the admissions snapshot, with its policy version and snapshot date stated once under the row.
+**Rules:** no price, return, chart or performance. The count of buyable baskets is computed, never written.
 
 ### Strike steps
 **Answers:** what happens when I Strike a share, Melt it, and an issuer freezes one leg?
-**Anatomy:** three ruled columns, each a step number, a title, one sentence and a small fragment of the record it produces: the Formula going in, the legs coming out, the frozen leg's Claim. Under them, one ruled note on why a bundle is not this.
-**Identity:** fragments use the same rows as the product shot, so the steps read as the same Alloy moving.
+**Anatomy:** three panels, each a small drawing in the Opened Alloy's vocabulary over a number, a title and one line: the Formula's coins flowing into the share; the share flowing out to its coins; the same with one leg's flow stopped at a gate and its coin, faded, in a dashed Claim box. Every flow meets at one point before the share. One ruled note under them on why a bundle is not this.
+**Identity:** the same Alloy as the Opened Alloy, drawn moving, so the section continues the one above.
 **States:** default; narrow layouts stack the steps.
-**Data:** the founding record's legs and units per share; the Hall's rules as HALL.md states them.
-**Rules:** never imply a wallet without the constituents can Strike, or that a Claim is delivered stock.
+**Data:** the founding record's legs; the Hall's rules as HALL.md states them. Which leg is held is labelled illustrative.
+**Rules:** never imply a wallet without the constituents can Strike, or that a Claim is delivered stock. No hue on the held leg: red belongs to the hero instrument's drawing.
+
+### Anchor chain
+**Answers:** how far can a visitor verify a Hallmark today, and which step is not built?
+**Anatomy:** square nodes on one rule, each a step and its state: the Hallmark, published; the public digest and the Merkle path, recomputed in the visitor's browser; the root on chain, an empty dashed node on a dashed rule, not written yet. The Stamp under it says where the Explorer stops.
+**States:** default; narrow layouts set the nodes two to a row. When a root is anchored, the last node fills and the Stamp goes.
+**Rules:** the unbuilt step is shown, never omitted; no node claims more than the Explorer computes.
 
 ### Question list
 **Answers:** what do people ask before they trust this?
-**Anatomy:** a ruled list of disclosure rows, each a question in the reader's words that opens to its answer and a Quiet link to the full answer.
-**Identity:** native disclosure, one hairline per row, no cards or plus signs that spin.
+**Anatomy:** a ruled list of numbered disclosure rows, each a question in the reader's words that opens to its answer and a Quiet link to the full answer.
+**Identity:** native disclosure, one hairline per row, a plus drawn from two rules whose upright drops when open.
 **States:** closed; open; no script leaves every row working.
 **Data:** the how-it-works page's own sections, read from the docs source: each question is a heading there and its answer is that section's first paragraph, so the two never disagree.
 **Rules:** never write an answer that the owning page does not state.
 
 ### Closing band
 **Answers:** where do I go now?
-**Anatomy:** one display line and the hero's two actions, on the page's ground above the footer.
+**Anatomy:** one display line and the hero's two actions, beside the Opened Alloy's orbit drawn small and without words, so the page closes on the object it opened. On a phone the orbit is left out.
 **States:** default only.
 **Rules:** no new claim; the actions are the hero's.
 

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { ProofStrip, QuietLink, RouteAction, Stamp } from "@seametry/ui";
+import { ProofStrip, QuietLink, RouteAction } from "@seametry/ui";
 import { MechanismPlate } from "@seametry/ui/plates";
 import { Discs } from "./components/figures/discs/discs";
 import { HallLine } from "./components/figures/hall-line/figure";
+import { AnchorChain } from "./components/landing/anchor-chain";
 import { BasketCards } from "./components/landing/basket-cards";
 import { ClosingBand } from "./components/landing/closing-band";
-import { ProductShot } from "./components/landing/product-shot";
+import { OpenedAlloy } from "./components/landing/opened-alloy";
 import { QuestionList } from "./components/landing/question-list";
 import { StrikeSteps } from "./components/landing/strike-steps";
 import { IncidentLedger, PublicShell, SectionHeading } from "./public-shell";
@@ -61,7 +62,7 @@ export default async function Home() {
 
       <section className={styles.section}>
         <SectionHeading index="02" title={["One Alloy, opened to every leg", "and to what each leg's issuer can still do."]} />
-        <ProductShot />
+        <OpenedAlloy />
       </section>
 
       <section className={styles.section}>
@@ -75,20 +76,14 @@ export default async function Home() {
       </section>
 
       <section className={`${styles.section} ${styles.proofSection}`}>
-        <SectionHeading index="05" title={["Four public artifacts back this page.", "The on-chain anchor for Hallmarks is not built yet."]} />
+        <SectionHeading index="05" title={["Four public artifacts back this page.", "Hallmarks are not anchored on chain yet."]} />
         <ProofStrip items={[
           { label: "Hall program", value: "Devnet program", href: "https://explorer.solana.com/address/GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE?cluster=devnet" },
           { label: "Issuer-power demonstration", value: "Read the recorded run", href: "/docs/papers/the-exit" },
           { label: "Program authority", value: "Key still in hand", href: "/docs/the-key" },
           { label: "Implementation", value: "Read the source", href: "https://github.com/BeyndtechArc/Seametry" },
         ]} />
-        <div className={styles.unavailablePanel}>
-          <div>
-            <h3>The ritual is built. The anchor is not.</h3>
-            <Stamp kind="warn" reason="No batch root is written on chain yet." />
-          </div>
-          <p>The generated Explorer recomputes a Hallmark&apos;s public digest and Merkle path in the visitor&apos;s browser. Until a root is anchored, it stops before claiming an on-chain Seal.</p>
-        </div>
+        <AnchorChain />
       </section>
 
       <section className={styles.section}>

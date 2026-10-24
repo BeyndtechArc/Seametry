@@ -812,45 +812,53 @@ function units(atoms: string, decimals: number) {
   return `${padded.slice(0, -decimals)}.${padded.slice(-decimals)}`;
 }
 
-test("the product shot states the founded Alloy and its first leg from their records, and no layer covers another's words", async ({ page }) => {
+test("the opened Alloy draws the founded Alloy and its first leg from their records, and nothing covers its words", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const record = evidence("alloys/index.json").alloys[0];
   const admissions = evidence("admissions.json").instruments as { decimals: number; instrument: { mint: string; prerogatives: { sentence: string }[] } }[];
   const admission = (mint: string) => admissions.find((entry) => entry.instrument.mint === mint)!;
 
-  const shot = page.getByRole("article", { name: `${record.name}, from its founding record` });
-  for (const leg of record.legs) {
-    const row = shot.getByRole("row").filter({ hasText: leg.symbol });
-    await expect(row).toContainText(units(leg.atoms_per_share, admission(leg.real_mint).decimals));
-    await expect(row).toContainText(leg.issuer);
-  }
-  const first = record.legs[0];
-  const condition = page.getByRole("article", { name: `${first.symbol}, condition` });
-  await expect(condition.getByRole("listitem")).toHaveText(admission(first.real_mint).instrument.prerogatives.map((power) => power.sentence));
+  const holds = record.legs.map((leg: { symbol: string; real_mint: string; atoms_per_share: string }) => `${units(leg.atoms_per_share, admission(leg.real_mint).decimals)} ${leg.symbol}`).join(", ");
+  const orbit = page.getByRole("img", { name: `One ${record.symbol} share holds ${holds}.` });
+  await expect(orbit).toBeVisible();
+  for (const leg of record.legs) await expect(orbit).toContainText(units(leg.atoms_per_share, admission(leg.real_mint).decimals));
 
-  const layers = shot.locator("xpath=..").locator(":scope > *");
-  // Centred, so the house rail, which stays over the top of the page, covers none of it.
-  await layers.first().evaluate((element) => element.parentElement!.scrollIntoView({ block: "center" }));
-  const covered = await layers.evaluateAll((elements) => {
+  const first = record.legs[0];
+  const card = page.getByRole("article", { name: `${first.symbol}, opened` });
+  const powers = card.getByRole("listitem");
+  const sentences = admission(first.real_mint).instrument.prerogatives.map((power) => power.sentence);
+  await expect(powers).toHaveCount(sentences.length);
+  expect((await powers.evaluateAll((items) => items.map((item) => item.getAttribute("title")))).sort()).toEqual([...sentences].sort());
+
+  const figure = orbit.locator("xpath=ancestor::figure[1]");
+  await figure.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  const covered = await figure.evaluate((element) => {
     const found: string[] = [];
-    const shotElement = elements[0].parentElement!;
-    for (const layer of elements) {
-      const walker = document.createTreeWalker(layer, NodeFilter.SHOW_TEXT);
-      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-        if (!node.textContent?.trim()) continue;
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        for (const box of range.getClientRects()) {
-          if (box.width < 2 || box.bottom < 0 || box.top > innerHeight) continue;
-          const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
-          if (top && shotElement.contains(top) && !layer.contains(top)) found.push(node.textContent.trim().slice(0, 40));
-        }
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const owner = node.parentElement!;
+      if (!node.textContent?.trim() || owner.closest("[aria-hidden=true]")) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const box of range.getClientRects()) {
+        if (box.width < 2 || box.bottom < 0 || box.top > innerHeight) continue;
+        const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        if (top && element.contains(top) && top !== owner && !owner.contains(top) && !top.contains(owner)) found.push(node.textContent.trim().slice(0, 40));
       }
     }
     return found;
   });
   expect(covered).toEqual([]);
+});
+
+test("the anchor chain shows the Hallmark verified to its path and the root on chain not built", async ({ page }) => {
+  await page.goto("/");
+  const chain = page.getByRole("list", { name: "How a Hallmark is verified today" }).getByRole("listitem");
+  await expect(chain).toHaveCount(4);
+  await expect(chain.last()).toHaveAttribute("data-unbuilt", "");
+  await expect(chain.last()).toContainText("Not written yet");
+  await expect(chain.filter({ has: page.locator("[data-unbuilt]") })).toHaveCount(0);
 });
 
 test("the question list asks How it works' questions and answers with its first paragraphs", async ({ page }) => {
@@ -865,7 +873,7 @@ test("the question list asks How it works' questions and answers with its first 
 
   await page.goto("/");
   const list = page.locator("main details");
-  await expect(list.locator("summary")).toHaveText(sections.map((section) => section.question));
+  await expect(list.locator("summary > span:nth-child(2)")).toHaveText(sections.map((section) => section.question));
   const last = list.last();
   await last.locator("summary").click();
   await expect(last.locator("p")).toHaveText(sections.at(-1)!.answer);

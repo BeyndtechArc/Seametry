@@ -38,7 +38,7 @@ export function BasketCards() {
                     {/* eslint-disable-next-line @next/next/no-img-element -- next/image writes an inline style attribute, which this site's CSP refuses, and its transformations count against the hosting plan; the file is already sized. */}
                     <img src={cover.src} width={cover.width} height={cover.height} alt="" loading="lazy" decoding="async" />
                   </span>
-                  <BasketPlate code={basket.code} members={basket.members.map((member) => ({ symbol: member.symbol, admitted: true }))} size="header" />
+                  <BasketPlate code={basket.code} members={basket.members.map((member) => ({ symbol: member.symbol, admitted: true }))} />
                 </span>
                 <span className={styles.basketText}>
                   <span className={styles.basketCode}>{basket.code}</span>
@@ -49,7 +49,7 @@ export function BasketCards() {
                   <span className={styles.basketStack}>
                     {basket.members.map((member) => <LotMark key={member.symbol} symbol={member.symbol} src={offered.get(member.symbol)?.logo} />)}
                   </span>
-                  <span>All {basket.members.length} admitted</span>
+                  <span>{basket.members.length} stocks, all admitted</span>
                 </span>
                 <small className={styles.basketCredit}>Photo: {cover.photographer}, Unsplash</small>
               </Link>

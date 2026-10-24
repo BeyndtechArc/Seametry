@@ -20,21 +20,22 @@ Sections:    1. House rail: one bar across the content width, a step of the
              4. The recorded incident, its card starting over the disc band.
                 Answers: does a Melt survive an issuer's freeze?
              5. 01 Claim grid. Answers: what does the Hall make checkable?
-             6. 02 Product shot. Answers: what does Seametry show about one
-                real Alloy and one of its legs?
+             6. 02 Opened Alloy. Answers: what does one share hold, and what
+                can each holding's issuer still do?
              7. 03 Strike steps. Answers: what happens when I Strike, Melt,
                 and an issuer freezes a leg?
              8. 04 Basket cards. Answers: which baskets can a wallet buy
                 today, and what do they hold?
-             9. 05 Proof strip and the verification boundary. Answers: which
-                claims have a public artifact today, and what is not built?
+             9. 05 Proof strip and the anchor chain. Answers: which claims
+                have a public artifact today, and how far can a Hallmark be
+                verified?
              10. 06 Question list. Answers: what do people ask before they
                 trust this?
              11. Closing band. Answers: where do I go now?
 Components:  House rail, Hero instrument, Incident ledger, Mechanism plate,
-             Product shot, Photo frame, Basket card, Basket plate, Lot mark,
+             Opened Alloy, Photo frame, Basket card, Basket plate, Lot mark,
              Condition report facts, Grade, Stamp, Digest, Strike steps,
-             Proof strip, Question list, Closing band, RouteAction,
+             Proof strip, Anchor chain, Question list, Closing band, RouteAction,
              QuietLink. Section heading: patterns.md composition rule 9.
 Data:        Founding record of Stoic Crew (shared/evidence/alloys/index.json,
              Solana devnet, recorded 6 October 2026); the admissions
@@ -43,7 +44,7 @@ Data:        Founding record of Stoic Crew (shared/evidence/alloys/index.json,
              the docs source; photographs listed in src/lib/photos.ts. No
              live market figure is shown, so none needs a live age; every
              fragment names its record and capture.
-States:      instrument: as in its contract. Product shot and basket cards
+States:      instrument: as in its contract. Opened Alloy and basket cards
              read files compiled into the build, so they have no loading
              state; a missing record removes the fragment rather than
              drawing it empty, and a missing logo draws the lettered Lot
@@ -105,8 +106,18 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 decision of 24 October 2026, recorded in foundations section
                 9; five, under the Unsplash License, shown through the house
                 duotone and captioned as illustrative.
-             9. The product shot uses Stoic Crew because it is the one Alloy
+             9. The Opened Alloy uses Stoic Crew because it is the one Alloy
                 with a founding record, and AMZNx as the featured leg because
                 it is the first leg of that record. The featured baskets are
                 the first four of the published order, all wholly admitted
                 in the snapshot.
+             10. The new sections are illustrations, not screens (Storm, 24
+                October 2026: the layered fragment "is not an illustration
+                and it is too filled with information"). The opened Alloy,
+                the Strike steps and the close share one drawn vocabulary:
+                a coin per constituent carrying its logo, a tile per share
+                carrying the Alloy's artwork, dotted flows between them.
+                Words are kept to symbols, exact units and one-word power
+                chips whose sentences sit in their titles; every source is
+                in one caption. Short power names are keyed by the policy's
+                reason codes, and an unknown code shows as itself.

@@ -47,17 +47,17 @@ Banned sections: logo marquee (until real integrations exist), testimonial walls
 +---------------------------------------------------------------+
 | 01 Claim grid: the four mechanism plates                      |
 +---------------------------------------------------------------+
-| 02 Product shot: one real Alloy, one leg's condition, layered |
+| 02 Opened Alloy: one share's orbit of legs, one leg opened    |
 +---------------------------------------------------------------+
 | 03 Strike steps: Strike, Melt, a frozen leg's Claim           |
 +---------------------------------------------------------------+
 | 04 Basket cards: baskets a wallet can buy today               |
 +---------------------------------------------------------------+
-| 05 Proof strip and the verification boundary                  |
+| 05 Proof strip and the anchor chain                           |
 +---------------------------------------------------------------+
 | 06 Question list, from How it works                           |
 +---------------------------------------------------------------+
-| Closing band                                                  |
+| Closing band, with the orbit drawn small                      |
 +---------------------------------------------------------------+
 | Register footer                                               |
 +---------------------------------------------------------------+
@@ -155,4 +155,4 @@ Held legs, each with the issuer action that holds it and the time it began. Noti
 6. **Empty is an invitation.** "No hallmarks yet. Your first trade produces one." Never "Nothing here".
 7. **Density goes in tables, air goes around them.** A catalogue page can be dense; its margins cannot.
 8. **Mobile first for the app, content first for the Explorer.** The Explorer is read before it is used.
-9. **A section heading is its own answer.** One title of 8 to 20 words, two lines at most: the statement in `text.primary`, its qualifying clause after it in `text.tertiary`, left aligned, no subtitle. The section number sits at the right end, heavy and in `line.rule`, a mark of place that is not read (Storm, 24 October 2026). The question the section answers is named in its build note.
+9. **A section heading is its own answer.** One title of 8 to 20 words, two lines at most and balanced so the lines come out near one length: the statement in `text.primary`, its qualifying clause after it in `text.tertiary`, left aligned, no subtitle. The section number sits at the right end, heavy and in `line.rule`, a mark of place that is not read (Storm, 24 October 2026). The question the section answers is named in its build note.

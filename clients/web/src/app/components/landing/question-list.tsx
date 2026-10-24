@@ -18,11 +18,12 @@ export function QuestionList() {
 
   return (
     <ul className={styles.questions}>
-      {questions.map(({ heading, answer }) => (
+      {questions.map(({ heading, answer }, index) => (
         <li key={heading.id}>
           <details>
             <summary>
-              {heading.content}
+              <span className={styles.questionIndex}>{String(index + 1).padStart(2, "0")}</span>
+              <span>{heading.content}</span>
               <span className={styles.toggle} aria-hidden="true" />
             </summary>
             <div>

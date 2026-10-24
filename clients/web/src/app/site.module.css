@@ -405,13 +405,6 @@
   border-top: var(--sm-space-2) solid var(--sm-line-strong);
 }
 
-.proofSection .unavailablePanel {
-  margin-top: var(--sm-space-9);
-  padding: var(--sm-space-8);
-  background: var(--sm-surface-sheet);
-  border-top-color: var(--sm-accent-touch);
-}
-
 .sectionHeading {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -420,13 +413,14 @@
   padding-bottom: var(--sm-space-8);
 }
 
-/* 22em holds about 15 words on two lines of the display face; the
-   longest title in the register is 15 words (Storm, 24 October 2026). */
+/* 22em holds about 15 words on two lines of the display face. Balanced,
+   so the two lines come out near the same length rather than a full line
+   over a short one (Storm, 24 October 2026). */
 .sectionHeading h2 {
   max-width: 22em;
   font-size: var(--sm-font-size-figure);
   line-height: 1.06;
-  text-wrap: pretty;
+  text-wrap: balance;
 }
 
 .sectionHeading h2 span {
@@ -598,8 +592,7 @@
   border-bottom: 0.5px solid var(--sm-line-rule);
 }
 
-.comparison article h3,
-.unavailablePanel h3 {
+.comparison article h3 {
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-title);
@@ -607,8 +600,7 @@
   letter-spacing: var(--sm-font-tracking-title);
 }
 
-.comparison article p,
-.unavailablePanel p {
+.comparison article p {
   color: var(--sm-text-secondary);
   line-height: 1.6;
 }
@@ -628,21 +620,6 @@
 .comparison article + article {
   padding-left: var(--sm-space-8);
   border-left: 0.5px solid var(--sm-line-rule);
-}
-
-.unavailablePanel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-  gap: var(--sm-space-8);
-  align-items: start;
-  padding: var(--sm-space-8) 0;
-  border-top: 0.5px solid var(--sm-line-strong);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-}
-
-.unavailablePanel > div {
-  display: grid;
-  gap: var(--sm-space-5);
 }
 
 .storyHero,
@@ -964,14 +941,12 @@
     margin-top: -8vw;
   }
 
-  .incidentSection,
-  .proofSection .unavailablePanel {
+  .incidentSection {
     padding: var(--sm-space-6);
   }
 
   .incidentHeader,
-  .incidentBoundary,
-  .unavailablePanel {
+  .incidentBoundary {
     grid-template-columns: 1fr;
   }
 

@@ -5,12 +5,6 @@
 /* components.md, Photo frame. The duotone: the photograph's luminosity over
    a touch-scale ground, so any photograph takes the house hue and sits at
    the same weight in both modes. */
-.photo {
-  display: grid;
-  gap: var(--sm-space-3);
-  margin: 0;
-}
-
 .photoGround {
   display: block;
   overflow: hidden;
@@ -26,269 +20,257 @@
   mix-blend-mode: luminosity;
 }
 
-.photo figcaption {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--sm-space-1) var(--sm-space-4);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-micro);
-  line-height: 1.5;
+/* The drawn vocabulary (token-art.tsx): coins, tiles and dotted flows. */
+.coinRing {
+  fill: none;
+  stroke: var(--sm-line-strong);
+  stroke-width: 0.75;
 }
 
-.photo figcaption a {
-  color: var(--sm-text-secondary);
-  text-decoration: underline;
-  text-decoration-thickness: 0.5px;
-  text-underline-offset: var(--sm-space-1);
+.coinFace {
+  fill: var(--sm-surface-raised);
+  stroke: var(--sm-line-strong);
+  stroke-width: 0.75;
 }
 
-/* components.md, Product shot. On a wide screen the record sits at the back
-   and runs out of the section's lower edge; the condition card overlaps its
-   right side, the photograph overlaps only the card's top padding, and the
-   founding chip sits on the record's top edge. No layer covers a word of
-   another. */
-.shot {
-  position: relative;
-  height: calc(var(--sm-space-13) * 5.25);
-  overflow: hidden;
+.coinLetters {
+  fill: var(--sm-text-primary);
+  font-family: var(--sm-font-family-ui);
+  font-size: 11px;
+  font-weight: var(--sm-font-weight-semibold);
 }
 
-.shotRecord,
-.shotCondition,
-.shotFounding {
-  border: 0.5px solid var(--sm-line-rule);
-  border-top: 0.5px solid var(--sm-line-strong);
+.coin[data-held] {
+  opacity: 0.45;
 }
 
-.shotRecord {
-  position: absolute;
-  top: var(--sm-space-9);
-  left: 0;
-  width: 62%;
-  min-height: 110%;
-  padding: 0 var(--sm-space-8) var(--sm-space-8);
-  background: var(--sm-surface-sheet);
+.coin[data-held] .coinRing {
+  stroke-dasharray: 2 2.5;
 }
 
-.shotBar {
-  display: flex;
-  align-items: center;
-  gap: var(--sm-space-3);
-  margin: 0 calc(var(--sm-space-8) * -1) var(--sm-space-8);
-  padding: var(--sm-space-4) var(--sm-space-8);
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
+.tileFrame {
+  fill: var(--sm-surface-sheet);
+  stroke: var(--sm-line-strong);
+  stroke-width: 0.75;
 }
 
-.shotBar b {
-  color: var(--sm-text-primary);
-  font-weight: var(--sm-font-weight-medium);
+.tileEdge {
+  fill: none;
+  stroke: var(--sm-text-primary);
+  stroke-width: 0.75;
 }
 
-.shotNetwork {
-  margin-left: auto;
-  padding: var(--sm-space-1) var(--sm-space-3);
-  border: 0.5px solid var(--sm-line-strong);
-  color: var(--sm-text-primary);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-medium);
+.flow,
+.flowHeld {
+  fill: none;
+  stroke: var(--sm-text-secondary);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 5;
 }
 
-.shotIdentity {
-  display: flex;
-  align-items: center;
-  gap: var(--sm-space-6);
+.flowHeld {
+  stroke: var(--sm-text-primary);
 }
 
-.shotIdentity img {
-  display: block;
-  width: var(--sm-space-12);
-  height: var(--sm-space-12);
-}
-
-.shotIdentity div {
+/* components.md, Opened Alloy. The orbit carries the composition; the opened
+   leg's card overlaps its photograph and receives the leader that runs level
+   out of the orbit's right edge, so the drawing and the card read as one
+   piece. */
+.opened {
   display: grid;
-  gap: var(--sm-space-1);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
+  gap: var(--sm-space-7);
+  margin: 0;
 }
 
-.shotIdentity div > span:first-child {
-  font-family: var(--sm-font-family-digest);
-  font-size: var(--sm-font-size-micro);
-}
-
-.shotIdentity h3 {
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-figure);
-  font-weight: var(--sm-font-weight-light);
-  letter-spacing: var(--sm-font-tracking-display);
-  line-height: 1.05;
-}
-
-.shotLead {
-  margin: var(--sm-space-7) 0 var(--sm-space-5);
-  color: var(--sm-text-secondary);
-}
-
-.legTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--sm-font-size-small);
-}
-
-.legTable thead th {
-  padding: 0 0 var(--sm-space-3);
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  font-weight: var(--sm-font-weight-regular);
-  text-align: left;
-}
-
-.legTable td,
-.legTable tbody th {
-  padding: var(--sm-space-3) 0;
-  border-top: 0.5px solid var(--sm-line-rule);
-  text-align: left;
-}
-
-.legTable tbody th {
-  display: flex;
+.openedStage {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   align-items: center;
-  gap: var(--sm-space-4);
-  color: var(--sm-text-primary);
+}
+
+.orbit {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.ring,
+.ringInner,
+.ringOuter {
+  fill: none;
+  stroke: var(--sm-line-strong);
+  stroke-width: 0.75;
+}
+
+.ringInner {
+  stroke: var(--sm-line-rule);
+}
+
+.ringOuter {
+  stroke: var(--sm-line-rule);
+  stroke-dasharray: 1 6;
+}
+
+.tileLabel,
+.stepTileLabel {
+  fill: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: 22px;
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.stepTileLabel {
+  font-size: 15px;
+}
+
+/* A knockout in the ground's tone, so rules passing behind a label stop
+   short of its letters instead of striking through them. */
+.tileLabel {
+  paint-order: stroke;
+  stroke: var(--sm-surface-ground);
+  stroke-width: 8px;
+  stroke-linejoin: round;
+}
+
+.coinSymbol {
+  fill: var(--sm-text-primary);
+  font-family: var(--sm-font-family-ui);
+  font-size: 15px;
   font-weight: var(--sm-font-weight-medium);
 }
 
-.legTable td:nth-child(2) {
-  color: var(--sm-text-primary);
+.coinUnits {
+  fill: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
-.legTable td:last-child {
-  color: var(--sm-text-secondary);
+.leader {
+  fill: var(--sm-text-primary);
+  stroke: var(--sm-text-primary);
+  stroke-width: 0.75;
 }
 
-.shotSource {
-  max-width: 60ch;
-  margin-top: var(--sm-space-5);
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  line-height: 1.5;
+.openedLeg {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
-.shotFounding {
-  position: absolute;
-  z-index: 3;
-  top: var(--sm-space-5);
-  left: var(--sm-space-8);
-  display: flex;
-  align-items: center;
-  gap: var(--sm-space-4);
-  padding: var(--sm-space-3) var(--sm-space-5);
-  background: var(--sm-surface-raised);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-micro);
+.openedPhoto {
+  grid-column: 4 / 13;
+  grid-row: 1;
+  aspect-ratio: 3 / 2;
 }
 
-.shotCondition {
-  position: absolute;
-  z-index: 2;
-  top: calc(var(--sm-space-13) * 1.8);
-  right: 0;
+.openedCard {
+  position: relative;
+  z-index: 1;
+  grid-column: 1 / 11;
+  grid-row: 2;
   display: grid;
   gap: var(--sm-space-5);
-  width: 42%;
-  padding: var(--sm-space-7);
+  margin-top: calc(var(--sm-space-10) * -1);
+  padding: var(--sm-space-6);
+  border: 0.5px solid var(--sm-line-rule);
+  border-top: 0.5px solid var(--sm-line-strong);
   background: var(--sm-surface-raised);
 }
 
-.shotCondition header {
+.openedCard header {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--sm-space-4);
 }
 
-.shotCondition header div {
+.openedCard header div {
   display: grid;
   gap: var(--sm-space-1);
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-micro);
 }
 
-.shotCondition header b {
+.openedCard header b {
   color: var(--sm-text-primary);
   font-size: var(--sm-font-size-lead);
   font-weight: var(--sm-font-weight-medium);
 }
 
-.shotLabel {
+.openedLabel {
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-micro);
 }
 
-.shotCondition ul {
-  display: grid;
+/* Each power a square registration mark and a word, as the plates mark a
+   recorded fact. */
+.powers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sm-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.shotCondition li {
-  padding: var(--sm-space-3) 0;
-  border-top: 0.5px solid var(--sm-line-rule);
+.powers li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+  padding: var(--sm-space-2) var(--sm-space-4);
+  border: 0.5px solid var(--sm-line-strong);
   color: var(--sm-text-primary);
   font-size: var(--sm-font-size-small);
-  line-height: 1.45;
 }
 
-.shotCondition footer {
-  display: grid;
-  gap: var(--sm-space-3);
-  padding-top: var(--sm-space-4);
-  border-top: 0.5px solid var(--sm-line-strong);
-  color: var(--sm-text-secondary);
+.powers li::before {
+  content: "";
+  width: var(--sm-space-2);
+  height: var(--sm-space-2);
+  background: var(--sm-text-primary);
+}
+
+.openedCaption {
+  max-width: var(--sm-size-readable);
+  color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
+  line-height: 1.6;
 }
 
-.shotPhoto {
-  position: absolute;
-  z-index: 3;
-  top: 0;
-  right: var(--sm-space-8);
-  width: 24%;
-  padding: var(--sm-space-3) var(--sm-space-3) var(--sm-space-4);
-  border-top: 0.5px solid var(--sm-line-strong);
-  background: var(--sm-surface-raised);
-}
-
-.shotPhoto .photoGround {
-  aspect-ratio: 3 / 2;
+.openedCaption a {
+  color: var(--sm-text-secondary);
+  text-decoration: underline;
+  text-decoration-thickness: 0.5px;
+  text-underline-offset: var(--sm-space-1);
 }
 
 /* components.md, Strike steps. */
 .steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sm-space-5);
   margin: 0;
   padding: 0;
-  border-top: 0.5px solid var(--sm-line-strong);
   list-style: none;
 }
 
 .steps > li {
   display: grid;
-  grid-template-rows: auto auto auto 1fr;
-  gap: var(--sm-space-4);
-  padding: var(--sm-space-7) var(--sm-space-7) var(--sm-space-8);
+  align-content: start;
+  gap: var(--sm-space-3);
+  padding-bottom: var(--sm-space-5);
 }
 
-.steps > li + li {
-  border-left: 0.5px solid var(--sm-line-rule);
+.stepDiagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-bottom: var(--sm-space-5);
+  padding: var(--sm-space-6) var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-strong);
+  background: var(--sm-surface-sheet);
 }
 
 .stepIndex {
@@ -311,96 +293,31 @@
   line-height: 1.6;
 }
 
-.stepFragment {
-  align-self: end;
-  display: grid;
-  gap: var(--sm-space-3);
-  margin-top: var(--sm-space-5);
-  padding: var(--sm-space-5);
-  border-top: 0.5px solid var(--sm-line-strong);
-  background: var(--sm-surface-sheet);
+.stem {
+  stroke: var(--sm-text-primary);
+  stroke-width: 1.2;
 }
 
-.stepLegs {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.mergePoint {
+  fill: var(--sm-text-primary);
 }
 
-.stepLegs li {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas:
-    "mark symbol units"
-    "mark state state";
-  align-items: center;
-  column-gap: var(--sm-space-4);
-  padding: var(--sm-space-3) 0;
-  border-bottom: 0.5px solid var(--sm-line-rule);
-  font-size: var(--sm-font-size-small);
+.gate line {
+  stroke: var(--sm-text-primary);
+  stroke-width: 1.5;
 }
 
-.stepLegs li > :first-child {
-  grid-area: mark;
+.claimBox {
+  fill: none;
+  stroke: var(--sm-text-primary);
+  stroke-width: 0.75;
+  stroke-dasharray: 3 2.5;
 }
 
-.stepLegs li > span {
-  grid-area: symbol;
-  color: var(--sm-text-primary);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.stepLegs li > b {
-  grid-area: units;
-  color: var(--sm-text-primary);
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--sm-font-weight-regular);
-}
-
-.stepLegs li > small {
-  grid-area: state;
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-/* The held leg reads as the Claim it becomes: a heavier rule and its state in
-   full ink, without a hue (red is reserved for drawings). */
-.stepLegs li[data-held] {
-  border-bottom-color: var(--sm-text-primary);
-}
-
-.stepLegs li[data-held] > small {
-  color: var(--sm-text-primary);
-  font-weight: var(--sm-font-weight-medium);
-}
-
-.stepLegs .stepMore {
-  display: block;
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.stepResult {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--sm-space-4);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-micro);
-}
-
-.stepResult b {
-  color: var(--sm-text-primary);
-  font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title-s);
-  font-weight: var(--sm-font-weight-regular);
-}
-
-.stepCaption {
-  color: var(--sm-text-tertiary);
-  font-size: var(--sm-font-size-micro);
-  line-height: 1.5;
+.claimLabel {
+  fill: var(--sm-text-primary);
+  font-family: var(--sm-font-family-digest);
+  font-size: 11px;
 }
 
 .stepsNote,
@@ -460,17 +377,32 @@
 .basketCover {
   position: relative;
   display: block;
-  margin-bottom: var(--sm-space-9);
+  margin-bottom: var(--sm-space-8);
 }
 
 .basketCover .photoGround {
   aspect-ratio: 4 / 3;
 }
 
+.basketCover img {
+  transition: transform var(--sm-motion-duration-sheet) var(--sm-motion-easing-standard);
+}
+
+.basketCard:hover .basketCover img,
+.basketCard:focus-visible .basketCover img {
+  transform: scale(1.04);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .basketCover img {
+    transition: none;
+  }
+}
+
 .basketCover > span:last-child {
   position: absolute;
   left: var(--sm-space-5);
-  bottom: calc(var(--sm-space-12) / -2);
+  bottom: calc(var(--sm-space-11) / -2);
   outline: var(--sm-space-2) solid var(--sm-surface-sheet);
 }
 
@@ -534,6 +466,73 @@
   font-size: var(--sm-font-size-micro);
 }
 
+/* components.md, Anchor chain. Square nodes on one rule; the step not built
+   is an empty dashed node on a dashed rule. */
+.anchor {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-7);
+  margin-top: var(--sm-space-10);
+}
+
+.chain {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chain li {
+  position: relative;
+  display: grid;
+  gap: var(--sm-space-2);
+  padding-top: var(--sm-space-8);
+  padding-right: var(--sm-space-5);
+}
+
+.chain li::before {
+  content: "";
+  position: absolute;
+  top: var(--sm-space-3);
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--sm-text-primary);
+}
+
+.chain li[data-unbuilt]::before {
+  border-top-style: dashed;
+  border-top-color: var(--sm-line-strong);
+}
+
+.chainNode {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+  margin-top: calc(var(--sm-space-3) - var(--sm-space-5) / 2);
+  background: var(--sm-text-primary);
+}
+
+.chain li[data-unbuilt] .chainNode {
+  border: 1px dashed var(--sm-text-primary);
+  background: var(--sm-surface-ground);
+}
+
+.chain b {
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title-s);
+  font-weight: var(--sm-font-weight-regular);
+}
+
+.chain li > span:last-child {
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
 /* components.md, Question list. */
 .questions {
   margin: 0;
@@ -547,10 +546,10 @@
 }
 
 .questions summary {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: var(--sm-space-10) minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--sm-space-7);
+  gap: var(--sm-space-5);
   min-height: var(--sm-size-target);
   padding: var(--sm-space-6) 0;
   color: var(--sm-text-primary);
@@ -602,8 +601,15 @@
   outline-offset: var(--sm-space-2);
 }
 
+.questionIndex {
+  color: var(--sm-text-tertiary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+}
+
 .questions details > div {
   display: grid;
+  margin-left: calc(var(--sm-space-10) + var(--sm-space-5));
   justify-items: start;
   gap: var(--sm-space-5);
   max-width: var(--sm-size-readable);
@@ -615,32 +621,46 @@
 /* components.md, Closing band. */
 .closing {
   display: grid;
-  justify-items: start;
-  gap: var(--sm-space-8);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-10);
   margin-top: var(--sm-space-12);
-  padding: var(--sm-space-12) 0;
+  padding: var(--sm-space-11) 0;
   border-top: 0.5px solid var(--sm-line-strong);
 }
 
+.closingText {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-8);
+}
+
 .closing h2 {
-  max-width: 16em;
+  max-width: 14em;
   color: var(--sm-text-primary);
   font-family: var(--sm-font-family-display);
   font-size: var(--sm-font-size-display);
   font-weight: var(--sm-font-weight-light);
   letter-spacing: var(--sm-font-tracking-display);
   line-height: 1.02;
+  text-wrap: balance;
 }
 
 .closing h2 span {
   color: var(--sm-text-tertiary);
 }
 
-.closing > div {
+.closingText > div {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--sm-space-7);
+}
+
+.closingOrbit {
+  display: block;
+  width: calc(var(--sm-space-13) * 2.5);
+  height: auto;
 }
 
 @media (max-width: 1050px) {
@@ -649,65 +669,49 @@
   }
 }
 
-/* A phone reads the layers in order: nothing is cropped or overlapped, and
-   the steps stack. */
+/* Narrower, the opened leg moves under its orbit and the leader, which
+   pointed at it across, is dropped. */
 @media (max-width: 900px) {
-  .shot {
-    display: grid;
-    gap: var(--sm-space-5);
-    height: auto;
-    overflow: visible;
+  .openedStage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sm-space-7);
   }
 
-  .shotRecord,
-  .shotFounding,
-  .shotCondition,
-  .shotPhoto {
-    position: static;
-    width: auto;
-    min-height: 0;
-  }
-
-  .shotFounding {
-    order: -1;
-    justify-self: start;
+  .leader {
+    display: none;
   }
 
   .steps {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .steps > li {
-    padding-inline: 0;
-  }
-
-  .steps > li + li {
-    border-left: 0;
-    border-top: 0.5px solid var(--sm-line-rule);
+  .chain {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: var(--sm-space-7);
   }
 }
 
 @media (max-width: 700px) {
-  .shotRecord {
-    padding: 0 var(--sm-space-5) var(--sm-space-5);
-  }
-
-  .shotBar {
-    margin-inline: calc(var(--sm-space-5) * -1);
-    padding-inline: var(--sm-space-5);
-  }
-
-  .legTable td:last-child,
-  .legTable th:last-child {
-    display: none;
-  }
-
   .baskets {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .openedCard header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .openedCard header > :last-child {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
   .closing {
+    grid-template-columns: minmax(0, 1fr);
     padding: var(--sm-space-10) 0;
+  }
+
+  .closingOrbit {
+    display: none;
   }
 
   .closing h2 {
