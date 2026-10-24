@@ -872,11 +872,12 @@ test("the opened Alloy turns one leg at a time to the card, and holds still unde
   await expect(opened).toHaveAttribute("aria-label", `${first}, opened`);
 
   // It holds while the card is pointed at, and only then: pointing at the
-  // section's heading lets it turn.
+  // share in the orbit's middle, inside the figure but not a part to read,
+  // lets it turn.
   await opened.hover();
   await page.clock.runFor(2 * (4500 + 200 + 900 + 100));
   await expect(opened).toHaveAttribute("aria-label", `${first}, opened`);
-  await page.getByRole("heading", { level: 2, name: /^One Alloy, opened/ }).hover();
+  await orbit.hover();
   await page.clock.runFor(4500 + 200 + 900 + 100);
   await expect(opened).toHaveAttribute("aria-label", `${second}, opened`);
 
