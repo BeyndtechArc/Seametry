@@ -31,6 +31,14 @@ const MOVE_MS = 520;
 const STAGGER_MS = 50;
 /** The leg an issuer can freeze here. Any would do; this is the one the Strike steps hold. */
 const FREEZABLE = 1;
+/**
+ * The lock sits below the vault, clear of every coin's target: a held
+ * coin's 44-unit target reaches the vault's foot, and a lock inside that
+ * reach took the press meant for it (Storm, 24 October 2026).
+ */
+const LOCK_Y = HALL_Y + 70;
+/** The ring a coin shows when pointed at or focused, the coin's own outer ring. */
+const RING = COIN * 1.22;
 
 const slotX = (index: number, count: number) => WIDTH / 2 + (index - (count - 1) / 2) * 100;
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
@@ -202,10 +210,10 @@ export function HallBench({ legs, symbol, artwork }: { legs: BenchLeg[]; symbol:
         </g>
 
         <g className={styles.lock} data-frozen={frozen ? "" : undefined} aria-label={frozen ? `Lift the freeze on ${frozenLeg.symbol}` : `Freeze the Hall's account for ${frozenLeg.symbol}`} aria-pressed={frozen} {...pressable(toggleFreeze)}>
-          <rect x={lockX - 22} y={HALL_Y + COIN + 14} width={44} height={44} className={styles.hit} />
-          <rect x={lockX - 7} y={HALL_Y + COIN + 30} width={14} height={11} className={styles.lockBody} />
-          <text x={lockX + 14} y={HALL_Y + COIN + 40} className={styles.label}>Issuer</text>
-          <path d={`M${lockX - 4.5} ${HALL_Y + COIN + 30}v-4a4.5 4.5 0 0 1 9 0v${frozen ? 4 : -2}`} className={styles.lockShackle} />
+          <rect x={lockX - 22} y={LOCK_Y - 22} width={44} height={44} className={styles.hit} />
+          <rect x={lockX - 7} y={LOCK_Y - 3} width={14} height={11} className={styles.lockBody} />
+          <path d={`M${lockX - 4.5} ${LOCK_Y - 3}v-4a4.5 4.5 0 0 1 9 0v${frozen ? 4 : -2}`} className={styles.lockShackle} />
+          <text x={lockX + 16} y={LOCK_Y + 7} className={styles.label}>Issuer</text>
         </g>
 
         <line x1={WIDTH / 2} y1={HALL_Y + 44} x2={WIDTH / 2} y2={SHARE_Y - SHARE / 2 - 6} className={styles.rail} />
@@ -218,6 +226,7 @@ export function HallBench({ legs, symbol, artwork }: { legs: BenchLeg[]; symbol:
         <g className={styles.share} data-struck={shares > 0 ? "" : undefined} aria-label={`Melt 1 ${symbol}`} aria-hidden={shares === 0} {...(shares > 0 ? pressable(melt) : {})}>
           <rect x={WIDTH / 2 - 30} y={SHARE_Y - 30} width={60} height={60} className={styles.hit} />
           <ShareTile x={WIDTH / 2} y={SHARE_Y} size={SHARE} artwork={artwork} />
+          <rect x={WIDTH / 2 - SHARE / 2} y={SHARE_Y - SHARE / 2} width={SHARE} height={SHARE} className={styles.ring} />
         </g>
 
         {legs.map((leg, index) => (
@@ -233,6 +242,7 @@ export function HallBench({ legs, symbol, artwork }: { legs: BenchLeg[]; symbol:
             <circle cx={slotX(index, legs.length)} cy={WALLET_Y} r={COIN + 18} className={styles.hit} />
             <g className={styles.lift}>
               <Coin id={`bench-${leg.symbol}`} x={slotX(index, legs.length)} y={WALLET_Y} r={COIN} logo={leg.logo} symbol={leg.symbol} />
+              <circle cx={slotX(index, legs.length)} cy={WALLET_Y} r={RING} className={styles.ring} />
               <text x={slotX(index, legs.length)} y={WALLET_Y + COIN + 30} textAnchor="middle" className={styles.tag}>{leg.symbol}</text>
             </g>
           </g>

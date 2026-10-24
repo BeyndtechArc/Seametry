@@ -4,7 +4,8 @@
   position: relative;
   left: calc(50% - 50vw);
   width: 100vw;
-  aspect-ratio: 1600 / 420;
+  /* The frame wordmark.tsx draws: 1600 wide, from 110 to 420. */
+  aspect-ratio: 1600 / 310;
   /* clip, not hidden: hidden would make this box a scroll container, and the
      discs' view timeline would then watch a box that never scrolls. */
   overflow: clip;

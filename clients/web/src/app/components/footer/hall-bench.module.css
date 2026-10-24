@@ -15,6 +15,7 @@
 }
 
 .label {
+  pointer-events: none;
   fill: var(--sm-text-tertiary);
   font-family: var(--sm-font-family-digest);
   font-size: 12px;
@@ -128,7 +129,10 @@
   transition: transform var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
 }
 
+/* A name, not a target: hidden or shown it takes no press, so it never
+   covers the lock below a held coin. */
 .tag {
+  pointer-events: none;
   fill: var(--sm-text-secondary);
   font-family: var(--sm-font-family-digest);
   font-size: 12px;
@@ -144,9 +148,16 @@
   opacity: 1;
 }
 
-/* A transparent target at least 44 units across behind each touchable part. */
+/* A transparent target at least 44 units across behind each touchable part;
+   it never draws. What answers the pointer is the part's own outline: the
+   coin's ring, the share's edge, the lock. */
 .hit {
   fill: transparent;
+  stroke: none;
+}
+
+.ring {
+  fill: none;
   stroke: transparent;
   stroke-width: 1.5;
   transition: stroke var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
@@ -170,21 +181,29 @@
     opacity: 1;
   }
 
-  .coin:hover .hit,
-  .lock:hover .hit,
-  .share:hover .hit {
+  .coin:hover .ring,
+  .share:hover .ring {
+    stroke: var(--sm-accent-touch);
+  }
+
+  .lock:hover .lockBody,
+  .lock:hover .lockShackle {
     stroke: var(--sm-accent-touch);
   }
 }
 
-.coin:focus-visible .hit,
-.lock:focus-visible .hit,
-.share:focus-visible .hit {
+.coin:focus-visible .ring,
+.share:focus-visible .ring {
   stroke: var(--sm-accent-provenance);
   stroke-width: 2;
 }
 
-.coin[data-claim] .hit {
+.lock:focus-visible .lockBody,
+.lock:focus-visible .lockShackle {
+  stroke: var(--sm-accent-provenance);
+}
+
+.coin[data-claim] .ring {
   stroke: var(--sm-text-primary);
   stroke-dasharray: 3 2.5;
 }
@@ -287,7 +306,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .share,
-  .hit,
+  .ring,
   .lift,
   .tag {
     transition: none;

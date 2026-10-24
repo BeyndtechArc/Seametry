@@ -908,17 +908,15 @@ export function RegisterFooter({
   children,
   links,
   accounts = [],
-  note,
   finale,
 }: {
   /** The footer's scene, above its one line of links. */
   children?: ReactNode;
-  /** A closing piece below the links, the last thing on the page; the note is set on its top edge. */
+  /** A closing piece below the links, the last thing on the page. */
   finale?: ReactNode;
   links: Array<{ label: string; href: string }>;
   /** Seametry's accounts elsewhere, each an icon link named for assistive technology. */
   accounts?: Array<{ label: string; href: string; icon: IconName }>;
-  note: string;
 }) {
   return (
     <footer className={styles.registerFooter}>
@@ -937,7 +935,6 @@ export function RegisterFooter({
           </ul>
         ) : null}
       </div>
-      <p>{note}</p>
       {finale}
     </footer>
   );
