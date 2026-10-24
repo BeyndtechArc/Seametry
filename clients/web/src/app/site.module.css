@@ -423,15 +423,20 @@
   text-wrap: balance;
 }
 
+/* The quieter clause sits well below the statement (Storm, 24 October
+   2026: the two read at almost one contrast). Display-size text only, so
+   it holds the 3:1 large-text floor, not 4.5:1: 3.28 on the light ground
+   and 4.39 on the dark (foundations sections 5 and 10). */
 .sectionHeading h2 span {
-  color: var(--sm-text-tertiary);
+  color: color-mix(in srgb, var(--sm-text-tertiary) 75%, var(--sm-surface-ground));
 }
 
 /* A place mark that sits heavy and almost unseen at the right end: in a
-   rule's tone, not a text tone, because it is not read. */
+   rule's tone, not a text tone, because it is not read, and in the sans,
+   against the title's serif (Storm, 24 October 2026). */
 .sectionHeading > span {
   color: var(--sm-line-rule);
-  font-family: var(--sm-font-family-display);
+  font-family: var(--sm-font-family-ui);
   font-size: var(--sm-font-size-display-l);
   font-weight: var(--sm-font-weight-bold);
   font-variant-numeric: tabular-nums lining-nums;

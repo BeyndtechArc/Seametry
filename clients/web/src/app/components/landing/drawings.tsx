@@ -3,66 +3,13 @@
 import { Coin, Path, ShareTile, polar } from "./token-art";
 import styles from "./landing.module.css";
 
-// The landing's three drawings, as client components so a server page sends
-// each as the legs it draws, not as its markup: server rendered, every
-// drawing was sent twice, in the HTML and again in the React payload. Their
+// The Strike steps' and the close's drawings, as client components so a
+// server page sends each as the legs it draws, not as its markup: server
+// rendered, every drawing was sent twice, in the HTML and again in the React payload. Their
 // data comes from the founding record through the server sections that use
 // them (founding.ts).
 
 export type DrawnLeg = { symbol: string; units: string; logo?: string };
-
-const ORBIT_WIDTH = 720;
-/** The orbit with its labels spans about 70 to 530; the frame keeps 20 either side. */
-const ORBIT_TOP = 50;
-const ORBIT_HEIGHT = 500;
-const CX = 360;
-const CY = 300;
-const ORBIT = 196;
-const ORBIT_COIN = 27;
-const ORBIT_TILE = 124;
-/** The first leg sits at 0 degrees, so its leader runs level out of the drawing's right edge. */
-const STEP = 60;
-
-/** components.md, Opened Alloy: the share at the centre of an orbit of its legs, each with its units per share. */
-export function OrbitDrawing({ legs, symbol, artwork }: { legs: DrawnLeg[]; symbol: string; artwork: string }) {
-  const placed = legs.map((leg, index) => ({ ...leg, angle: index * STEP, at: polar(CX, CY, ORBIT, index * STEP) }));
-  const holds = legs.map((leg) => `${leg.units} ${leg.symbol}`).join(", ");
-  const leaderStart = placed[0] ? placed[0].at.x + ORBIT_COIN * 1.22 : CX;
-
-  return (
-    <svg viewBox={`0 ${ORBIT_TOP} ${ORBIT_WIDTH} ${ORBIT_HEIGHT}`} className={styles.orbit} role="img" aria-label={`One ${symbol} share holds ${holds}.`}>
-      <circle cx={CX} cy={CY} r={ORBIT + 84} className={styles.ringOuter} />
-      <circle cx={CX} cy={CY} r={ORBIT} className={styles.ring} />
-      <circle cx={CX} cy={CY} r={ORBIT_TILE * 0.9} className={styles.ringInner} />
-
-      {placed.map((leg) => (
-        <Path key={leg.symbol} from={polar(CX, CY, ORBIT_TILE * 0.62, leg.angle)} to={polar(CX, CY, ORBIT - ORBIT_COIN * 1.3, leg.angle)} />
-      ))}
-
-      <ShareTile x={CX} y={CY} size={ORBIT_TILE} artwork={artwork} />
-      <text x={CX} y={CY + ORBIT_TILE * 0.9 + 34} textAnchor="middle" className={styles.tileLabel}>1 {symbol}</text>
-
-      {placed.map((leg, index) => {
-        const label = polar(CX, CY, ORBIT + ORBIT_COIN + 22, leg.angle);
-        const cos = Math.cos((leg.angle * Math.PI) / 180);
-        const anchor = cos > 0.3 ? "start" : cos < -0.3 ? "end" : "middle";
-        const lift = index === 0 ? -24 : 0;
-        return (
-          <g key={leg.symbol}>
-            <Coin id={`orbit-${leg.symbol}`} x={leg.at.x} y={leg.at.y} r={ORBIT_COIN} logo={leg.logo} symbol={leg.symbol} />
-            <text x={label.x} y={label.y + lift - 4} textAnchor={anchor} className={styles.coinSymbol}>{leg.symbol}</text>
-            <text x={label.x} y={label.y + lift + 14} textAnchor={anchor} className={styles.coinUnits}>{leg.units}</text>
-          </g>
-        );
-      })}
-
-      <g className={styles.leader}>
-        <circle cx={leaderStart} cy={CY} r={2.5} />
-        <line x1={leaderStart} y1={CY} x2={ORBIT_WIDTH} y2={CY} />
-      </g>
-    </svg>
-  );
-}
 
 const STEP_WIDTH = 360;
 const STEP_HEIGHT = 210;

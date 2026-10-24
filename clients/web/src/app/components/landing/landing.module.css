@@ -162,7 +162,21 @@
 .openedPhoto {
   grid-column: 4 / 13;
   grid-row: 1;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 2 / 1;
+}
+
+/* Before the orbit turns, its labels and the card fade out; after it, they
+   fade back in for the leg now opened. */
+.orbitLabel,
+.openedCard > *,
+.openedPhoto {
+  transition: opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
+}
+
+[data-turning] .orbitLabel,
+[data-turning] .openedCard > *,
+[data-turning] .openedPhoto {
+  opacity: 0;
 }
 
 .openedCard {
@@ -353,7 +367,7 @@
 
 .basketCard {
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto 1fr;
   gap: var(--sm-space-5);
   height: 100%;
   padding-bottom: var(--sm-space-5);
@@ -381,7 +395,7 @@
 }
 
 .basketCover .photoGround {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 9;
 }
 
 .basketCover img {
@@ -455,15 +469,6 @@
 
 .basketStack > * + * {
   margin-left: calc(var(--sm-space-3) * -1);
-}
-
-.basketCredit {
-  overflow: hidden;
-  padding: 0 var(--sm-space-5);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-micro);
 }
 
 /* components.md, Anchor chain. Square nodes on one rule; the step not built
@@ -646,8 +651,9 @@
   text-wrap: balance;
 }
 
+/* The heading's quieter clause, as a section heading's (site.module.css). */
 .closing h2 span {
-  color: var(--sm-text-tertiary);
+  color: color-mix(in srgb, var(--sm-text-tertiary) 75%, var(--sm-surface-ground));
 }
 
 .closingText > div {

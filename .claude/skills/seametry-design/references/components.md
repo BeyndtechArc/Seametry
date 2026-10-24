@@ -538,15 +538,15 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### Opened Alloy
 **Answers:** what does one share of an Alloy hold, and what can each holding's issuer still do?
-**Anatomy:** an illustration, not a screen. At the centre the share, the Alloy's artwork on a tile with two frames stepping out behind it; around it an orbit of its constituents as coins carrying their issuers' logos, each joined to the share by a dotted rule and labelled with its symbol and units per share. One leg, set level with the share, runs a leader out of the orbit to its opened card: logo, symbol, Grade, the powers its issuer keeps as one-word chips, and the policy's Stamp. A duotone Photo frame of that leg's business sits behind the card. One caption under the figure carries every source.
+**Anatomy:** an illustration, not a screen. At the centre the share, the Alloy's artwork on a tile with two frames stepping out behind it; around it an orbit of its constituents as coins carrying their issuers' logos, each joined to the share by a dotted rule and labelled with its symbol and units per share. The leg set level with the share runs a leader out of the orbit to its opened card: logo, symbol, Grade, the powers its issuer keeps as one-word chips, and the policy's Stamp, with a duotone Photo frame of that leg's business behind it. Every few seconds the orbit turns one leg on to the leader and the card opens that leg (Storm, 24 October 2026): the labels and the card fade out, the ring turns with each coin kept upright, and they fade back in. One caption under the figure carries every source.
 **Identity:** the drawn vocabulary the landing shares (coin, tile, dotted flow), hairlines and surface tones only; layers lift by tone and overlap, never shadow. Few words: symbols, units and chips, with the sentences behind the chips in their titles.
-**States:** default; narrower than 900px the card moves under the orbit and the leader is dropped; a missing logo draws the coin's letters; a missing founding record or admission removes the figure rather than drawing it empty.
+**States:** turning, a hold of 4.5 s and a turn of 0.9 s; held while a reader points at or focuses the figure, while it is offscreen and while the tab is hidden; reduced motion and no script, still on the first leg; narrower than 900px the card moves under the orbit and the leader is dropped; a missing logo draws the coin's letters; a leg without an admission removes the figure rather than drawing the Formula short.
 **Data:** the founding record (`shared/evidence/alloys/index.json`, devnet), decimals from the admissions snapshot, the leg through `allocationOffer()`. A chip names a power by the policy's reason code; a code this page does not know shows as the code itself.
-**Rules:** no live figure; every number exact at its decimals; the orbit's accessible name states the whole Formula in words. No layer covers another's words.
+**Rules:** no live figure; every number exact at its decimals; the orbit's accessible name states the whole Formula in words. No layer covers another's words. The turn is written as transform attributes from one frame loop, never as style.
 
 ### Photo frame
 **Answers:** what kind of business sits under this instrument or theme?
-**Anatomy:** a cropped photograph at a fixed ratio in the house duotone; its credit (photographer, Unsplash) and the word illustrative stated where it is shown, in the figure's caption or the card's credit line.
+**Anatomy:** a cropped photograph at a short fixed ratio (2:1 in the Opened Alloy, 16:9 on a Basket card) in the house duotone, with the word illustrative stated in the section it sits in. No photographer or Unsplash credit is shown (Storm, 24 October 2026); the Unsplash License asks none, and `photos.ts` keeps each photograph's source.
 **Identity:** the photograph's luminosity over a touch-scale ground, so every photo sits in the palette in both modes. Square corners, no shadow or rounded card.
 **States:** default; image unavailable shows the ground.
 **Data:** an entry of `clients/web/src/lib/photos.ts`: file, alt text, photographer, source page.
@@ -554,7 +554,7 @@ Product, developers, the house (world pages), trust (the Key, audit, status, anc
 
 ### Basket card
 **Answers:** which published basket could my wallet buy today, and what does it hold?
-**Anatomy:** a Photo frame of the basket's theme with the Basket plate set across its lower left edge; code, name and category; the round Lot mark stack with the count and admission; the photograph's credit; the whole card one route link to the basket's record.
+**Anatomy:** a Photo frame of the basket's theme with the Basket plate set across its lower left edge; code, name and category; the round Lot mark stack with the count and admission; the whole card one route link to the basket's record.
 **Identity:** the Basket register's facts in a card, for the landing only. The plate overlaps the photo so the two read as one object. Hover or focus steps the surface tone and eases the photograph a few percent closer, and reduced motion keeps it still.
 **States:** default; hover or focus; a basket not wholly admitted is not featured.
 **Data:** `allocationIndexes`, admission from the admissions snapshot, with its policy version and snapshot date stated once under the row.

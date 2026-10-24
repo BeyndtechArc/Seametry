@@ -814,6 +814,8 @@ function units(atoms: string, decimals: number) {
 
 test("the opened Alloy draws the founded Alloy and its first leg from their records, and nothing covers its words", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
+  // Still, so the figure is measured at rest rather than mid-turn.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   const record = evidence("alloys/index.json").alloys[0];
   const admissions = evidence("admissions.json").instruments as { decimals: number; instrument: { mint: string; prerogatives: { sentence: string }[] } }[];
@@ -850,6 +852,28 @@ test("the opened Alloy draws the founded Alloy and its first leg from their reco
     return found;
   });
   expect(covered).toEqual([]);
+});
+
+test("the opened Alloy turns one leg at a time to the card, and holds still under reduced motion", async ({ page }) => {
+  const record = evidence("alloys/index.json").alloys[0];
+  const [first, second, third] = record.legs.map((leg: { symbol: string }) => leg.symbol);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.clock.install();
+  await page.goto("/");
+  const opened = page.locator("[aria-label$=', opened']");
+  const orbit = page.getByRole("img", { name: /share holds/ });
+  await orbit.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await expect(opened).toHaveAttribute("aria-label", `${first}, opened`);
+  await page.clock.runFor(4500 + 200 + 900 + 100);
+  await expect(opened).toHaveAttribute("aria-label", `${second}, opened`);
+  await page.clock.runFor(4500 + 200 + 900 + 100);
+  await expect(opened).toHaveAttribute("aria-label", `${third}, opened`);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await orbit.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await page.clock.runFor(3 * (4500 + 200 + 900 + 100));
+  await expect(opened).toHaveAttribute("aria-label", `${first}, opened`);
 });
 
 test("the anchor chain shows the Hallmark verified to its path and the root on chain not built", async ({ page }) => {

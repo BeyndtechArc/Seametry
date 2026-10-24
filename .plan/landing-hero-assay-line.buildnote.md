@@ -121,3 +121,13 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 chips whose sentences sit in their titles; every source is
                 in one caption. Short power names are keyed by the policy's
                 reason codes, and an unknown code shows as itself.
+             11. The Opened Alloy turns (Storm, 24 October 2026): every 4.5 s
+                the orbit turns one leg on to the leader in 0.9 s and the
+                card opens that leg, with its own photograph; it holds while
+                pointed at or focused, offscreen, in a hidden tab and under
+                reduced motion. Five photographs serve six legs, so GOOGLx
+                and MSFTx share the server cabinets. Photographs are shorter
+                (2:1 and 16:9) and carry no credit on the page. The quieter
+                clause of a heading is tertiary blended 75% into the ground,
+                3.28:1 light and 4.39:1 dark, display-size text at the
+                large-text floor; the section number is set in the sans.

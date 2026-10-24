@@ -51,7 +51,6 @@ export function BasketCards() {
                   </span>
                   <span>{basket.members.length} stocks, all admitted</span>
                 </span>
-                <small className={styles.basketCredit}>Photo: {cover.photographer}, Unsplash</small>
               </Link>
             </li>
           );
