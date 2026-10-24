@@ -800,6 +800,15 @@ test("the disc field rises a little faster than the page, and stays still under 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   expect(await fieldTopOnPage(1080)).toBe(await fieldTopOnPage(0));
+
+  // On a phone the field is drawn twice the window's width, centred, so the
+  // discs read (Storm, 25 October 2026: at the window's width they were too small).
+  await page.setViewportSize({ width: 390, height: 844 });
+  const field = await page.locator("main section").first().locator("svg").last().evaluate((svg) => {
+    const box = svg.getBoundingClientRect();
+    return { width: Math.round(box.width), centre: Math.round(box.left + box.width / 2) };
+  });
+  expect(field).toEqual({ width: 780, centre: 195 });
 });
 
 // The founding record's atoms, written at the real mint's decimals without
@@ -987,11 +996,10 @@ test("the basket marquee loops every wholly admitted basket once for a reader, h
   await expect(row.locator("ul[aria-hidden]")).toBeHidden();
 });
 
-test("the opened Alloy's pictures are written in characters, inked for the theme, and no photograph is fetched", async ({ page }) => {
-  const fetched: string[] = [];
-  page.on("request", (request) => { if (/\.(webp|jpe?g)(\?|$)/.test(request.url()) && request.url().includes("/photos/")) fetched.push(request.url()); });
+test("the opened Alloy's pictures are drawn in characters, whole rows on one grid, their lamps blinking, with no image fetched", async ({ page }) => {
+  const images: string[] = [];
+  page.on("request", (request) => { if (request.url().includes("/photos/")) images.push(request.url()); });
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   const first = evidence("alloys/index.json").alloys[0].legs[0].symbol;
   const card = page.getByRole("article", { name: `${first}, opened` });
@@ -1000,19 +1008,20 @@ test("the opened Alloy's pictures are written in characters, inked for the theme
   await expect(card.locator(":scope > span img")).toHaveCount(0);
   const picture = card.getByRole("img");
   await expect(picture).toHaveCount(1);
-  expect(await picture.getAttribute("aria-label")).toBeTruthy();
+  await expect(picture).toHaveAttribute("aria-label", /drawn in characters$/);
 
-  // The same cell carries the most ink where the photograph is darkest on
-  // the light ground, and where it is lightest on the dark ground.
-  const firstRow = async () => picture.locator("g:visible text").first().textContent();
-  await page.evaluate(() => document.documentElement.setAttribute("data-theme", "light"));
-  const light = await firstRow();
-  await page.evaluate(() => document.documentElement.setAttribute("data-theme", "dark"));
-  const dark = await firstRow();
-  const ramp = "\u00a0.:-=+*#%@";
-  expect(light).toHaveLength(dark!.length);
-  expect([...light!].map((character) => ramp.length - 1 - ramp.indexOf(character)).join()).toBe([...dark!].map((character) => ramp.indexOf(character)).join());
-  expect(fetched).toEqual([]);
+  // Every row is the grid's full width, its spaces kept, so no drawing is
+  // pulled apart where SVG would collapse a run of spaces.
+  const rows = await picture.locator("text").evaluateAll((texts) => texts.map((text) => text.textContent!));
+  expect(rows).toHaveLength(21);
+  expect(new Set(rows.map((row) => row.length))).toEqual(new Set([70]));
+  expect(rows.filter((row) => row.includes(" "))).toEqual([]);
+  const lamp = picture.locator("tspan").first();
+  await expect(lamp).toHaveCSS("animation-name", /blink$/);
+  expect(images).toEqual([]);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(lamp).toHaveCSS("animation-name", "none");
 });
 
 test("the footer's bench plays by the Hall's rules: a freeze refuses a Strike, a Melt holds the frozen leg as a Claim", async ({ page }) => {

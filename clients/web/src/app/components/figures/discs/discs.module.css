@@ -33,6 +33,16 @@
   to { translate: 0 -16vh; }
 }
 
+/* On a phone the window is too narrow for the discs to read at its width;
+   the field is drawn twice as wide, centred, and the page clips what runs
+   past the edges (Storm, 25 October 2026). */
+@media (max-width: 700px) {
+  .field {
+    left: calc(50% - 100vw);
+    width: 200vw;
+  }
+}
+
 .field svg {
   display: block;
   width: 100%;

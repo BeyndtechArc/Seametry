@@ -388,7 +388,8 @@
   /* Above the landing's discs, which run behind the first sections. */
   position: relative;
   z-index: 1;
-  margin-top: var(--sm-space-13);
+  /* Storm, 25 October 2026: 128 read as narrow between sections. */
+  margin-top: calc(var(--sm-space-13) + var(--sm-space-10));
 }
 
 /* The section after the hero starts a little over the discs' rising edge,
@@ -942,7 +943,7 @@
   }
 
   .section {
-    margin-top: var(--sm-space-12);
+    margin-top: var(--sm-space-13);
   }
 
   .section.incidentSection {

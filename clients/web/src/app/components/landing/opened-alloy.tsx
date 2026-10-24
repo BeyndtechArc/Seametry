@@ -1,7 +1,7 @@
 import { admissions, findAdmission } from "@/lib/allocation/admissions";
 import { allocationOffer } from "@/lib/allocation/offer";
-import { asciiPictures, type AsciiPicture } from "@/lib/ascii-pictures";
 import { evidenceDate, founded } from "../drawn/founding";
+import type { SceneName } from "./ascii-scenes";
 import { OpenedOrbit, type OpenedLeg } from "./opened-orbit";
 import styles from "./landing.module.css";
 
@@ -17,16 +17,16 @@ const powerNames: Record<string, string> = {
   ISSUER_CAN_MINT_MORE: "New supply",
 };
 
-// A picture of the kind of business under each leg, illustrative only.
-// There are five pictures for six legs, so two cloud businesses share
-// the server cabinets.
-const pictureOf: Record<string, AsciiPicture> = {
-  AMZNx: asciiPictures.warehouseAisle,
-  GOOGLx: asciiPictures.serverCabinets,
-  METAx: asciiPictures.glassTowers,
-  AAPLx: asciiPictures.robotArm,
-  NVDAx: asciiPictures.siliconWafer,
-  MSFTx: asciiPictures.serverCabinets,
+// A drawing of the kind of business under each leg, illustrative only.
+// There are five scenes for six legs, so two cloud businesses share the
+// server racks.
+const sceneOf: Record<string, SceneName> = {
+  AMZNx: "warehouseAisle",
+  GOOGLx: "serverRacks",
+  METAx: "glassTowers",
+  AAPLx: "robotArm",
+  NVDAx: "siliconWafer",
+  MSFTx: "serverRacks",
 };
 
 const stampKinds = { ALLOW: "allow", WARN: "warn", BLOCK: "block" } as const;
@@ -60,13 +60,13 @@ export function OpenedAlloy() {
         .map((reason) => ({ code: reason.code, label: powerNames[reason.code] ?? reason.code, fact: reason.fact })),
       stamp: lot.decision in stampKinds ? stampKinds[lot.decision as keyof typeof stampKinds] : undefined,
       decision: lot.decision,
-      picture: pictureOf[leg.symbol],
+      scene: sceneOf[leg.symbol],
     });
   }
 
   // The figure shows no caption (Storm, 24 October 2026); its sources travel
   // as the drawing's description, where assistive technology reads them.
-  const provenance = `${alloy.name}, from its founding record on Solana ${alloy.cluster}, ${alloy.foundedOn}, slot ${alloy.slot}; each leg is a devnet stand-in for the token named. Each leg as ${offer.policyVersion} read its mint, snapshot of ${evidenceDate.format(new Date(admissions.as_of))}. Each leg's picture is a stock photograph written in characters, illustrative only.`;
+  const provenance = `${alloy.name}, from its founding record on Solana ${alloy.cluster}, ${alloy.foundedOn}, slot ${alloy.slot}; each leg is a devnet stand-in for the token named. Each leg as ${offer.policyVersion} read its mint, snapshot of ${evidenceDate.format(new Date(admissions.as_of))}. Each leg's picture is drawn in characters, illustrative only.`;
 
   return (
     <figure className={styles.opened}>

@@ -134,7 +134,8 @@
 /* components.md, ASCII picture. The strip holds every leg's picture,
    stacked. The one shown prints in row by row, one step per row of
    characters; the one leaving fades. The ink is secondary text, so the
-   picture sits behind the card's facts rather than competing with them. */
+   picture sits behind the card's facts rather than competing with them;
+   its lit cells, a lamp or a window, blink to primary on four beats. */
 .openedPicture {
   position: relative;
   display: block;
@@ -154,6 +155,10 @@
   fill: var(--sm-text-secondary);
   font-family: var(--sm-font-family-digest);
   font-size: 10px;
+  /* The digest face joins pairs such as a rule and an upright into one box
+     glyph, which breaks a drawing's lines apart. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
   transition:
     opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard),
     clip-path 0s linear var(--sm-motion-duration-base);
@@ -162,19 +167,27 @@
 .asciiPicture[data-shown] {
   opacity: 1;
   clip-path: inset(0);
-  /* One step per row of the generator's 21. */
+  /* One step per row of the scene's 21. */
   transition:
     opacity 0s,
     clip-path var(--sm-motion-duration-sheet) steps(21, end);
 }
 
-.asciiPicture [data-ink="dark"],
-:global(:root[data-theme="dark"]) .asciiPicture [data-ink="light"] {
-  display: none;
+.lit {
+  fill: var(--sm-text-primary);
+  animation: blink 3.2s steps(1, end) infinite;
 }
 
-:global(:root[data-theme="dark"]) .asciiPicture [data-ink="dark"] {
-  display: inline;
+.lit[data-beat="1"] { animation-delay: -0.8s; }
+.lit[data-beat="2"] { animation-delay: -1.6s; }
+.lit[data-beat="3"] { animation-delay: -2.4s; }
+
+.asciiPicture:not([data-shown]) .lit {
+  animation-play-state: paused;
+}
+
+@keyframes blink {
+  50% { fill: var(--sm-text-secondary); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -182,6 +195,10 @@
   .openedBody,
   .asciiPicture {
     transition: none;
+  }
+
+  .lit {
+    animation: none;
   }
 }
 
@@ -347,9 +364,10 @@
   position: relative;
   left: calc(50% - 50vw);
   display: grid;
-  gap: var(--sm-space-6);
+  gap: var(--sm-space-8);
   width: 100vw;
-  padding: var(--sm-space-7) 0;
+  margin-top: var(--sm-space-9);
+  padding: var(--sm-space-11) 0;
   border-top: 0.5px solid var(--sm-line-strong);
   overflow: clip;
 }
@@ -367,14 +385,15 @@
   margin: 0;
   padding: 0 var(--sm-space-10) 0 0;
   list-style: none;
-  /* Long enough that a basket's name stays readable as it passes. */
-  animation: marquee 90s linear infinite;
+  /* About 25 pixels a second at full width (Storm, 25 October 2026: 90
+     seconds, about 62, read as hurried). */
+  animation: marquee 220s linear infinite;
 }
 
 .marqueeRow[data-reverse] .marqueeTrack {
   gap: var(--sm-space-8);
   padding-right: var(--sm-space-8);
-  animation-duration: 70s;
+  animation-duration: 160s;
   animation-direction: reverse;
 }
 
