@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Grade, LotMark, Stamp, type GradeName } from "@seametry/ui";
-import type { Photo } from "@/lib/photos";
+import { ASCII_COLS, ASCII_ROWS, type AsciiPicture } from "@/lib/ascii-pictures";
 import { Coin, Path, ShareTile, polar } from "../drawn/token-art";
 import styles from "./landing.module.css";
 
@@ -25,7 +25,7 @@ export type OpenedLeg = {
   powers: { code: string; label: string; fact: string }[];
   stamp?: "allow" | "warn" | "block";
   decision: string;
-  photo?: Photo;
+  picture?: AsciiPicture;
 };
 
 const WIDTH = 720;
@@ -42,6 +42,34 @@ const FADE_MS = 200;
 const TURN_MS = 900;
 /** Each further step of one turn adds this much, so a tap across the orbit turns no faster than the eye follows. */
 const EXTRA_STEP_MS = 260;
+
+/** Characters by how much ink they lay down, a non-breaking space first so SVG keeps it. */
+const RAMP = "\u00a0.:-=+*#%@";
+/** A cell is 6 by 10 units, a monospace glyph's 0.6 ratio, so the grid fills the card's 2:1 strip. */
+const CELL_W = 6;
+const CELL_H = 10;
+
+/**
+ * components.md, ASCII picture. One stock photograph written in characters:
+ * dark cells carry the most ink on the light ground, light cells on the dark
+ * ground, so neither theme shows a negative.
+ */
+function AsciiStrip({ picture, shown }: { picture: AsciiPicture; shown: boolean }) {
+  const inks = { light: (level: number) => RAMP[RAMP.length - 1 - level], dark: (level: number) => RAMP[level] };
+  return (
+    <svg viewBox={`0 0 ${ASCII_COLS * CELL_W} ${ASCII_ROWS * CELL_H}`} className={styles.asciiPicture} role="img" aria-label={picture.alt} aria-hidden={!shown} data-shown={shown ? "" : undefined}>
+      {(["light", "dark"] as const).map((theme) => (
+        <g key={theme} data-ink={theme}>
+          {picture.levels.map((line, row) => (
+            <text key={row} x={0} y={(row + 1) * CELL_H - 2} textLength={ASCII_COLS * CELL_W} lengthAdjust="spacingAndGlyphs">
+              {Array.from(line, (digit) => inks[theme](Number(digit))).join("")}
+            </text>
+          ))}
+        </g>
+      ))}
+    </svg>
+  );
+}
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
@@ -64,9 +92,9 @@ export function OpenedOrbit({ legs, symbol, artwork, policyVersion, provenance }
   const active = turns % legs.length;
   const angle = -turns * step;
   const leg = legs[shown];
-  // Every leg's photograph is in the strip from the start, so a swap is a
-  // crossfade between loaded images, never a wait for one to arrive.
-  const strip = [...new Map(legs.flatMap((item) => (item.photo ? [[item.photo.src, item.photo] as const] : []))).values()];
+  // Every leg's picture is in the strip from the start, so a swap only
+  // changes which one shows.
+  const strip = [...new Map(legs.flatMap((item) => (item.picture ? [[item.picture.source, item.picture] as const] : []))).values()];
   const base = legs.map((_, index) => polar(CX, CY, ORBIT, index * step));
 
   useEffect(() => {
@@ -221,11 +249,8 @@ export function OpenedOrbit({ legs, symbol, artwork, policyVersion, provenance }
 
       <article className={styles.openedCard} aria-label={`${leg.symbol}, opened`} data-hold="">
         {strip.length ? (
-          <span className={`${styles.photoGround} ${styles.openedPhoto}`}>
-            {strip.map((photo) => (
-              // eslint-disable-next-line @next/next/no-img-element -- next/image writes an inline style attribute, which this site's CSP refuses, and its transformations count against the hosting plan; the file is already sized.
-              <img key={photo.src} src={photo.src} width={photo.width} height={photo.height} alt={photo.src === leg.photo?.src ? photo.alt : ""} aria-hidden={photo.src !== leg.photo?.src} data-shown={photo.src === leg.photo?.src ? "" : undefined} loading="lazy" decoding="async" />
-            ))}
+          <span className={styles.openedPicture}>
+            {strip.map((picture) => <AsciiStrip key={picture.source} picture={picture} shown={picture.source === leg.picture?.source} />)}
           </span>
         ) : null}
         <div className={styles.openedBody}>

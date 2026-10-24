@@ -26,7 +26,7 @@ Reusable page sections. Use these before inventing a layout.
 | Glossary bridge | Unkey | Three terms from the page, defined, linking to the glossary |
 | Register footer | all | Real destinations only |
 
-Banned sections: logo marquee (until real integrations exist), testimonial walls, vanity counters, generic three-feature icon rows, pricing teasers before a product exists, "trusted by" without names that consented.
+Banned sections: a partner logo marquee (until real integrations exist; the Basket marquee shows the policy's own admitted stocks, not partners), testimonial walls, vanity counters, generic three-feature icon rows, pricing teasers before a product exists, "trusted by" without names that consented.
 
 ---
 
@@ -51,7 +51,7 @@ Banned sections: logo marquee (until real integrations exist), testimonial walls
 +---------------------------------------------------------------+
 | 03 Strike steps: Strike, Melt, a frozen leg's Claim           |
 +---------------------------------------------------------------+
-| 04 Basket cards: baskets a wallet can buy today               |
+| 04 Basket marquee: baskets a wallet can buy today             |
 +---------------------------------------------------------------+
 | 05 Proof strip and the anchor chain                           |
 +---------------------------------------------------------------+

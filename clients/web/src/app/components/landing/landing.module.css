@@ -2,32 +2,8 @@
    lift by surface tone and one top hairline, never shadow (foundations
    section 7). */
 
-/* components.md, Photo frame. Black and white and muted (Storm, 24 October
-   2026, replacing a green duotone): the photograph in grey, its contrast
-   lowered and a little of the ground let through, so it sits behind the
-   figures rather than competing with them. Dimmer in dark mode, where a
-   light photograph would glare against the ground. */
-.photoGround {
-  display: block;
-  overflow: hidden;
-  background: var(--sm-surface-tray);
-}
-
-.photoGround img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: grayscale(1) contrast(0.85);
-  opacity: 0.85;
-}
-
-:global(:root[data-theme="dark"]) .photoGround img {
-  filter: grayscale(1) contrast(0.85) brightness(0.75);
-}
-
 /* components.md, Opened Alloy. The orbit carries the composition; the opened
-   leg's card overlaps its photograph and receives the leader that runs level
+   leg's card overlaps its picture and receives the leader that runs level
    out of the orbit's right edge, so the drawing and the card read as one
    piece. */
 .opened {
@@ -145,7 +121,7 @@
   opacity: 0;
 }
 
-/* One object at the end of the leader: the leg's photograph as a strip
+/* One object at the end of the leader: the leg's picture as a strip
    across the card's top, its facts beneath, the card centred on the line. */
 .openedCard {
   display: grid;
@@ -155,21 +131,58 @@
   background: var(--sm-surface-raised);
 }
 
-/* The strip holds every leg's photograph, stacked; the shown one crossfades in. */
-.openedPhoto {
+/* components.md, ASCII picture. The strip holds every leg's picture,
+   stacked. The one shown prints in row by row, one step per row of
+   characters; the one leaving fades. The ink is secondary text, so the
+   picture sits behind the card's facts rather than competing with them. */
+.openedPicture {
   position: relative;
-  aspect-ratio: 3 / 1;
+  display: block;
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  background: var(--sm-surface-tray);
 }
 
-.openedPhoto img {
+.asciiPicture {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
-  transition: opacity var(--sm-motion-duration-sheet) var(--sm-motion-easing-standard);
+  clip-path: inset(0 0 100% 0);
+  pointer-events: none;
+  fill: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+  font-size: 10px;
+  transition:
+    opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard),
+    clip-path 0s linear var(--sm-motion-duration-base);
 }
 
-.openedPhoto img[data-shown] {
+.asciiPicture[data-shown] {
   opacity: 1;
+  clip-path: inset(0);
+  /* One step per row of the generator's 21. */
+  transition:
+    opacity 0s,
+    clip-path var(--sm-motion-duration-sheet) steps(21, end);
+}
+
+.asciiPicture [data-ink="dark"],
+:global(:root[data-theme="dark"]) .asciiPicture [data-ink="light"] {
+  display: none;
+}
+
+:global(:root[data-theme="dark"]) .asciiPicture [data-ink="dark"] {
+  display: inline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbitLabel,
+  .openedBody,
+  .asciiPicture {
+    transition: none;
+  }
 }
 
 .openedBody {
@@ -326,126 +339,117 @@
   max-width: var(--sm-size-readable);
 }
 
-/* components.md, Basket card. The plate sits across the photograph's lower
-   edge, half on it and half on the card, so the two read as one object. */
-.baskets {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--sm-space-5);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.basketCard {
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-  gap: var(--sm-space-5);
-  height: 100%;
-  padding-bottom: var(--sm-space-5);
-  border-top: 0.5px solid var(--sm-line-strong);
-  background: var(--sm-surface-sheet);
-  color: inherit;
-  text-decoration: none;
-  transition: background var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
-}
-
-.basketCard:hover,
-.basketCard:focus-visible {
-  background: var(--sm-surface-raised);
-}
-
-.basketCard:focus-visible {
-  outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-1);
-}
-
-.basketCover {
+/* components.md, Basket marquee. Across the whole window, like the Closing
+   wordmark: two rows that loop, the baskets large and slow, the stocks small
+   and the other way. Pointing at or focusing either row holds both, and
+   reduced motion stops them and lets each row scroll by hand. */
+.marquee {
   position: relative;
-  display: block;
-  margin-bottom: var(--sm-space-8);
+  left: calc(50% - 50vw);
+  display: grid;
+  gap: var(--sm-space-6);
+  width: 100vw;
+  padding: var(--sm-space-7) 0;
+  border-top: 0.5px solid var(--sm-line-strong);
+  overflow: clip;
 }
 
-.basketCover .photoGround {
-  aspect-ratio: 21 / 9;
+.marqueeRow {
+  display: flex;
+  width: max-content;
 }
 
-.basketCover img {
-  transition: transform var(--sm-motion-duration-sheet) var(--sm-motion-easing-standard);
+.marqueeTrack {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sm-space-10);
+  margin: 0;
+  padding: 0 var(--sm-space-10) 0 0;
+  list-style: none;
+  /* Long enough that a basket's name stays readable as it passes. */
+  animation: marquee 90s linear infinite;
 }
 
-.basketCard:hover .basketCover img,
-.basketCard:focus-visible .basketCover img {
-  transform: scale(1.04);
+.marqueeRow[data-reverse] .marqueeTrack {
+  gap: var(--sm-space-8);
+  padding-right: var(--sm-space-8);
+  animation-duration: 70s;
+  animation-direction: reverse;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .basketCover img,
-  .orbitLabel,
-  .openedBody,
-  .openedPhoto img {
-    transition: none;
+.marquee:hover .marqueeTrack,
+.marquee:focus-within .marqueeTrack {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-100%);
   }
 }
 
-.basketCover > span:last-child {
-  position: absolute;
-  left: var(--sm-space-5);
-  bottom: calc(var(--sm-space-11) / -2);
-  outline: var(--sm-space-2) solid var(--sm-surface-sheet);
-}
-
-.basketCard:hover .basketCover > span:last-child,
-.basketCard:focus-visible .basketCover > span:last-child {
-  outline-color: var(--sm-surface-raised);
-}
-
-.basketText {
-  display: grid;
-  gap: var(--sm-space-2);
-  padding: 0 var(--sm-space-5);
-  color: var(--sm-text-secondary);
-  font-size: var(--sm-font-size-small);
-}
-
-.basketText b {
+.marqueeBasket {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-5);
   color: var(--sm-text-primary);
+  text-decoration: none;
+}
+
+.marqueeBasket b {
   font-family: var(--sm-font-family-display);
-  font-size: var(--sm-font-size-title);
+  font-size: var(--sm-font-size-display);
   font-weight: var(--sm-font-weight-regular);
   letter-spacing: var(--sm-font-tracking-title);
+  line-height: 1;
+  white-space: nowrap;
+  transition: color var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
 }
 
-/* The code at one end, the count of stocks at the other. */
-.basketCode {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--sm-space-4);
+/* The count rides the name's cap line, as a catalogue numbers a lot. */
+.marqueeBasket span {
+  align-self: flex-start;
   color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-digest);
   font-size: var(--sm-font-size-micro);
+  white-space: nowrap;
 }
 
-/* The tray fits its marks (Storm, 24 October 2026: a full-width tray read badly). */
-.basketStack {
-  display: inline-flex;
-  align-self: end;
-  justify-self: start;
-  margin: 0 var(--sm-space-5);
-  padding: var(--sm-space-2) var(--sm-space-3);
-  background: var(--sm-surface-tray);
+@media (hover: hover) {
+  .marqueeBasket:hover b {
+    color: var(--sm-accent-touchText);
+  }
 }
 
-.basketStack > * {
-  flex: none;
-  width: var(--sm-space-7);
-  height: var(--sm-space-7);
-  border-radius: 50%;
-  outline: 2px solid var(--sm-surface-tray);
+.marqueeBasket:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
 }
 
-.basketStack > * + * {
-  margin-left: calc(var(--sm-space-3) * -1);
+.marqueeStock {
+  display: flex;
+  align-items: center;
+  gap: var(--sm-space-3);
+  color: var(--sm-text-secondary);
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-small);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marqueeRow {
+    width: auto;
+    overflow-x: auto;
+  }
+
+  .marqueeTrack {
+    animation: none;
+  }
+
+  .marqueeTrack[aria-hidden] {
+    display: none;
+  }
 }
 
 /* components.md, Anchor chain. Square nodes on one rule; the step not built
@@ -607,12 +611,6 @@
   border-bottom: 1px solid var(--sm-text-primary);
 }
 
-@media (max-width: 1050px) {
-  .baskets {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 /* Narrower, the opened leg moves under its orbit and the leader, which
    pointed at it across, is dropped. */
 @media (max-width: 900px) {
@@ -636,13 +634,13 @@
 }
 
 @media (max-width: 700px) {
-  .baskets {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
 
   .openedCard header {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .marqueeBasket b {
+    font-size: var(--sm-font-size-figure);
   }
 
   .openedCard header > :last-child {

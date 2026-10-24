@@ -5,7 +5,7 @@ import { MechanismPlate } from "@seametry/ui/plates";
 import { Discs } from "./components/figures/discs/discs";
 import { HallLine } from "./components/figures/hall-line/figure";
 import { AnchorChain } from "./components/landing/anchor-chain";
-import { BasketCards } from "./components/landing/basket-cards";
+import { BasketMarquee } from "./components/landing/basket-marquee";
 import { OpenedAlloy } from "./components/landing/opened-alloy";
 import { QuestionList } from "./components/landing/question-list";
 import { StrikeSteps } from "./components/landing/strike-steps";
@@ -71,7 +71,7 @@ export default async function Home() {
 
       <section className={styles.section}>
         <SectionHeading index="04" title={["Baskets a wallet can buy today,", "each stock settled straight to that wallet."]} />
-        <BasketCards />
+        <BasketMarquee />
       </section>
 
       <section className={`${styles.section} ${styles.proofSection}`}>
