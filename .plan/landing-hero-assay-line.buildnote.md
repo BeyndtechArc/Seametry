@@ -186,3 +186,13 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
              18. Storm, 24 October 2026: photographs are black and white and
                 muted, not a green duotone; the basket card's logo tray fits
                 its marks again (a full-width tray read badly).
+             19. Storm, 24 October 2026: section 04's four photographed
+                cards become the Basket marquee, every wholly admitted basket
+                large on one looping row and every admitted stock on a second
+                running the other way, holding when pointed at and still under
+                reduced motion. The Opened Alloy's photographs become ASCII
+                pictures generated from the same photographs, so no page sends
+                a photograph and public/photos is gone. A 3:1 strip of 120
+                columns read as noise; the strip is now 2:1 at 70 by 21,
+                sharpened and equalised. Assumed: the marquee shows all nine
+                baskets rather than the four featured before, since it can.

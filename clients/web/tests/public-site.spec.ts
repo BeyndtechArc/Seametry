@@ -944,7 +944,7 @@ test("the page ends on the house name alone, the discs rising into its letters a
   expect(await rise()).toBe(0);
 });
 
-test("the basket cards feature wholly admitted baskets, count them from the records, and load their photographs", async ({ page }) => {
+test("the basket marquee loops every wholly admitted basket once for a reader, holds when pointed at, and stands still under reduced motion", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const admitted = new Set(
     (evidence("admissions.json").instruments as { capacity_usdc: number; capacity_decision: { decision: string }; instrument: { symbol: string } }[])
@@ -955,27 +955,64 @@ test("the basket cards feature wholly admitted baskets, count them from the reco
 
   await page.goto("/");
   const section = page.locator("section").filter({ has: page.getByRole("heading", { level: 2, name: /^Baskets a wallet can buy today/ }) });
-  const cards = section.getByRole("link").filter({ has: page.locator("img") });
-  await expect(cards).toHaveCount(4);
-  for (const card of await cards.all()) {
-    const name = await card.getAttribute("aria-label");
-    const basket = buyable.find((candidate) => candidate.name === name);
-    expect(basket, `${name} is wholly admitted`).toBeDefined();
-    await expect(card).toHaveAttribute("href", `/app/baskets/${basket!.id}`);
-    await card.scrollIntoViewIfNeeded();
-    await expect.poll(() => card.locator("img").first().evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBeGreaterThan(0);
+  const row = section.getByRole("group", { name: "Baskets a wallet can buy" });
+  // Each basket is written twice so the loop has no seam; the copy is inert,
+  // so a reader and a keyboard meet each basket once.
+  const links = row.getByRole("link");
+  await expect(links).toHaveCount(buyable.length);
+  for (const basket of buyable) {
+    await expect(row.getByRole("link", { name: new RegExp(`^${basket.name} ${basket.members.length} stocks$`) })).toHaveAttribute("href", `/app/baskets/${basket.id}`);
   }
-  await expect(section).toContainText(`${buyable.length} baskets wholly admitted`);
-  // Photographs are black and white and muted, never tinted (Storm, 24 October 2026).
-  const treatments = await page.locator("main img[src^=\"/photos/\"]").evaluateAll((images) => images.map((image) => {
-    const style = getComputedStyle(image);
-    return { filter: style.filter, blend: style.mixBlendMode };
-  }));
-  expect(treatments.length).toBeGreaterThan(0);
-  for (const treatment of treatments) {
-    expect(treatment.filter).toContain("grayscale(1)");
-    expect(treatment.blend).toBe("normal");
-  }
+  expect(await row.locator("a").count()).toBe(buyable.length * 2);
+  expect(await row.locator("[inert] a").count()).toBe(buyable.length);
+  await expect(section.getByRole("group", { name: "Stocks admitted" }).getByRole("listitem")).toHaveCount(admitted.size);
+  await expect(section).toContainText(`${buyable.length} baskets wholly admitted from ${admitted.size} stocks`);
+
+  const track = row.locator("ul").first();
+  await section.scrollIntoViewIfNeeded();
+  const offset = () => track.evaluate((element) => new DOMMatrix(getComputedStyle(element).transform).m41);
+  const before = await offset();
+  await page.waitForTimeout(400);
+  expect(await offset()).toBeLessThan(before);
+  await row.hover();
+  const held = await offset();
+  await page.waitForTimeout(400);
+  expect(await offset()).toBe(held);
+  // The row runs across the whole window without widening the page.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1440);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  await expect(track).toHaveCSS("animation-name", "none");
+  await expect(row.locator("ul[aria-hidden]")).toBeHidden();
+});
+
+test("the opened Alloy's pictures are written in characters, inked for the theme, and no photograph is fetched", async ({ page }) => {
+  const fetched: string[] = [];
+  page.on("request", (request) => { if (/\.(webp|jpe?g)(\?|$)/.test(request.url()) && request.url().includes("/photos/")) fetched.push(request.url()); });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const first = evidence("alloys/index.json").alloys[0].legs[0].symbol;
+  const card = page.getByRole("article", { name: `${first}, opened` });
+  await card.scrollIntoViewIfNeeded();
+  // The strip over the card's facts; the header's logo is the card's only image.
+  await expect(card.locator(":scope > span img")).toHaveCount(0);
+  const picture = card.getByRole("img");
+  await expect(picture).toHaveCount(1);
+  expect(await picture.getAttribute("aria-label")).toBeTruthy();
+
+  // The same cell carries the most ink where the photograph is darkest on
+  // the light ground, and where it is lightest on the dark ground.
+  const firstRow = async () => picture.locator("g:visible text").first().textContent();
+  await page.evaluate(() => document.documentElement.setAttribute("data-theme", "light"));
+  const light = await firstRow();
+  await page.evaluate(() => document.documentElement.setAttribute("data-theme", "dark"));
+  const dark = await firstRow();
+  const ramp = "\u00a0.:-=+*#%@";
+  expect(light).toHaveLength(dark!.length);
+  expect([...light!].map((character) => ramp.length - 1 - ramp.indexOf(character)).join()).toBe([...dark!].map((character) => ramp.indexOf(character)).join());
+  expect(fetched).toEqual([]);
 });
 
 test("the footer's bench plays by the Hall's rules: a freeze refuses a Strike, a Melt holds the frozen leg as a Claim", async ({ page }) => {
