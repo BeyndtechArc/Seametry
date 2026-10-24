@@ -966,6 +966,16 @@ test("the basket cards feature wholly admitted baskets, count them from the reco
     await expect.poll(() => card.locator("img").first().evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBeGreaterThan(0);
   }
   await expect(section).toContainText(`${buyable.length} baskets wholly admitted`);
+  // Photographs are black and white and muted, never tinted (Storm, 24 October 2026).
+  const treatments = await page.locator("main img[src^=\"/photos/\"]").evaluateAll((images) => images.map((image) => {
+    const style = getComputedStyle(image);
+    return { filter: style.filter, blend: style.mixBlendMode };
+  }));
+  expect(treatments.length).toBeGreaterThan(0);
+  for (const treatment of treatments) {
+    expect(treatment.filter).toContain("grayscale(1)");
+    expect(treatment.blend).toBe("normal");
+  }
 });
 
 test("the footer's bench plays by the Hall's rules: a freeze refuses a Strike, a Melt holds the frozen leg as a Claim", async ({ page }) => {

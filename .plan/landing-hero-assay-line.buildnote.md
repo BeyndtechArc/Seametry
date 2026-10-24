@@ -183,3 +183,6 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 the lock took the press meant for it, so labels now take no
                 press; hover and focus show on each part's own outline
                 rather than on its larger invisible target.
+             18. Storm, 24 October 2026: photographs are black and white and
+                muted, not a green duotone; the basket card's logo tray fits
+                its marks again (a full-width tray read badly).
