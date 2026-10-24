@@ -174,3 +174,12 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 1,000,705 bytes to 251,956, the five leg photographs now in
                 the 02 strip included. The 02 card is empty for about 84 ms
                 on a swap, measured, rather than for the whole turn.
+             17. Storm, 24 October 2026: the footer's short line and the
+                squares above the wordmark are gone, and the wordmark's frame
+                starts just above its letters; the links are one segmented
+                group like the House rail's, quiet until pointed at. On the
+                bench, the lock sits below the vault: a held coin's target
+                reached the vault's foot, and a coin's hidden name tag over
+                the lock took the press meant for it, so labels now take no
+                press; hover and focus show on each part's own outline
+                rather than on its larger invisible target.

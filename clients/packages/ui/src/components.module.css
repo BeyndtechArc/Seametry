@@ -1804,23 +1804,32 @@
   gap: 0 var(--sm-space-8);
 }
 
+/* The links as one segmented group, as the House rail sets its routes: on
+   the sheet, quiet in tertiary text, rising to full ink on a raised chip
+   only when pointed at (Storm, 24 October 2026). */
 .footerLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: 0 var(--sm-space-6);
+  gap: var(--sm-space-1);
   margin: 0;
-  padding: 0;
+  padding: var(--sm-space-1);
   list-style: none;
+  background: var(--sm-surface-sheet);
 }
 
 .registerFooter .footerLinks a {
-  color: var(--sm-text-secondary);
+  min-height: calc(var(--sm-size-target) - var(--sm-space-3));
+  padding: 0 var(--sm-space-4);
+  border-radius: 0;
+  color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-small);
-  font-weight: var(--sm-font-weight-regular);
+  font-weight: var(--sm-font-weight-medium);
+  transition: color var(--sm-motion-duration-base) var(--sm-motion-easing-standard), background var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
 }
 
 .registerFooter .footerLinks a:hover {
   color: var(--sm-text-primary);
+  background: var(--sm-surface-raised);
 }
 
 .footerAccounts {
@@ -1841,26 +1850,6 @@
 
 .registerFooter .footerAccounts a:hover {
   color: var(--sm-text-primary);
-}
-
-/* A small tracked line in the digest face, set down onto the top of the
-   piece that follows it (the Closing wordmark, whose foot is cropped, so a
-   line under it would sit on nothing) where its left end is clear. */
-.registerFooter > p {
-  position: relative;
-  z-index: 1;
-  margin-bottom: calc(var(--sm-space-10) * -1);
-  color: var(--sm-text-tertiary);
-  font-family: var(--sm-font-family-digest);
-  font-size: var(--sm-font-size-micro);
-  letter-spacing: var(--sm-font-tracking-serial);
-}
-
-/* On a phone the wordmark is short, so the line keeps its own row. */
-@media (max-width: 700px) {
-  .registerFooter > p {
-    margin-bottom: 0;
-  }
 }
 
 @keyframes rule-breathe {

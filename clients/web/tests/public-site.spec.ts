@@ -923,13 +923,13 @@ test("the question list asks a few short questions and answers each with its How
   }
 });
 
-test("the page ends on the house name with one short line on it, the discs rising into its letters as it comes into view", async ({ page }) => {
+test("the page ends on the house name alone, the discs rising into its letters as it comes into view", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/terms");
   const wordmark = page.getByRole("contentinfo").locator(":scope > div[aria-hidden=true]").last();
   await expect(wordmark).toHaveCount(1);
-  // The last thing on the page, with its one short line set on its top edge.
-  expect(await wordmark.evaluate((element) => element === element.parentElement!.lastElementChild && element.previousElementSibling?.tagName === "P")).toBe(true);
+  // The last thing on the page, with nothing written over or under it.
+  expect(await wordmark.evaluate((element) => element === element.parentElement!.lastElementChild && element.parentElement!.querySelector(":scope > p") === null)).toBe(true);
   await expect(wordmark.locator("text").first()).toHaveText("Seametry");
   const rise = () => wordmark.locator(":scope > div").evaluate((element) => element.getBoundingClientRect().top - element.parentElement!.getBoundingClientRect().top);
   await wordmark.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - window.innerHeight + 20));
@@ -984,6 +984,16 @@ test("the footer's bench plays by the Hall's rules: a freeze refuses a Strike, a
   await press("Melt 1 STOIC");
   await expect(said.first()).toHaveText("Melted 1 STOIC. GOOGLx stays yours as a Claim.");
   await expect(footer.getByRole("button", { name: "Withdraw the GOOGLx Claim" })).toHaveCount(1);
+  // With the Claim seated in the vault above it, every point of the lock's
+  // target is the lock's, so a press meant for it never lands on a coin.
+  const lock = footer.getByRole("button", { name: /^Lift the freeze on GOOGLx$/ });
+  await lock.scrollIntoViewIfNeeded();
+  const owners = await lock.evaluate((element) => {
+    const box = element.querySelector("rect")!.getBoundingClientRect();
+    const points = [[0.5, 0.5], [0.05, 0.05], [0.95, 0.05], [0.05, 0.95], [0.95, 0.95]];
+    return points.map(([x, y]) => element.contains(document.elementFromPoint(box.left + box.width * x, box.top + box.height * y)));
+  });
+  expect(owners).toEqual([true, true, true, true, true]);
   await press("Withdraw the GOOGLx Claim");
   await expect(said.first()).toHaveText("Refused: GOOGLx is still frozen.");
   await press("Strike with AMZNx");
