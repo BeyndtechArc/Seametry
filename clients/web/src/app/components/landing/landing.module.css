@@ -2,16 +2,15 @@
    lift by surface tone and one top hairline, never shadow (foundations
    section 7). */
 
-/* components.md, Photo frame. The duotone: the photograph's luminosity over
-   a ground of the house green half blended into the tertiary grey, so any
-   photograph takes a muted house hue (Storm, 24 October 2026: the full
-   touch hue read loud) and sits at the same weight in both modes. Only the
-   ground's hue and saturation reach the picture, so the mix behaves alike
-   on the light and the dark ground. */
+/* components.md, Photo frame. Black and white and muted (Storm, 24 October
+   2026, replacing a green duotone): the photograph in grey, its contrast
+   lowered and a little of the ground let through, so it sits behind the
+   figures rather than competing with them. Dimmer in dark mode, where a
+   light photograph would glare against the ground. */
 .photoGround {
   display: block;
   overflow: hidden;
-  background: color-mix(in srgb, var(--sm-scale-touch-200) 50%, var(--sm-text-tertiary));
+  background: var(--sm-surface-tray);
 }
 
 .photoGround img {
@@ -19,8 +18,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(1) contrast(0.9);
-  mix-blend-mode: luminosity;
+  filter: grayscale(1) contrast(0.85);
+  opacity: 0.85;
+}
+
+:global(:root[data-theme="dark"]) .photoGround img {
+  filter: grayscale(1) contrast(0.85) brightness(0.75);
 }
 
 /* components.md, Opened Alloy. The orbit carries the composition; the opened
@@ -423,10 +426,11 @@
   font-size: var(--sm-font-size-micro);
 }
 
-/* The tray runs the card's width; the marks keep their size at its start. */
+/* The tray fits its marks (Storm, 24 October 2026: a full-width tray read badly). */
 .basketStack {
-  display: flex;
+  display: inline-flex;
   align-self: end;
+  justify-self: start;
   margin: 0 var(--sm-space-5);
   padding: var(--sm-space-2) var(--sm-space-3);
   background: var(--sm-surface-tray);

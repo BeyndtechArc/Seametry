@@ -558,14 +558,14 @@ Copyable prompts and endpoints, the machine-readable site version, the API refer
 ### Photo frame
 **Answers:** what kind of business sits under this instrument or theme?
 **Anatomy:** a cropped photograph at a short fixed ratio (2:1 in the Opened Alloy, 16:9 on a Basket card) in the house duotone. Neither a credit nor an "illustrative" note is shown on the page (Storm, 24 October 2026); the Opened Alloy's description says its photographs are illustrative; the Unsplash License asks none, and `photos.ts` keeps each photograph's source.
-**Identity:** the photograph's luminosity, at slightly lowered contrast, over the house green blended half into the tertiary grey, so every photo sits muted in the palette in both modes (Storm, 24 October 2026). Square corners, no shadow or rounded card.
+**Identity:** black and white and muted: the photograph in grey at lowered contrast, a little of the tray showing through, dimmer in dark mode (Storm, 24 October 2026, replacing a green duotone). Square corners, no shadow or rounded card.
 **States:** default; image unavailable shows the ground.
 **Data:** an entry of `clients/web/src/lib/photos.ts`: file, alt text, photographer, source page.
 **Rules:** landing only (foundations section 9). Never a person presented as a user or holder, a screen, or a named company's own premises.
 
 ### Basket card
 **Answers:** which published basket could my wallet buy today, and what does it hold?
-**Anatomy:** a short Photo frame (21:9) of the basket's theme with the Basket plate set across its lower left edge; the code with the count of stocks at the line's other end; name and category; the round Lot marks on a tray the card's full width, the marks at their own size from its start; the whole card one route link to the basket's record. Admission is stated once for the row, under it.
+**Anatomy:** a short Photo frame (21:9) of the basket's theme with the Basket plate set across its lower left edge; the code with the count of stocks at the line's other end; name and category; the round Lot marks on a tray that fits them; the whole card one route link to the basket's record. Admission is stated once for the row, under it.
 **Identity:** the Basket register's facts in a card, for the landing only. The plate overlaps the photo so the two read as one object. Hover or focus steps the surface tone and eases the photograph a few percent closer, and reduced motion keeps it still.
 **States:** default; hover or focus; a basket not wholly admitted is not featured.
 **Data:** `allocationIndexes`, admission from the admissions snapshot, with its policy version and snapshot date stated once under the row.
