@@ -1,6 +1,7 @@
 import bs58 from "bs58";
 import { VersionedTransaction } from "@solana/web3.js";
 import type { PreparedLeg } from "../allocation/execution";
+import { walletChanges } from "../allocation/wallet-changes";
 import { funnel } from "../funnel";
 import { executions } from "./store";
 import type { Execution, ExecutionKind, Leg } from "./record";
@@ -27,10 +28,6 @@ function toBase64(bytes: Uint8Array): string {
   let text = "";
   for (const byte of bytes) text += String.fromCharCode(byte);
   return btoa(text);
-}
-
-function sameBytes(a: Uint8Array, b: Uint8Array) {
-  return a.length === b.length && a.every((byte, index) => byte === b[index]);
 }
 
 /** Just over Helius Free's one sendTransaction a second, so consecutive RPC sends never meet in the same second. */
@@ -76,7 +73,6 @@ export async function approveAndSend({
   signer: Signer;
 }): Promise<Execution> {
   const originals = prepared.map((leg) => VersionedTransaction.deserialize(fromBase64(leg.transaction)));
-  const before = originals.map((transaction) => transaction.message.serialize().slice());
   const step = { wallet, quoteId: prepared[0]?.quoteId };
   funnel("signature_requested", step);
   let signed: VersionedTransaction[];
@@ -87,8 +83,12 @@ export async function approveAndSend({
     throw error;
   }
   if (signed.length !== originals.length) throw new NotSent(`The wallet returned ${signed.length} of ${originals.length} transactions. Nothing was sent.`);
-  const changed = signed.findIndex((transaction, index) => !sameBytes(before[index], transaction.message.serialize()));
-  if (changed >= 0) throw new NotSent(`The wallet changed the ${prepared[changed].symbol} transaction Seametry checked. Nothing was sent.`);
+  // Phantom adds guard instructions to a transaction it can simulate; the
+  // trade itself must be exactly what Seametry checked (wallet-changes.ts).
+  for (const [index, transaction] of signed.entries()) {
+    const change = walletChanges(originals[index].message, transaction.message);
+    if (change) throw new NotSent(`The wallet changed the ${prepared[index].symbol} transaction Seametry checked: ${change}. Nothing was sent.`);
+  }
   if (signer.connectedWallet() !== wallet) throw new NotSent("The connected wallet changed while signing. Nothing was sent.");
 
   const signedAt = new Date().toISOString();
@@ -128,12 +128,12 @@ export async function approveAndSend({
   legs.forEach((leg, index) => {
     if (leg.phase !== "signed") return;
     if (prepared[index].landing === "rpc") toRpc.push(index);
-    else void send(execution.id, leg.signature, toBase64(signed[index].serialize()), prepared[index].approval);
+    else void send(execution.id, leg.signature, toBase64(signed[index].serialize()), prepared[index]);
   });
   void (async () => {
     for (const [turn, index] of toRpc.entries()) {
       if (turn > 0) await new Promise((resolve) => setTimeout(resolve, RPC_SEND_SPACING_MS));
-      await send(execution.id, legs[index].signature, toBase64(signed[index].serialize()), prepared[index].approval);
+      await send(execution.id, legs[index].signature, toBase64(signed[index].serialize()), prepared[index]);
     }
   })();
   return execution;
@@ -144,11 +144,12 @@ export async function approveAndSend({
  * network. Any other failure may have come after the broadcast, so the leg
  * is left for the watcher, which settles it either way by its deadline.
  */
-async function send(executionId: string, signature: string, transaction: string, approval: string) {
+/** Sends a signed leg with the transaction Seametry approved, which the server checks it against. */
+async function send(executionId: string, signature: string, transaction: string, prepared: PreparedLeg) {
   let phase: Leg["phase"] = "sent";
   let problem: Leg["problem"];
   try {
-    const response = await fetch("/api/allocation/submit", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ transaction, approval }) });
+    const response = await fetch("/api/allocation/submit", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ transaction, approved: prepared.transaction, approval: prepared.approval }) });
     const body = (await response.json().catch(() => ({}))) as { signature?: string; error?: string; sent?: boolean; technical?: string };
     if (!response.ok && body.sent === false) {
       phase = "refused";

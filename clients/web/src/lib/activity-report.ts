@@ -85,17 +85,25 @@ export function quoteReport({ id, wallet, kind, subject, templateId, planSize, f
  * any other failure may have been broadcast, so it is uncertain, the same
  * reading the submit route gives the browser.
  */
-export function submissionReport(signedBase64: string, submittedAt: Date, outcome: { sent: true } | { sent: false; definitelyNotSent: boolean; text: string }): ActivitySubmission | undefined {
+/**
+ * The leg is named by the message its approval bound, the one the quote
+ * report recorded; a wallet's guard instructions change the signed message
+ * but not which leg it is. The signature is the signed transaction's, the one
+ * the chain will know.
+ */
+export function submissionReport(signedBase64: string, approvedBase64: string, submittedAt: Date, outcome: { sent: true } | { sent: false; definitelyNotSent: boolean; text: string }): ActivitySubmission | undefined {
   let transaction: VersionedTransaction;
+  let approved: VersionedTransaction;
   try {
     transaction = VersionedTransaction.deserialize(Buffer.from(signedBase64, "base64"));
+    approved = VersionedTransaction.deserialize(Buffer.from(approvedBase64, "base64"));
   } catch {
     return undefined;
   }
   const first = transaction.signatures[0];
   const signed = first && first.some((byte) => byte !== 0);
   return {
-    message_sha256: messageDigest(transaction.message.serialize()),
+    message_sha256: messageDigest(approved.message.serialize()),
     submitted_at: submittedAt.toISOString(),
     ...(signed ? { signature: bs58.encode(first) } : {}),
     ...(outcome.sent
