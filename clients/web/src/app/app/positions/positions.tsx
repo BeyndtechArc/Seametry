@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ContinueAction, Field, IconButton, Key, LotMark, QuietAction, QuoteBlock, StepTrack } from "@seametry/ui";
 import { Identity, List, ListCell, ListRow } from "@seametry/ui/list";
@@ -13,6 +12,7 @@ import { ModalSheet } from "@seametry/ui/modal-sheet";
 import { formatAmount, formatBalance, parseAmount } from "@/lib/amount";
 import type { PreparedLeg } from "@/lib/allocation/execution";
 import type { HeldPosition } from "@/lib/allocation/positions";
+import { MIN_LEG_USDC_ATOMS, USDC_SCALE } from "@/lib/allocation/rules";
 import { allocationHoldings, endedAt, type AllocationHolding } from "@/lib/execution/record";
 import { approveAndSend, NotSent, type Signer } from "@/lib/execution/run";
 import { useExecutions } from "@/lib/execution/store";
@@ -34,6 +34,19 @@ async function responseJson<T>(response: Response): Promise<T> {
   const body = await response.json();
   if (!response.ok) throw new Error(body.error ?? `The request returned ${response.status}.`);
   return body as T;
+}
+
+/**
+ * One purchase of one holding, quoted as an Allocation of that stock alone,
+ * so it is checked, approved and recorded as every purchase is. A 402 is a
+ * shortfall: nothing was prepared, and the holder is told what to fund.
+ */
+async function quotePurchase(wallet: string, mint: string, symbol: string, usdcAtoms: bigint): Promise<PreparedLeg> {
+  const response = await fetch("/api/allocation/prepare-batch", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ wallet, legs: [{ mint, usdcAtoms: usdcAtoms.toString() }], planMints: [mint], subject: symbol, firstTouch: firstTouchFor(wallet) }) });
+  const [quoted] = await responseJson<PreparedLeg[]>(response);
+  firstTouchSent(wallet);
+  funnel("review_opened", { wallet, quoteId: quoted?.quoteId });
+  return quoted;
 }
 
 /** Every leg in one request, so one server paces their Jupiter calls together. */
@@ -61,6 +74,8 @@ export function Positions() {
   const [tradeTab, setTradeTab] = useState<"buy" | "sell">("sell");
   const [stage, setStage] = useState<Stage>("amount");
   const [amount, setAmount] = useState("");
+  // The Buy tab's amount is USDC, so it is kept apart from the sale's.
+  const [spend, setSpend] = useState("");
   const [prepared, setPrepared] = useState<PreparedLeg>();
   const [tradeProblem, setTradeProblem] = useState<string>();
   const [now, setNow] = useState(() => Date.now());
@@ -97,12 +112,21 @@ export function Positions() {
   const parsed = position && amount ? parseAmount(amount, position.scale) : undefined;
   const amountProblem = parsed && "refused" in parsed ? parsed.refused : parsed && "atoms" in parsed && parsed.atoms > BigInt(position!.sellableAtoms) ? `The associated token account holds ${formatAmount(position!.sellableAtoms, position!.scale)} ${position!.symbol} available to this route.` : undefined;
   const validAtoms = parsed && "atoms" in parsed && parsed.atoms > 0n && !amountProblem ? parsed.atoms : undefined;
+  const spendParsed = spend ? parseAmount(spend, USDC_SCALE) : undefined;
+  const spendProblem = spendParsed && "refused" in spendParsed ? spendParsed.refused : spendParsed && "atoms" in spendParsed && spendParsed.atoms < MIN_LEG_USDC_ATOMS ? `Spend at least ${formatBalance(MIN_LEG_USDC_ATOMS, USDC_SCALE)} USDC.` : undefined;
+  const validSpend = spendParsed && "atoms" in spendParsed && !spendProblem ? spendParsed.atoms : undefined;
   const remaining = prepared ? Math.max(0, Math.ceil((Date.parse(prepared.expiresAt) - now) / 1000)) : 0;
 
   function openTrade(mint: string) {
     setSelectedMint(mint);
     setTradeTab("sell");
     setAmount("");
+    setSpend("");
+    toAmount();
+  }
+
+  function chooseTab(tab: "buy" | "sell") {
+    setTradeTab(tab);
     toAmount();
   }
 
@@ -138,6 +162,35 @@ export function Positions() {
     setTradeProblem(undefined);
     try {
       await approveAndSend({ wallet, kind: "sell", subject: position.symbol, prepared: [{ ...prepared, mint: position.mint, symbol: position.symbol }], signer });
+      setSelectedMint(undefined);
+      setPrepared(undefined);
+      setStage("amount");
+    } catch (error) {
+      setTradeProblem(error instanceof NotSent ? error.message : `${error instanceof Error ? error.message : String(error)} Nothing was sent.`);
+      setStage("review");
+    }
+  }
+
+  async function reviewPurchase() {
+    if (!wallet || !position || !validSpend) return;
+    setStage("quoting");
+    setTradeProblem(undefined);
+    try {
+      setPrepared(await quotePurchase(wallet, position.mint, position.symbol, validSpend));
+      setNow(Date.now());
+      setStage("review");
+    } catch (error) {
+      setTradeProblem(error instanceof Error ? error.message : String(error));
+      setStage("amount");
+    }
+  }
+
+  async function signPurchase() {
+    if (!wallet || !position || !prepared) return;
+    setStage("signing");
+    setTradeProblem(undefined);
+    try {
+      await approveAndSend({ wallet, kind: "buy", subject: position.symbol, prepared: [{ ...prepared, mint: position.mint, symbol: position.symbol }], signer });
       setSelectedMint(undefined);
       setPrepared(undefined);
       setStage("amount");
@@ -183,6 +236,14 @@ export function Positions() {
       setSale((current) => current && { ...current, stage: "review", problem: error instanceof Error ? error.message : String(error) });
     }
   }
+
+  /** A purchase or a sale's terms, in the unit it delivers; the routing fee is USDC either way. */
+  const quoteView = (quote: PreparedLeg, unit: string) => (
+    <div className={styles.quote}>
+      <QuoteBlock floor={formatAmount(quote.floorAtoms, quote.outScale)} expected={formatAmount(quote.outAtoms, quote.outScale)} unit={unit} fees={[{ label: `Seametry routing fee, ${formatAmount(BigInt(quote.routingFeeBps), 2)}%${quote.tipOffsetBps > 0 ? `, ${formatAmount(BigInt(quote.tipOffsetBps), 2)}% lower to cover the landing tip` : ""}`, value: `${formatAmount(quote.routingFeeAtoms, USDC_SCALE)} USDC` }, { label: "Priority fee set by the route", value: `${formatAmount(quote.priorityFeeLamports, 9)} SOL` }, ...(quote.landing === "sender" ? [{ label: "Landing tip to Helius Sender", value: `${formatAmount(quote.tipLamports, 9)} SOL` }] : []), { label: "Venue fees", value: "Included in expected output" }]} route={`Jupiter through ${quote.route.join(", ")}, slot ${quote.contextSlot}`} received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(quote.receivedAt)) / 1000))}s`, absolute: quote.receivedAt }} secondsLeft={remaining} />
+      <p>Simulated on mainnet for this wallet: {quote.simulated.map((change) => `${change.atoms.startsWith("-") ? "" : "+"}${formatAmount(change.atoms, change.scale)} ${change.unit}`).join("; ")}.</p>
+    </div>
+  );
 
   const held = reading?.wallet === wallet ? reading : undefined;
   return (
@@ -288,22 +349,29 @@ export function Positions() {
             title={`Trade ${position?.symbol ?? "instrument"}`}
             register="Mainnet"
             closeLabel="Hide trade sheet"
-            footer={position ? tradeTab === "buy" ? (
-              <Link className={styles.sheetLink} href={`/app/baskets/build?add=${encodeURIComponent(position.mint)}`}>Buy {position.symbol}</Link>
-            ) : stage === "amount" || stage === "quoting" ? (
+            footer={position ? stage === "amount" || stage === "quoting" ? tradeTab === "buy" ? (
+              <Key type="button" onClick={() => void reviewPurchase()} disabled={!validSpend || !canSign} busy={stage === "quoting"} busyLabel="Checking purchase" disabledReason={!canSign ? "This wallet cannot sign transactions in this browser." : `Enter at least ${formatBalance(MIN_LEG_USDC_ATOMS, USDC_SCALE)} USDC to spend.`}>Review purchase</Key>
+            ) : (
               <Key type="button" onClick={() => void reviewSale()} disabled={!validAtoms || !canSign} busy={stage === "quoting"} busyLabel="Checking sale" disabledReason={!canSign ? "This wallet cannot sign transactions in this browser." : "Enter an amount to sell, up to what this route can take."}>Review sale</Key>
             ) : remaining === 0 && stage === "review" ? (
-              <ContinueAction type="button" onClick={() => void reviewSale()}>Request current terms</ContinueAction>
+              <ContinueAction type="button" onClick={() => void (tradeTab === "buy" ? reviewPurchase() : reviewSale())}>Request current terms</ContinueAction>
             ) : (
-              <Key type="button" onClick={() => void signSale()} busy={stage === "signing"} busyLabel="Waiting for wallet">Sign sale</Key>
+              <Key type="button" onClick={() => void (tradeTab === "buy" ? signPurchase() : signSale())} busy={stage === "signing"} busyLabel="Waiting for wallet">{tradeTab === "buy" ? "Sign purchase" : "Sign sale"}</Key>
             ) : undefined}
           >
             {position ? <div className={styles.sale}>
               {stage === "amount" || stage === "quoting" ? <div className={styles.tradeTabs} role="tablist" aria-label="Trade direction">
-                <button type="button" role="tab" aria-selected={tradeTab === "buy"} onClick={() => setTradeTab("buy")}>Buy</button>
-                <button type="button" role="tab" aria-selected={tradeTab === "sell"} onClick={() => setTradeTab("sell")}>Sell</button>
+                <button type="button" role="tab" aria-selected={tradeTab === "buy"} onClick={() => chooseTab("buy")}>Buy</button>
+                <button type="button" role="tab" aria-selected={tradeTab === "sell"} onClick={() => chooseTab("sell")}>Sell</button>
               </div> : null}
-              {tradeTab === "buy" ? <div className={styles.tradePanel} role="tabpanel"><p>Buy {position.symbol} into this wallet through an Allocation. The purchase receives a fresh mainnet quote before signing.</p></div> : <div className={styles.tradePanel} role="tabpanel">
+              {tradeTab === "buy" ? <div className={styles.tradePanel} role="tabpanel">
+                <StepTrack label="Purchase steps" steps={["Amount", "Review"]} current={stage === "review" || stage === "signing" ? 1 : 0} onStep={(index) => { if (index === 0 && stage !== "signing") toAmount(); }} />
+                {stage === "amount" || stage === "quoting" ? <>
+                  <p>A market swap from USDC into {position.symbol}, settled straight to this wallet.</p>
+                  <Field id="purchase-amount" label="USDC to spend" inputMode="decimal" value={spend} disabled={stage === "quoting"} onChange={(event) => { setSpend(event.target.value); toAmount(); }} message={spendProblem ?? `At least ${formatBalance(MIN_LEG_USDC_ATOMS, USDC_SCALE)} USDC. The quote is fetched fresh from mainnet before you sign.`} invalid={Boolean(spendProblem)} />
+                </> : prepared ? quoteView(prepared, position.symbol) : null}
+                {tradeProblem ? <Callout tone="blocked" announce>{tradeProblem}</Callout> : null}
+              </div> : <div className={styles.tradePanel} role="tabpanel">
                 <StepTrack label="Sale steps" steps={["Amount", "Review"]} current={stage === "review" || stage === "signing" ? 1 : 0} onStep={(index) => { if (index === 0 && stage !== "signing") toAmount(); }} />
                 {stage === "amount" || stage === "quoting" ? <>
                   <p>A market swap into USDC. This is not issuer redemption or an Alloy Melt.</p>
@@ -313,10 +381,7 @@ export function Positions() {
                     <QuietAction type="button" onClick={() => fillAvailable(50n)} disabled={position.sellableAtoms === "0"}>Use 50%</QuietAction>
                     <QuietAction type="button" onClick={() => fillAvailable(100n)} disabled={position.sellableAtoms === "0"}>Use available balance</QuietAction>
                   </div>
-                </> : prepared ? <div className={styles.quote}>
-                  <QuoteBlock floor={formatAmount(prepared.floorAtoms, 6)} expected={formatAmount(prepared.outAtoms, 6)} unit="USDC" fees={[{ label: `Seametry routing fee, ${formatAmount(BigInt(prepared.routingFeeBps), 2)}%${prepared.tipOffsetBps > 0 ? `, ${formatAmount(BigInt(prepared.tipOffsetBps), 2)}% lower to cover the landing tip` : ""}`, value: `${formatAmount(prepared.routingFeeAtoms, 6)} USDC` }, { label: "Priority fee set by the route", value: `${formatAmount(prepared.priorityFeeLamports, 9)} SOL` }, ...(prepared.landing === "sender" ? [{ label: "Landing tip to Helius Sender", value: `${formatAmount(prepared.tipLamports, 9)} SOL` }] : []), { label: "Venue fees", value: "Included in expected output" }]} route={`Jupiter through ${prepared.route.join(", ")}, slot ${prepared.contextSlot}`} received={{ relative: `${Math.max(0, Math.floor((now - Date.parse(prepared.receivedAt)) / 1000))}s`, absolute: prepared.receivedAt }} secondsLeft={remaining} />
-                  <p>Simulated on mainnet for this wallet: {prepared.simulated.map((change) => `${change.atoms.startsWith("-") ? "" : "+"}${formatAmount(change.atoms, change.scale)} ${change.unit}`).join("; ")}.</p>
-                </div> : null}
+                </> : prepared ? quoteView(prepared, "USDC") : null}
                 {tradeProblem ? <Callout tone="blocked" announce>{tradeProblem}</Callout> : null}
               </div>}
             </div> : null}

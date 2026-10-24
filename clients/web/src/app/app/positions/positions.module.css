@@ -44,17 +44,6 @@
   background: var(--sm-surface-inverse);
 }
 .tradeTabs button:focus-visible { outline: 2px solid var(--sm-accent-provenance); outline-offset: var(--sm-space-1); }
-.sheetLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--sm-size-target);
-  padding: 0 var(--sm-space-6);
-  color: var(--sm-text-onTouch);
-  background: var(--sm-accent-touch);
-  text-decoration: none;
-}
-.sheetLink:focus-visible { outline: 2px solid var(--sm-accent-provenance); }
 
 .notice,
 .quote p {

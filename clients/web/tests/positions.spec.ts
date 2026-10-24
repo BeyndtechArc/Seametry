@@ -256,8 +256,14 @@ test("holdings names the exit route without presenting it as redemption", async 
   await expect(sheet).toBeVisible();
   await expect(sheet.getByRole("tab", { name: "Sell" })).toHaveAttribute("aria-selected", "true");
   await expect(sheet.getByText("A market swap into USDC. This is not issuer redemption or an Alloy Melt.")).toBeVisible();
+  // Buy works in the sheet itself (Storm, 24 October 2026), it does not send the holder back to choose.
   await sheet.getByRole("tab", { name: "Buy" }).click();
-  await expect(sheet.getByRole("link", { name: "Buy AMZNx" })).toHaveAttribute("href", `/app/baskets/build?add=${encodeURIComponent(lot.instrument.mint)}`);
+  await expect(sheet.getByRole("link")).toHaveCount(0);
+  await expect(sheet.getByText("A market swap from USDC into AMZNx, settled straight to this wallet.")).toBeVisible();
+  await expect(sheet.getByRole("button", { name: "Review purchase" })).toBeDisabled();
+  await sheet.getByLabel("USDC to spend").fill("0.5");
+  await expect(sheet.getByText("Spend at least 1 USDC.")).toBeVisible();
+  await expect(sheet.getByRole("button", { name: "Review purchase" })).toBeDisabled();
   await sheet.getByRole("tab", { name: "Sell" }).click();
   await sheet.getByRole("button", { name: "Use 50%" }).click();
   await expect(sheet.getByLabel("Amount of AMZNx to sell")).toHaveValue("0.05");
@@ -266,4 +272,37 @@ test("holdings names the exit route without presenting it as redemption", async 
   await page.getByLabel("Amount of AMZNx to sell").fill("0.2");
   await expect(page.getByText(/associated token account holds/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Review sale" })).toBeDisabled();
+});
+
+test("a purchase steps from amount to review in the sheet, quoted as one stock, then hands over to the toast on approval", async ({ page }) => {
+  await registerTestWallet(page, { trusted: true, signs: true });
+  const lot = admissions.instruments.find((entry) => entry.instrument.symbol === "AMZNx")!;
+  await page.route("**/api/allocation/positions?**", (route) => route.fulfill({ json: {
+    wallet, network: "mainnet", source: "Solana mainnet RPC", observedAt: new Date().toISOString(), outsideRegister: 0,
+    positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
+  } }));
+  const asked: { wallet: string; legs: { mint: string; usdcAtoms: string }[]; planMints: string[]; subject: string }[] = [];
+  await page.route("**/api/allocation/prepare-batch", async (route) => {
+    asked.push(route.request().postDataJSON());
+    await route.fulfill({ json: [preparedLeg({ inAtoms: "2000000", inScale: 6, outAtoms: "940000", floorAtoms: "935300", outScale: lot.decimals, simulated: [{ atoms: "-2000000", scale: 6, unit: "USDC" }, { atoms: "940000", scale: lot.decimals, unit: "AMZNx" }] })] });
+  });
+  const submits = await acceptSubmits(page);
+  await answerChain(page, () => ({ phase: "landed", changes: [{ mint: lot.instrument.mint, atoms: "940000", scale: lot.decimals }] }));
+
+  await page.goto("/app/positions");
+  await page.getByText("Connect", { exact: true }).click();
+  await page.getByRole("button", { name: "Connect Test wallet" }).click();
+  await page.getByRole("button", { name: "Trade AMZNx" }).click();
+  const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
+  await sheet.getByRole("tab", { name: "Buy" }).click();
+  await expect(sheet.getByRole("list", { name: "Purchase steps" })).toContainText("Amount");
+  await sheet.getByLabel("USDC to spend").fill("2");
+  await sheet.getByRole("button", { name: "Review purchase" }).click();
+
+  expect(asked).toEqual([expect.objectContaining({ wallet, legs: [{ mint: lot.instrument.mint, usdcAtoms: "2000000" }], planMints: [lot.instrument.mint], subject: "AMZNx" })]);
+  await expect(sheet.getByText("Simulated on mainnet for this wallet: −2.000000 USDC; +0.00940000 AMZNx.")).toBeVisible();
+  await sheet.getByRole("button", { name: "Sign purchase" }).click();
+  await expect(sheet).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Requests in progress" })).toContainText("AMZNx");
+  await expect.poll(submits).toBe(1);
 });
