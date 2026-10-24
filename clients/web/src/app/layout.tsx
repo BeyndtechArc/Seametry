@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "@seametry/ui/tokens.css";
 import "./globals.css";
-import { SiteWalletProvider } from "@/lib/wallet-provider";
+import { FirstTouchSignal } from "./first-touch-signal";
 import { sentient, switzer, fragmentMono } from "./fonts";
 
 // A shared link previews with the meta flyer. Crawlers need an absolute URL,
@@ -41,7 +41,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${sentient.variable} ${switzer.variable} ${fragmentMono.variable}`}
     >
       <body>
-        <SiteWalletProvider>{children}</SiteWalletProvider>
+        <FirstTouchSignal />
+        {children}
       </body>
     </html>
   );

@@ -7,12 +7,22 @@ import { identityOf } from "@/lib/instrument-identity";
 
 // The Alloy the public pages draw, as its founding record states it. Stoic
 // Crew is the one Alloy with a founding record (shared/evidence/alloys/
-// index.json, written by scripts/record-founding.ts from devnet); its legs are devnet
-// stand-ins, each recorded against the real mint it stands in for, whose
-// decimals, name and logo come from the admissions snapshot and the logo
-// manifest rather than from this file.
+// index.json, written by scripts/record-founding.ts from devnet); its legs
+// are devnet stand-ins, each recorded against the real mint it stands in
+// for, whose decimals, name and logo come from the admissions snapshot and
+// the logo manifest rather than from this file.
 
 export const evidenceDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+/**
+ * The drawings show the artwork at most about 130px across, so they use a
+ * 256px WebP derived from it (sharp, quality 80) beside the original, which
+ * stays the token's published image. The original is 937,933 bytes and was
+ * fetched on every public page; the derived file is 7,378 (24 October 2026).
+ */
+export function drawnArtwork(published: string) {
+  return published.replace(/\.png$/, "-256.webp");
+}
 
 export type FoundedLeg = {
   symbol: string;
@@ -49,7 +59,7 @@ export function founded() {
     name: record.name,
     symbol: record.symbol,
     cluster: record.cluster,
-    artwork: new URL(record.image).pathname,
+    artwork: drawnArtwork(new URL(record.image).pathname),
     signature: record.founding.signature,
     slot: BigInt(record.founding.slot).toLocaleString("en-US"),
     foundedOn: evidenceDate.format(new Date(record.founding.block_time)),

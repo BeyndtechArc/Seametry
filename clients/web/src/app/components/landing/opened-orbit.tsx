@@ -51,6 +51,11 @@ export function OpenedOrbit({ legs, symbol, artwork, policyVersion, provenance }
   // ever turns one way.
   const [turns, setTurns] = useState(0);
   const [turning, setTurning] = useState(false);
+  // The leg the card shows. It moves to the next leg as soon as the card has
+  // faded out, so the card fades back in while the ring is still turning
+  // rather than standing empty for the whole turn (Storm, 24 October 2026).
+  const [shown, setShown] = useState(0);
+  const [fading, setFading] = useState(false);
   const stage = useRef<HTMLDivElement>(null);
   const ring = useRef<SVGGElement>(null);
   const coins = useRef<(SVGGElement | null)[]>([]);
@@ -58,7 +63,10 @@ export function OpenedOrbit({ legs, symbol, artwork, policyVersion, provenance }
 
   const active = turns % legs.length;
   const angle = -turns * step;
-  const leg = legs[active];
+  const leg = legs[shown];
+  // Every leg's photograph is in the strip from the start, so a swap is a
+  // crossfade between loaded images, never a wait for one to arrive.
+  const strip = [...new Map(legs.flatMap((item) => (item.photo ? [[item.photo.src, item.photo] as const] : []))).values()];
   const base = legs.map((_, index) => polar(CX, CY, ORBIT, index * step));
 
   useEffect(() => {
@@ -96,12 +104,17 @@ export function OpenedOrbit({ legs, symbol, artwork, policyVersion, provenance }
         setTurning(false);
         schedule();
       };
+      const target = (at + count) % legs.length;
       if (reduced) {
         write(to);
+        setShown(target);
         return finish();
       }
       setTurning(true);
+      setFading(true);
       timer = window.setTimeout(() => {
+        setShown(target);
+        setFading(false);
         const start = performance.now();
         const duration = TURN_MS + (count - 1) * EXTRA_STEP_MS;
         const tick = (now: number) => {
@@ -152,7 +165,7 @@ export function OpenedOrbit({ legs, symbol, artwork, policyVersion, provenance }
   const holds = legs.map((item) => `${item.units} ${item.symbol}`).join(", ");
 
   return (
-    <div className={styles.openedStage} ref={stage} data-turning={turning ? "" : undefined}>
+    <div className={styles.openedStage} ref={stage} data-turning={turning ? "" : undefined} data-fading={fading ? "" : undefined}>
       <svg viewBox={`0 ${TOP} ${WIDTH} ${HEIGHT}`} className={styles.orbit} role="group" aria-label={`One ${symbol} share holds ${holds}.`}>
         <desc>{provenance}</desc>
         <circle cx={CX} cy={CY} r={ORBIT + 84} className={styles.ringOuter} />
@@ -207,10 +220,12 @@ export function OpenedOrbit({ legs, symbol, artwork, policyVersion, provenance }
       </svg>
 
       <article className={styles.openedCard} aria-label={`${leg.symbol}, opened`} data-hold="">
-        {leg.photo ? (
+        {strip.length ? (
           <span className={`${styles.photoGround} ${styles.openedPhoto}`}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- next/image writes an inline style attribute, which this site's CSP refuses, and its transformations count against the hosting plan; the file is already sized. */}
-            <img src={leg.photo.src} width={leg.photo.width} height={leg.photo.height} alt={leg.photo.alt} decoding="async" />
+            {strip.map((photo) => (
+              // eslint-disable-next-line @next/next/no-img-element -- next/image writes an inline style attribute, which this site's CSP refuses, and its transformations count against the hosting plan; the file is already sized.
+              <img key={photo.src} src={photo.src} width={photo.width} height={photo.height} alt={photo.src === leg.photo?.src ? photo.alt : ""} aria-hidden={photo.src !== leg.photo?.src} data-shown={photo.src === leg.photo?.src ? "" : undefined} loading="lazy" decoding="async" />
+            ))}
           </span>
         ) : null}
         <div className={styles.openedBody}>

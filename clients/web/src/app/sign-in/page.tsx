@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { TextAction } from "@seametry/ui";
 import { accountServiceConfigured } from "@/lib/auth-proxy";
 import { PublicShell, SectionHeading } from "../public-shell";
+import { SiteWalletProvider } from "@/lib/wallet-provider";
 import { SignInControl } from "./sign-in-control";
 import styles from "../site.module.css";
 
@@ -26,7 +27,9 @@ export default async function SignInPage() {
           </p>
         </div>
         <div className={styles.signInBoundary}>
-          <SignInControl configured={accountServiceConfigured()} />
+          <SiteWalletProvider>
+            <SignInControl configured={accountServiceConfigured()} />
+          </SiteWalletProvider>
           <TextAction href="/app/alloys">Inspect live Alloys</TextAction>
         </div>
       </header>

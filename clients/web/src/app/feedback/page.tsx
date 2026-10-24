@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PublicShell } from "../public-shell";
 import styles from "../site.module.css";
+import { SiteWalletProvider } from "@/lib/wallet-provider";
 import { FeedbackForm } from "./feedback-form";
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function FeedbackPage() {
           <h1>Send feedback</h1>
           <p>It goes straight to the team&apos;s inbox. No account is needed, and nothing else is required.</p>
         </header>
-        <FeedbackForm />
+        <SiteWalletProvider>
+          <FeedbackForm />
+        </SiteWalletProvider>
       </article>
     </PublicShell>
   );

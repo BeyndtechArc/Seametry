@@ -3,16 +3,18 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ConnectionProvider, WalletProvider, useWallet } from "@solana/wallet-adapter-react";
-import { captureFirstTouch } from "./first-touch";
 import { funnel } from "./funnel";
 import type { WalletError } from "@solana/wallet-adapter-base";
 import { clusterApiUrl } from "@solana/web3.js";
 
 /**
- * One wallet session for the whole site, so the house rail and every page
- * agree on whether a wallet is connected. The route selects devnet for the
- * Hall demo and mainnet for the rest of the application, which also gives the
- * mobile wallet adapter the cluster it must announce.
+ * The wallet session, mounted only where a wallet is used: the app's shell,
+ * Send feedback and sign-in. The public pages connect no wallet, and the
+ * provider brought the wallet adapter and Solana's web3 library onto every
+ * one of them. Moving between them, a wallet the site already trusts
+ * reconnects through autoConnect without a prompt. The route selects devnet
+ * for the Hall demo and mainnet for the rest of the application, which also
+ * gives the mobile wallet adapter the cluster it must announce.
  *
  * No adapters are listed: @solana/wallet-adapter-react detects any Wallet
  * Standard wallet (Phantom, Solflare, Backpack and the rest), which injects
@@ -44,14 +46,13 @@ export function useWalletFailure() {
 }
 
 /**
- * Keeps this browser's first touch, and reports a mainnet wallet connecting
- * once per wallet per browser session. The devnet Hall demo is left out, so
+ * Reports a mainnet wallet connecting once per wallet per browser session;
+ * the first touch is kept on every page by FirstTouchSignal. The devnet Hall demo is left out, so
  * its wallets never mix with mainnet's in the record.
  */
 function ActivitySignals({ network }: { network: "mainnet" | "devnet" }) {
   const { publicKey } = useWallet();
   const wallet = publicKey?.toBase58();
-  useEffect(captureFirstTouch, []);
   useEffect(() => {
     if (!wallet || network !== "mainnet") return;
     const key = `seametry:connected:${wallet}`;

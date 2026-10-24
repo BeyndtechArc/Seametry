@@ -129,15 +129,16 @@
   stroke-width: 2;
 }
 
-/* Before the orbit turns, its labels and the card fade out; after it, they
-   fade back in for the leg now opened. */
+/* The orbit's labels stay hidden for the whole turn, so none is drawn
+   mid-orbit; the card's facts fade out only briefly and come back, for the
+   leg now opening, while the ring still turns. */
 .orbitLabel,
-.openedCard > * {
+.openedBody {
   transition: opacity var(--sm-motion-duration-base) var(--sm-motion-easing-standard);
 }
 
 [data-turning] .orbitLabel,
-[data-turning] .openedCard > * {
+[data-fading] .openedBody {
   opacity: 0;
 }
 
@@ -151,8 +152,21 @@
   background: var(--sm-surface-raised);
 }
 
+/* The strip holds every leg's photograph, stacked; the shown one crossfades in. */
 .openedPhoto {
+  position: relative;
   aspect-ratio: 3 / 1;
+}
+
+.openedPhoto img {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--sm-motion-duration-sheet) var(--sm-motion-easing-standard);
+}
+
+.openedPhoto img[data-shown] {
+  opacity: 1;
 }
 
 .openedBody {
@@ -363,7 +377,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .basketCover img {
+  .basketCover img,
+  .orbitLabel,
+  .openedBody,
+  .openedPhoto img {
     transition: none;
   }
 }

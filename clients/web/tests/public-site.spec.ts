@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { PublicKey } from "@solana/web3.js";
 import { allocationIndexes } from "../src/lib/allocation/indexes";
@@ -996,4 +996,14 @@ test("the footer's bench plays by the Hall's rules: a freeze refuses a Strike, a
   await press("Strike with METAx");
   await expect(said.first()).toHaveText("Refused: the Hall's account for GOOGLx is frozen. Nothing moved.");
   await expect(footer.getByRole("button", { name: /^Strike with/ })).toHaveCount(6);
+});
+
+test("every founded Alloy has the small artwork the drawings load, so no public page fetches the full image", async ({ page }) => {
+  for (const record of evidence("alloys/index.json").alloys as { image: string }[]) {
+    const drawn = new URL(record.image).pathname.replace(/\.png$/, "-256.webp");
+    expect(existsSync(`public${drawn}`), drawn).toBe(true);
+  }
+  await page.goto("/");
+  const images = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => name.includes("/alloys/")));
+  expect(images.some((name) => name.endsWith("artwork.png"))).toBe(false);
 });

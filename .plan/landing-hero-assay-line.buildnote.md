@@ -164,3 +164,13 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 scatter loose across the word instead of stacking in rows;
                 the bench lost its description, gained a two-line status and
                 answers each act (lift, seat, frost, punch, shake).
+             16. Optimised (24 October 2026, production build). The wallet
+                provider moved from the root layout to the app, Send
+                feedback and sign-in, with the first touch kept site-wide by
+                its own small component: the landing's scripts went from
+                342,520 bytes transferred to 188,199. The drawings use a
+                256px WebP of the Alloy artwork (7,378 bytes) instead of the
+                published 937,933-byte PNG: the landing's images went from
+                1,000,705 bytes to 251,956, the five leg photographs now in
+                the 02 strip included. The 02 card is empty for about 84 ms
+                on a swap, measured, rather than for the whole turn.
