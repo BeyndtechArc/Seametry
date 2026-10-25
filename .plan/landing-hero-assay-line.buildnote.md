@@ -196,3 +196,15 @@ Assumptions: 1. Four stations and their story: the Formula (the vault and
                 columns read as noise; the strip is now 2:1 at 70 by 21,
                 sharpened and equalised. Assumed: the marquee shows all nine
                 baskets rather than the four featured before, since it can.
+             20. Storm, 25 October 2026: the marquee slows to about 25 and 20
+                pixels a second (it ran at about 62 and 46) and gets more room
+                above and below; sections sit 184 apart on desktop and 128 on a
+                phone (128 and 96 read as narrow); on a phone the disc field is
+                drawn at twice the window's width.
+             21. Storm, 25 October 2026: the ASCII pictures are no longer
+                photographs written in characters; each is a scene drawn
+                from lines and boxes (racks, wafer, towers, arm, aisle) with
+                a few lit cells that blink. The photographs and their
+                generator are deleted. The digest face's ligatures are off in
+                the strip, since they joined a rule and an upright into a box
+                glyph.
