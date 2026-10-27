@@ -39,6 +39,30 @@ func TestVerifierAcceptsBetterAuthSubject(t *testing.T) {
 	if subject.AccountID != "account-1" {
 		t.Fatalf("account ID = %q, want account-1", subject.AccountID)
 	}
+	if len(subject.Wallets) != 0 {
+		t.Fatalf("a token without a wallets claim names %d wallets, want none", len(subject.Wallets))
+	}
+}
+
+func TestVerifierCarriesTheLinkedWalletsTheAuthorityNamed(t *testing.T) {
+	public, private := keypair(t)
+	const origin = "https://accounts.example"
+	verifier, err := NewVerifier(origin, "", jwksClient(t, func(int) map[string]any { return jwksBody("key-1", public) }))
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 10, 9, 12, 0, 0, 0, time.UTC)
+	const wallet = "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM"
+	token := signedToken(t, private, "key-1", map[string]any{
+		"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(), "wallets": []string{wallet},
+	})
+	subject, err := verifier.Verify(context.Background(), token, now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(subject.Wallets) != 1 || subject.Wallets[0] != wallet {
+		t.Fatalf("wallets = %v, want [%s]", subject.Wallets, wallet)
+	}
 }
 
 func TestVerifierNormalizesATrailingSlashOnTheIssuer(t *testing.T) {
@@ -74,6 +98,8 @@ func TestVerifierRejectsTokenBoundaryFailures(t *testing.T) {
 		{"wrong issuer", map[string]any{"sub": "account-1", "iss": "https://other.example", "aud": origin, "exp": now.Add(time.Minute).Unix()}, "issuer"},
 		{"wrong audience", map[string]any{"sub": "account-1", "iss": origin, "aud": "https://other.example", "exp": now.Add(time.Minute).Unix()}, "audience"},
 		{"missing subject", map[string]any{"iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix()}, "subject"},
+		{"malformed wallet", map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(), "wallets": []string{"not-an-address"}}, "wallets[0]"},
+		{"too many wallets", map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(), "wallets": make([]string, 21)}, "21 wallets"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -15,6 +15,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/BeyndtechArc/Seametry/server/internal/base58"
 )
 
 const maxTokenBytes = 16 * 1024
@@ -29,7 +31,14 @@ const unknownKeyRefreshInterval = 30 * time.Second
 
 type Subject struct {
 	AccountID string
+	// Wallets are the addresses the account authority had seen this account
+	// prove it controls when it issued the token. A wallet unlinked since
+	// stays here until the token expires.
+	Wallets []string
 }
+
+// maxTokenWallets matches the account authority's cap on the claim.
+const maxTokenWallets = 20
 
 type subjectContextKey struct{}
 
@@ -57,6 +66,7 @@ type tokenClaims struct {
 	Audience  json.RawMessage `json:"aud"`
 	ExpiresAt json.Number     `json:"exp"`
 	NotBefore json.Number     `json:"nbf"`
+	Wallets   []string        `json:"wallets"`
 }
 
 type jwksDocument struct {
@@ -209,7 +219,15 @@ func (v *Verifier) Verify(ctx context.Context, encoded string, now time.Time) (S
 			return Subject{}, fmt.Errorf("identity: token is not active until %s", time.Unix(notBefore, 0).UTC().Format(time.RFC3339))
 		}
 	}
-	return Subject{AccountID: claims.Subject}, nil
+	if len(claims.Wallets) > maxTokenWallets {
+		return Subject{}, fmt.Errorf("identity: token names %d wallets, expected at most %d", len(claims.Wallets), maxTokenWallets)
+	}
+	for index, wallet := range claims.Wallets {
+		if decoded, err := base58.Decode(wallet); err != nil || len(decoded) != 32 {
+			return Subject{}, fmt.Errorf("identity: token wallets[%d] %q is not a 32-byte base58 Solana address", index, wallet)
+		}
+	}
+	return Subject{AccountID: claims.Subject, Wallets: claims.Wallets}, nil
 }
 
 func (v *Verifier) key(id string) ed25519.PublicKey {
