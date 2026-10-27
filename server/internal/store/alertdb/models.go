@@ -8,6 +8,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AlertEmailOptin struct {
+	ID               pgtype.UUID        `db:"id" json:"id"`
+	Address          pgtype.Text        `db:"address" json:"address"`
+	ConsentVersion   string             `db:"consent_version" json:"consent_version"`
+	ConsentedAt      pgtype.Timestamptz `db:"consented_at" json:"consented_at"`
+	RefCode          pgtype.Text        `db:"ref_code" json:"ref_code"`
+	Wallet           pgtype.Text        `db:"wallet" json:"wallet"`
+	Page             pgtype.Text        `db:"page" json:"page"`
+	Deployment       string             `db:"deployment" json:"deployment"`
+	UnsubscribeToken pgtype.Text        `db:"unsubscribe_token" json:"unsubscribe_token"`
+	UnsubscribedAt   pgtype.Timestamptz `db:"unsubscribed_at" json:"unsubscribed_at"`
+}
+
 type AlertFeedback struct {
 	ID             pgtype.UUID        `db:"id" json:"id"`
 	Message        string             `db:"message" json:"message"`

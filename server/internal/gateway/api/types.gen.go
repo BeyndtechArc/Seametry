@@ -183,6 +183,45 @@ func (e DepthPointAvailability) Valid() bool {
 	}
 }
 
+// Defines values for EmailOptInDeployment.
+const (
+	EmailOptInDeploymentDevelopment EmailOptInDeployment = "development"
+	EmailOptInDeploymentPreview     EmailOptInDeployment = "preview"
+	EmailOptInDeploymentProduction  EmailOptInDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the EmailOptInDeployment enum.
+func (e EmailOptInDeployment) Valid() bool {
+	switch e {
+	case EmailOptInDeploymentDevelopment:
+		return true
+	case EmailOptInDeploymentPreview:
+		return true
+	case EmailOptInDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for EmailOptInPage.
+const (
+	Feedback        EmailOptInPage = "feedback"
+	FirstAllocation EmailOptInPage = "first_allocation"
+)
+
+// Valid indicates whether the value is a known member of the EmailOptInPage enum.
+func (e EmailOptInPage) Valid() bool {
+	switch e {
+	case Feedback:
+		return true
+	case FirstAllocation:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for FeedbackSubmissionDeployment.
 const (
 	FeedbackSubmissionDeploymentDevelopment FeedbackSubmissionDeployment = "development"
@@ -838,6 +877,30 @@ type DepthPoint struct {
 // DepthPointAvailability defines model for DepthPoint.Availability.
 type DepthPointAvailability string
 
+// EmailOptIn defines model for EmailOptIn.
+type EmailOptIn struct {
+	Address string `json:"address"`
+
+	// ConsentVersion The version of the consent sentence the visitor ticked, as the web app names it.
+	ConsentVersion string               `json:"consent_version"`
+	Deployment     EmailOptInDeployment `json:"deployment"`
+
+	// Page Where the field was shown.
+	Page *EmailOptInPage `json:"page,omitempty"`
+
+	// RefCode The first-touch ref code this browser kept (ActivityFirstTouch.ref_code), when there is one.
+	RefCode *string `json:"ref_code,omitempty"`
+
+	// Wallet The connected wallet, only when the visitor chose to include it.
+	Wallet *string `json:"wallet,omitempty"`
+}
+
+// EmailOptInDeployment defines model for EmailOptIn.Deployment.
+type EmailOptInDeployment string
+
+// EmailOptInPage Where the field was shown.
+type EmailOptInPage string
+
 // FeedbackSubmission defines model for FeedbackSubmission.
 type FeedbackSubmission struct {
 	Deployment FeedbackSubmissionDeployment `json:"deployment"`
@@ -1354,6 +1417,11 @@ type GetInstrumentDepthParams struct {
 // GetInstrumentDepthParamsDirection defines parameters for GetInstrumentDepth.
 type GetInstrumentDepthParamsDirection string
 
+// WithdrawEmailOptInJSONBody defines parameters for WithdrawEmailOptIn.
+type WithdrawEmailOptInJSONBody struct {
+	Token string `json:"token"`
+}
+
 // StreamEventsParams defines parameters for StreamEvents.
 type StreamEventsParams struct {
 	// LastEventID Resumes from this outbox sequence. A pruned point is named before resuming from the oldest retained event, rather than skipping silently.
@@ -1371,6 +1439,12 @@ type RecordActivityQuoteJSONRequestBody = ActivityQuote
 
 // RecordActivitySubmissionJSONRequestBody defines body for RecordActivitySubmission for application/json ContentType.
 type RecordActivitySubmissionJSONRequestBody = ActivitySubmission
+
+// RecordEmailOptInJSONRequestBody defines body for RecordEmailOptIn for application/json ContentType.
+type RecordEmailOptInJSONRequestBody = EmailOptIn
+
+// WithdrawEmailOptInJSONRequestBody defines body for WithdrawEmailOptIn for application/json ContentType.
+type WithdrawEmailOptInJSONRequestBody WithdrawEmailOptInJSONBody
 
 // ReceiveFeedbackJSONRequestBody defines body for ReceiveFeedback for application/json ContentType.
 type ReceiveFeedbackJSONRequestBody = FeedbackSubmission

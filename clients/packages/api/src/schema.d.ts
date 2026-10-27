@@ -450,6 +450,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/email-optins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * An email address given with explicit consent to hear when the Hall launches and when the holder's trades settle.
+         * @description Kept with the version of the consent text the visitor agreed to, the time it was received, and the first-touch ref code and wallet when given. An address already kept is updated with the new consent and a new unsubscribe token, so an older link stops working. Nothing is mailed: there is no sender for these addresses yet.
+         */
+        post: operations["recordEmailOptIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/email-optins/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraws consent for the address an unsubscribe token belongs to.
+         * @description Erases the address, the wallet and the token, and keeps only when consent was given and withdrawn. A token not kept answers 404, which is also the answer for a link already used.
+         */
+        post: operations["withdrawEmailOptIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/activity/funnel": {
         parameters: {
             query?: never;
@@ -618,6 +658,22 @@ export interface components {
             wallet?: string;
             /** @description The path the visitor was on. */
             page?: string;
+            /** @enum {string} */
+            deployment: "production" | "preview" | "development";
+        };
+        EmailOptIn: {
+            address: string;
+            /** @description The version of the consent sentence the visitor ticked, as the web app names it. */
+            consent_version: string;
+            /** @description The first-touch ref code this browser kept (ActivityFirstTouch.ref_code), when there is one. */
+            ref_code?: string;
+            /** @description The connected wallet, only when the visitor chose to include it. */
+            wallet?: string;
+            /**
+             * @description Where the field was shown.
+             * @enum {string}
+             */
+            page?: "first_allocation" | "feedback";
             /** @enum {string} */
             deployment: "production" | "preview" | "development";
         };
@@ -1705,6 +1761,60 @@ export interface operations {
                         };
                     };
                 };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    recordEmailOptIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailOptIn"];
+            };
+        };
+        responses: {
+            /** @description Kept. The token is what the unsubscribe link carries. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            unsubscribe_token: string;
+                        };
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    withdrawEmailOptIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Withdrawn; the address is no longer kept. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             default: components["responses"]["Problem"];
         };

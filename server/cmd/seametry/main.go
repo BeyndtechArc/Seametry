@@ -159,7 +159,8 @@ func serve() error {
 		WithHall(hall, basket.HallDevnetProgramID, "devnet").
 		WithReceipts(receipt.NewLedger(pool)).
 		WithActivity(report).
-		WithFeedback(alert.NewFeedback(pool, mailer))
+		WithFeedback(alert.NewFeedback(pool, mailer)).
+		WithEmailOptIns(alert.NewOptIns(pool))
 	authOrigin := strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_ORIGIN"))
 	if authOrigin == "" {
 		return errors.New("SEAMETRY_AUTH_ORIGIN is not set; serve needs the Better Auth issuer to verify account subjects")

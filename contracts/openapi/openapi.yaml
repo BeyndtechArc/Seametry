@@ -753,6 +753,69 @@ paths:
                         format: uuid
         default:
           $ref: '#/components/responses/Problem'
+  /internal/email-optins:
+    post:
+      operationId: recordEmailOptIn
+      tags: [alert]
+      summary: An email address given with explicit consent to hear when the Hall launches and when the holder's trades settle.
+      description: >
+        Kept with the version of the consent text the visitor agreed to, the
+        time it was received, and the first-touch ref code and wallet when
+        given. An address already kept is updated with the new consent and
+        a new unsubscribe token, so an older link stops working. Nothing is
+        mailed: there is no sender for these addresses yet.
+      security:
+        - serviceSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailOptIn'
+      responses:
+        "202":
+          description: Kept. The token is what the unsubscribe link carries.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [unsubscribe_token]
+                    properties:
+                      unsubscribe_token:
+                        type: string
+        default:
+          $ref: '#/components/responses/Problem'
+  /internal/email-optins/unsubscribe:
+    post:
+      operationId: withdrawEmailOptIn
+      tags: [alert]
+      summary: Withdraws consent for the address an unsubscribe token belongs to.
+      description: >
+        Erases the address, the wallet and the token, and keeps only when
+        consent was given and withdrawn. A token not kept answers 404, which
+        is also the answer for a link already used.
+      security:
+        - serviceSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token]
+              properties:
+                token:
+                  type: string
+                  maxLength: 100
+      responses:
+        "204":
+          description: Withdrawn; the address is no longer kept.
+        default:
+          $ref: '#/components/responses/Problem'
   /internal/activity/funnel:
     post:
       operationId: recordActivityFunnel
@@ -1150,6 +1213,31 @@ components:
           type: string
           maxLength: 500
           description: The path the visitor was on.
+        deployment:
+          type: string
+          enum: [production, preview, development]
+    EmailOptIn:
+      type: object
+      required: [address, consent_version, deployment]
+      properties:
+        address:
+          type: string
+          maxLength: 254
+        consent_version:
+          type: string
+          maxLength: 40
+          description: The version of the consent sentence the visitor ticked, as the web app names it.
+        ref_code:
+          type: string
+          maxLength: 40
+          description: The first-touch ref code this browser kept (ActivityFirstTouch.ref_code), when there is one.
+        wallet:
+          type: string
+          description: The connected wallet, only when the visitor chose to include it.
+        page:
+          type: string
+          enum: [first_allocation, feedback]
+          description: Where the field was shown.
         deployment:
           type: string
           enum: [production, preview, development]
