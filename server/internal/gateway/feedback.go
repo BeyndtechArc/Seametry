@@ -43,7 +43,7 @@ func (s Server) ReceiveFeedback(ctx context.Context, request api.ReceiveFeedback
 		var invalid alert.Invalid
 		status, title, detail := http.StatusInternalServerError, "Feedback not stored", "ReceiveFeedback: "+err.Error()
 		if errors.As(err, &invalid) {
-			status, title, detail = http.StatusBadRequest, "Feedback refused", "ReceiveFeedback: "+invalid.Reason
+			status, title, detail = http.StatusBadRequest, "Feedback refused", "ReceiveFeedback: "+refusal(invalid)
 		}
 		return api.ReceiveFeedbackdefaultApplicationProblemPlusJSONResponse{Body: gatewayProblem(status, title, detail), StatusCode: status}, nil
 	}
@@ -90,7 +90,7 @@ func (s Server) RecordEmailOptIn(ctx context.Context, request api.RecordEmailOpt
 		var invalid alert.Invalid
 		status, title, detail := http.StatusInternalServerError, "Email opt-in not kept", "RecordEmailOptIn: "+err.Error()
 		if errors.As(err, &invalid) {
-			status, title, detail = http.StatusBadRequest, "Email opt-in refused", "RecordEmailOptIn: "+invalid.Reason
+			status, title, detail = http.StatusBadRequest, "Email opt-in refused", "RecordEmailOptIn: "+refusal(invalid)
 		}
 		return api.RecordEmailOptIndefaultApplicationProblemPlusJSONResponse{Body: gatewayProblem(status, title, detail), StatusCode: status}, nil
 	}
@@ -114,4 +114,13 @@ func (s Server) WithdrawEmailOptIn(ctx context.Context, request api.WithdrawEmai
 		return api.WithdrawEmailOptIndefaultApplicationProblemPlusJSONResponse{Body: gatewayProblem(status, title, detail), StatusCode: status}, nil
 	}
 	return api.WithdrawEmailOptIn204Response{}, nil
+}
+
+// refusal names the refused field and why, by code, without the value: an
+// address a visitor typed is never repeated back or into the web's logs.
+func refusal(invalid alert.Invalid) string {
+	if invalid.Field == "" {
+		return invalid.Reason
+	}
+	return "field " + invalid.Field + ", code " + invalid.Code + ": " + invalid.Reason
 }

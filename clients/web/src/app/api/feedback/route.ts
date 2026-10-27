@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { currentDeployment } from "@/lib/activity";
 import { postInternal } from "@/lib/internal-gateway";
+import { logRefusal } from "@/lib/refusal-log";
 
 const WINDOW_MS = 10 * 60_000;
 const MESSAGES_PER_WINDOW = 5;
@@ -58,8 +59,8 @@ export async function POST(request: NextRequest) {
   if (response.status === 400) {
     // The checks above match the Gateway's, so this is rare; its detail names
     // a field for the log, not a sentence for the reader.
-    console.warn(`Feedback refused by the Gateway: ${(await response.text()).slice(0, 300)}`);
-    return NextResponse.json({ error: `Seametry could not accept this feedback as written. ${FALLBACK}` }, { status: 400 });
+    const reference = await logRefusal("Feedback", response);
+    return NextResponse.json({ error: `Seametry could not accept this feedback as written. ${FALLBACK}`, reference }, { status: 400 });
   }
   if (!response.ok) return NextResponse.json({ error: `Feedback could not be kept just now. ${FALLBACK}` }, { status: 503 });
   return NextResponse.json({ received: true }, { status: 202 });

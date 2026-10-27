@@ -86,3 +86,19 @@ func TestAnOptInIsRefusedNamingWhatIsWrong(t *testing.T) {
 		}
 	}
 }
+
+func TestARefusedAddressIsNamedByFieldAndCodeNeverRepeated(t *testing.T) {
+	optIns := NewOptIns(nil)
+	for _, address := range []string{"Holder <holder.private@example.com>", "holder.private@example.com\r\nBcc: x@y.z", strings.Repeat("h", 250) + "@example.com"} {
+		candidate := optIn()
+		candidate.Address = address
+		_, err := optIns.Keep(context.Background(), candidate)
+		var invalid Invalid
+		if !errors.As(err, &invalid) || invalid.Field != "address" || invalid.Code != "malformed" {
+			t.Fatalf("got %#v, want Invalid with field address and code malformed", err)
+		}
+		if strings.Contains(err.Error(), "holder.private") || strings.Contains(err.Error(), "hhhh") {
+			t.Fatalf("the refusal repeats the address: %q", err.Error())
+		}
+	}
+}

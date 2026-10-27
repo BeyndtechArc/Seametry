@@ -35,7 +35,14 @@ func NewFeedback(db alertdb.DBTX, mailer Sender) *Feedback {
 }
 
 // Invalid is feedback refused as written, naming the field.
-type Invalid struct{ Reason string }
+// Invalid is a refused submission. Field and Code name what was wrong
+// without repeating the value, so an address a visitor typed never travels
+// back in an error, a problem detail or a log line.
+type Invalid struct {
+	Field  string
+	Code   string
+	Reason string
+}
 
 func (e Invalid) Error() string { return "alert: " + e.Reason }
 
@@ -58,32 +65,32 @@ type checked struct {
 func (s Submission) check() (checked, error) {
 	message := strings.TrimSpace(s.Message)
 	if message == "" {
-		return checked{}, Invalid{"message is empty"}
+		return checked{}, Invalid{Field: "message", Code: "empty", Reason: "message is empty"}
 	}
 	if n := utf8.RuneCountInString(message); n > 4000 {
-		return checked{}, Invalid{fmt.Sprintf("message is %d characters; at most 4000 are kept", n)}
+		return checked{}, Invalid{Field: "message", Code: "too_long", Reason: fmt.Sprintf("message is %d characters; at most 4000 are kept", n)}
 	}
 	out := checked{message: message, page: strings.TrimSpace(s.Page), deployed: s.Deployment}
 	if replyTo := strings.TrimSpace(s.ReplyTo); replyTo != "" {
 		address, err := mail.ParseAddress(replyTo)
 		if err != nil || len(address.Address) > 254 || address.Address != replyTo {
-			return checked{}, Invalid{fmt.Sprintf("reply_to %q is not one plain email address", replyTo)}
+			return checked{}, Invalid{Field: "reply_to", Code: "malformed", Reason: "reply_to is not one plain email address"}
 		}
 		out.replyTo = address
 	}
 	if s.Wallet != "" {
 		if decoded, err := base58.Decode(s.Wallet); err != nil || len(decoded) != 32 {
-			return checked{}, Invalid{fmt.Sprintf("wallet %q is not a 32-byte base58 Solana address", s.Wallet)}
+			return checked{}, Invalid{Field: "wallet", Code: "malformed", Reason: fmt.Sprintf("wallet %q is not a 32-byte base58 Solana address", s.Wallet)}
 		}
 		out.wallet = s.Wallet
 	}
 	if utf8.RuneCountInString(out.page) > 500 {
-		return checked{}, Invalid{"page is longer than 500 characters"}
+		return checked{}, Invalid{Field: "page", Code: "too_long", Reason: "page is longer than 500 characters"}
 	}
 	switch s.Deployment {
 	case "production", "preview", "development":
 	default:
-		return checked{}, Invalid{fmt.Sprintf("deployment %q is not production, preview or development", s.Deployment)}
+		return checked{}, Invalid{Field: "deployment", Code: "unknown_value", Reason: fmt.Sprintf("deployment %q is not production, preview or development", s.Deployment)}
 	}
 	return out, nil
 }

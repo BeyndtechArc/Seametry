@@ -1,3 +1,4 @@
+import { logRefusal } from "../src/lib/refusal-log";
 import { expect, test, type APIRequestContext } from "@playwright/test";
 import { CONSENT_TEXT, CONSENT_VERSION } from "../src/lib/email-optin";
 
@@ -68,4 +69,33 @@ test("the privacy policy says what an opt-in keeps, why, and how to stop it", as
   await expect(page.getByText(/erases the address, the wallet and the link itself/)).toBeVisible();
   await expect(page.getByText(/Today no email is sent to these addresses at all/)).toBeVisible();
   await expect(page.getByText(/infrastructure connection/)).toHaveCount(0);
+});
+
+test("an address the Gateway refuses is in neither the answer nor the log line, which carries a reference instead", async ({ request }) => {
+  const address = `gateway-refuses-${Date.now()}@example.com`;
+  const headers = { "x-forwarded-for": `203.0.113.${Date.now() % 200}` };
+  const response = await request.post("/api/email-optin", { headers, data: { address, consent: true, consentVersion: CONSENT_VERSION } });
+  expect(response.status()).toBe(400);
+  const text = await response.text();
+  expect(text).not.toContain(address);
+  expect(text).not.toContain("gateway-refuses");
+  expect(JSON.parse(text).reference).toMatch(/^[0-9a-f-]{36}$/);
+});
+
+test("a refusal's log line names the reason and a reference, and no address the Gateway repeated", async () => {
+  const lines: string[] = [];
+  const warn = console.warn;
+  console.warn = (...parts: unknown[]) => { lines.push(parts.join(" ")); };
+  try {
+    const problem = { title: "Email opt-in refused", status: 400, detail: 'RecordEmailOptIn: address "Holder <holder.private@example.com>" is not one plain email address' };
+    const reference = await logRefusal("Email opt-in", new Response(JSON.stringify(problem), { status: 400 }));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).not.toContain("holder.private");
+    expect(lines[0]).not.toContain("example.com");
+    expect(lines[0]).toContain("is not one plain email address");
+    expect(reference).toMatch(/^[0-9a-f-]{36}$/);
+    expect(lines[0]).toContain(reference);
+  } finally {
+    console.warn = warn;
+  }
 });

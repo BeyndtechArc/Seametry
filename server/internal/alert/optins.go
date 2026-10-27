@@ -51,28 +51,28 @@ func (o OptIn) check() (OptIn, error) {
 	o.Address = strings.TrimSpace(o.Address)
 	parsed, err := mail.ParseAddress(o.Address)
 	if err != nil || parsed.Address != o.Address || len(o.Address) > 254 {
-		return o, Invalid{fmt.Sprintf("address %q is not one plain email address of at most 254 characters", o.Address)}
+		return o, Invalid{Field: "address", Code: "malformed", Reason: "address is not one plain email address of at most 254 characters"}
 	}
 	if !consentVersion.MatchString(o.ConsentVersion) {
-		return o, Invalid{fmt.Sprintf("consent_version %q is not a version name: lowercase letters, digits, dots and hyphens, at most 40", o.ConsentVersion)}
+		return o, Invalid{Field: "consent_version", Code: "malformed", Reason: fmt.Sprintf("consent_version %q is not a version name: lowercase letters, digits, dots and hyphens, at most 40", o.ConsentVersion)}
 	}
 	if o.RefCode != "" && !refCode.MatchString(o.RefCode) {
-		return o, Invalid{fmt.Sprintf("ref_code %q is not a recorded ref code (lowercase, at most 40 characters)", o.RefCode)}
+		return o, Invalid{Field: "ref_code", Code: "malformed", Reason: fmt.Sprintf("ref_code %q is not a recorded ref code (lowercase, at most 40 characters)", o.RefCode)}
 	}
 	if o.Wallet != "" {
 		if decoded, err := base58.Decode(o.Wallet); err != nil || len(decoded) != 32 {
-			return o, Invalid{fmt.Sprintf("wallet %q is not a 32-byte base58 Solana address", o.Wallet)}
+			return o, Invalid{Field: "wallet", Code: "malformed", Reason: fmt.Sprintf("wallet %q is not a 32-byte base58 Solana address", o.Wallet)}
 		}
 	}
 	switch o.Page {
 	case "", "first_allocation", "feedback":
 	default:
-		return o, Invalid{fmt.Sprintf("page %q is not first_allocation or feedback", o.Page)}
+		return o, Invalid{Field: "page", Code: "unknown_value", Reason: fmt.Sprintf("page %q is not first_allocation or feedback", o.Page)}
 	}
 	switch o.Deployment {
 	case "production", "preview", "development":
 	default:
-		return o, Invalid{fmt.Sprintf("deployment %q is not production, preview or development", o.Deployment)}
+		return o, Invalid{Field: "deployment", Code: "unknown_value", Reason: fmt.Sprintf("deployment %q is not production, preview or development", o.Deployment)}
 	}
 	return o, nil
 }

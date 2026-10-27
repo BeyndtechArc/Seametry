@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/BeyndtechArc/Seametry/server/internal/alert"
@@ -69,5 +70,17 @@ func TestAnUnsubscribeTokenNoAddressCarriesAnswers404(t *testing.T) {
 	unrecorded := gateway.NewHandler(gateway.NewServer(nil, nil), gateway.ServiceSecret(reportSecret))
 	if response := post(unrecorded, "/v1/internal/email-optins", reportSecret, optInBody); response.Code != http.StatusServiceUnavailable {
 		t.Fatalf("no consent record: got %d, want 503", response.Code)
+	}
+}
+
+func TestARefusedOptInsProblemNamesTheFieldAndNotTheAddress(t *testing.T) {
+	handler := gateway.NewHandler(gateway.NewServer(nil, nil).WithEmailOptIns(alert.NewOptIns(nil)), gateway.ServiceSecret(reportSecret))
+	body := strings.Replace(optInBody, "holder@example.com", "Holder <holder.private@example.com>", 1)
+	response := post(handler, "/v1/internal/email-optins", reportSecret, body)
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("got %d: %s, want 400", response.Code, response.Body.String())
+	}
+	if strings.Contains(response.Body.String(), "holder.private") || !strings.Contains(response.Body.String(), "address") {
+		t.Fatalf("problem = %s, want one naming the field and not the address", response.Body.String())
 	}
 }
