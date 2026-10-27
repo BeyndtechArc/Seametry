@@ -242,10 +242,11 @@ test("the public site publishes the terms and privacy policy used for account co
 
   await page.goto("/privacy-policy");
   await expect(page.getByRole("heading", { level: 1, name: "Privacy policy" })).toBeVisible();
-  await expect(page.getByText("Effective 16 October 2026", { exact: true })).toBeVisible();
+  await expect(page.getByText("Effective 27 October 2026", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Google returns account identity data when you sign in." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "A linked wallet remains public." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Trades through Seametry are recorded by the wallet that asked for them." })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "An email address is kept only if you ask, and erased when you unsubscribe." })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "You may delete your account, and the control you keep over your data." })).toBeVisible();
 });
 

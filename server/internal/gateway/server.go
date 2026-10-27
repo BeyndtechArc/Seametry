@@ -24,6 +24,7 @@ type Server struct {
 	Receipts        ReceiptLedger
 	Activity        ActivityReport
 	Feedback        FeedbackDesk
+	OptIns          EmailOptIns
 	Now             func() time.Time
 }
 

@@ -9,7 +9,7 @@ const hopByHopHeaders = ["connection", "keep-alive", "proxy-connection", "te", "
 // would turn a malformed Connection value into a 503 for the whole request.
 const headerName = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
 
-function authOrigin() {
+export function authOrigin() {
   const value = (process.env.SEAMETRY_AUTH_ORIGIN ?? process.env.SEAMETRY_API_URL ?? fallbackOrigin).trim();
   const origin = new URL(value);
   if (!/^https?:$/.test(origin.protocol) || origin.pathname !== "/") {

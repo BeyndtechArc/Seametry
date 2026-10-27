@@ -74,12 +74,21 @@ type ServerInterface interface {
 	// RecordActivitySubmission What happened when a prepared leg was sent, found by the message digest its approval binds.
 	// (POST /internal/activity/submissions)
 	RecordActivitySubmission(w http.ResponseWriter, r *http.Request)
+	// RecordEmailOptIn An email address given with explicit consent to hear when the Hall launches and when the holder's trades settle.
+	// (POST /internal/email-optins)
+	RecordEmailOptIn(w http.ResponseWriter, r *http.Request)
+	// WithdrawEmailOptIn Withdraws consent for the address an unsubscribe token belongs to.
+	// (POST /internal/email-optins/unsubscribe)
+	WithdrawEmailOptIn(w http.ResponseWriter, r *http.Request)
 	// ReceiveFeedback Feedback a visitor sent, forwarded by the web route that received it.
 	// (POST /internal/feedback)
 	ReceiveFeedback(w http.ResponseWriter, r *http.Request)
 	// GetMe The opaque account subject accepted by the Go core.
 	// (GET /me)
 	GetMe(w http.ResponseWriter, r *http.Request)
+	// GetMyActivity What the activity record holds for every wallet the signed-in account has linked.
+	// (GET /me/activity)
+	GetMyActivity(w http.ResponseWriter, r *http.Request)
 	// GetPolicy A policy document, as data (server/internal/policy.Document).
 	// (GET /policies/{version})
 	GetPolicy(w http.ResponseWriter, r *http.Request, version PolicyVersion)
@@ -674,6 +683,34 @@ func (siw *ServerInterfaceWrapper) RecordActivitySubmission(w http.ResponseWrite
 	handler.ServeHTTP(w, r)
 }
 
+// RecordEmailOptIn operation middleware
+func (siw *ServerInterfaceWrapper) RecordEmailOptIn(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.RecordEmailOptIn(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// WithdrawEmailOptIn operation middleware
+func (siw *ServerInterfaceWrapper) WithdrawEmailOptIn(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.WithdrawEmailOptIn(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ReceiveFeedback operation middleware
 func (siw *ServerInterfaceWrapper) ReceiveFeedback(w http.ResponseWriter, r *http.Request) {
 
@@ -693,6 +730,20 @@ func (siw *ServerInterfaceWrapper) GetMe(w http.ResponseWriter, r *http.Request)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetMe(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetMyActivity operation middleware
+func (siw *ServerInterfaceWrapper) GetMyActivity(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetMyActivity(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -964,9 +1015,12 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/anchor-keys", wrapper.ListAnchorKeys)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/status", wrapper.GetStatus)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me", wrapper.GetMe)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me/activity", wrapper.GetMyActivity)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/quotes", wrapper.RecordActivityQuote)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/submissions", wrapper.RecordActivitySubmission)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/feedback", wrapper.ReceiveFeedback)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/email-optins", wrapper.RecordEmailOptIn)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/email-optins/unsubscribe", wrapper.WithdrawEmailOptIn)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/funnel", wrapper.RecordActivityFunnel)
 
 	return m
@@ -1743,6 +1797,82 @@ func (response RecordActivitySubmissiondefaultApplicationProblemPlusJSONResponse
 	return err
 }
 
+type RecordEmailOptInRequestObject struct {
+	Body *RecordEmailOptInJSONRequestBody
+}
+
+type RecordEmailOptInResponseObject interface {
+	VisitRecordEmailOptInResponse(w http.ResponseWriter) error
+}
+
+type RecordEmailOptIn202JSONResponse struct {
+	Data struct {
+		UnsubscribeToken string `json:"unsubscribe_token"`
+	} `json:"data"`
+}
+
+func (response RecordEmailOptIn202JSONResponse) VisitRecordEmailOptInResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(202)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type RecordEmailOptIndefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response RecordEmailOptIndefaultApplicationProblemPlusJSONResponse) VisitRecordEmailOptInResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type WithdrawEmailOptInRequestObject struct {
+	Body *WithdrawEmailOptInJSONRequestBody
+}
+
+type WithdrawEmailOptInResponseObject interface {
+	VisitWithdrawEmailOptInResponse(w http.ResponseWriter) error
+}
+
+type WithdrawEmailOptIn204Response struct {
+}
+
+func (response WithdrawEmailOptIn204Response) VisitWithdrawEmailOptInResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type WithdrawEmailOptIndefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response WithdrawEmailOptIndefaultApplicationProblemPlusJSONResponse) VisitWithdrawEmailOptInResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type ReceiveFeedbackRequestObject struct {
 	Body *ReceiveFeedbackJSONRequestBody
 }
@@ -1818,6 +1948,49 @@ type GetMedefaultApplicationProblemPlusJSONResponse struct {
 }
 
 func (response GetMedefaultApplicationProblemPlusJSONResponse) VisitGetMeResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMyActivityRequestObject struct {
+}
+
+type GetMyActivityResponseObject interface {
+	VisitGetMyActivityResponse(w http.ResponseWriter) error
+}
+
+type GetMyActivity200JSONResponse struct {
+	Data WalletHistory `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetMyActivity200JSONResponse) VisitGetMyActivityResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMyActivitydefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetMyActivitydefaultApplicationProblemPlusJSONResponse) VisitGetMyActivityResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
@@ -2128,12 +2301,21 @@ type StrictServerInterface interface {
 	// RecordActivitySubmission What happened when a prepared leg was sent, found by the message digest its approval binds.
 	// (POST /internal/activity/submissions)
 	RecordActivitySubmission(ctx context.Context, request RecordActivitySubmissionRequestObject) (RecordActivitySubmissionResponseObject, error)
+	// RecordEmailOptIn An email address given with explicit consent to hear when the Hall launches and when the holder's trades settle.
+	// (POST /internal/email-optins)
+	RecordEmailOptIn(ctx context.Context, request RecordEmailOptInRequestObject) (RecordEmailOptInResponseObject, error)
+	// WithdrawEmailOptIn Withdraws consent for the address an unsubscribe token belongs to.
+	// (POST /internal/email-optins/unsubscribe)
+	WithdrawEmailOptIn(ctx context.Context, request WithdrawEmailOptInRequestObject) (WithdrawEmailOptInResponseObject, error)
 	// ReceiveFeedback Feedback a visitor sent, forwarded by the web route that received it.
 	// (POST /internal/feedback)
 	ReceiveFeedback(ctx context.Context, request ReceiveFeedbackRequestObject) (ReceiveFeedbackResponseObject, error)
 	// GetMe The opaque account subject accepted by the Go core.
 	// (GET /me)
 	GetMe(ctx context.Context, request GetMeRequestObject) (GetMeResponseObject, error)
+	// GetMyActivity What the activity record holds for every wallet the signed-in account has linked.
+	// (GET /me/activity)
+	GetMyActivity(ctx context.Context, request GetMyActivityRequestObject) (GetMyActivityResponseObject, error)
 	// GetPolicy A policy document, as data (server/internal/policy.Document).
 	// (GET /policies/{version})
 	GetPolicy(ctx context.Context, request GetPolicyRequestObject) (GetPolicyResponseObject, error)
@@ -2681,6 +2863,68 @@ func (sh *strictHandler) RecordActivitySubmission(w http.ResponseWriter, r *http
 	}
 }
 
+// RecordEmailOptIn operation middleware
+func (sh *strictHandler) RecordEmailOptIn(w http.ResponseWriter, r *http.Request) {
+	var request RecordEmailOptInRequestObject
+
+	var body RecordEmailOptInJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.RecordEmailOptIn(ctx, request.(RecordEmailOptInRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "RecordEmailOptIn")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(RecordEmailOptInResponseObject); ok {
+		if err := validResponse.VisitRecordEmailOptInResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// WithdrawEmailOptIn operation middleware
+func (sh *strictHandler) WithdrawEmailOptIn(w http.ResponseWriter, r *http.Request) {
+	var request WithdrawEmailOptInRequestObject
+
+	var body WithdrawEmailOptInJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.WithdrawEmailOptIn(ctx, request.(WithdrawEmailOptInRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "WithdrawEmailOptIn")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(WithdrawEmailOptInResponseObject); ok {
+		if err := validResponse.VisitWithdrawEmailOptInResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // ReceiveFeedback operation middleware
 func (sh *strictHandler) ReceiveFeedback(w http.ResponseWriter, r *http.Request) {
 	var request ReceiveFeedbackRequestObject
@@ -2729,6 +2973,30 @@ func (sh *strictHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetMeResponseObject); ok {
 		if err := validResponse.VisitGetMeResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetMyActivity operation middleware
+func (sh *strictHandler) GetMyActivity(w http.ResponseWriter, r *http.Request) {
+	var request GetMyActivityRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetMyActivity(ctx, request.(GetMyActivityRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetMyActivity")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetMyActivityResponseObject); ok {
+		if err := validResponse.VisitGetMyActivityResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

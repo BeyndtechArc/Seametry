@@ -370,6 +370,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What the activity record holds for every wallet the signed-in account has linked.
+         * @description Reads only the wallets named in the account token, which the account authority puts there for wallets this account proved it controls by signing a challenge. No wallet is read by address alone. Only legs that were sent are returned, for the 200 most recent quotes. A leg carries a chain answer only once the reconciler or the backfill has written one; until then it says what Seametry sent, not what settled.
+         */
+        get: operations["getMyActivity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/activity/quotes": {
         parameters: {
             query?: never;
@@ -430,6 +450,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/email-optins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * An email address given with explicit consent to hear when the Hall launches and when the holder's trades settle.
+         * @description Kept with the version of the consent text the visitor agreed to, the time it was received, and the first-touch ref code and wallet when given. An address already kept is updated with the new consent and a new unsubscribe token, so an older link stops working. Nothing is mailed: there is no sender for these addresses yet.
+         */
+        post: operations["recordEmailOptIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/email-optins/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraws consent for the address an unsubscribe token belongs to.
+         * @description Erases the address, the wallet and the token, and keeps only when consent was given and withdrawn. A token not kept answers 404, which is also the answer for a link already used.
+         */
+        post: operations["withdrawEmailOptIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/activity/funnel": {
         parameters: {
             query?: never;
@@ -455,8 +515,61 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         AccountSubject: {
-            /** @description The opaque Better Auth account subject. No profile field is carried in the service token. */
+            /** @description The opaque Better Auth account subject. No profile field is carried in the service token; the wallets the account linked are, for GET /me/activity. */
             id: string;
+        };
+        WalletHistory: {
+            /** @description The linked wallets this answer read, from the account token. */
+            wallets: string[];
+            executions: components["schemas"]["WalletExecution"][];
+        };
+        WalletExecution: {
+            /** Format: uuid */
+            quote_id: string;
+            wallet: string;
+            /** @enum {string} */
+            kind: "buy" | "sell";
+            subject?: string;
+            template_id?: string;
+            plan_size: number;
+            /** Format: date-time */
+            prepared_at: string;
+            /**
+             * @description server, prepared by Seametry; chain, found only in the fee account's history.
+             * @enum {string}
+             */
+            source: "server" | "chain";
+            legs: components["schemas"]["WalletLeg"][];
+        };
+        WalletLeg: {
+            /** Format: uuid */
+            id: string;
+            mint: string;
+            symbol?: string;
+            signature: string;
+            /** Format: date-time */
+            submitted_at: string;
+            /** @enum {string} */
+            submit_result: "sent" | "refused_not_sent" | "uncertain";
+            /** @enum {string} */
+            source: "server" | "chain";
+            spend?: components["schemas"]["Amount"];
+            expected_out?: components["schemas"]["Amount"];
+            floor?: components["schemas"]["Amount"];
+            chain?: components["schemas"]["WalletLegChain"];
+        };
+        /** @description What the chain said, written only by the reconciler or the backfill. Absent means Seametry has not yet read an answer, not that nothing happened. */
+        WalletLegChain: {
+            /** @enum {string} */
+            outcome: "landed" | "failed" | "dropped";
+            /** Format: date-time */
+            block_time?: string;
+            /** Format: date-time */
+            reconciled_at: string;
+            /** @description USDC atoms (scale 6) the wallet's balance changed by. */
+            wallet_usdc_delta?: string;
+            wallet_token_delta?: string;
+            token_scale?: number;
         };
         ActivityQuote: {
             /** Format: uuid */
@@ -545,6 +658,22 @@ export interface components {
             wallet?: string;
             /** @description The path the visitor was on. */
             page?: string;
+            /** @enum {string} */
+            deployment: "production" | "preview" | "development";
+        };
+        EmailOptIn: {
+            address: string;
+            /** @description The version of the consent sentence the visitor ticked, as the web app names it. */
+            consent_version: string;
+            /** @description The first-touch ref code this browser kept (ActivityFirstTouch.ref_code), when there is one. */
+            ref_code?: string;
+            /** @description The connected wallet, only when the visitor chose to include it. */
+            wallet?: string;
+            /**
+             * @description Where the field was shown.
+             * @enum {string}
+             */
+            page?: "first_allocation" | "feedback";
             /** @enum {string} */
             deployment: "production" | "preview" | "development";
         };
@@ -1536,6 +1665,30 @@ export interface operations {
             default: components["responses"]["Problem"];
         };
     };
+    getMyActivity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The linked wallets' recorded history, newest quote first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["WalletHistory"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
     recordActivityQuote: {
         parameters: {
             query?: never;
@@ -1608,6 +1761,60 @@ export interface operations {
                         };
                     };
                 };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    recordEmailOptIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailOptIn"];
+            };
+        };
+        responses: {
+            /** @description Kept. The token is what the unsubscribe link carries. */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: {
+                            unsubscribe_token: string;
+                        };
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    withdrawEmailOptIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Withdrawn; the address is no longer kept. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             default: components["responses"]["Problem"];
         };

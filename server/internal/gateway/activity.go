@@ -11,6 +11,7 @@ import (
 
 	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway/api"
+	"github.com/BeyndtechArc/Seametry/server/internal/identity"
 )
 
 // ActivityReport is Execution's activity record, as the Gateway needs it.
@@ -18,6 +19,7 @@ type ActivityReport interface {
 	RecordQuote(ctx context.Context, quote execution.Quote) error
 	RecordSubmission(ctx context.Context, submission execution.Submission) error
 	RecordFunnel(ctx context.Context, deployment string, events []execution.FunnelEvent, received time.Time) error
+	History(ctx context.Context, wallets []string) ([]execution.HistoryQuote, error)
 }
 
 // WithActivity gives the Gateway the activity record. Without one, the
@@ -157,4 +159,72 @@ func (s Server) RecordActivityFunnel(ctx context.Context, request api.RecordActi
 		return api.RecordActivityFunneldefaultApplicationProblemPlusJSONResponse{Body: problem, StatusCode: status}, nil
 	}
 	return api.RecordActivityFunnel204Response{}, nil
+}
+
+func historyAmount(value *execution.Amount) *api.Amount {
+	if value == nil {
+		return nil
+	}
+	return &api.Amount{Atoms: value.Atoms, Scale: value.Scale}
+}
+
+func present(value string) *string {
+	if value == "" {
+		return nil
+	}
+	return &value
+}
+
+// GetMyActivity reads the record for the wallets the account token names,
+// and only those: the account authority puts a wallet there once this
+// account has signed for it, so no address typed by a caller is ever read.
+func (s Server) GetMyActivity(ctx context.Context, request api.GetMyActivityRequestObject) (api.GetMyActivityResponseObject, error) {
+	subject, ok := identity.SubjectFromContext(ctx)
+	if !ok {
+		return api.GetMyActivitydefaultApplicationProblemPlusJSONResponse{
+			Body:       gatewayProblem(http.StatusUnauthorized, "Account token required", "GET /v1/me/activity requires a short-lived token issued by the Seametry account authority"),
+			StatusCode: http.StatusUnauthorized,
+		}, nil
+	}
+	if s.Activity == nil {
+		return api.GetMyActivitydefaultApplicationProblemPlusJSONResponse{Body: unconfigured("GetMyActivity"), StatusCode: http.StatusServiceUnavailable}, nil
+	}
+	quotes, err := s.Activity.History(ctx, subject.Wallets)
+	if err != nil {
+		status, problem := activityProblem("GetMyActivity", err)
+		return api.GetMyActivitydefaultApplicationProblemPlusJSONResponse{Body: problem, StatusCode: status}, nil
+	}
+	history := api.WalletHistory{Wallets: append([]string{}, subject.Wallets...), Executions: make([]api.WalletExecution, 0, len(quotes))}
+	for _, quote := range quotes {
+		recorded := api.WalletExecution{
+			QuoteId: quote.ID, Wallet: quote.Wallet, Kind: api.WalletExecutionKind(quote.Kind), PlanSize: quote.PlanSize,
+			PreparedAt: quote.PreparedAt.UTC(), Source: api.WalletExecutionSource(quote.Source),
+			Subject: present(quote.Subject), TemplateId: present(quote.TemplateID), Legs: make([]api.WalletLeg, 0, len(quote.Legs)),
+		}
+		for _, leg := range quote.Legs {
+			sent := api.WalletLeg{
+				Id: leg.ID, Mint: leg.Mint, Symbol: present(leg.Symbol), Signature: leg.Signature, SubmittedAt: leg.SubmittedAt.UTC(),
+				SubmitResult: api.WalletLegSubmitResult(leg.SubmitResult), Source: api.WalletLegSource(leg.Source),
+				Spend: historyAmount(leg.In), ExpectedOut: historyAmount(leg.Out), Floor: historyAmount(leg.Floor),
+			}
+			if answer := leg.Chain; answer != nil {
+				chain := &api.WalletLegChain{
+					Outcome: api.WalletLegChainOutcome(answer.Outcome), ReconciledAt: answer.ReconciledAt.UTC(), TokenScale: answer.TokenScale,
+					WalletUsdcDelta: present(answer.WalletUSDCDelta), WalletTokenDelta: present(answer.WalletTokenDelta),
+				}
+				if answer.BlockTime != nil {
+					at := answer.BlockTime.UTC()
+					chain.BlockTime = &at
+				}
+				sent.Chain = chain
+			}
+			recorded.Legs = append(recorded.Legs, sent)
+		}
+		history.Executions = append(history.Executions, recorded)
+	}
+	now := s.Now().UTC()
+	return api.GetMyActivity200JSONResponse{
+		Data: history,
+		Meta: api.Meta{AsOf: now, ServedAt: now, Completeness: api.Complete},
+	}, nil
 }

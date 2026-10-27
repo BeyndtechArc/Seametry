@@ -31,6 +31,8 @@ export type Leg = {
   endedAt?: string;
   received?: Quantity;
   problem?: { plain: string; technical?: string };
+  /** Set only on a leg from Seametry's record whose phase the chain answered for (lib/execution/server-history.ts). */
+  chainConfirmed?: boolean;
 };
 
 export type ExecutionKind = "buy" | "sell";
@@ -49,6 +51,12 @@ export type Execution = {
   seen: boolean;
   /** Set while the chain cannot be read for this record's open legs. */
   unreadable?: { since: string; detail: string };
+  /**
+   * Absent for this browser's own record. "server" is Seametry's record of
+   * what it prepared and sent; "chain" a trade found only in the fee
+   * account's history. Neither is the browser's word.
+   */
+  recordedBy?: "server" | "chain";
 };
 
 export type ExecutionState = "settling" | "settled" | "partly-settled" | "nothing-moved" | "needs-attention";
@@ -172,6 +180,8 @@ export function outcomeLine(execution: Execution, now: number): string {
     case "settling":
       return `${open} ${open === 1 ? leg : `${leg}s`} waiting for mainnet. Each lands or is called off within about 90 seconds.`;
     case "needs-attention":
+      // Seametry's record, not this browser, watches a record it did not keep here.
+      if (execution.recordedBy) return `Seametry's record has no answer from mainnet for ${open === 1 ? `one ${leg}` : `${open} ${leg}s`} yet. Read the signature on Solscan meanwhile.`;
       return `Mainnet cannot be read right now, so ${open === 1 ? `one ${leg} is` : `${open} ${leg}s are`} unconfirmed. Seametry keeps checking; read the signature on Solscan meanwhile.`;
     case "settled":
       return execution.legs.length === 1 ? `The ${leg} landed.` : `All ${execution.legs.length} ${leg}s landed.`;

@@ -128,3 +128,18 @@
   font-size: var(--sm-font-size-small);
   line-height: 1.5;
 }
+
+/* Whose record this is, under its headline: this browser's, Seametry's, or the chain's. */
+.recordSource,
+.recordLine {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-micro);
+  letter-spacing: var(--sm-font-tracking-body);
+}
+
+.legSource {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-micro);
+}

@@ -46,6 +46,6 @@ export const auth = betterAuth({
     customRules: { "/sign-in/social": { window: 60, max: 5 } },
   },
   plugins: [
-    jwt({ jwt: { definePayload: serviceTokenPayload } }),
+    jwt({ jwt: { definePayload: serviceTokenPayload(pool) } }),
   ],
 });

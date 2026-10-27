@@ -1,0 +1,48 @@
+.optIn {
+  display: grid;
+  gap: var(--sm-space-5);
+  max-width: calc(var(--sm-space-13) * 6);
+}
+
+.optIn h2 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-body);
+  font-weight: var(--sm-font-weight-semibold);
+}
+
+.note,
+.kept {
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+}
+
+.note a,
+.kept a {
+  color: var(--sm-accent-touchText);
+}
+
+/* The box and its sentence share one target, so the whole sentence ticks it. */
+.consent {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sm-space-4);
+  min-height: var(--sm-size-target);
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+  cursor: pointer;
+}
+
+.consent:focus-within {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-2);
+}
+
+.tray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sm-space-5);
+}

@@ -233,7 +233,9 @@ was sent; and the funnel steps a browser reports. Every row names its source:
 `server` rows come from the web routes over a service secret, `client` rows
 from a browser and never count as volume, a fee or an outcome, and only
 `chain` rows say what settled. The wallet is the subject, so an account that
-links a wallet reads its rows with nothing migrated. The reconciler, a loop in
+links a wallet reads its rows with nothing migrated: `GET /v1/me/activity`
+answers for the wallets the account token names and no others, so no
+wallet's rows are read by typing its address. The reconciler, a loop in
 the Gateway process every 30 seconds, settles each sent leg against mainnet
 (landed or failed with what moved for the wallet and into the fee account, or
 dropped 20 blocks past its deadline unseen), and the chain's first answer
@@ -299,7 +301,9 @@ configured only on the Gateway host); visitor feedback in the `alert`
 schema, kept before it is mailed to the team, with each delivery's outcome;
 and notices of settled activity worth a look (a leg that failed or did not
 land, a wallet's first landed trade), one per reconciler pass, kept the same
-way.
+way. Email opt-ins: an address kept only with the consent text version and
+time it was given, withdrawn by an unsubscribe token that erases it. Nothing
+mails opt-ins yet; the email adapter writes only to the team's inbox.
 
 **Consumes transitions, not tables.** It reads outbox events. It does not poll
 every table looking for change.
@@ -319,7 +323,8 @@ wallet addresses and sessions in its dedicated Better Auth database. The Go
 Identity and Entitlements module owns API keys, plans, permissions, usage
 metering and quotas. Saved formulas belong to Basket. The Go module consumes
 the account subject through a verified token contract, never by reading the
-account service's tables.
+account service's tables. The token's only claim beyond the subject is
+`wallets`: the addresses the account proved it controls, at most 20.
 
 **Wallet linking is identity evidence, not custody.** Proving control of an
 address grants a view of that address's data. It grants no ability to move

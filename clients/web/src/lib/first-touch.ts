@@ -53,6 +53,17 @@ export function firstTouchFor(wallet: string): FirstTouch | undefined {
   }
 }
 
+/** The ref code this browser first arrived with, if any, whether or not it has been sent with a quote. */
+export function firstRefCode(): string | undefined {
+  try {
+    const parsed: unknown = JSON.parse(localStorage.getItem(TOUCH) ?? "null");
+    const code = parsed && typeof parsed === "object" ? (parsed as FirstTouch).ref_code : undefined;
+    return typeof code === "string" ? code : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function firstTouchSent(wallet: string) {
   try {
     const sent = sentTo();

@@ -56,3 +56,62 @@ func (s Server) ReceiveFeedback(ctx context.Context, request api.ReceiveFeedback
 	response.Data.Id = id
 	return response, nil
 }
+
+// EmailOptIns is Alert's consent record for email, as the Gateway needs it.
+type EmailOptIns interface {
+	Keep(ctx context.Context, optIn alert.OptIn) (string, error)
+	Withdraw(ctx context.Context, token string) error
+}
+
+// WithEmailOptIns gives the Gateway Alert's consent record. Without one,
+// both operations answer 503 rather than accept an address they cannot keep.
+func (s Server) WithEmailOptIns(optIns EmailOptIns) Server {
+	s.OptIns = optIns
+	return s
+}
+
+func (s Server) RecordEmailOptIn(ctx context.Context, request api.RecordEmailOptInRequestObject) (api.RecordEmailOptInResponseObject, error) {
+	if s.OptIns == nil {
+		return api.RecordEmailOptIndefaultApplicationProblemPlusJSONResponse{
+			Body:       gatewayProblem(http.StatusServiceUnavailable, "Email opt-in unavailable", "RecordEmailOptIn has no consent record on this Gateway: it was started without one."),
+			StatusCode: http.StatusServiceUnavailable,
+		}, nil
+	}
+	body := request.Body
+	page := ""
+	if body.Page != nil {
+		page = string(*body.Page)
+	}
+	token, err := s.OptIns.Keep(ctx, alert.OptIn{
+		Address: body.Address, ConsentVersion: body.ConsentVersion, RefCode: optional(body.RefCode), Wallet: optional(body.Wallet),
+		Page: page, Deployment: string(body.Deployment),
+	})
+	if err != nil {
+		var invalid alert.Invalid
+		status, title, detail := http.StatusInternalServerError, "Email opt-in not kept", "RecordEmailOptIn: "+err.Error()
+		if errors.As(err, &invalid) {
+			status, title, detail = http.StatusBadRequest, "Email opt-in refused", "RecordEmailOptIn: "+invalid.Reason
+		}
+		return api.RecordEmailOptIndefaultApplicationProblemPlusJSONResponse{Body: gatewayProblem(status, title, detail), StatusCode: status}, nil
+	}
+	response := api.RecordEmailOptIn202JSONResponse{}
+	response.Data.UnsubscribeToken = token
+	return response, nil
+}
+
+func (s Server) WithdrawEmailOptIn(ctx context.Context, request api.WithdrawEmailOptInRequestObject) (api.WithdrawEmailOptInResponseObject, error) {
+	if s.OptIns == nil {
+		return api.WithdrawEmailOptIndefaultApplicationProblemPlusJSONResponse{
+			Body:       gatewayProblem(http.StatusServiceUnavailable, "Email opt-in unavailable", "WithdrawEmailOptIn has no consent record on this Gateway: it was started without one."),
+			StatusCode: http.StatusServiceUnavailable,
+		}, nil
+	}
+	if err := s.OptIns.Withdraw(ctx, request.Body.Token); err != nil {
+		status, title, detail := http.StatusInternalServerError, "Unsubscribe not recorded", "WithdrawEmailOptIn: "+err.Error()
+		if errors.Is(err, alert.ErrUnknownToken) {
+			status, title, detail = http.StatusNotFound, "Unsubscribe link not recognised", "WithdrawEmailOptIn: no kept address carries this token; it was mistyped or already used."
+		}
+		return api.WithdrawEmailOptIndefaultApplicationProblemPlusJSONResponse{Body: gatewayProblem(status, title, detail), StatusCode: status}, nil
+	}
+	return api.WithdrawEmailOptIn204Response{}, nil
+}
