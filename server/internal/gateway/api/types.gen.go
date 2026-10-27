@@ -497,7 +497,10 @@ type AccountSubject struct {
 
 // ActivityFirstTouch Where the browser first arrived, held in its own storage and sent with a wallet's first quote. Every field is optional and capped.
 type ActivityFirstTouch struct {
-	LandingPath  *string `json:"landing_path,omitempty"`
+	LandingPath *string `json:"landing_path,omitempty"`
+
+	// RefCode The code of the /r/{code} link the browser first arrived through: a listed channel (x, tg, discord, dm), dm-<handle>, or unknown.
+	RefCode      *string `json:"ref_code,omitempty"`
 	ReferrerHost *string `json:"referrer_host,omitempty"`
 	UtmCampaign  *string `json:"utm_campaign,omitempty"`
 	UtmContent   *string `json:"utm_content,omitempty"`

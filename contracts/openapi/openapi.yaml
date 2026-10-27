@@ -901,6 +901,12 @@ components:
         utm_term:
           type: string
           maxLength: 200
+        ref_code:
+          type: string
+          maxLength: 40
+          description: >
+            The code of the /r/{code} link the browser first arrived through:
+            a listed channel (x, tg, discord, dm), dm-<handle>, or unknown.
     ActivityLeg:
       type: object
       required: [id, mint, symbol, in, out, floor, routing_fee_bps, tip_offset_bps, simulated_fee_atoms, tip_lamports, landing, last_valid_block_height, message_sha256]

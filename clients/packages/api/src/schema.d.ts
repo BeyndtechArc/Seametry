@@ -493,6 +493,8 @@ export interface components {
             utm_campaign?: string;
             utm_content?: string;
             utm_term?: string;
+            /** @description The code of the /r/{code} link the browser first arrived through: a listed channel (x, tg, discord, dm), dm-<handle>, or unknown. */
+            ref_code?: string;
         };
         ActivityLeg: {
             /** Format: uuid */

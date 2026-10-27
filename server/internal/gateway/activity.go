@@ -105,7 +105,7 @@ func (s Server) RecordActivityQuote(ctx context.Context, request api.RecordActiv
 		quote.FirstTouch = &execution.FirstTouch{
 			ReferrerHost: optional(touch.ReferrerHost), LandingPath: optional(touch.LandingPath),
 			UTMSource: optional(touch.UtmSource), UTMMedium: optional(touch.UtmMedium), UTMCampaign: optional(touch.UtmCampaign),
-			UTMContent: optional(touch.UtmContent), UTMTerm: optional(touch.UtmTerm),
+			UTMContent: optional(touch.UtmContent), UTMTerm: optional(touch.UtmTerm), RefCode: optional(touch.RefCode),
 		}
 	}
 	for _, leg := range body.Legs {
