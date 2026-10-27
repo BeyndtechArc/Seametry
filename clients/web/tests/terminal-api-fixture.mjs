@@ -131,6 +131,67 @@ function devnetRpc(request, response) {
   });
 }
 
+// The Gateway's /v1/admin answers for each fixture account. Figures are
+// integer atoms at scale 6 like the Gateway's; every value here is fixture
+// data, chosen so a test can find it on the page.
+const adminNow = "2026-10-27T12:00:00Z";
+const adminMeta = { as_of: adminNow, served_at: adminNow, completeness: "complete" };
+const adminUSDC = (atoms) => ({ atoms, scale: 6 });
+function adminPeriod(search) {
+  const deployment = search.get("deployment") ?? "production";
+  const to = search.get("to") ?? adminNow;
+  const from = search.get("from") ?? new Date(Date.parse(to) - 30 * 86_400_000).toISOString().replace(".000Z", "Z");
+  return { from, to, deployment };
+}
+function adminAnswer(token, operation, search) {
+  const admins = ["fixture-admin-token", "fixture-admin-empty-token", "fixture-admin-degraded-token"];
+  if (!admins.includes(token)) return undefined;
+  const period = adminPeriod(search);
+  if (Date.parse(period.from) >= Date.parse(period.to)) {
+    return { status: 400, body: { title: "Activity report refused", status: 400, detail: `GetAdminOverview: execution: period from ${period.from} is not before to ${period.to}` } };
+  }
+  const empty = token === "fixture-admin-empty-token";
+  if (token === "fixture-admin-degraded-token" && operation !== "overview") {
+    return { status: 503, body: { title: "Admin unavailable", status: 503, detail: "fixture: the record is unavailable" } };
+  }
+  const wallet = "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM";
+  switch (operation) {
+    case "overview":
+      return { status: 200, body: { meta: adminMeta, data: {
+        period, volume: adminUSDC(empty ? "0" : "2600000"), fee_revenue: adminUSDC(empty ? "0" : "7800"), tip_cost: adminUSDC(empty ? "0" : "13500"),
+        landed_legs: empty ? 0 : 4, ...(empty ? {} : { last_reconciled_at: "2026-10-27T11:58:00Z" }),
+        wallets: empty ? { seen: 0, seen_and_activated: 0, activated: 0, active: 0, returning: 0 } : { seen: 2, seen_and_activated: 2, activated: 2, active: 3, returning: 2 },
+        funnel: empty
+          ? { requested: 0, prepared: 0, refused: 0, review_opened: 0, signature_requested: 0, signature_declined: 0, signature_failed: 0, sheet_abandoned: 0, sent: 0, landed: 0 }
+          : { requested: 4, prepared: 3, refused: 1, review_opened: 1, signature_requested: 1, signature_declined: 0, signature_failed: 0, sheet_abandoned: 0, sent: 3, landed: 3 },
+        refusals: empty ? [] : [{ status: 422, quotes: 1 }],
+        reliability: empty ? [] : [{ landing: "sender", sent: 3, landed: 2, failed: 1, dropped: 0, unanswered: 0 }],
+      } } };
+    case "sources":
+      return { status: 200, body: { meta: adminMeta, data: { period, sources: empty ? [] : [
+        { source: "storm", seen_wallets: 1, activated_wallets: 1, active_wallets: 2, volume: adminUSDC("2200000"), fee_revenue: adminUSDC("6600") },
+        { source: "unknown", seen_wallets: 1, activated_wallets: 1, active_wallets: 1, volume: adminUSDC("400000"), fee_revenue: adminUSDC("1200") },
+      ] } } };
+    case "wallets":
+      return { status: 200, body: { meta: adminMeta, data: { deployment: period.deployment, wallets: empty ? [] : [
+        { address: wallet, first_seen_at: "2026-10-11T09:00:00Z", source: "storm", quotes: 2, landed_legs: 2, volume: adminUSDC("1500000"), fee_revenue: adminUSDC("4500") },
+      ] } } };
+    case "activity":
+      return { status: 200, body: { meta: adminMeta, data: { period, rows: empty ? [] : [
+        { at: "2026-10-19T09:00:00Z", source: "chain", event: "landed", wallet, detail: "NVDAx" },
+        { at: "2026-10-18T10:00:00Z", source: "server", event: "leg_sent", wallet, detail: "NVDAx" },
+        { at: "2026-10-18T09:30:00Z", source: "client", event: "review_opened", wallet, detail: "" },
+      ] } } };
+    case "email-optins":
+      return { status: 200, body: { meta: adminMeta, data: { period, counts: empty ? [] : [
+        { live: true, page: "first_allocation", ref_code: "storm", optins: 1 },
+        { live: false, page: "feedback", ref_code: "unknown", optins: 1 },
+      ], recent: empty ? [] : [{ masked_address: "s***@g***.com", consented_at: "2026-10-15T09:00:00Z", page: "first_allocation", ref_code: "storm" }] } } };
+    default:
+      return undefined;
+  }
+}
+
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? "/", "http://127.0.0.1:3846");
   const path = url.pathname;
@@ -207,6 +268,28 @@ const server = createServer((request, response) => {
       "Set-Cookie": ["fixture-a=1; Path=/; HttpOnly", "fixture-b=2; Path=/; HttpOnly"],
     });
     response.end(body);
+    return;
+  }
+  // The account authority's token exchange and the Gateway's admin gate, for
+  // tests/admin.spec.ts. The session cookie names which account is signed
+  // in; the Gateway side admits only the admin tokens, and answers every
+  // other caller as a missing path, as AdminGate does.
+  if (path === "/api/auth/token") {
+    const session = /better-auth\.session_token=([a-z-]+)/.exec(request.headers.cookie ?? "")?.[1];
+    const token = { "fixture-admin": "fixture-admin-token", "fixture-admin-empty": "fixture-admin-empty-token", "fixture-admin-degraded": "fixture-admin-degraded-token", "fixture-member": "fixture-member-token" }[session ?? ""];
+    if (!token) writeJson(response, 401, { message: "fixture: no session" });
+    else writeJson(response, 200, { token });
+    return;
+  }
+  if (path.startsWith("/v1/admin/")) {
+    const token = /^Bearer (.+)$/.exec(request.headers.authorization ?? "")?.[1];
+    const answer = adminAnswer(token, path.slice("/v1/admin/".length), url.searchParams);
+    if (!answer) {
+      response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end("404 page not found\n");
+    } else {
+      writeJson(response, answer.status, answer.body);
+    }
     return;
   }
   if (path === "/health") {
