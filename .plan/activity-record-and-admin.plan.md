@@ -227,7 +227,9 @@ each person's data, and the privacy policy's wording for it.
 4. **Admin UI.** Build note, views, design lint, Playwright with fixture
    Gateway answers including empty, stale and unavailable states.
 5. **Signed-in history.** Holdings and Activity merge server and device
-   records for linked wallets.
+   records for linked wallets. Built 27 October ahead of 3 and 4: the
+   account token's `wallets` claim names the linked wallets and
+   `GET /v1/me/activity` reads only those.
 
 Each pull request: `gofmt`, `go vet`, `go test ./server/...`, the spec and
 receipt checks, the web suite, design lint, red checks for each new rule, CI
