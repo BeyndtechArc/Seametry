@@ -20,6 +20,21 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// GetAdminActivity The 50 most recent rows of the record before the period's end, each with whose word it is.
+	// (GET /admin/activity)
+	GetAdminActivity(w http.ResponseWriter, r *http.Request, params GetAdminActivityParams)
+	// GetAdminEmailOptIns Email consents counted by page and ref code, and the 20 most recent with masked addresses.
+	// (GET /admin/email-optins)
+	GetAdminEmailOptIns(w http.ResponseWriter, r *http.Request, params GetAdminEmailOptInsParams)
+	// GetAdminOverview Volume, fee revenue, tip cost, wallet states, the funnel and reliability for a period.
+	// (GET /admin/overview)
+	GetAdminOverview(w http.ResponseWriter, r *http.Request, params GetAdminOverviewParams)
+	// GetAdminSources Wallets and landed volume by the first-touch ref code their first quote carried.
+	// (GET /admin/sources)
+	GetAdminSources(w http.ResponseWriter, r *http.Request, params GetAdminSourcesParams)
+	// GetAdminWallets The 200 wallets most recently seen in a deployment, with all-time landed totals.
+	// (GET /admin/wallets)
+	GetAdminWallets(w http.ResponseWriter, r *http.Request, params GetAdminWalletsParams)
 	// ListAlloys Every alloy, read from chain.
 	// (GET /alloys)
 	ListAlloys(w http.ResponseWriter, r *http.Request, params ListAlloysParams)
@@ -114,6 +129,275 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// GetAdminActivity operation middleware
+func (siw *ServerInterfaceWrapper) GetAdminActivity(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAdminActivityParams
+
+	// ------------- Optional query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "deployment" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "deployment", r.URL.Query(), &params.Deployment, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "deployment"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deployment", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAdminActivity(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAdminEmailOptIns operation middleware
+func (siw *ServerInterfaceWrapper) GetAdminEmailOptIns(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAdminEmailOptInsParams
+
+	// ------------- Optional query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "deployment" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "deployment", r.URL.Query(), &params.Deployment, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "deployment"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deployment", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAdminEmailOptIns(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAdminOverview operation middleware
+func (siw *ServerInterfaceWrapper) GetAdminOverview(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAdminOverviewParams
+
+	// ------------- Optional query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "deployment" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "deployment", r.URL.Query(), &params.Deployment, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "deployment"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deployment", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAdminOverview(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAdminSources operation middleware
+func (siw *ServerInterfaceWrapper) GetAdminSources(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAdminSourcesParams
+
+	// ------------- Optional query parameter "from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "from", r.URL.Query(), &params.From, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "to" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "to", r.URL.Query(), &params.To, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "to"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "to", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "deployment" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "deployment", r.URL.Query(), &params.Deployment, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "deployment"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deployment", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAdminSources(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAdminWallets operation middleware
+func (siw *ServerInterfaceWrapper) GetAdminWallets(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAdminWalletsParams
+
+	// ------------- Optional query parameter "deployment" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "deployment", r.URL.Query(), &params.Deployment, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "deployment"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deployment", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAdminWallets(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
 
 // ListAlloys operation middleware
 func (siw *ServerInterfaceWrapper) ListAlloys(w http.ResponseWriter, r *http.Request) {
@@ -1016,6 +1300,11 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/status", wrapper.GetStatus)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me", wrapper.GetMe)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me/activity", wrapper.GetMyActivity)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/overview", wrapper.GetAdminOverview)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/sources", wrapper.GetAdminSources)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/wallets", wrapper.GetAdminWallets)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/activity", wrapper.GetAdminActivity)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/email-optins", wrapper.GetAdminEmailOptIns)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/quotes", wrapper.RecordActivityQuote)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/submissions", wrapper.RecordActivitySubmission)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/feedback", wrapper.ReceiveFeedback)
@@ -1027,6 +1316,226 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 }
 
 type ProblemApplicationProblemPlusJSONResponse Problem
+
+type GetAdminActivityRequestObject struct {
+	Params GetAdminActivityParams
+}
+
+type GetAdminActivityResponseObject interface {
+	VisitGetAdminActivityResponse(w http.ResponseWriter) error
+}
+
+type GetAdminActivity200JSONResponse struct {
+	Data AdminActivity `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetAdminActivity200JSONResponse) VisitGetAdminActivityResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminActivitydefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetAdminActivitydefaultApplicationProblemPlusJSONResponse) VisitGetAdminActivityResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminEmailOptInsRequestObject struct {
+	Params GetAdminEmailOptInsParams
+}
+
+type GetAdminEmailOptInsResponseObject interface {
+	VisitGetAdminEmailOptInsResponse(w http.ResponseWriter) error
+}
+
+type GetAdminEmailOptIns200JSONResponse struct {
+	Data AdminEmailOptIns `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetAdminEmailOptIns200JSONResponse) VisitGetAdminEmailOptInsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminEmailOptInsdefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetAdminEmailOptInsdefaultApplicationProblemPlusJSONResponse) VisitGetAdminEmailOptInsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminOverviewRequestObject struct {
+	Params GetAdminOverviewParams
+}
+
+type GetAdminOverviewResponseObject interface {
+	VisitGetAdminOverviewResponse(w http.ResponseWriter) error
+}
+
+type GetAdminOverview200JSONResponse struct {
+	Data AdminOverview `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetAdminOverview200JSONResponse) VisitGetAdminOverviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminOverviewdefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetAdminOverviewdefaultApplicationProblemPlusJSONResponse) VisitGetAdminOverviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminSourcesRequestObject struct {
+	Params GetAdminSourcesParams
+}
+
+type GetAdminSourcesResponseObject interface {
+	VisitGetAdminSourcesResponse(w http.ResponseWriter) error
+}
+
+type GetAdminSources200JSONResponse struct {
+	Data AdminSources `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetAdminSources200JSONResponse) VisitGetAdminSourcesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminSourcesdefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetAdminSourcesdefaultApplicationProblemPlusJSONResponse) VisitGetAdminSourcesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminWalletsRequestObject struct {
+	Params GetAdminWalletsParams
+}
+
+type GetAdminWalletsResponseObject interface {
+	VisitGetAdminWalletsResponse(w http.ResponseWriter) error
+}
+
+type GetAdminWallets200JSONResponse struct {
+	Data AdminWallets `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetAdminWallets200JSONResponse) VisitGetAdminWalletsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminWalletsdefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetAdminWalletsdefaultApplicationProblemPlusJSONResponse) VisitGetAdminWalletsResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
 
 type ListAlloysRequestObject struct {
 	Params ListAlloysParams
@@ -2247,6 +2756,21 @@ func (response StreamEventsdefaultApplicationProblemPlusJSONResponse) VisitStrea
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+	// GetAdminActivity The 50 most recent rows of the record before the period's end, each with whose word it is.
+	// (GET /admin/activity)
+	GetAdminActivity(ctx context.Context, request GetAdminActivityRequestObject) (GetAdminActivityResponseObject, error)
+	// GetAdminEmailOptIns Email consents counted by page and ref code, and the 20 most recent with masked addresses.
+	// (GET /admin/email-optins)
+	GetAdminEmailOptIns(ctx context.Context, request GetAdminEmailOptInsRequestObject) (GetAdminEmailOptInsResponseObject, error)
+	// GetAdminOverview Volume, fee revenue, tip cost, wallet states, the funnel and reliability for a period.
+	// (GET /admin/overview)
+	GetAdminOverview(ctx context.Context, request GetAdminOverviewRequestObject) (GetAdminOverviewResponseObject, error)
+	// GetAdminSources Wallets and landed volume by the first-touch ref code their first quote carried.
+	// (GET /admin/sources)
+	GetAdminSources(ctx context.Context, request GetAdminSourcesRequestObject) (GetAdminSourcesResponseObject, error)
+	// GetAdminWallets The 200 wallets most recently seen in a deployment, with all-time landed totals.
+	// (GET /admin/wallets)
+	GetAdminWallets(ctx context.Context, request GetAdminWalletsRequestObject) (GetAdminWalletsResponseObject, error)
 	// ListAlloys Every alloy, read from chain.
 	// (GET /alloys)
 	ListAlloys(ctx context.Context, request ListAlloysRequestObject) (ListAlloysResponseObject, error)
@@ -2370,6 +2894,136 @@ type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
 	options     StrictHTTPServerOptions
+}
+
+// GetAdminActivity operation middleware
+func (sh *strictHandler) GetAdminActivity(w http.ResponseWriter, r *http.Request, params GetAdminActivityParams) {
+	var request GetAdminActivityRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminActivity(ctx, request.(GetAdminActivityRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminActivity")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAdminActivityResponseObject); ok {
+		if err := validResponse.VisitGetAdminActivityResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAdminEmailOptIns operation middleware
+func (sh *strictHandler) GetAdminEmailOptIns(w http.ResponseWriter, r *http.Request, params GetAdminEmailOptInsParams) {
+	var request GetAdminEmailOptInsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminEmailOptIns(ctx, request.(GetAdminEmailOptInsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminEmailOptIns")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAdminEmailOptInsResponseObject); ok {
+		if err := validResponse.VisitGetAdminEmailOptInsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAdminOverview operation middleware
+func (sh *strictHandler) GetAdminOverview(w http.ResponseWriter, r *http.Request, params GetAdminOverviewParams) {
+	var request GetAdminOverviewRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminOverview(ctx, request.(GetAdminOverviewRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminOverview")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAdminOverviewResponseObject); ok {
+		if err := validResponse.VisitGetAdminOverviewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAdminSources operation middleware
+func (sh *strictHandler) GetAdminSources(w http.ResponseWriter, r *http.Request, params GetAdminSourcesParams) {
+	var request GetAdminSourcesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminSources(ctx, request.(GetAdminSourcesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminSources")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAdminSourcesResponseObject); ok {
+		if err := validResponse.VisitGetAdminSourcesResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAdminWallets operation middleware
+func (sh *strictHandler) GetAdminWallets(w http.ResponseWriter, r *http.Request, params GetAdminWalletsParams) {
+	var request GetAdminWalletsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminWallets(ctx, request.(GetAdminWalletsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminWallets")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAdminWalletsResponseObject); ok {
+		if err := validResponse.VisitGetAdminWalletsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
 }
 
 // ListAlloys operation middleware

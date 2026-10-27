@@ -60,6 +60,7 @@ Read all three before writing code. They are short on purpose.
 | [prd/EXPLORER.md](prd/EXPLORER.md) | Public Explorer: the catalogue, the verification ritual, instrument pages, evidence pages, the Hall demonstration, hallmarks | Live. Phase 1. Evidence only, since 27 September 2026 |
 | [prd/TERMINAL.md](prd/TERMINAL.md) | Terminal: the creation and redemption console | Live, short. Phase 2. Allocation execution and optional routed-quote history exist in the web app; the professional Alloy NAV/share-price workbench does not |
 | [prd/API.md](prd/API.md) | The public API: contract, response model, resources, sign-in and keys, entitlements and metering, streaming, the storage behind it, and the order the server is built in | Live. Step A0 (the contract, its Go and TypeScript generation, the drift check, and the service boundary test) is built; the rest is specified, not built. Serves the Explorer from phase 1; the metered product is phase 3 |
+| [prd/ADMIN.md](prd/ADMIN.md) | The GTM Admin at `/admin`: who may open it, and the one definition of every figure it shows (volume, fee revenue, tip cost, wallet states, funnel, reliability, sources, email opt-ins) | Live. Admin API and the Overview, Sources, Wallets, Activity and Email opt-in views built 27 October 2026; Baskets and instruments view, wallet CSV export and the linked column are not built |
 
 ### Methodologies
 

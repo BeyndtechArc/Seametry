@@ -65,6 +65,46 @@ func TestVerifierCarriesTheLinkedWalletsTheAuthorityNamed(t *testing.T) {
 	}
 }
 
+func TestVerifierCarriesTheEmailOnlyAsVerifiedWhenTheAuthoritySaidSo(t *testing.T) {
+	public, private := keypair(t)
+	const origin = "https://accounts.example"
+	verifier, err := NewVerifier(origin, "", jwksClient(t, func(int) map[string]any { return jwksBody("key-1", public) }))
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 10, 9, 12, 0, 0, 0, time.UTC)
+	cases := []struct {
+		name         string
+		email        any
+		verified     any
+		wantEmail    string
+		wantVerified bool
+	}{
+		{"verified", "storm@example.com", true, "storm@example.com", true},
+		{"unverified", "storm@example.com", false, "storm@example.com", false},
+		{"no claims", nil, nil, "", false},
+		{"verified with no address", "", true, "", false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			claims := map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix()}
+			if tc.email != nil {
+				claims["email"] = tc.email
+			}
+			if tc.verified != nil {
+				claims["email_verified"] = tc.verified
+			}
+			subject, err := verifier.Verify(context.Background(), signedToken(t, private, "key-1", claims), now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if subject.Email != tc.wantEmail || subject.EmailVerified != tc.wantVerified {
+				t.Fatalf("email = %q verified %v, want %q verified %v", subject.Email, subject.EmailVerified, tc.wantEmail, tc.wantVerified)
+			}
+		})
+	}
+}
+
 func TestVerifierNormalizesATrailingSlashOnTheIssuer(t *testing.T) {
 	public, private := keypair(t)
 	const origin = "https://accounts.example"
@@ -99,6 +139,8 @@ func TestVerifierRejectsTokenBoundaryFailures(t *testing.T) {
 		{"wrong audience", map[string]any{"sub": "account-1", "iss": origin, "aud": "https://other.example", "exp": now.Add(time.Minute).Unix()}, "audience"},
 		{"missing subject", map[string]any{"iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix()}, "subject"},
 		{"malformed wallet", map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(), "wallets": []string{"not-an-address"}}, "wallets[0]"},
+		{"email_verified as a string", map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(), "email": "a@example.com", "email_verified": "true"}, "claims"},
+		{"oversized email", map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(), "email": strings.Repeat("a", 255)}, "255 bytes"},
 		{"too many wallets", map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(), "wallets": make([]string, 21)}, "21 wallets"},
 	}
 	for _, tc := range cases {

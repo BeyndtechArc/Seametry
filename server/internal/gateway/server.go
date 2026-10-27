@@ -25,6 +25,8 @@ type Server struct {
 	Activity        ActivityReport
 	Feedback        FeedbackDesk
 	OptIns          EmailOptIns
+	AdminRecord     AdminRecord
+	AdminOptIns     AdminOptIns
 	Now             func() time.Time
 }
 

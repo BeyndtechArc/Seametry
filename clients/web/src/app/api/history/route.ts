@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { accountServiceConfigured, authOrigin } from "@/lib/auth-proxy";
+import { accountServiceConfigured, exchangeAccountToken } from "@/lib/auth-proxy";
 import type { HistoryAnswer, WalletExecution } from "@/lib/execution/server-history";
 
 export const runtime = "nodejs";
@@ -24,17 +24,10 @@ export async function GET(request: NextRequest) {
   const cookie = request.headers.get("cookie");
   if (!accountServiceConfigured() || !gateway || !cookie) return answer({ state: "signed-out" });
 
-  let token: string;
-  try {
-    const issued = await fetch(new URL("/api/auth/token", authOrigin()), { headers: { cookie }, cache: "no-store", signal: AbortSignal.timeout(5_000) });
-    if (issued.status === 401) return answer({ state: "signed-out" });
-    if (!issued.ok) return answer({ state: "unavailable", detail: `The account service answered ${issued.status} for a token.` }, 503);
-    const body = (await issued.json()) as { token?: unknown };
-    if (typeof body.token !== "string") return answer({ state: "signed-out" });
-    token = body.token;
-  } catch {
-    return answer({ state: "unavailable", detail: "The account service could not be reached." }, 503);
-  }
+  const issued = await exchangeAccountToken(cookie);
+  if ("signedOut" in issued) return answer({ state: "signed-out" });
+  if ("unavailable" in issued) return answer({ state: "unavailable", detail: issued.unavailable }, 503);
+  const { token } = issued;
 
   try {
     const response = await fetch(`${gateway.replace(/\/$/, "")}/v1/me/activity`, {

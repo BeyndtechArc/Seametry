@@ -241,7 +241,9 @@ the Gateway process every 30 seconds, settles each sent leg against mainnet
 dropped 20 blocks past its deadline unseen), and the chain's first answer
 stands. `seametry import-activity` records trades found only in the fee
 account's public history as `chain` legs. Funnel steps are deleted after 24
-months, the privacy policy's retention.
+months, the privacy policy's retention. The Admin's aggregate reads
+(`/v1/admin/*`, definitions in `docs/prd/ADMIN.md`) are Execution's reads of
+this record; they write nothing.
 
 **Guarantees.** Quote expiry is checked at build and again at submission. The
 approval binds an immutable digest over instrument version, state snapshot,
@@ -323,8 +325,14 @@ wallet addresses and sessions in its dedicated Better Auth database. The Go
 Identity and Entitlements module owns API keys, plans, permissions, usage
 metering and quotas. Saved formulas belong to Basket. The Go module consumes
 the account subject through a verified token contract, never by reading the
-account service's tables. The token's only claim beyond the subject is
-`wallets`: the addresses the account proved it controls, at most 20.
+account service's tables. The token's claims beyond the subject are
+`wallets`, the addresses the account proved it controls, at most 20, and
+`email` with `email_verified`, the sign-in address and whether Google verified
+it. Only the Gateway's admin check reads the email: `/v1/admin/*` answers an
+account whose verified email is in `SEAMETRY_ADMIN_EMAILS` (compared without
+case; empty admits no one) and gives everyone else the 404 of a path that does
+not exist. The token is not stored by the Gateway, so the claim adds nothing
+to what is kept.
 
 **Wallet linking is identity evidence, not custody.** Proving control of an
 address grants a view of that address's data. It grants no ability to move

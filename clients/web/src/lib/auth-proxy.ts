@@ -25,6 +25,25 @@ export function accountServiceConfigured() {
   return Boolean(process.env.SEAMETRY_AUTH_ORIGIN);
 }
 
+export type AccountToken = { token: string } | { signedOut: true } | { unavailable: string };
+
+/**
+ * Exchanges the visitor's session cookie for the account authority's
+ * short-lived token, on the server only. The token is handed to the Gateway
+ * and never to the browser.
+ */
+export async function exchangeAccountToken(cookie: string): Promise<AccountToken> {
+  try {
+    const issued = await fetch(new URL("/api/auth/token", authOrigin()), { headers: { cookie }, cache: "no-store", signal: AbortSignal.timeout(5_000) });
+    if (issued.status === 401) return { signedOut: true };
+    if (!issued.ok) return { unavailable: `The account service answered ${issued.status} for a token.` };
+    const body = (await issued.json()) as { token?: unknown };
+    return typeof body.token === "string" ? { token: body.token } : { signedOut: true };
+  } catch {
+    return { unavailable: "The account service could not be reached." };
+  }
+}
+
 function browserResponseHeaders(upstream: Headers) {
   const headers = new Headers(upstream);
   const namedByConnection = (upstream.get("connection") ?? "").split(",").map((name) => name.trim()).filter((name) => headerName.test(name));
