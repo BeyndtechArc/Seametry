@@ -98,7 +98,14 @@ const RECORDED_BY: Record<NonNullable<Execution["recordedBy"]> | "browser", stri
 /** Whose word a leg's phase is: the chain's, through Seametry's record, or not yet anyone's. */
 function legSource(execution: Execution, leg: Leg): string | undefined {
   if (!execution.recordedBy) return undefined;
-  if (leg.chainConfirmed) return "Confirmed on chain";
+  switch (leg.chainAnswer) {
+    case "landed":
+      return "Settled on chain";
+    case "failed":
+      return "Failed; the chain confirmed the failure";
+    case "dropped":
+      return "Expired; mainnet never saw it";
+  }
   return leg.phase === "refused" ? undefined : "Sent; Seametry has no answer from mainnet for it yet";
 }
 

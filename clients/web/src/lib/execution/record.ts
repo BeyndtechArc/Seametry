@@ -31,8 +31,13 @@ export type Leg = {
   endedAt?: string;
   received?: Quantity;
   problem?: { plain: string; technical?: string };
-  /** Set only on a leg from Seametry's record whose phase the chain answered for (lib/execution/server-history.ts). */
-  chainConfirmed?: boolean;
+  /**
+   * The reconciler's answer for a leg from Seametry's record
+   * (lib/execution/server-history.ts), as it wrote
+   * it: landed settled, failed is a failure the chain confirmed, dropped
+   * expired without mainnet ever seeing it. Absent means no answer yet.
+   */
+  chainAnswer?: "landed" | "failed" | "dropped";
 };
 
 export type ExecutionKind = "buy" | "sell";

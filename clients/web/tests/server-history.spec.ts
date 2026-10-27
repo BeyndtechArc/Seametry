@@ -30,9 +30,9 @@ test("a server leg settles only on the chain's answer, and one without it reads 
   const [record] = fromServer([recorded]);
   expect(record.recordedBy).toBe("server");
   expect(record.allocation).toEqual({ id: "5f0c2f5e-7a1d-4c2b-9b8e-1d2c3b4a5f60", name: "Prime Seven", templateId: "prime-seven" });
-  expect(record.legs[0]).toMatchObject({ phase: "landed", chainConfirmed: true, received: { atoms: "400000", scale: aapl.decimals, unit: "AAPLx" } });
+  expect(record.legs[0]).toMatchObject({ phase: "landed", chainAnswer: "landed", received: { atoms: "400000", scale: aapl.decimals, unit: "AAPLx" } });
   expect(record.legs[1].phase).toBe("sent");
-  expect(record.legs[1].chainConfirmed).toBeUndefined();
+  expect(record.legs[1].chainAnswer).toBeUndefined();
   expect(record.legs[1].received).toBeUndefined();
   expect(record.unreadable?.since).toBe(recorded.legs[1].submitted_at);
 });
@@ -47,6 +47,30 @@ test("a trade found only on chain takes its spend from what left the wallet", ()
   expect(record.allocation).toBeUndefined();
   expect(record.legs[0].spend).toEqual({ atoms: "5000000", scale: 8, unit: record.legs[0].symbol });
   expect(record.legs[0].received).toEqual({ atoms: "995000", scale: 6, unit: "USDC" });
+});
+
+test("a failed or dropped leg carries the chain's own outcome, never a confirmation of settlement", () => {
+  const recorded = basketBoughtElsewhere();
+  recorded.legs[0].chain = { ...recorded.legs[0].chain!, outcome: "failed", wallet_usdc_delta: "0", wallet_token_delta: "0" };
+  recorded.legs[1].chain = { outcome: "dropped", reconciled_at: hoursAgo(2) };
+  const [record] = fromServer([recorded]);
+  expect(record.legs.map((leg) => [leg.phase, leg.chainAnswer])).toEqual([["failed", "failed"], ["dropped", "dropped"]]);
+  expect(record.legs.every((leg) => leg.received === undefined)).toBe(true);
+});
+
+test("Activity words each chain answer by its outcome: settled, a confirmed failure, or expired unseen", async ({ page }) => {
+  const recorded = basketBoughtElsewhere();
+  recorded.legs[1].chain = { outcome: "dropped", reconciled_at: hoursAgo(2) };
+  const failed = { ...basketBoughtElsewhere(), quote_id: "5f0c2f5e-7a1d-4c2b-9b8e-1d2c3b4a5f62", subject: "Failed basket", plan_size: 1, template_id: undefined };
+  failed.legs = [{ ...failed.legs[0], id: "0d6a4d2e-1b3c-4e5f-8a7b-9c0d1e2f3a49", signature: signature(49), chain: { outcome: "failed", reconciled_at: hoursAgo(3) } }];
+  await answerHistory(page, { state: "recorded", wallets: [wallet], executions: [recorded, failed], readAt: new Date().toISOString() });
+  await openHoldings(page);
+  await page.getByRole("tab", { name: /^Activity/ }).click();
+  const activity = page.getByRole("tabpanel", { name: "Activity" });
+  await expect(activity).toContainText("Settled on chain");
+  await expect(activity).toContainText("Expired; mainnet never saw it");
+  await expect(activity).toContainText("Failed; the chain confirmed the failure");
+  await expect(activity).not.toContainText("Confirmed on chain");
 });
 
 test("the same trade held by this browser and Seametry's record appears once, as this browser's", () => {
@@ -88,7 +112,7 @@ test("a new browser shows a linked wallet's basket from Seametry's record, label
   const activity = page.getByRole("tabpanel", { name: "Activity" });
   await expect(activity).toContainText("Seametry's record for your linked wallet");
   await expect(activity).toContainText("From Seametry's record");
-  await expect(activity).toContainText("Confirmed on chain");
+  await expect(activity).toContainText("Settled on chain");
   // Stale: sent hours ago and still unanswered, so it is not called settling.
   await expect(activity).toContainText("Sent; Seametry has no answer from mainnet for it yet");
   await expect(activity).not.toContainText("waiting for mainnet");
