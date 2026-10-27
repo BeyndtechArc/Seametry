@@ -12,7 +12,8 @@ import { Toast, ToastRegion } from "@seametry/ui/toast";
 import { Callout } from "@seametry/ui/callout";
 import { formatAmount } from "@/lib/amount";
 import { deriveState, endedAt, hasSignature, headline, isTerminal, LEG_WORDS, nextAction, outcomeLine, progressLine, retryWeights, type Execution, type ExecutionState, type Leg, type Quantity } from "@/lib/execution/record";
-import { executions, useExecutions } from "@/lib/execution/store";
+import { useHistory, type RecordState } from "@/lib/execution/history";
+import { executions } from "@/lib/execution/store";
 import { useExecutionWatcher } from "@/lib/execution/watcher";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import styles from "./activity.module.css";
@@ -88,16 +89,52 @@ function NextStepIcon({ step }: { step: Step }) {
     : <Link href={step.href} aria-label={step.label} title={step.label}><Icon name={step.icon} /></Link>;
 }
 
-/** Every record for a wallet, newest first: the lasting account of what this browser asked for. */
-export function ActivityList({ records, focus }: { records: Execution[]; focus?: string }) {
+const RECORDED_BY: Record<NonNullable<Execution["recordedBy"]> | "browser", string> = {
+  browser: "From this browser",
+  server: "From Seametry's record",
+  chain: "Found on chain",
+};
+
+/** Whose word a leg's phase is: the chain's, through Seametry's record, or not yet anyone's. */
+function legSource(execution: Execution, leg: Leg): string | undefined {
+  if (!execution.recordedBy) return undefined;
+  if (leg.chainConfirmed) return "Confirmed on chain";
+  return leg.phase === "refused" ? undefined : "Sent; Seametry has no answer from mainnet for it yet";
+}
+
+/** Which records this list holds, in one line, so a reader knows whether another device's trades could be missing. */
+export function RecordLine({ record }: { record: RecordState }) {
+  switch (record.state) {
+    case "reading":
+      return null;
+    case "signed-out":
+      return <p className={styles.recordLine}>This browser&apos;s records only. Sign in and link this wallet to include trades made on other devices.</p>;
+    case "recorded":
+      return <p className={styles.recordLine}>This browser&apos;s records and Seametry&apos;s record for {record.wallets.length === 1 ? "your linked wallet" : `your ${record.wallets.length} linked wallets`}, read {new Date(record.readAt).toLocaleTimeString()}.</p>;
+    case "unavailable":
+      return <Callout title="Seametry's record could not be read">Only this browser&apos;s records are shown. Trades made on other devices are missing until it can be read again.</Callout>;
+  }
+}
+
+/** Every record for a wallet, newest first: this browser's, and Seametry's when signed in. */
+export function ActivityList({ records, focus, record }: { records: Execution[]; focus?: string; record?: RecordState }) {
   const now = useNow(() => records.some((execution) => !execution.legs.every(isTerminal)));
   const focused = useRef<HTMLElement>(null);
   useEffect(() => {
     focused.current?.scrollIntoView({ block: "nearest" });
   }, [focus]);
-  if (records.length === 0) return <Callout title="Nothing bought or sold from this browser yet">Each purchase and sale you sign here is kept with what it spent, what it received and its signature.</Callout>;
+  const line = record ? <RecordLine record={record} /> : null;
+  if (records.length === 0) {
+    return <>
+      {line}
+      {record?.state === "recorded"
+        ? <Callout title="Nothing bought or sold yet">Neither this browser nor Seametry&apos;s record holds a purchase or sale for this wallet.</Callout>
+        : <Callout title="Nothing bought or sold from this browser yet">Each purchase and sale you sign here is kept with what it spent, what it received and its signature.</Callout>}
+    </>;
+  }
   return (
     <div className={styles.list}>
+      {line}
       {records.map((execution) => {
         const state = deriveState(execution, now);
         return (
@@ -110,6 +147,7 @@ export function ActivityList({ records, focus }: { records: Execution[]; focus?:
               </div>
               <time dateTime={execution.createdAt} title={new Date(execution.createdAt).toLocaleString()}>{relativeEvidenceAge(execution.createdAt, now)}</time>
             </header>
+            <p className={styles.recordSource} data-recorded-by={execution.recordedBy ?? "browser"}>{RECORDED_BY[execution.recordedBy ?? "browser"]}</p>
             <Timeline label={`${headline(execution, now)}, by constituent`}>
               {execution.legs.map((leg) => (
                 <TimelineItem
@@ -119,6 +157,7 @@ export function ActivityList({ records, focus }: { records: Execution[]; focus?:
                   meta={leg.received ? `${quantity(leg.spend)} for ${quantity(leg.received)}` : quantity(leg.spend)}
                 >
                   <span className={styles.legState} data-phase={leg.phase}>{LEG_WORDS[leg.phase]}</span>
+                  {legSource(execution, leg) ? <p className={styles.legSource}>{legSource(execution, leg)}</p> : null}
                   {leg.problem ? <p className={styles.legProblem}>{leg.problem.plain}</p> : null}
                   {leg.problem?.technical ? (
                     <details className={styles.technical}>
@@ -148,8 +187,9 @@ export function ActivityList({ records, focus }: { records: Execution[]; focus?:
  */
 export function ActivityDock() {
   useExecutionWatcher();
-  // With no wallet connected, every record this browser holds is shown.
-  const records = useExecutions(useWallet().publicKey?.toBase58());
+  // With no wallet connected, every record this browser holds is shown,
+  // with Seametry's for every linked wallet when signed in.
+  const { records, record } = useHistory(useWallet().publicKey?.toBase58());
   const [sheet, setSheet] = useState<{ focus?: string }>();
   const now = useNow((current) => records.some((execution) => endedAt(execution) === undefined || current - endedAt(execution)! < RECENTLY_ENDED_MS));
   const [dismissed, setDismissed] = useState<string[]>([]);
@@ -158,8 +198,9 @@ export function ActivityDock() {
   // runs out or it is dismissed.
   const [openedAt] = useState(() => Date.now());
 
+  // Only what this browser asked for is toasted; another device's trade is history here, not news.
   const toasts = records.filter((execution) => {
-    if (dismissed.includes(execution.id)) return false;
+    if (execution.recordedBy || dismissed.includes(execution.id)) return false;
     const ended = endedAt(execution);
     return ended === undefined || ended >= openedAt - RECENTLY_ENDED_MS;
   }).slice(0, 3).reverse();
@@ -176,8 +217,8 @@ export function ActivityDock() {
         <Icon name="activity" />
         {unread ? <span className={styles.count} aria-hidden="true">{unread}</span> : null}
       </button>
-      <ModalSheet open={Boolean(sheet)} onClose={() => setSheet(undefined)} title="Activity" register="Mainnet, this browser" closeLabel="Hide activity">
-        <ActivityList records={records} focus={sheet?.focus} />
+      <ModalSheet open={Boolean(sheet)} onClose={() => setSheet(undefined)} title="Activity" register={record.state === "recorded" ? "Mainnet, linked wallets" : "Mainnet, this browser"} closeLabel="Hide activity">
+        <ActivityList records={records} focus={sheet?.focus} record={record} />
       </ModalSheet>
       <ToastRegion label="Requests in progress">
         {toasts.map((execution) => {

@@ -15,11 +15,11 @@ import type { HeldPosition } from "@/lib/allocation/positions";
 import { MIN_LEG_USDC_ATOMS, USDC_SCALE } from "@/lib/allocation/rules";
 import { allocationHoldings, endedAt, type AllocationHolding } from "@/lib/execution/record";
 import { approveAndSend, NotSent, type Signer } from "@/lib/execution/run";
-import { useExecutions } from "@/lib/execution/store";
+import { useHistory } from "@/lib/execution/history";
 import { logoSrc } from "@/lib/logo-src";
 import { firstTouchFor, firstTouchSent } from "@/lib/first-touch";
 import { funnel } from "@/lib/funnel";
-import { ActivityList } from "../_activity/activity";
+import { ActivityList, RecordLine } from "../_activity/activity";
 import styles from "./positions.module.css";
 
 type Reading = { wallet: string; network: "mainnet"; source: string; observedAt: string; positions: HeldPosition[]; outsideRegister: number };
@@ -67,7 +67,8 @@ export function Positions() {
   const [reading, setReading] = useState<Reading>();
   const [readingProblem, setReadingProblem] = useState<string>();
   const [readingBusy, setReadingBusy] = useState(false);
-  const records = useExecutions(wallet);
+  const { records, record } = useHistory(wallet);
+  const recorded = record.state === "recorded" && Boolean(wallet) && record.wallets.includes(wallet!);
   const allocations = wallet ? allocationHoldings(records, wallet) : [];
 
   const [selectedMint, setSelectedMint] = useState<string>();
@@ -290,8 +291,13 @@ export function Positions() {
               ) : null}
               {held && held.outsideRegister > 0 ? <p className={styles.footnote}>This wallet also holds {held.outsideRegister} {held.outsideRegister === 1 ? "token" : "tokens"} outside this register, not shown here.</p> : null}
             </> : view === "allocations" ? <>
-              <p className={styles.viewMeta}>Grouped on this device from purchases made here, capped by what the wallet holds when you sell.</p>
-              {allocations.length === 0 ? <Callout title="No Allocation bought from this browser">Allocations are grouped from purchases made on this device. A basket bought here appears with a way to sell it whole.</Callout> : (
+              <p className={styles.viewMeta}>{recorded
+                ? "Grouped from purchases made in this browser and from Seametry's record of this linked wallet. Only purchases confirmed on chain count. A sale is capped by what the wallet holds."
+                : "Grouped on this device from purchases made here, capped by what the wallet holds when you sell."}</p>
+              {record.state === "recorded" && !recorded ? <p className={styles.viewMeta}>This wallet is not linked to your account, so only this browser&apos;s purchases are grouped here.</p> : <RecordLine record={record} />}
+              {allocations.length === 0 ? (recorded
+                ? <Callout title="No Allocation recorded for this wallet">Neither this browser nor Seametry&apos;s record holds a confirmed Allocation purchase for this wallet.</Callout>
+                : <Callout title="No Allocation bought from this browser">Allocations are grouped from purchases made on this device. A basket bought here appears with a way to sell it whole.</Callout>) : (
                 <List label="Allocations" head={["Allocation", "Holds", "Bought"]} className={styles.allocationColumns}>
                   {allocations.map((allocation) => (
                     <ListRow key={allocation.id} onSelect={() => setSale({ allocation, legs: saleLegs(allocation), stage: "idle" })} label={`Sell ${allocation.name}`}>
@@ -302,7 +308,7 @@ export function Positions() {
                   ))}
                 </List>
               )}
-            </> : <ActivityList records={records} />}
+            </> : <ActivityList records={records} record={record} />}
           </div>
 
           <ModalSheet
