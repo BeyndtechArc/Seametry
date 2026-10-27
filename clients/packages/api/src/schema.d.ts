@@ -390,6 +390,97 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Volume, fee revenue, tip cost, wallet states, the funnel and reliability for a period.
+         * @description Money and outcomes count only legs the chain answered for. Funnel steps are the browser's word, matched to quotes Seametry prepared.
+         */
+        get: operations["getAdminOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Wallets and landed volume by the first-touch ref code their first quote carried. */
+        get: operations["getAdminSources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/wallets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The 200 wallets most recently seen in a deployment, with all-time landed totals. */
+        get: operations["getAdminWallets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The 50 most recent rows of the record before the period's end, each with whose word it is. */
+        get: operations["getAdminActivity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/email-optins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Email consents counted by page and ref code, and the 20 most recent with masked addresses.
+         * @description No full address is ever returned: each is masked in the Gateway, keeping the first character of the local part and of the domain and the last label.
+         */
+        get: operations["getAdminEmailOptIns"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/activity/quotes": {
         parameters: {
             query?: never;
@@ -514,8 +605,161 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AdminPeriod: {
+            /** Format: date-time */
+            from: string;
+            /** Format: date-time */
+            to: string;
+            /** @enum {string} */
+            deployment: "production" | "preview" | "development";
+        };
+        AdminOverview: {
+            period: components["schemas"]["AdminPeriod"];
+            volume: components["schemas"]["Amount"];
+            fee_revenue: components["schemas"]["Amount"];
+            tip_cost: components["schemas"]["Amount"];
+            /** Format: int64 */
+            landed_legs: number;
+            /**
+             * Format: date-time
+             * @description When the reconciler last wrote a chain answer. Absent means it never has.
+             */
+            last_reconciled_at?: string;
+            wallets: components["schemas"]["AdminWalletStates"];
+            funnel: components["schemas"]["AdminFunnel"];
+            refusals: components["schemas"]["AdminRefusal"][];
+            reliability: components["schemas"]["AdminLandingPath"][];
+        };
+        AdminSources: {
+            period: components["schemas"]["AdminPeriod"];
+            sources: components["schemas"]["AdminSource"][];
+        };
+        AdminWallets: {
+            /** @enum {string} */
+            deployment: "production" | "preview" | "development";
+            wallets: components["schemas"]["AdminWallet"][];
+        };
+        AdminActivity: {
+            period: components["schemas"]["AdminPeriod"];
+            rows: components["schemas"]["AdminRecordedRow"][];
+        };
+        AdminEmailOptIns: {
+            period: components["schemas"]["AdminPeriod"];
+            counts: components["schemas"]["AdminOptInCount"][];
+            recent: components["schemas"]["AdminMaskedOptIn"][];
+        };
+        AdminWalletStates: {
+            /** Format: int64 */
+            seen: number;
+            /**
+             * Format: int64
+             * @description Of the wallets seen in the period, those with a landed leg by its end.
+             */
+            seen_and_activated: number;
+            /** Format: int64 */
+            activated: number;
+            /** Format: int64 */
+            active: number;
+            /**
+             * Format: int64
+             * @description Wallets with landed legs on two or more UTC days before the period's end.
+             */
+            returning: number;
+        };
+        AdminFunnel: {
+            /** Format: int64 */
+            requested: number;
+            /** Format: int64 */
+            prepared: number;
+            /** Format: int64 */
+            refused: number;
+            /** Format: int64 */
+            review_opened: number;
+            /** Format: int64 */
+            signature_requested: number;
+            /** Format: int64 */
+            signature_declined: number;
+            /** Format: int64 */
+            signature_failed: number;
+            /** Format: int64 */
+            sheet_abandoned: number;
+            /** Format: int64 */
+            sent: number;
+            /** Format: int64 */
+            landed: number;
+        };
+        AdminRefusal: {
+            status: number;
+            /** Format: int64 */
+            quotes: number;
+        };
+        AdminLandingPath: {
+            landing: string;
+            /** Format: int64 */
+            sent: number;
+            /** Format: int64 */
+            landed: number;
+            /** Format: int64 */
+            failed: number;
+            /** Format: int64 */
+            dropped: number;
+            /** Format: int64 */
+            unanswered: number;
+        };
+        AdminSource: {
+            /** @description The first-touch ref code, or unknown. */
+            source: string;
+            /** Format: int64 */
+            seen_wallets: number;
+            /** Format: int64 */
+            activated_wallets: number;
+            /** Format: int64 */
+            active_wallets: number;
+            volume: components["schemas"]["Amount"];
+            fee_revenue: components["schemas"]["Amount"];
+        };
+        AdminRecordedRow: {
+            /** Format: date-time */
+            at: string;
+            /**
+             * @description Whose word the row is. Only a chain row with event landed says something settled.
+             * @enum {string}
+             */
+            source: "server" | "client" | "chain";
+            event: string;
+            /** @description Empty for a browser step reported before a wallet connected. */
+            wallet: string;
+            detail: string;
+        };
+        AdminOptInCount: {
+            /** @description False counts consents since withdrawn. */
+            live: boolean;
+            page: string;
+            ref_code: string;
+            /** Format: int64 */
+            optins: number;
+        };
+        AdminMaskedOptIn: {
+            masked_address: string;
+            /** Format: date-time */
+            consented_at: string;
+            page: string;
+            ref_code: string;
+        };
+        AdminWallet: {
+            address: string;
+            /** Format: date-time */
+            first_seen_at: string;
+            source: string;
+            /** Format: int64 */
+            quotes: number;
+            /** Format: int64 */
+            landed_legs: number;
+            volume: components["schemas"]["Amount"];
+            fee_revenue: components["schemas"]["Amount"];
+        };
         AccountSubject: {
-            /** @description The opaque Better Auth account subject. No profile field is carried in the service token; the wallets the account linked are, for GET /me/activity. */
+            /** @description The opaque Better Auth account subject. The service token also carries the wallets the account linked, for GET /me/activity, and its email with whether the provider verified it, which only the admin check reads; neither is returned here. */
             id: string;
         };
         WalletHistory: {
@@ -1078,6 +1322,12 @@ export interface components {
         };
     };
     parameters: {
+        /** @description Start of the period, inclusive. Omitted means 30 days before to. */
+        AdminFrom: string;
+        /** @description End of the period, exclusive. Omitted means now. At most 366 days after from. */
+        AdminTo: string;
+        /** @description Which deployment's record to read; deployments are never mixed. */
+        AdminDeployment: "production" | "preview" | "development";
         /** @description The mint's base58 address. */
         Mint: string;
         AlloyAddress: string;
@@ -1682,6 +1932,157 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["WalletHistory"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAdminOverview: {
+        parameters: {
+            query?: {
+                /** @description Start of the period, inclusive. Omitted means 30 days before to. */
+                from?: components["parameters"]["AdminFrom"];
+                /** @description End of the period, exclusive. Omitted means now. At most 366 days after from. */
+                to?: components["parameters"]["AdminTo"];
+                /** @description Which deployment's record to read; deployments are never mixed. */
+                deployment?: components["parameters"]["AdminDeployment"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The period's figures. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AdminOverview"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAdminSources: {
+        parameters: {
+            query?: {
+                /** @description Start of the period, inclusive. Omitted means 30 days before to. */
+                from?: components["parameters"]["AdminFrom"];
+                /** @description End of the period, exclusive. Omitted means now. At most 366 days after from. */
+                to?: components["parameters"]["AdminTo"];
+                /** @description Which deployment's record to read; deployments are never mixed. */
+                deployment?: components["parameters"]["AdminDeployment"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One row per source, unknown for wallets that carried none. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AdminSources"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAdminWallets: {
+        parameters: {
+            query?: {
+                /** @description Which deployment's record to read; deployments are never mixed. */
+                deployment?: components["parameters"]["AdminDeployment"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first seen first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AdminWallets"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAdminActivity: {
+        parameters: {
+            query?: {
+                /** @description Start of the period, inclusive. Omitted means 30 days before to. */
+                from?: components["parameters"]["AdminFrom"];
+                /** @description End of the period, exclusive. Omitted means now. At most 366 days after from. */
+                to?: components["parameters"]["AdminTo"];
+                /** @description Which deployment's record to read; deployments are never mixed. */
+                deployment?: components["parameters"]["AdminDeployment"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Newest first. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AdminActivity"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAdminEmailOptIns: {
+        parameters: {
+            query?: {
+                /** @description Start of the period, inclusive. Omitted means 30 days before to. */
+                from?: components["parameters"]["AdminFrom"];
+                /** @description End of the period, exclusive. Omitted means now. At most 366 days after from. */
+                to?: components["parameters"]["AdminTo"];
+                /** @description Which deployment's record to read; deployments are never mixed. */
+                deployment?: components["parameters"]["AdminDeployment"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The period's consents. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AdminEmailOptIns"];
                         meta: components["schemas"]["Meta"];
                     };
                 };

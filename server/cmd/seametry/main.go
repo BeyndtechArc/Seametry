@@ -160,7 +160,8 @@ func serve() error {
 		WithReceipts(receipt.NewLedger(pool)).
 		WithActivity(report).
 		WithFeedback(alert.NewFeedback(pool, mailer)).
-		WithEmailOptIns(alert.NewOptIns(pool))
+		WithEmailOptIns(alert.NewOptIns(pool)).
+		WithAdmin(report, alert.NewOptIns(pool))
 	authOrigin := strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_ORIGIN"))
 	if authOrigin == "" {
 		return errors.New("SEAMETRY_AUTH_ORIGIN is not set; serve needs the Better Auth issuer to verify account subjects")
@@ -175,9 +176,14 @@ func serve() error {
 	if ingestSecret == "" {
 		slog.Warn("seametry: SEAMETRY_ACTIVITY_INGEST_SECRET is not set; activity reports will be refused")
 	}
+	// Unset or empty, no one is an admin and /v1/admin answers 404 to all.
+	adminEmails := os.Getenv("SEAMETRY_ADMIN_EMAILS")
+	if strings.TrimSpace(adminEmails) == "" {
+		slog.Warn("seametry: SEAMETRY_ADMIN_EMAILS is not set; the Admin admits no one")
+	}
 	handler := gateway.NewHandler(gwServer, gateway.ServiceSecret(ingestSecret), func(next http.Handler) http.Handler {
 		return verifier.Middleware(next, time.Now)
-	})
+	}, gateway.AdminGate(adminEmails))
 	srv := &http.Server{
 		Addr:              ":" + p,
 		Handler:           handler,

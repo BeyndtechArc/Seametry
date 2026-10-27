@@ -126,6 +126,69 @@ func (e ActivitySubmissionResult) Valid() bool {
 	}
 }
 
+// Defines values for AdminPeriodDeployment.
+const (
+	AdminPeriodDeploymentDevelopment AdminPeriodDeployment = "development"
+	AdminPeriodDeploymentPreview     AdminPeriodDeployment = "preview"
+	AdminPeriodDeploymentProduction  AdminPeriodDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the AdminPeriodDeployment enum.
+func (e AdminPeriodDeployment) Valid() bool {
+	switch e {
+	case AdminPeriodDeploymentDevelopment:
+		return true
+	case AdminPeriodDeploymentPreview:
+		return true
+	case AdminPeriodDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AdminRecordedRowSource.
+const (
+	AdminRecordedRowSourceChain  AdminRecordedRowSource = "chain"
+	AdminRecordedRowSourceClient AdminRecordedRowSource = "client"
+	AdminRecordedRowSourceServer AdminRecordedRowSource = "server"
+)
+
+// Valid indicates whether the value is a known member of the AdminRecordedRowSource enum.
+func (e AdminRecordedRowSource) Valid() bool {
+	switch e {
+	case AdminRecordedRowSourceChain:
+		return true
+	case AdminRecordedRowSourceClient:
+		return true
+	case AdminRecordedRowSourceServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AdminWalletsDeployment.
+const (
+	AdminWalletsDeploymentDevelopment AdminWalletsDeployment = "development"
+	AdminWalletsDeploymentPreview     AdminWalletsDeployment = "preview"
+	AdminWalletsDeploymentProduction  AdminWalletsDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the AdminWalletsDeployment enum.
+func (e AdminWalletsDeployment) Valid() bool {
+	switch e {
+	case AdminWalletsDeploymentDevelopment:
+		return true
+	case AdminWalletsDeploymentPreview:
+		return true
+	case AdminWalletsDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AlloyCluster.
 const (
 	AlloyClusterDevnet  AlloyCluster = "devnet"
@@ -570,6 +633,132 @@ func (e WalletLegChainOutcome) Valid() bool {
 	}
 }
 
+// Defines values for AdminDeployment.
+const (
+	AdminDeploymentDevelopment AdminDeployment = "development"
+	AdminDeploymentPreview     AdminDeployment = "preview"
+	AdminDeploymentProduction  AdminDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the AdminDeployment enum.
+func (e AdminDeployment) Valid() bool {
+	switch e {
+	case AdminDeploymentDevelopment:
+		return true
+	case AdminDeploymentPreview:
+		return true
+	case AdminDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAdminActivityParamsDeployment.
+const (
+	GetAdminActivityParamsDeploymentDevelopment GetAdminActivityParamsDeployment = "development"
+	GetAdminActivityParamsDeploymentPreview     GetAdminActivityParamsDeployment = "preview"
+	GetAdminActivityParamsDeploymentProduction  GetAdminActivityParamsDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the GetAdminActivityParamsDeployment enum.
+func (e GetAdminActivityParamsDeployment) Valid() bool {
+	switch e {
+	case GetAdminActivityParamsDeploymentDevelopment:
+		return true
+	case GetAdminActivityParamsDeploymentPreview:
+		return true
+	case GetAdminActivityParamsDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAdminEmailOptInsParamsDeployment.
+const (
+	GetAdminEmailOptInsParamsDeploymentDevelopment GetAdminEmailOptInsParamsDeployment = "development"
+	GetAdminEmailOptInsParamsDeploymentPreview     GetAdminEmailOptInsParamsDeployment = "preview"
+	GetAdminEmailOptInsParamsDeploymentProduction  GetAdminEmailOptInsParamsDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the GetAdminEmailOptInsParamsDeployment enum.
+func (e GetAdminEmailOptInsParamsDeployment) Valid() bool {
+	switch e {
+	case GetAdminEmailOptInsParamsDeploymentDevelopment:
+		return true
+	case GetAdminEmailOptInsParamsDeploymentPreview:
+		return true
+	case GetAdminEmailOptInsParamsDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAdminOverviewParamsDeployment.
+const (
+	GetAdminOverviewParamsDeploymentDevelopment GetAdminOverviewParamsDeployment = "development"
+	GetAdminOverviewParamsDeploymentPreview     GetAdminOverviewParamsDeployment = "preview"
+	GetAdminOverviewParamsDeploymentProduction  GetAdminOverviewParamsDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the GetAdminOverviewParamsDeployment enum.
+func (e GetAdminOverviewParamsDeployment) Valid() bool {
+	switch e {
+	case GetAdminOverviewParamsDeploymentDevelopment:
+		return true
+	case GetAdminOverviewParamsDeploymentPreview:
+		return true
+	case GetAdminOverviewParamsDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAdminSourcesParamsDeployment.
+const (
+	GetAdminSourcesParamsDeploymentDevelopment GetAdminSourcesParamsDeployment = "development"
+	GetAdminSourcesParamsDeploymentPreview     GetAdminSourcesParamsDeployment = "preview"
+	GetAdminSourcesParamsDeploymentProduction  GetAdminSourcesParamsDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the GetAdminSourcesParamsDeployment enum.
+func (e GetAdminSourcesParamsDeployment) Valid() bool {
+	switch e {
+	case GetAdminSourcesParamsDeploymentDevelopment:
+		return true
+	case GetAdminSourcesParamsDeploymentPreview:
+		return true
+	case GetAdminSourcesParamsDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAdminWalletsParamsDeployment.
+const (
+	GetAdminWalletsParamsDeploymentDevelopment GetAdminWalletsParamsDeployment = "development"
+	GetAdminWalletsParamsDeploymentPreview     GetAdminWalletsParamsDeployment = "preview"
+	GetAdminWalletsParamsDeploymentProduction  GetAdminWalletsParamsDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the GetAdminWalletsParamsDeployment enum.
+func (e GetAdminWalletsParamsDeployment) Valid() bool {
+	switch e {
+	case GetAdminWalletsParamsDeploymentDevelopment:
+		return true
+	case GetAdminWalletsParamsDeploymentPreview:
+		return true
+	case GetAdminWalletsParamsDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListAlloysParamsCluster.
 const (
 	ListAlloysParamsClusterDevnet  ListAlloysParamsCluster = "devnet"
@@ -626,7 +815,7 @@ func (e GetInstrumentDepthParamsDirection) Valid() bool {
 
 // AccountSubject defines model for AccountSubject.
 type AccountSubject struct {
-	// Id The opaque Better Auth account subject. No profile field is carried in the service token; the wallets the account linked are, for GET /me/activity.
+	// Id The opaque Better Auth account subject. The service token also carries the wallets the account linked, for GET /me/activity, and its email with whether the provider verified it, which only the admin check reads; neither is returned here.
 	Id string `json:"id"`
 }
 
@@ -740,6 +929,172 @@ type ActivitySubmission struct {
 
 // ActivitySubmissionResult defines model for ActivitySubmission.Result.
 type ActivitySubmissionResult string
+
+// AdminActivity defines model for AdminActivity.
+type AdminActivity struct {
+	Period AdminPeriod        `json:"period"`
+	Rows   []AdminRecordedRow `json:"rows"`
+}
+
+// AdminEmailOptIns defines model for AdminEmailOptIns.
+type AdminEmailOptIns struct {
+	Counts []AdminOptInCount  `json:"counts"`
+	Period AdminPeriod        `json:"period"`
+	Recent []AdminMaskedOptIn `json:"recent"`
+}
+
+// AdminFunnel defines model for AdminFunnel.
+type AdminFunnel struct {
+	Landed             int64 `json:"landed"`
+	Prepared           int64 `json:"prepared"`
+	Refused            int64 `json:"refused"`
+	Requested          int64 `json:"requested"`
+	ReviewOpened       int64 `json:"review_opened"`
+	Sent               int64 `json:"sent"`
+	SheetAbandoned     int64 `json:"sheet_abandoned"`
+	SignatureDeclined  int64 `json:"signature_declined"`
+	SignatureFailed    int64 `json:"signature_failed"`
+	SignatureRequested int64 `json:"signature_requested"`
+}
+
+// AdminLandingPath defines model for AdminLandingPath.
+type AdminLandingPath struct {
+	Dropped    int64  `json:"dropped"`
+	Failed     int64  `json:"failed"`
+	Landed     int64  `json:"landed"`
+	Landing    string `json:"landing"`
+	Sent       int64  `json:"sent"`
+	Unanswered int64  `json:"unanswered"`
+}
+
+// AdminMaskedOptIn defines model for AdminMaskedOptIn.
+type AdminMaskedOptIn struct {
+	ConsentedAt   time.Time `json:"consented_at"`
+	MaskedAddress string    `json:"masked_address"`
+	Page          string    `json:"page"`
+	RefCode       string    `json:"ref_code"`
+}
+
+// AdminOptInCount defines model for AdminOptInCount.
+type AdminOptInCount struct {
+	// Live False counts consents since withdrawn.
+	Live    bool   `json:"live"`
+	Optins  int64  `json:"optins"`
+	Page    string `json:"page"`
+	RefCode string `json:"ref_code"`
+}
+
+// AdminOverview defines model for AdminOverview.
+type AdminOverview struct {
+	// FeeRevenue Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	FeeRevenue Amount      `json:"fee_revenue"`
+	Funnel     AdminFunnel `json:"funnel"`
+	LandedLegs int64       `json:"landed_legs"`
+
+	// LastReconciledAt When the reconciler last wrote a chain answer. Absent means it never has.
+	LastReconciledAt *time.Time         `json:"last_reconciled_at,omitempty"`
+	Period           AdminPeriod        `json:"period"`
+	Refusals         []AdminRefusal     `json:"refusals"`
+	Reliability      []AdminLandingPath `json:"reliability"`
+
+	// TipCost Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	TipCost Amount `json:"tip_cost"`
+
+	// Volume Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	Volume  Amount            `json:"volume"`
+	Wallets AdminWalletStates `json:"wallets"`
+}
+
+// AdminPeriod defines model for AdminPeriod.
+type AdminPeriod struct {
+	Deployment AdminPeriodDeployment `json:"deployment"`
+	From       time.Time             `json:"from"`
+	To         time.Time             `json:"to"`
+}
+
+// AdminPeriodDeployment defines model for AdminPeriod.Deployment.
+type AdminPeriodDeployment string
+
+// AdminRecordedRow defines model for AdminRecordedRow.
+type AdminRecordedRow struct {
+	At     time.Time `json:"at"`
+	Detail string    `json:"detail"`
+	Event  string    `json:"event"`
+
+	// Source Whose word the row is. Only a chain row with event landed says something settled.
+	Source AdminRecordedRowSource `json:"source"`
+
+	// Wallet Empty for a browser step reported before a wallet connected.
+	Wallet string `json:"wallet"`
+}
+
+// AdminRecordedRowSource Whose word the row is. Only a chain row with event landed says something settled.
+type AdminRecordedRowSource string
+
+// AdminRefusal defines model for AdminRefusal.
+type AdminRefusal struct {
+	Quotes int64 `json:"quotes"`
+	Status int   `json:"status"`
+}
+
+// AdminSource defines model for AdminSource.
+type AdminSource struct {
+	ActivatedWallets int64 `json:"activated_wallets"`
+	ActiveWallets    int64 `json:"active_wallets"`
+
+	// FeeRevenue Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	FeeRevenue  Amount `json:"fee_revenue"`
+	SeenWallets int64  `json:"seen_wallets"`
+
+	// Source The first-touch ref code, or unknown.
+	Source string `json:"source"`
+
+	// Volume Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	Volume Amount `json:"volume"`
+}
+
+// AdminSources defines model for AdminSources.
+type AdminSources struct {
+	Period  AdminPeriod   `json:"period"`
+	Sources []AdminSource `json:"sources"`
+}
+
+// AdminWallet defines model for AdminWallet.
+type AdminWallet struct {
+	Address string `json:"address"`
+
+	// FeeRevenue Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	FeeRevenue  Amount    `json:"fee_revenue"`
+	FirstSeenAt time.Time `json:"first_seen_at"`
+	LandedLegs  int64     `json:"landed_legs"`
+	Quotes      int64     `json:"quotes"`
+	Source      string    `json:"source"`
+
+	// Volume Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	Volume Amount `json:"volume"`
+}
+
+// AdminWalletStates defines model for AdminWalletStates.
+type AdminWalletStates struct {
+	Activated int64 `json:"activated"`
+	Active    int64 `json:"active"`
+
+	// Returning Wallets with landed legs on two or more UTC days before the period's end.
+	Returning int64 `json:"returning"`
+	Seen      int64 `json:"seen"`
+
+	// SeenAndActivated Of the wallets seen in the period, those with a landed leg by its end.
+	SeenAndActivated int64 `json:"seen_and_activated"`
+}
+
+// AdminWallets defines model for AdminWallets.
+type AdminWallets struct {
+	Deployment AdminWalletsDeployment `json:"deployment"`
+	Wallets    []AdminWallet          `json:"wallets"`
+}
+
+// AdminWalletsDeployment defines model for AdminWallets.Deployment.
+type AdminWalletsDeployment string
 
 // Alloy An alloy read from chain (chain/programs/hall/src/state.rs::Alloy).
 type Alloy struct {
@@ -1326,6 +1681,15 @@ type WalletLegChain struct {
 // WalletLegChainOutcome defines model for WalletLegChain.Outcome.
 type WalletLegChainOutcome string
 
+// AdminDeployment defines model for AdminDeployment.
+type AdminDeployment string
+
+// AdminFrom defines model for AdminFrom.
+type AdminFrom = time.Time
+
+// AdminTo defines model for AdminTo.
+type AdminTo = time.Time
+
 // AlloyAddress defines model for AlloyAddress.
 type AlloyAddress = string
 
@@ -1343,6 +1707,75 @@ type PolicyVersion = string
 
 // Shares defines model for Shares.
 type Shares = string
+
+// GetAdminActivityParams defines parameters for GetAdminActivity.
+type GetAdminActivityParams struct {
+	// From Start of the period, inclusive. Omitted means 30 days before to.
+	From *AdminFrom `form:"from,omitempty" json:"from,omitempty"`
+
+	// To End of the period, exclusive. Omitted means now. At most 366 days after from.
+	To *AdminTo `form:"to,omitempty" json:"to,omitempty"`
+
+	// Deployment Which deployment's record to read; deployments are never mixed.
+	Deployment *GetAdminActivityParamsDeployment `form:"deployment,omitempty" json:"deployment,omitempty"`
+}
+
+// GetAdminActivityParamsDeployment defines parameters for GetAdminActivity.
+type GetAdminActivityParamsDeployment string
+
+// GetAdminEmailOptInsParams defines parameters for GetAdminEmailOptIns.
+type GetAdminEmailOptInsParams struct {
+	// From Start of the period, inclusive. Omitted means 30 days before to.
+	From *AdminFrom `form:"from,omitempty" json:"from,omitempty"`
+
+	// To End of the period, exclusive. Omitted means now. At most 366 days after from.
+	To *AdminTo `form:"to,omitempty" json:"to,omitempty"`
+
+	// Deployment Which deployment's record to read; deployments are never mixed.
+	Deployment *GetAdminEmailOptInsParamsDeployment `form:"deployment,omitempty" json:"deployment,omitempty"`
+}
+
+// GetAdminEmailOptInsParamsDeployment defines parameters for GetAdminEmailOptIns.
+type GetAdminEmailOptInsParamsDeployment string
+
+// GetAdminOverviewParams defines parameters for GetAdminOverview.
+type GetAdminOverviewParams struct {
+	// From Start of the period, inclusive. Omitted means 30 days before to.
+	From *AdminFrom `form:"from,omitempty" json:"from,omitempty"`
+
+	// To End of the period, exclusive. Omitted means now. At most 366 days after from.
+	To *AdminTo `form:"to,omitempty" json:"to,omitempty"`
+
+	// Deployment Which deployment's record to read; deployments are never mixed.
+	Deployment *GetAdminOverviewParamsDeployment `form:"deployment,omitempty" json:"deployment,omitempty"`
+}
+
+// GetAdminOverviewParamsDeployment defines parameters for GetAdminOverview.
+type GetAdminOverviewParamsDeployment string
+
+// GetAdminSourcesParams defines parameters for GetAdminSources.
+type GetAdminSourcesParams struct {
+	// From Start of the period, inclusive. Omitted means 30 days before to.
+	From *AdminFrom `form:"from,omitempty" json:"from,omitempty"`
+
+	// To End of the period, exclusive. Omitted means now. At most 366 days after from.
+	To *AdminTo `form:"to,omitempty" json:"to,omitempty"`
+
+	// Deployment Which deployment's record to read; deployments are never mixed.
+	Deployment *GetAdminSourcesParamsDeployment `form:"deployment,omitempty" json:"deployment,omitempty"`
+}
+
+// GetAdminSourcesParamsDeployment defines parameters for GetAdminSources.
+type GetAdminSourcesParamsDeployment string
+
+// GetAdminWalletsParams defines parameters for GetAdminWallets.
+type GetAdminWalletsParams struct {
+	// Deployment Which deployment's record to read; deployments are never mixed.
+	Deployment *GetAdminWalletsParamsDeployment `form:"deployment,omitempty" json:"deployment,omitempty"`
+}
+
+// GetAdminWalletsParamsDeployment defines parameters for GetAdminWallets.
+type GetAdminWalletsParamsDeployment string
 
 // ListAlloysParams defines parameters for ListAlloys.
 type ListAlloysParams struct {

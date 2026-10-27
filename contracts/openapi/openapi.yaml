@@ -57,6 +57,12 @@ tags:
     description: >
       Alert. Feedback a visitor sends, kept and mailed to the team. Internal;
       not part of the published reference.
+  - name: admin
+    description: >
+      The GTM Admin's reads (docs/prd/ADMIN.md). Answered only for an account
+      token whose verified email is in the Gateway's SEAMETRY_ADMIN_EMAILS;
+      every other caller, signed in or not, gets the same 404 as a path that
+      does not exist. Internal; not part of the published reference.
 
 paths:
   # --- instruments -----------------------------------------------------
@@ -672,6 +678,143 @@ paths:
         default:
           $ref: '#/components/responses/Problem'
 
+  # --- admin (internal) -------------------------------------------------
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      tags: [admin]
+      summary: Volume, fee revenue, tip cost, wallet states, the funnel and reliability for a period.
+      description: >
+        Money and outcomes count only legs the chain answered for. Funnel
+        steps are the browser's word, matched to quotes Seametry prepared.
+      security:
+        - accountToken: []
+      parameters:
+        - $ref: '#/components/parameters/AdminFrom'
+        - $ref: '#/components/parameters/AdminTo'
+        - $ref: '#/components/parameters/AdminDeployment'
+      responses:
+        "200":
+          description: The period's figures.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminOverview'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+  /admin/sources:
+    get:
+      operationId: getAdminSources
+      tags: [admin]
+      summary: Wallets and landed volume by the first-touch ref code their first quote carried.
+      security:
+        - accountToken: []
+      parameters:
+        - $ref: '#/components/parameters/AdminFrom'
+        - $ref: '#/components/parameters/AdminTo'
+        - $ref: '#/components/parameters/AdminDeployment'
+      responses:
+        "200":
+          description: One row per source, unknown for wallets that carried none.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminSources'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+  /admin/wallets:
+    get:
+      operationId: getAdminWallets
+      tags: [admin]
+      summary: The 200 wallets most recently seen in a deployment, with all-time landed totals.
+      security:
+        - accountToken: []
+      parameters:
+        - $ref: '#/components/parameters/AdminDeployment'
+      responses:
+        "200":
+          description: Newest first seen first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminWallets'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+  /admin/activity:
+    get:
+      operationId: getAdminActivity
+      tags: [admin]
+      summary: The 50 most recent rows of the record before the period's end, each with whose word it is.
+      security:
+        - accountToken: []
+      parameters:
+        - $ref: '#/components/parameters/AdminFrom'
+        - $ref: '#/components/parameters/AdminTo'
+        - $ref: '#/components/parameters/AdminDeployment'
+      responses:
+        "200":
+          description: Newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminActivity'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+  /admin/email-optins:
+    get:
+      operationId: getAdminEmailOptIns
+      tags: [admin]
+      summary: Email consents counted by page and ref code, and the 20 most recent with masked addresses.
+      description: >
+        No full address is ever returned: each is masked in the Gateway,
+        keeping the first character of the local part and of the domain and
+        the last label.
+      security:
+        - accountToken: []
+      parameters:
+        - $ref: '#/components/parameters/AdminFrom'
+        - $ref: '#/components/parameters/AdminTo'
+        - $ref: '#/components/parameters/AdminDeployment'
+      responses:
+        "200":
+          description: The period's consents.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminEmailOptIns'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
   # --- activity (internal) ------------------------------------------------
   /internal/activity/quotes:
     post:
@@ -851,6 +994,31 @@ components:
       name: X-Seametry-Service-Secret
       description: Shared between the web deployment and the Gateway; never sent to a browser.
   parameters:
+    AdminFrom:
+      name: from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+      description: Start of the period, inclusive. Omitted means 30 days before to.
+    AdminTo:
+      name: to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+      description: End of the period, exclusive. Omitted means now. At most 366 days after from.
+    AdminDeployment:
+      name: deployment
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [production, preview, development]
+        default: production
+      description: Which deployment's record to read; deployments are never mixed.
     Mint:
       name: mint
       in: path
@@ -906,6 +1074,205 @@ components:
             $ref: '#/components/schemas/Problem'
 
   schemas:
+    AdminPeriod:
+      type: object
+      required: [from, to, deployment]
+      properties:
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        deployment:
+          type: string
+          enum: [production, preview, development]
+    AdminOverview:
+      type: object
+      required: [period, volume, fee_revenue, tip_cost, landed_legs, wallets, funnel, refusals, reliability]
+      properties:
+        period:
+          $ref: '#/components/schemas/AdminPeriod'
+        volume:
+          $ref: '#/components/schemas/Amount'
+        fee_revenue:
+          $ref: '#/components/schemas/Amount'
+        tip_cost:
+          $ref: '#/components/schemas/Amount'
+        landed_legs:
+          type: integer
+          format: int64
+        last_reconciled_at:
+          type: string
+          format: date-time
+          description: When the reconciler last wrote a chain answer. Absent means it never has.
+        wallets:
+          $ref: '#/components/schemas/AdminWalletStates'
+        funnel:
+          $ref: '#/components/schemas/AdminFunnel'
+        refusals:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminRefusal'
+        reliability:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminLandingPath'
+    AdminSources:
+      type: object
+      required: [period, sources]
+      properties:
+        period:
+          $ref: '#/components/schemas/AdminPeriod'
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminSource'
+    AdminWallets:
+      type: object
+      required: [deployment, wallets]
+      properties:
+        deployment:
+          type: string
+          enum: [production, preview, development]
+        wallets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminWallet'
+    AdminActivity:
+      type: object
+      required: [period, rows]
+      properties:
+        period:
+          $ref: '#/components/schemas/AdminPeriod'
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminRecordedRow'
+    AdminEmailOptIns:
+      type: object
+      required: [period, counts, recent]
+      properties:
+        period:
+          $ref: '#/components/schemas/AdminPeriod'
+        counts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminOptInCount'
+        recent:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminMaskedOptIn'
+    AdminWalletStates:
+      type: object
+      required: [seen, seen_and_activated, activated, active, returning]
+      properties:
+        seen:
+          type: integer
+          format: int64
+        seen_and_activated:
+          type: integer
+          format: int64
+          description: Of the wallets seen in the period, those with a landed leg by its end.
+        activated:
+          type: integer
+          format: int64
+        active:
+          type: integer
+          format: int64
+        returning:
+          type: integer
+          format: int64
+          description: Wallets with landed legs on two or more UTC days before the period's end.
+    AdminFunnel:
+      type: object
+      required: [requested, prepared, refused, review_opened, signature_requested, signature_declined, signature_failed, sheet_abandoned, sent, landed]
+      properties:
+        requested: {type: integer, format: int64}
+        prepared: {type: integer, format: int64}
+        refused: {type: integer, format: int64}
+        review_opened: {type: integer, format: int64}
+        signature_requested: {type: integer, format: int64}
+        signature_declined: {type: integer, format: int64}
+        signature_failed: {type: integer, format: int64}
+        sheet_abandoned: {type: integer, format: int64}
+        sent: {type: integer, format: int64}
+        landed: {type: integer, format: int64}
+    AdminRefusal:
+      type: object
+      required: [status, quotes]
+      properties:
+        status: {type: integer}
+        quotes: {type: integer, format: int64}
+    AdminLandingPath:
+      type: object
+      required: [landing, sent, landed, failed, dropped, unanswered]
+      properties:
+        landing: {type: string}
+        sent: {type: integer, format: int64}
+        landed: {type: integer, format: int64}
+        failed: {type: integer, format: int64}
+        dropped: {type: integer, format: int64}
+        unanswered: {type: integer, format: int64}
+    AdminSource:
+      type: object
+      required: [source, seen_wallets, activated_wallets, active_wallets, volume, fee_revenue]
+      properties:
+        source:
+          type: string
+          description: The first-touch ref code, or unknown.
+        seen_wallets: {type: integer, format: int64}
+        activated_wallets: {type: integer, format: int64}
+        active_wallets: {type: integer, format: int64}
+        volume:
+          $ref: '#/components/schemas/Amount'
+        fee_revenue:
+          $ref: '#/components/schemas/Amount'
+    AdminRecordedRow:
+      type: object
+      required: [at, source, event, wallet, detail]
+      properties:
+        at: {type: string, format: date-time}
+        source:
+          type: string
+          enum: [server, client, chain]
+          description: Whose word the row is. Only a chain row with event landed says something settled.
+        event: {type: string}
+        wallet:
+          type: string
+          description: Empty for a browser step reported before a wallet connected.
+        detail: {type: string}
+    AdminOptInCount:
+      type: object
+      required: [live, page, ref_code, optins]
+      properties:
+        live:
+          type: boolean
+          description: False counts consents since withdrawn.
+        page: {type: string}
+        ref_code: {type: string}
+        optins: {type: integer, format: int64}
+    AdminMaskedOptIn:
+      type: object
+      required: [masked_address, consented_at, page, ref_code]
+      properties:
+        masked_address: {type: string}
+        consented_at: {type: string, format: date-time}
+        page: {type: string}
+        ref_code: {type: string}
+    AdminWallet:
+      type: object
+      required: [address, first_seen_at, source, quotes, landed_legs, volume, fee_revenue]
+      properties:
+        address: {type: string}
+        first_seen_at: {type: string, format: date-time}
+        source: {type: string}
+        quotes: {type: integer, format: int64}
+        landed_legs: {type: integer, format: int64}
+        volume:
+          $ref: '#/components/schemas/Amount'
+        fee_revenue:
+          $ref: '#/components/schemas/Amount'
     AccountSubject:
       type: object
       required: [id]
@@ -913,9 +1280,10 @@ components:
         id:
           type: string
           description: >
-            The opaque Better Auth account subject. No profile field is
-            carried in the service token; the wallets the account linked are,
-            for GET /me/activity.
+            The opaque Better Auth account subject. The service token also
+            carries the wallets the account linked, for GET /me/activity, and
+            its email with whether the provider verified it, which only the
+            admin check reads; neither is returned here.
     WalletHistory:
       type: object
       required: [wallets, executions]
