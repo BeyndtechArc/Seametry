@@ -19,6 +19,14 @@ import (
 
 const maxTokenBytes = 16 * 1024
 
+// unknownKeyRefreshInterval bounds how often a token naming an unpublished key
+// ID makes the Gateway re-read the JWKS. Any anonymous caller can mint such a
+// token, and without a bound each one cost a synchronous request to the auth
+// service before it was refused. A rotated key is still picked up by the
+// first token that names it; one arriving within the interval after a re-read
+// is refused until the interval passes.
+const unknownKeyRefreshInterval = 30 * time.Second
+
 type Subject struct {
 	AccountID string
 }
@@ -31,6 +39,11 @@ type Verifier struct {
 	client  *http.Client
 	mu      sync.RWMutex
 	keys    map[string]ed25519.PublicKey
+
+	// unknownKeyMu is held across a re-read, so concurrent tokens with unknown
+	// key IDs wait for one fetch instead of each starting their own.
+	unknownKeyMu        sync.Mutex
+	unknownKeyRefreshed time.Time
 }
 
 type tokenHeader struct {
@@ -153,13 +166,10 @@ func (v *Verifier) Verify(ctx context.Context, encoded string, now time.Time) (S
 
 	key := v.key(header.KeyID)
 	if key == nil {
-		if err := v.refresh(ctx); err != nil {
-			return Subject{}, fmt.Errorf("identity: refreshing signing keys for key ID %q: %w", header.KeyID, err)
+		var err error
+		if key, err = v.keyAfterRefresh(ctx, header.KeyID, now); err != nil {
+			return Subject{}, err
 		}
-		key = v.key(header.KeyID)
-	}
-	if key == nil {
-		return Subject{}, fmt.Errorf("identity: token key ID %q is not published by the account authority", header.KeyID)
 	}
 
 	signature, err := base64.RawURLEncoding.DecodeString(parts[2])
@@ -206,6 +216,29 @@ func (v *Verifier) key(id string) ed25519.PublicKey {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
 	return v.keys[id]
+}
+
+// keyAfterRefresh re-reads the JWKS for a key ID the verifier does not hold,
+// at most once per unknownKeyRefreshInterval measured on now. The attempt is
+// recorded before the fetch, so an unreachable auth service is not retried by
+// every request either.
+func (v *Verifier) keyAfterRefresh(ctx context.Context, id string, now time.Time) (ed25519.PublicKey, error) {
+	v.unknownKeyMu.Lock()
+	defer v.unknownKeyMu.Unlock()
+	if key := v.key(id); key != nil {
+		return key, nil
+	}
+	if !v.unknownKeyRefreshed.IsZero() && now.Before(v.unknownKeyRefreshed.Add(unknownKeyRefreshInterval)) {
+		return nil, fmt.Errorf("identity: token key ID %q is not among the held signing keys, which an unknown key ID last re-read at %s; the next re-read is allowed at %s", id, v.unknownKeyRefreshed.UTC().Format(time.RFC3339), v.unknownKeyRefreshed.Add(unknownKeyRefreshInterval).UTC().Format(time.RFC3339))
+	}
+	v.unknownKeyRefreshed = now
+	if err := v.refresh(ctx); err != nil {
+		return nil, fmt.Errorf("identity: refreshing signing keys for key ID %q: %w", id, err)
+	}
+	if key := v.key(id); key != nil {
+		return key, nil
+	}
+	return nil, fmt.Errorf("identity: token key ID %q is not published by the account authority", id)
 }
 
 func (v *Verifier) refresh(ctx context.Context) error {

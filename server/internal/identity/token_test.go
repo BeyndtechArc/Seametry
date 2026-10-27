@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -112,6 +113,85 @@ func TestVerifierRefreshesJWKSForANewKey(t *testing.T) {
 	}
 	if requests != 2 {
 		t.Fatalf("JWKS requests = %d, want 2: one initial read and one refresh for the new key", requests)
+	}
+}
+
+func TestVerifierRereadsJWKSForUnknownKeyIDsAtMostOncePerInterval(t *testing.T) {
+	public, _ := keypair(t)
+	_, stranger := keypair(t)
+	requests := 0
+	client := jwksClient(t, func(request int) map[string]any {
+		requests = request
+		return jwksBody("key-1", public)
+	})
+	const origin = "https://accounts.example"
+	verifier, err := NewVerifier(origin, "", client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, 10, 9, 12, 0, 0, 0, time.UTC)
+	verify := func(kid string, now time.Time) error {
+		_, err := verifier.Verify(context.Background(), signedToken(t, stranger, kid, map[string]any{
+			"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(),
+		}), now)
+		return err
+	}
+
+	steps := []struct {
+		name     string
+		kid      string
+		at       time.Duration
+		requests int
+	}{
+		{"the first unknown key ID re-reads", "unknown-1", 0, 2},
+		{"another inside the interval does not", "unknown-2", time.Second, 2},
+		{"nor one just before the interval ends", "unknown-3", unknownKeyRefreshInterval - time.Nanosecond, 2},
+		{"one at the end of the interval re-reads again", "unknown-4", unknownKeyRefreshInterval, 3},
+	}
+	for _, step := range steps {
+		err := verify(step.kid, start.Add(step.at))
+		if err == nil || !strings.Contains(err.Error(), step.kid) {
+			t.Fatalf("%s: error = %v, want a refusal naming %q", step.name, err, step.kid)
+		}
+		if requests != step.requests {
+			t.Fatalf("%s: JWKS requests = %d, want %d", step.name, requests, step.requests)
+		}
+	}
+}
+
+func TestVerifierConcurrentTokensForANewKeyShareOneReread(t *testing.T) {
+	oldPublic, _ := keypair(t)
+	newPublic, newPrivate := keypair(t)
+	requests := 0
+	client := jwksClient(t, func(request int) map[string]any {
+		requests = request
+		if request == 1 {
+			return jwksBody("old-key", oldPublic)
+		}
+		// Held open so the other tokens arrive while this re-read is in flight.
+		time.Sleep(50 * time.Millisecond)
+		return jwksBody("new-key", newPublic)
+	})
+	const origin = "https://accounts.example"
+	verifier, err := NewVerifier(origin, "", client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 10, 9, 12, 0, 0, 0, time.UTC)
+	token := signedToken(t, newPrivate, "new-key", map[string]any{
+		"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(),
+	})
+	var wg sync.WaitGroup
+	for range 16 {
+		wg.Go(func() {
+			if _, err := verifier.Verify(context.Background(), token, now); err != nil {
+				t.Errorf("a token for the newly published key was refused: %v", err)
+			}
+		})
+	}
+	wg.Wait()
+	if requests != 2 {
+		t.Fatalf("JWKS requests = %d, want 2: one initial read and one re-read shared by 16 tokens", requests)
 	}
 }
 

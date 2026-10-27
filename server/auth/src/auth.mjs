@@ -1,7 +1,7 @@
-import { dash } from "@better-auth/infra";
 import { betterAuth } from "better-auth";
 import { jwt } from "better-auth/plugins";
 import pg from "pg";
+import { appOrigins } from "./app-origins.mjs";
 import { serviceTokenPayload } from "./service-token.mjs";
 
 const { Pool } = pg;
@@ -9,7 +9,6 @@ const { Pool } = pg;
 const required = [
   "AUTH_DATABASE_URL",
   "BETTER_AUTH_SECRET",
-  "BETTER_AUTH_API_KEY",
   "BETTER_AUTH_URL",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
@@ -21,10 +20,7 @@ for (const name of required) {
 
 export const pool = new Pool({ connectionString: process.env.AUTH_DATABASE_URL });
 
-export const trustedOrigins = (process.env.SEAMETRY_APP_ORIGINS ?? "https://www.seametry.xyz,https://seametry.xyz,http://localhost:3000")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+export const trustedOrigins = appOrigins(process.env);
 
 export const auth = betterAuth({
   appName: "Seametry",
@@ -50,7 +46,6 @@ export const auth = betterAuth({
     customRules: { "/sign-in/social": { window: 60, max: 5 } },
   },
   plugins: [
-    dash({ apiKey: process.env.BETTER_AUTH_API_KEY }),
     jwt({ jwt: { definePayload: serviceTokenPayload } }),
   ],
 });
