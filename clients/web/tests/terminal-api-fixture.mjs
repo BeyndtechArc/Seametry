@@ -151,7 +151,11 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       const parsed = JSON.parse(body);
       activityReports.push({ kind: path.slice("/v1/internal/".length).replace(/^activity\//, ""), secret: request.headers["x-seametry-service-secret"] ?? null, body: parsed });
-      if (path !== "/v1/internal/feedback") {
+      if (path === "/v1/internal/email-optins") {
+        writeJson(response, 202, { data: { unsubscribe_token: `fixture-token-${activityReports.length}` } });
+      } else if (path === "/v1/internal/email-optins/unsubscribe" && parsed.token === "fixture-used-token") {
+        writeJson(response, 404, { title: "Unsubscribe link not recognised", status: 404, detail: "WithdrawEmailOptIn: fixture" });
+      } else if (path !== "/v1/internal/feedback") {
         response.writeHead(204);
         response.end();
       } else if (String(parsed.message).includes("fixture: the gateway fails")) {

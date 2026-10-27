@@ -19,8 +19,28 @@ import { useHistory } from "@/lib/execution/history";
 import { logoSrc } from "@/lib/logo-src";
 import { firstTouchFor, firstTouchSent } from "@/lib/first-touch";
 import { funnel } from "@/lib/funnel";
+import { EmailOptIn } from "../../components/email-optin/email-optin";
 import { ActivityList, RecordLine } from "../_activity/activity";
 import styles from "./positions.module.css";
+
+// Set once the email field has been answered either way, so it is offered after a first purchase and not again.
+const OPT_IN_OFFERED = "seametry:email-optin-offered";
+
+function optInOffered(): boolean {
+  try {
+    return localStorage.getItem(OPT_IN_OFFERED) !== null;
+  } catch {
+    return true;
+  }
+}
+
+function markOptInOffered() {
+  try {
+    localStorage.setItem(OPT_IN_OFFERED, new Date().toISOString());
+  } catch {
+    // Storage blocked: the field is offered again on the next visit.
+  }
+}
 
 type Reading = { wallet: string; network: "mainnet"; source: string; observedAt: string; positions: HeldPosition[]; outsideRegister: number };
 type View = "positions" | "allocations" | "activity";
@@ -82,6 +102,9 @@ export function Positions() {
   const [now, setNow] = useState(() => Date.now());
   const [sale, setSale] = useState<AllocationSale>();
   const [view, setView] = useState<View>("positions");
+  const [optInAnswered, setOptInAnswered] = useState(true);
+  useEffect(() => setOptInAnswered(optInOffered()), []);
+  const bought = records.some((execution) => execution.kind === "buy" && execution.legs.some((leg) => leg.phase === "landed"));
 
   const refresh = useCallback(async (address: string) => {
     setReadingBusy(true);
@@ -269,6 +292,10 @@ export function Positions() {
       />
       {!wallet ? <Banner action={<QuietAction type="button" icon="wallet" onClick={() => document.getElementById("app-wallet")?.click()}>Connect wallet</QuietAction>}>Connect the wallet that holds your instruments to see them here. Connecting buys or sells nothing.</Banner> : (
         <>
+          {bought && !optInAnswered ? <EmailOptIn page="first_allocation" wallet={wallet} onKept={markOptInOffered} onDismiss={() => {
+            markOptInOffered();
+            setOptInAnswered(true);
+          }} /> : null}
           <div id="holdings-view" role="tabpanel" aria-label={VIEW_NAMES[view]} className={styles.view}>
             {view === "positions" ? <>
               <div className={styles.viewMeta}>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Field, FieldArea, Key, QuietAction } from "@seametry/ui";
 import { Callout } from "@seametry/ui/callout";
+import { EmailOptIn } from "../components/email-optin/email-optin";
 import styles from "./feedback.module.css";
 
 const LIMIT = 4000;
@@ -64,40 +65,45 @@ export function FeedbackForm() {
   }
 
   return (
-    <section className={styles.form}>
-      <FieldArea
-        id="feedback-message"
-        label="What happened, or what should change"
-        value={message}
-        onChange={(event) => setMessage(event.target.value)}
-        maxLength={LIMIT + 500}
-        invalid={tooLong}
-        message={tooLong ? `${trimmed.length.toLocaleString("en-US")} characters; at most ${LIMIT.toLocaleString("en-US")} are kept.` : `Up to ${LIMIT.toLocaleString("en-US")} characters.`}
-      />
-      <Field
-        id="feedback-reply"
-        label="Your email, for a reply"
-        type="email"
-        autoComplete="email"
-        value={replyTo}
-        onChange={(event) => setReplyTo(event.target.value)}
-        message="Optional. Leave it empty and no reply will come."
-      />
-      {wallet ? (
-        <div className={styles.wallet}>
-          <p>{includeWallet ? `Your connected wallet ${wallet.slice(0, 4)}…${wallet.slice(-4)} goes with this message, so the team can look at what it did.` : "Your connected wallet is left out of this message."}</p>
-          <QuietAction type="button" onClick={() => setIncludeWallet(!includeWallet)}>{includeWallet ? "Leave my wallet out" : "Include my wallet"}</QuietAction>
+    <>
+      <section className={styles.form}>
+        <FieldArea
+          id="feedback-message"
+          label="What happened, or what should change"
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          maxLength={LIMIT + 500}
+          invalid={tooLong}
+          message={tooLong ? `${trimmed.length.toLocaleString("en-US")} characters; at most ${LIMIT.toLocaleString("en-US")} are kept.` : `Up to ${LIMIT.toLocaleString("en-US")} characters.`}
+        />
+        <Field
+          id="feedback-reply"
+          label="Your email, for a reply"
+          type="email"
+          autoComplete="email"
+          value={replyTo}
+          onChange={(event) => setReplyTo(event.target.value)}
+          message="Optional. Leave it empty and no reply will come."
+        />
+        {wallet ? (
+          <div className={styles.wallet}>
+            <p>{includeWallet ? `Your connected wallet ${wallet.slice(0, 4)}…${wallet.slice(-4)} goes with this message, so the team can look at what it did.` : "Your connected wallet is left out of this message."}</p>
+            <QuietAction type="button" onClick={() => setIncludeWallet(!includeWallet)}>{includeWallet ? "Leave my wallet out" : "Include my wallet"}</QuietAction>
+          </div>
+        ) : null}
+        {stage.state === "refused" ? <Callout tone="blocked" announce>{stage.reason}</Callout> : null}
+        <div className={styles.tray}>
+          <Key type="button" onClick={() => void send()} disabled={Boolean(disabledReason)} disabledReason={disabledReason} busy={stage.state === "sending"} busyLabel="Sending">
+            Send feedback
+          </Key>
         </div>
-      ) : null}
-      {stage.state === "refused" ? <Callout tone="blocked" announce>{stage.reason}</Callout> : null}
-      <div className={styles.tray}>
-        <Key type="button" onClick={() => void send()} disabled={Boolean(disabledReason)} disabledReason={disabledReason} busy={stage.state === "sending"} busyLabel="Sending">
-          Send feedback
-        </Key>
-      </div>
-      <p className={styles.elsewhere}>
-        Or write to <a href="mailto:seametry@beyndtech.com">seametry@beyndtech.com</a>, or reach Seametry on <a href="https://x.com/seametry_">X</a>.
-      </p>
-    </section>
+        <p className={styles.elsewhere}>
+          Or write to <a href="mailto:seametry@beyndtech.com">seametry@beyndtech.com</a>, or reach Seametry on <a href="https://x.com/seametry_">X</a>.
+        </p>
+      </section>
+      <section className={styles.form}>
+        <EmailOptIn page="feedback" wallet={wallet} />
+      </section>
+    </>
   );
 }
