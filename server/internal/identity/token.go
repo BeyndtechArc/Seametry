@@ -35,7 +35,15 @@ type Subject struct {
 	// prove it controls when it issued the token. A wallet unlinked since
 	// stays here until the token expires.
 	Wallets []string
+	// Email is the address the account signed in with, and EmailVerified
+	// whether its provider said it verified it. Only the admin gate reads
+	// them; a token without the claims reads as an unverified empty address.
+	Email         string
+	EmailVerified bool
 }
+
+// maxTokenEmailBytes is RFC 5321's limit on a forward path.
+const maxTokenEmailBytes = 254
 
 // maxTokenWallets matches the account authority's cap on the claim.
 const maxTokenWallets = 20
@@ -67,6 +75,10 @@ type tokenClaims struct {
 	ExpiresAt json.Number     `json:"exp"`
 	NotBefore json.Number     `json:"nbf"`
 	Wallets   []string        `json:"wallets"`
+	Email     string          `json:"email"`
+	// A pointer, so a claim sent as anything but a JSON boolean fails to
+	// decode instead of reading as false or true.
+	EmailVerified *bool `json:"email_verified"`
 }
 
 type jwksDocument struct {
@@ -227,7 +239,11 @@ func (v *Verifier) Verify(ctx context.Context, encoded string, now time.Time) (S
 			return Subject{}, fmt.Errorf("identity: token wallets[%d] %q is not a 32-byte base58 Solana address", index, wallet)
 		}
 	}
-	return Subject{AccountID: claims.Subject, Wallets: claims.Wallets}, nil
+	if len(claims.Email) > maxTokenEmailBytes {
+		return Subject{}, fmt.Errorf("identity: token email is %d bytes, expected at most %d", len(claims.Email), maxTokenEmailBytes)
+	}
+	verified := claims.EmailVerified != nil && *claims.EmailVerified && claims.Email != ""
+	return Subject{AccountID: claims.Subject, Wallets: claims.Wallets, Email: claims.Email, EmailVerified: verified}, nil
 }
 
 func (v *Verifier) key(id string) ed25519.PublicKey {
