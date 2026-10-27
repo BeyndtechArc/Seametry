@@ -262,7 +262,7 @@ func (r *Report) RecordQuote(ctx context.Context, quote Quote) (err error) {
 	}()
 	q := r.q.WithTx(tx)
 	seen := pgtype.Timestamptz{Time: quote.PreparedAt.UTC(), Valid: true}
-	if err = q.TouchWallet(ctx, executiondb.TouchWalletParams{Address: quote.Wallet, SeenAt: seen, FirstSource: source}); err != nil {
+	if err = q.TouchWallet(ctx, executiondb.TouchWalletParams{Address: quote.Wallet, SeenAt: seen, FirstSource: source, DecidesSource: true}); err != nil {
 		return fmt.Errorf("execution: recording wallet %s: %w", quote.Wallet, err)
 	}
 	refusal := Refusal{}

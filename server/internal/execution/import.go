@@ -142,7 +142,9 @@ func (r *Report) importOne(ctx context.Context, history History, entry solana.Si
 	}
 	defer func() { _ = transaction.Rollback(ctx) }()
 	q := r.q.WithTx(transaction)
-	if err := q.TouchWallet(ctx, executiondb.TouchWalletParams{Address: tx.FeePayer, SeenAt: blockTime}); err != nil {
+	// A chain trade says nothing of where the wallet came from; its first quote
+	// decides that.
+	if err := q.TouchWallet(ctx, executiondb.TouchWalletParams{Address: tx.FeePayer, SeenAt: blockTime, DecidesSource: false}); err != nil {
 		return fmt.Errorf("execution: recording wallet %s: %w", tx.FeePayer, err)
 	}
 	if err := q.InsertImportedQuote(ctx, executiondb.InsertImportedQuoteParams{ID: pgtype.UUID{Bytes: quoteID, Valid: true}, Wallet: tx.FeePayer, Kind: kind, PreparedAt: blockTime}); err != nil {

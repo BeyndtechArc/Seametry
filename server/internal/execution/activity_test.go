@@ -131,34 +131,51 @@ func TestAQuoteIsRecordedOnceHoweverOftenItIsReported(t *testing.T) {
 	}
 }
 
-func TestAWalletKeepsTheFirstSourceItWasSeenWith(t *testing.T) {
+// firstSource reads the one wallet's kept source and whether its first quote
+// has decided it; a decided wallet with no source is an explicit unknown.
+func firstSource(t *testing.T, pool *pgxpool.Pool) (source *string, decided bool) {
+	t.Helper()
+	if err := pool.QueryRow(context.Background(), "SELECT first_source::text, first_source_at IS NOT NULL FROM execution.wallets").Scan(&source, &decided); err != nil {
+		t.Fatal(err)
+	}
+	return source, decided
+}
+
+func TestAWalletKeepsTheSourceItsFirstQuoteCarried(t *testing.T) {
 	report, pool := freshReport(t)
 	ctx := context.Background()
-	if err := report.RecordQuote(ctx, preparedQuote(t, nil)); err != nil {
-		t.Fatal(err)
+	for _, touch := range []*FirstTouch{
+		{ReferrerHost: "x.com", UTMCampaign: "colosseum", RefCode: "x"},
+		nil,
+		{},
+		{ReferrerHost: "google.com"},
+	} {
+		if err := report.RecordQuote(ctx, preparedQuote(t, touch)); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if n := count(t, pool, "SELECT count(*) FROM execution.wallets WHERE first_source IS NULL"); n != 1 {
-		t.Fatalf("a wallet seen without a source should have none; rows without: %d", n)
+	source, decided := firstSource(t, pool)
+	if !decided || source == nil || *source != `{"ref_code": "x", "utm_campaign": "colosseum", "referrer_host": "x.com"}` {
+		t.Fatalf("first source: got %v decided %v, want the first quote's x.com with campaign colosseum and ref x", source, decided)
 	}
-	// An empty source is no source.
-	if err := report.RecordQuote(ctx, preparedQuote(t, &FirstTouch{})); err != nil {
-		t.Fatal(err)
+}
+
+func TestAWalletWhoseFirstQuoteCarriedNoSourceStaysUnknown(t *testing.T) {
+	report, pool := freshReport(t)
+	ctx := context.Background()
+	// An empty first touch is no source, and a source arriving on a later
+	// quote is not where the wallet came from.
+	for _, touch := range []*FirstTouch{{}, nil, {ReferrerHost: "x.com", RefCode: "x"}} {
+		if err := report.RecordQuote(ctx, preparedQuote(t, touch)); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if n := count(t, pool, "SELECT count(*) FROM execution.wallets WHERE first_source IS NULL"); n != 1 {
-		t.Fatal("an empty first touch was kept as a source")
-	}
-	if err := report.RecordQuote(ctx, preparedQuote(t, &FirstTouch{ReferrerHost: "x.com", UTMCampaign: "colosseum", RefCode: "x"})); err != nil {
-		t.Fatal(err)
-	}
-	if err := report.RecordQuote(ctx, preparedQuote(t, &FirstTouch{ReferrerHost: "google.com"})); err != nil {
-		t.Fatal(err)
-	}
-	var source string
-	if err := pool.QueryRow(ctx, "SELECT first_source::text FROM execution.wallets").Scan(&source); err != nil {
-		t.Fatal(err)
-	}
-	if source != `{"ref_code": "x", "utm_campaign": "colosseum", "referrer_host": "x.com"}` {
-		t.Fatalf("first source: got %s, want the first one kept, x.com with campaign colosseum and ref x", source)
+	source, decided := firstSource(t, pool)
+	if source != nil || !decided {
+		if source != nil {
+			t.Fatalf("first source: got %s decided %v, want an explicit unknown decided by the first quote", *source, decided)
+		}
+		t.Fatalf("first source: got no source, decided %v, want an explicit unknown decided by the first quote", decided)
 	}
 }
 
