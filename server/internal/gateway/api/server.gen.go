@@ -80,6 +80,9 @@ type ServerInterface interface {
 	// GetMe The opaque account subject accepted by the Go core.
 	// (GET /me)
 	GetMe(w http.ResponseWriter, r *http.Request)
+	// GetMyActivity What the activity record holds for every wallet the signed-in account has linked.
+	// (GET /me/activity)
+	GetMyActivity(w http.ResponseWriter, r *http.Request)
 	// GetPolicy A policy document, as data (server/internal/policy.Document).
 	// (GET /policies/{version})
 	GetPolicy(w http.ResponseWriter, r *http.Request, version PolicyVersion)
@@ -702,6 +705,20 @@ func (siw *ServerInterfaceWrapper) GetMe(w http.ResponseWriter, r *http.Request)
 	handler.ServeHTTP(w, r)
 }
 
+// GetMyActivity operation middleware
+func (siw *ServerInterfaceWrapper) GetMyActivity(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetMyActivity(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetPolicy operation middleware
 func (siw *ServerInterfaceWrapper) GetPolicy(w http.ResponseWriter, r *http.Request) {
 
@@ -964,6 +981,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/anchor-keys", wrapper.ListAnchorKeys)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/status", wrapper.GetStatus)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me", wrapper.GetMe)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me/activity", wrapper.GetMyActivity)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/quotes", wrapper.RecordActivityQuote)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/submissions", wrapper.RecordActivitySubmission)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/feedback", wrapper.ReceiveFeedback)
@@ -1829,6 +1847,49 @@ func (response GetMedefaultApplicationProblemPlusJSONResponse) VisitGetMeRespons
 	return err
 }
 
+type GetMyActivityRequestObject struct {
+}
+
+type GetMyActivityResponseObject interface {
+	VisitGetMyActivityResponse(w http.ResponseWriter) error
+}
+
+type GetMyActivity200JSONResponse struct {
+	Data WalletHistory `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetMyActivity200JSONResponse) VisitGetMyActivityResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetMyActivitydefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetMyActivitydefaultApplicationProblemPlusJSONResponse) VisitGetMyActivityResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetPolicyRequestObject struct {
 	Version PolicyVersion `json:"version"`
 }
@@ -2134,6 +2195,9 @@ type StrictServerInterface interface {
 	// GetMe The opaque account subject accepted by the Go core.
 	// (GET /me)
 	GetMe(ctx context.Context, request GetMeRequestObject) (GetMeResponseObject, error)
+	// GetMyActivity What the activity record holds for every wallet the signed-in account has linked.
+	// (GET /me/activity)
+	GetMyActivity(ctx context.Context, request GetMyActivityRequestObject) (GetMyActivityResponseObject, error)
 	// GetPolicy A policy document, as data (server/internal/policy.Document).
 	// (GET /policies/{version})
 	GetPolicy(ctx context.Context, request GetPolicyRequestObject) (GetPolicyResponseObject, error)
@@ -2729,6 +2793,30 @@ func (sh *strictHandler) GetMe(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetMeResponseObject); ok {
 		if err := validResponse.VisitGetMeResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetMyActivity operation middleware
+func (sh *strictHandler) GetMyActivity(w http.ResponseWriter, r *http.Request) {
+	var request GetMyActivityRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetMyActivity(ctx, request.(GetMyActivityRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetMyActivity")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetMyActivityResponseObject); ok {
+		if err := validResponse.VisitGetMyActivityResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

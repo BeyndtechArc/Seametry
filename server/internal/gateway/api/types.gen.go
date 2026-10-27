@@ -107,19 +107,19 @@ func (e ActivityQuoteNetwork) Valid() bool {
 
 // Defines values for ActivitySubmissionResult.
 const (
-	RefusedNotSent ActivitySubmissionResult = "refused_not_sent"
-	Sent           ActivitySubmissionResult = "sent"
-	Uncertain      ActivitySubmissionResult = "uncertain"
+	ActivitySubmissionResultRefusedNotSent ActivitySubmissionResult = "refused_not_sent"
+	ActivitySubmissionResultSent           ActivitySubmissionResult = "sent"
+	ActivitySubmissionResultUncertain      ActivitySubmissionResult = "uncertain"
 )
 
 // Valid indicates whether the value is a known member of the ActivitySubmissionResult enum.
 func (e ActivitySubmissionResult) Valid() bool {
 	switch e {
-	case RefusedNotSent:
+	case ActivitySubmissionResultRefusedNotSent:
 		return true
-	case Sent:
+	case ActivitySubmissionResultSent:
 		return true
-	case Uncertain:
+	case ActivitySubmissionResultUncertain:
 		return true
 	default:
 		return false
@@ -435,6 +435,102 @@ func (e StreamEventEvent) Valid() bool {
 	}
 }
 
+// Defines values for WalletExecutionKind.
+const (
+	WalletExecutionKindBuy  WalletExecutionKind = "buy"
+	WalletExecutionKindSell WalletExecutionKind = "sell"
+)
+
+// Valid indicates whether the value is a known member of the WalletExecutionKind enum.
+func (e WalletExecutionKind) Valid() bool {
+	switch e {
+	case WalletExecutionKindBuy:
+		return true
+	case WalletExecutionKindSell:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WalletExecutionSource.
+const (
+	WalletExecutionSourceChain  WalletExecutionSource = "chain"
+	WalletExecutionSourceServer WalletExecutionSource = "server"
+)
+
+// Valid indicates whether the value is a known member of the WalletExecutionSource enum.
+func (e WalletExecutionSource) Valid() bool {
+	switch e {
+	case WalletExecutionSourceChain:
+		return true
+	case WalletExecutionSourceServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WalletLegSource.
+const (
+	WalletLegSourceChain  WalletLegSource = "chain"
+	WalletLegSourceServer WalletLegSource = "server"
+)
+
+// Valid indicates whether the value is a known member of the WalletLegSource enum.
+func (e WalletLegSource) Valid() bool {
+	switch e {
+	case WalletLegSourceChain:
+		return true
+	case WalletLegSourceServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WalletLegSubmitResult.
+const (
+	WalletLegSubmitResultRefusedNotSent WalletLegSubmitResult = "refused_not_sent"
+	WalletLegSubmitResultSent           WalletLegSubmitResult = "sent"
+	WalletLegSubmitResultUncertain      WalletLegSubmitResult = "uncertain"
+)
+
+// Valid indicates whether the value is a known member of the WalletLegSubmitResult enum.
+func (e WalletLegSubmitResult) Valid() bool {
+	switch e {
+	case WalletLegSubmitResultRefusedNotSent:
+		return true
+	case WalletLegSubmitResultSent:
+		return true
+	case WalletLegSubmitResultUncertain:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WalletLegChainOutcome.
+const (
+	Dropped WalletLegChainOutcome = "dropped"
+	Failed  WalletLegChainOutcome = "failed"
+	Landed  WalletLegChainOutcome = "landed"
+)
+
+// Valid indicates whether the value is a known member of the WalletLegChainOutcome enum.
+func (e WalletLegChainOutcome) Valid() bool {
+	switch e {
+	case Dropped:
+		return true
+	case Failed:
+		return true
+	case Landed:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListAlloysParamsCluster.
 const (
 	ListAlloysParamsClusterDevnet  ListAlloysParamsCluster = "devnet"
@@ -491,7 +587,7 @@ func (e GetInstrumentDepthParamsDirection) Valid() bool {
 
 // AccountSubject defines model for AccountSubject.
 type AccountSubject struct {
-	// Id The opaque Better Auth account subject. No profile field is carried in the service token.
+	// Id The opaque Better Auth account subject. No profile field is carried in the service token; the wallets the account linked are, for GET /me/activity.
 	Id string `json:"id"`
 }
 
@@ -1094,6 +1190,78 @@ type StreamEvent struct {
 
 // StreamEventEvent defines model for StreamEvent.Event.
 type StreamEventEvent string
+
+// WalletExecution defines model for WalletExecution.
+type WalletExecution struct {
+	Kind       WalletExecutionKind `json:"kind"`
+	Legs       []WalletLeg         `json:"legs"`
+	PlanSize   int                 `json:"plan_size"`
+	PreparedAt time.Time           `json:"prepared_at"`
+	QuoteId    openapi_types.UUID  `json:"quote_id"`
+
+	// Source server, prepared by Seametry; chain, found only in the fee account's history.
+	Source     WalletExecutionSource `json:"source"`
+	Subject    *string               `json:"subject,omitempty"`
+	TemplateId *string               `json:"template_id,omitempty"`
+	Wallet     string                `json:"wallet"`
+}
+
+// WalletExecutionKind defines model for WalletExecution.Kind.
+type WalletExecutionKind string
+
+// WalletExecutionSource server, prepared by Seametry; chain, found only in the fee account's history.
+type WalletExecutionSource string
+
+// WalletHistory defines model for WalletHistory.
+type WalletHistory struct {
+	Executions []WalletExecution `json:"executions"`
+
+	// Wallets The linked wallets this answer read, from the account token.
+	Wallets []string `json:"wallets"`
+}
+
+// WalletLeg defines model for WalletLeg.
+type WalletLeg struct {
+	// Chain What the chain said, written only by the reconciler or the backfill. Absent means Seametry has not yet read an answer, not that nothing happened.
+	Chain *WalletLegChain `json:"chain,omitempty"`
+
+	// ExpectedOut Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	ExpectedOut *Amount `json:"expected_out,omitempty"`
+
+	// Floor Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	Floor     *Amount            `json:"floor,omitempty"`
+	Id        openapi_types.UUID `json:"id"`
+	Mint      string             `json:"mint"`
+	Signature string             `json:"signature"`
+	Source    WalletLegSource    `json:"source"`
+
+	// Spend Integer atoms plus an explicit scale. Never a JSON number (docs/prd/API.md section 4.1; ENGINEERING_STANDARD.md section 3).
+	Spend        *Amount               `json:"spend,omitempty"`
+	SubmitResult WalletLegSubmitResult `json:"submit_result"`
+	SubmittedAt  time.Time             `json:"submitted_at"`
+	Symbol       *string               `json:"symbol,omitempty"`
+}
+
+// WalletLegSource defines model for WalletLeg.Source.
+type WalletLegSource string
+
+// WalletLegSubmitResult defines model for WalletLeg.SubmitResult.
+type WalletLegSubmitResult string
+
+// WalletLegChain What the chain said, written only by the reconciler or the backfill. Absent means Seametry has not yet read an answer, not that nothing happened.
+type WalletLegChain struct {
+	BlockTime        *time.Time            `json:"block_time,omitempty"`
+	Outcome          WalletLegChainOutcome `json:"outcome"`
+	ReconciledAt     time.Time             `json:"reconciled_at"`
+	TokenScale       *int                  `json:"token_scale,omitempty"`
+	WalletTokenDelta *string               `json:"wallet_token_delta,omitempty"`
+
+	// WalletUsdcDelta USDC atoms (scale 6) the wallet's balance changed by.
+	WalletUsdcDelta *string `json:"wallet_usdc_delta,omitempty"`
+}
+
+// WalletLegChainOutcome defines model for WalletLegChain.Outcome.
+type WalletLegChainOutcome string
 
 // AlloyAddress defines model for AlloyAddress.
 type AlloyAddress = string

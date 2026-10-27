@@ -17,7 +17,14 @@ type heldReports struct {
 	quotes      []execution.Quote
 	submissions []execution.Submission
 	funnel      []execution.FunnelEvent
+	historyOf   [][]string
+	history     []execution.HistoryQuote
 	answer      error
+}
+
+func (h *heldReports) History(_ context.Context, wallets []string) ([]execution.HistoryQuote, error) {
+	h.historyOf = append(h.historyOf, wallets)
+	return h.history, h.answer
 }
 
 func (h *heldReports) RecordQuote(_ context.Context, quote execution.Quote) error {

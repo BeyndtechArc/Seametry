@@ -196,3 +196,100 @@ func (q *Queries) TouchWallet(ctx context.Context, arg TouchWalletParams) error 
 	_, err := q.db.Exec(ctx, touchWallet, arg.Address, arg.SeenAt, arg.FirstSource)
 	return err
 }
+
+const walletHistory = `-- name: WalletHistory :many
+WITH recent AS (
+    SELECT q.id
+    FROM execution.quotes q
+    WHERE q.wallet = ANY($1::text[])
+      AND EXISTS (SELECT 1 FROM execution.legs s WHERE s.quote_id = q.id AND s.signature IS NOT NULL)
+    ORDER BY q.prepared_at DESC
+    LIMIT 200
+)
+SELECT q.id AS quote_id, q.wallet, q.kind, q.subject, q.template_id, q.plan_size, q.prepared_at, q.source AS quote_source,
+       l.id AS leg_id, l.mint, l.symbol, l.in_atoms, l.in_scale, l.out_atoms, l.floor_atoms, l.out_scale,
+       l.signature, l.submitted_at, l.submit_result, l.source AS leg_source,
+       l.chain_outcome, l.block_time, l.wallet_usdc_delta, l.wallet_token_delta, l.token_scale, l.reconciled_at
+FROM recent
+JOIN execution.quotes q ON q.id = recent.id
+JOIN execution.legs l ON l.quote_id = q.id AND l.signature IS NOT NULL
+ORDER BY q.prepared_at DESC, q.id, l.id
+`
+
+type WalletHistoryRow struct {
+	QuoteID          pgtype.UUID        `db:"quote_id" json:"quote_id"`
+	Wallet           string             `db:"wallet" json:"wallet"`
+	Kind             string             `db:"kind" json:"kind"`
+	Subject          pgtype.Text        `db:"subject" json:"subject"`
+	TemplateID       pgtype.Text        `db:"template_id" json:"template_id"`
+	PlanSize         int32              `db:"plan_size" json:"plan_size"`
+	PreparedAt       pgtype.Timestamptz `db:"prepared_at" json:"prepared_at"`
+	QuoteSource      string             `db:"quote_source" json:"quote_source"`
+	LegID            pgtype.UUID        `db:"leg_id" json:"leg_id"`
+	Mint             string             `db:"mint" json:"mint"`
+	Symbol           pgtype.Text        `db:"symbol" json:"symbol"`
+	InAtoms          pgtype.Numeric     `db:"in_atoms" json:"in_atoms"`
+	InScale          pgtype.Int2        `db:"in_scale" json:"in_scale"`
+	OutAtoms         pgtype.Numeric     `db:"out_atoms" json:"out_atoms"`
+	FloorAtoms       pgtype.Numeric     `db:"floor_atoms" json:"floor_atoms"`
+	OutScale         pgtype.Int2        `db:"out_scale" json:"out_scale"`
+	Signature        pgtype.Text        `db:"signature" json:"signature"`
+	SubmittedAt      pgtype.Timestamptz `db:"submitted_at" json:"submitted_at"`
+	SubmitResult     pgtype.Text        `db:"submit_result" json:"submit_result"`
+	LegSource        string             `db:"leg_source" json:"leg_source"`
+	ChainOutcome     pgtype.Text        `db:"chain_outcome" json:"chain_outcome"`
+	BlockTime        pgtype.Timestamptz `db:"block_time" json:"block_time"`
+	WalletUsdcDelta  pgtype.Numeric     `db:"wallet_usdc_delta" json:"wallet_usdc_delta"`
+	WalletTokenDelta pgtype.Numeric     `db:"wallet_token_delta" json:"wallet_token_delta"`
+	TokenScale       pgtype.Int2        `db:"token_scale" json:"token_scale"`
+	ReconciledAt     pgtype.Timestamptz `db:"reconciled_at" json:"reconciled_at"`
+}
+
+// The sent legs of the 200 most recent quotes for these wallets, newest
+// quote first. A leg never signed reached nobody, so it is not history.
+func (q *Queries) WalletHistory(ctx context.Context, wallets []string) ([]WalletHistoryRow, error) {
+	rows, err := q.db.Query(ctx, walletHistory, wallets)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []WalletHistoryRow
+	for rows.Next() {
+		var i WalletHistoryRow
+		if err := rows.Scan(
+			&i.QuoteID,
+			&i.Wallet,
+			&i.Kind,
+			&i.Subject,
+			&i.TemplateID,
+			&i.PlanSize,
+			&i.PreparedAt,
+			&i.QuoteSource,
+			&i.LegID,
+			&i.Mint,
+			&i.Symbol,
+			&i.InAtoms,
+			&i.InScale,
+			&i.OutAtoms,
+			&i.FloorAtoms,
+			&i.OutScale,
+			&i.Signature,
+			&i.SubmittedAt,
+			&i.SubmitResult,
+			&i.LegSource,
+			&i.ChainOutcome,
+			&i.BlockTime,
+			&i.WalletUsdcDelta,
+			&i.WalletTokenDelta,
+			&i.TokenScale,
+			&i.ReconciledAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

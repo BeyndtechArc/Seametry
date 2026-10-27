@@ -642,6 +642,35 @@ paths:
                     $ref: '#/components/schemas/Meta'
         default:
           $ref: '#/components/responses/Problem'
+  /me/activity:
+    get:
+      operationId: getMyActivity
+      tags: [account]
+      summary: What the activity record holds for every wallet the signed-in account has linked.
+      description: >
+        Reads only the wallets named in the account token, which the account
+        authority puts there for wallets this account proved it controls by
+        signing a challenge. No wallet is read by address alone. Only legs
+        that were sent are returned, for the 200 most recent quotes. A leg
+        carries a chain answer only once the reconciler or the backfill has
+        written one; until then it says what Seametry sent, not what settled.
+      security:
+        - accountToken: []
+      responses:
+        "200":
+          description: The linked wallets' recorded history, newest quote first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WalletHistory'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
 
   # --- activity (internal) ------------------------------------------------
   /internal/activity/quotes:
@@ -820,7 +849,108 @@ components:
       properties:
         id:
           type: string
-          description: The opaque Better Auth account subject. No profile field is carried in the service token.
+          description: >
+            The opaque Better Auth account subject. No profile field is
+            carried in the service token; the wallets the account linked are,
+            for GET /me/activity.
+    WalletHistory:
+      type: object
+      required: [wallets, executions]
+      properties:
+        wallets:
+          type: array
+          description: The linked wallets this answer read, from the account token.
+          items:
+            type: string
+        executions:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletExecution'
+    WalletExecution:
+      type: object
+      required: [quote_id, wallet, kind, plan_size, prepared_at, source, legs]
+      properties:
+        quote_id:
+          type: string
+          format: uuid
+        wallet:
+          type: string
+        kind:
+          type: string
+          enum: [buy, sell]
+        subject:
+          type: string
+        template_id:
+          type: string
+        plan_size:
+          type: integer
+        prepared_at:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum: [server, chain]
+          description: server, prepared by Seametry; chain, found only in the fee account's history.
+        legs:
+          type: array
+          items:
+            $ref: '#/components/schemas/WalletLeg'
+    WalletLeg:
+      type: object
+      required: [id, mint, signature, submitted_at, submit_result, source]
+      properties:
+        id:
+          type: string
+          format: uuid
+        mint:
+          type: string
+        symbol:
+          type: string
+        signature:
+          type: string
+        submitted_at:
+          type: string
+          format: date-time
+        submit_result:
+          type: string
+          enum: [sent, refused_not_sent, uncertain]
+        source:
+          type: string
+          enum: [server, chain]
+        spend:
+          $ref: '#/components/schemas/Amount'
+        expected_out:
+          $ref: '#/components/schemas/Amount'
+        floor:
+          $ref: '#/components/schemas/Amount'
+        chain:
+          $ref: '#/components/schemas/WalletLegChain'
+    WalletLegChain:
+      type: object
+      description: >
+        What the chain said, written only by the reconciler or the backfill.
+        Absent means Seametry has not yet read an answer, not that nothing
+        happened.
+      required: [outcome, reconciled_at]
+      properties:
+        outcome:
+          type: string
+          enum: [landed, failed, dropped]
+        block_time:
+          type: string
+          format: date-time
+        reconciled_at:
+          type: string
+          format: date-time
+        wallet_usdc_delta:
+          type: string
+          pattern: '^-?[0-9]+$'
+          description: USDC atoms (scale 6) the wallet's balance changed by.
+        wallet_token_delta:
+          type: string
+          pattern: '^-?[0-9]+$'
+        token_scale:
+          type: integer
     # --- activity ------------------------------------------------------------
     ActivityQuote:
       type: object

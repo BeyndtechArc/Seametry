@@ -41,3 +41,23 @@ WHERE message_sha256 = sqlc.arg(message_sha256) AND submit_result IS NULL;
 -- name: InsertFunnelEvent :exec
 INSERT INTO execution.funnel_events (kind, raw_kind, wallet, quote_id, deployment, received_at, source)
 VALUES ($1, $2, $3, $4, $5, $6, 'client');
+
+-- name: WalletHistory :many
+-- The sent legs of the 200 most recent quotes for these wallets, newest
+-- quote first. A leg never signed reached nobody, so it is not history.
+WITH recent AS (
+    SELECT q.id
+    FROM execution.quotes q
+    WHERE q.wallet = ANY(sqlc.arg(wallets)::text[])
+      AND EXISTS (SELECT 1 FROM execution.legs s WHERE s.quote_id = q.id AND s.signature IS NOT NULL)
+    ORDER BY q.prepared_at DESC
+    LIMIT 200
+)
+SELECT q.id AS quote_id, q.wallet, q.kind, q.subject, q.template_id, q.plan_size, q.prepared_at, q.source AS quote_source,
+       l.id AS leg_id, l.mint, l.symbol, l.in_atoms, l.in_scale, l.out_atoms, l.floor_atoms, l.out_scale,
+       l.signature, l.submitted_at, l.submit_result, l.source AS leg_source,
+       l.chain_outcome, l.block_time, l.wallet_usdc_delta, l.wallet_token_delta, l.token_scale, l.reconciled_at
+FROM recent
+JOIN execution.quotes q ON q.id = recent.id
+JOIN execution.legs l ON l.quote_id = q.id AND l.signature IS NOT NULL
+ORDER BY q.prepared_at DESC, q.id, l.id;
