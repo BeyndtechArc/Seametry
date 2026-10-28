@@ -272,6 +272,14 @@ const server = createServer((request, response) => {
   // The auth service as the web proxy reaches it through Caddy, which
   // compresses (server/deploy/Caddyfile), plus a header that Connection marks
   // hop-by-hop. tests/auth-proxy.spec.ts reads it back through the proxy.
+  // Answers with the headers the account proxy forwarded, so
+  // tests/auth-proxy.spec.ts can check its allowlist from the far side.
+  if (path === "/api/auth/fixture-echo-headers") {
+    const chunks = [];
+    request.on("data", (chunk) => chunks.push(chunk));
+    request.on("end", () => writeJson(response, 200, { headers: request.headers, body: Buffer.concat(chunks).toString("utf8") }));
+    return;
+  }
   if (path === "/api/auth/get-session") {
     const body = gzipSync(JSON.stringify({ session: null, served_by: "fixture" }));
     response.writeHead(200, {
