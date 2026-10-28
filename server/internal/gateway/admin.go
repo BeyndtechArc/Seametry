@@ -3,10 +3,13 @@ package gateway
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/BeyndtechArc/Seametry/server/internal/alert"
@@ -47,11 +50,72 @@ const adminPrefix = "/v1/admin"
 // which is what puts a verified subject in the context; the email is read
 // from the signed token, never from a header or a parameter.
 func AdminGate(allowlist string) func(http.Handler) http.Handler {
+	return AdminGateWith(allowlist, AdminGateOptions{})
+}
+
+// AdminReadEvent is the audit record of one admitted admin read: which
+// operation, which account, when, and how it ended. It never carries the
+// account's email or anything the read returned, so the audit log is safe
+// to keep and read wider than the Admin itself.
+type AdminReadEvent struct {
+	Operation string
+	Subject   string
+	At        time.Time
+	Outcome   string
+}
+
+// AdminGateOptions are the audit sink and read policy of AdminGateWith.
+// Zero values take the defaults: an slog line per read,
+// DefaultAdminReadsPerMinute, and the wall clock.
+type AdminGateOptions struct {
+	Audit          func(AdminReadEvent)
+	ReadsPerMinute int
+	Now            func() time.Time
+}
+
+// DefaultAdminReadsPerMinute bounds one account's admin reads. One /admin
+// page load is five reads, so this allows a reader two dozen loads a minute
+// and stops a loop or a scripted token from running the aggregates hot.
+const DefaultAdminReadsPerMinute = 120
+
+// AdminReadTimeout bounds one admitted read, past the web page's own 8 s
+// wait, so an aggregate the page gave up on does not keep a connection.
+const AdminReadTimeout = 10 * time.Second
+
+func auditToLog(event AdminReadEvent) {
+	slog.Info("seametry: admin read", "operation", event.Operation, "account", event.Subject, "at", event.At.UTC().Format(time.RFC3339Nano), "outcome", event.Outcome)
+}
+
+// AdminGateWith is AdminGate with its audit and read policy named.
+func AdminGateWith(allowlist string, options AdminGateOptions) func(http.Handler) http.Handler {
+	if options.Audit == nil {
+		options.Audit = auditToLog
+	}
+	if options.ReadsPerMinute <= 0 {
+		options.ReadsPerMinute = DefaultAdminReadsPerMinute
+	}
+	if options.Now == nil {
+		options.Now = time.Now
+	}
 	admins := map[string]bool{}
 	for _, entry := range strings.Split(allowlist, ",") {
 		if email := strings.ToLower(strings.TrimSpace(entry)); email != "" {
 			admins[email] = true
 		}
+	}
+	// One bucket per admitted account; only allowlisted accounts get one, so
+	// the map is as small as the allowlist.
+	var mu sync.Mutex
+	buckets := map[string]*adminBucket{}
+	allow := func(account string, at time.Time) (bool, time.Duration) {
+		mu.Lock()
+		defer mu.Unlock()
+		bucket := buckets[account]
+		if bucket == nil {
+			bucket = &adminBucket{tokens: float64(options.ReadsPerMinute), at: at}
+			buckets[account] = bucket
+		}
+		return bucket.take(float64(options.ReadsPerMinute), at)
 	}
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -64,10 +128,79 @@ func AdminGate(allowlist string) func(http.Handler) http.Handler {
 				http.NotFound(w, r)
 				return
 			}
+			at := options.Now()
+			event := AdminReadEvent{Operation: strings.TrimPrefix(strings.TrimPrefix(r.URL.Path, adminPrefix), "/"), Subject: subject.AccountID, At: at}
 			w.Header().Set("Cache-Control", "no-store")
-			next.ServeHTTP(w, r)
+			if allowed, wait := allow(subject.AccountID, at); !allowed {
+				w.Header().Set("Retry-After", strconv.Itoa(int(wait.Seconds())+1))
+				w.Header().Set("Content-Type", "application/problem+json")
+				w.WriteHeader(http.StatusTooManyRequests)
+				_ = json.NewEncoder(w).Encode(gatewayProblem(http.StatusTooManyRequests, "Admin reads limited", fmt.Sprintf("this account has made %d admin reads in the last minute; wait and read again", options.ReadsPerMinute)))
+				event.Outcome = "rate_limited"
+				options.Audit(event)
+				return
+			}
+			ctx, cancel := context.WithTimeout(r.Context(), AdminReadTimeout)
+			defer cancel()
+			recorded := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+			next.ServeHTTP(recorded, r.WithContext(ctx))
+			event.Outcome = adminOutcome(recorded.status)
+			options.Audit(event)
 		})
 	}
+}
+
+type adminBucket struct {
+	tokens float64
+	at     time.Time
+}
+
+// take refills perMinute tokens a minute up to perMinute, then spends one,
+// or says how long until one is there.
+func (b *adminBucket) take(perMinute float64, at time.Time) (bool, time.Duration) {
+	if elapsed := at.Sub(b.at); elapsed > 0 {
+		b.tokens = min(perMinute, b.tokens+elapsed.Minutes()*perMinute)
+		b.at = at
+	}
+	if b.tokens >= 1 {
+		b.tokens--
+		return true, 0
+	}
+	return false, time.Duration((1 - b.tokens) / perMinute * float64(time.Minute))
+}
+
+func adminOutcome(status int) string {
+	switch {
+	case status < 300:
+		return "ok"
+	case status == http.StatusBadRequest:
+		return "refused"
+	case status == http.StatusNotFound:
+		return "not_found"
+	case status >= 500:
+		return "error"
+	default:
+		return "status_" + strconv.Itoa(status)
+	}
+}
+
+// statusRecorder keeps the status a handler answered, for the audit event.
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+	wrote  bool
+}
+
+func (r *statusRecorder) WriteHeader(status int) {
+	if !r.wrote {
+		r.status, r.wrote = status, true
+	}
+	r.ResponseWriter.WriteHeader(status)
+}
+
+func (r *statusRecorder) Write(body []byte) (int, error) {
+	r.wrote = true
+	return r.ResponseWriter.Write(body)
 }
 
 // AdminDefaultPeriod is the period read when a request names neither end.
