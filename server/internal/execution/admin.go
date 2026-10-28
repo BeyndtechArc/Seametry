@@ -21,16 +21,24 @@ const MaxAdminPeriod = 366 * 24 * time.Hour
 type Period struct {
 	From, To   time.Time
 	Deployment string
+	// Now is when the period is read. Set, it lets Check name a period that
+	// has not begun; zero, Check does not judge the clock.
+	Now time.Time
 }
 
 // Check refuses a deployment outside the known three, an empty or reversed
-// range, and one longer than MaxAdminPeriod.
+// range, one longer than MaxAdminPeriod, and, when Now is set, one that has
+// not begun: its figures would all read zero, which looks like an answer
+// about a time nothing could yet have been recorded in.
 func (p Period) Check() error {
 	if !Deployments[p.Deployment] {
 		return Invalid{fmt.Sprintf("deployment %q is not production, preview or development", p.Deployment)}
 	}
 	if !p.From.Before(p.To) {
 		return Invalid{fmt.Sprintf("period from %s is not before to %s", p.From.UTC().Format(time.RFC3339), p.To.UTC().Format(time.RFC3339))}
+	}
+	if !p.Now.IsZero() && !p.From.Before(p.Now) {
+		return Invalid{fmt.Sprintf("period from %s is in the future: it starts at or after now, %s", p.From.UTC().Format(time.RFC3339), p.Now.UTC().Format(time.RFC3339))}
 	}
 	if p.To.Sub(p.From) > MaxAdminPeriod {
 		return Invalid{fmt.Sprintf("period from %s to %s is longer than %d days", p.From.UTC().Format(time.RFC3339), p.To.UTC().Format(time.RFC3339), int(MaxAdminPeriod.Hours()/24))}
