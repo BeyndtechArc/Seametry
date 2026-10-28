@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { Figure } from "@seametry/ui";
 import { formatAmount } from "@/lib/amount";
-import { readAdmin, type AdminQuery, type AdminRead, type Section } from "@/lib/admin";
+import { readAdmin, walletPageHref, type AdminQuery, type AdminRead, type Section } from "@/lib/admin";
 import { PublicShell } from "../public-shell";
 import site from "../site.module.css";
 import styles from "./admin.module.css";
@@ -86,7 +86,7 @@ function RangeForm({ query, period }: { query: AdminQuery; period: AdminRead["ov
 export default async function AdminPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const raw = await searchParams;
   const one = (value: string | string[] | undefined) => (typeof value === "string" ? value : undefined);
-  const query: AdminQuery = { from: one(raw.from), to: one(raw.to), deployment: one(raw.deployment) };
+  const query: AdminQuery = { from: one(raw.from), to: one(raw.to), deployment: one(raw.deployment), wallets: one(raw.wallets) };
   const admin = await readAdmin((await headers()).get("cookie"), query);
   if (!admin) notFound();
 
@@ -209,8 +209,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
           )}
         </Section>
 
-        <Section id="wallets" title="Wallets" question="The 200 wallets most recently seen in this deployment, with what each moved, all time." section={admin.wallets}>
+        <Section id="wallets" title="Wallets" question="Every wallet seen in this deployment, a page at a time, with what each moved, all time." section={admin.wallets}>
           {(data) => data.wallets.length === 0 ? <Empty>No wallet has asked for a quote in this deployment.</Empty> : (
+            <>
+            <p className={styles.absence}>{data.wallets.length} of {data.total} wallets, newest first seen first</p>
             <table className={styles.ledger}>
               <thead>
                 <tr><th scope="col">Wallet</th><th scope="col">First seen</th><th scope="col">Ref code</th><th scope="col">Quotes</th><th scope="col">Landed legs</th><th scope="col">Volume, USDC</th><th scope="col">Fee revenue, USDC</th></tr>
@@ -224,6 +226,11 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
                 ))}
               </tbody>
             </table>
+            <nav className={styles.pages} aria-label="Wallet pages">
+              {query.wallets ? <a href={walletPageHref(query)}>Newest wallets</a> : null}
+              {data.next_cursor ? <a href={walletPageHref(query, data.next_cursor)}>Older wallets</a> : null}
+            </nav>
+            </>
           )}
         </Section>
 

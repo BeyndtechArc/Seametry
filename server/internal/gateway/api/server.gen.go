@@ -32,7 +32,7 @@ type ServerInterface interface {
 	// GetAdminSources Wallets and landed volume by the first-touch ref code their first quote carried.
 	// (GET /admin/sources)
 	GetAdminSources(w http.ResponseWriter, r *http.Request, params GetAdminSourcesParams)
-	// GetAdminWallets The 200 wallets most recently seen in a deployment, with all-time landed totals.
+	// GetAdminWallets The wallets seen in a deployment, newest first seen first, a page at a time, with all-time landed totals.
 	// (GET /admin/wallets)
 	GetAdminWallets(w http.ResponseWriter, r *http.Request, params GetAdminWalletsParams)
 	// ListAlloys Every alloy, read from chain.
@@ -384,6 +384,32 @@ func (siw *ServerInterfaceWrapper) GetAdminWallets(w http.ResponseWriter, r *htt
 			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "deployment"})
 		} else {
 			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "deployment", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
 		}
 		return
 	}
@@ -2768,7 +2794,7 @@ type StrictServerInterface interface {
 	// GetAdminSources Wallets and landed volume by the first-touch ref code their first quote carried.
 	// (GET /admin/sources)
 	GetAdminSources(ctx context.Context, request GetAdminSourcesRequestObject) (GetAdminSourcesResponseObject, error)
-	// GetAdminWallets The 200 wallets most recently seen in a deployment, with all-time landed totals.
+	// GetAdminWallets The wallets seen in a deployment, newest first seen first, a page at a time, with all-time landed totals.
 	// (GET /admin/wallets)
 	GetAdminWallets(ctx context.Context, request GetAdminWalletsRequestObject) (GetAdminWalletsResponseObject, error)
 	// ListAlloys Every alloy, read from chain.

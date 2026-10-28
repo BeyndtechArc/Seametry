@@ -3,6 +3,7 @@ package execution
 import (
 	"context"
 	"crypto/rand"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
@@ -206,23 +207,49 @@ func TestAdminSourcesGroupByFirstTouchRefCodeWithUnknownForNone(t *testing.T) {
 	}
 }
 
-func TestAdminWalletsListAllTimeTotalsNewestFirstInOneDeployment(t *testing.T) {
+func TestAdminWalletsListAllTimeTotalsNewestFirstInOneDeploymentByPage(t *testing.T) {
 	report, pool := freshReport(t)
 	a, b, c := seedAdminRecord(t, pool)
-	wallets, err := report.Wallets(context.Background(), "production")
-	if err != nil {
-		t.Fatal(err)
-	}
 	want := []WalletTotals{
 		{Address: b, FirstSeenAt: day(12, 9), Source: "unknown", Quotes: 2, LandedLegs: 1, VolumeAtoms: "400000", FeeAtoms: "1200"},
 		{Address: a, FirstSeenAt: day(11, 9), Source: "storm", Quotes: 2, LandedLegs: 2, VolumeAtoms: "1500000", FeeAtoms: "4500"},
 		{Address: c, FirstSeenAt: day(5, 9), Source: "storm", Quotes: 2, LandedLegs: 2, VolumeAtoms: "2700000", FeeAtoms: "8100"},
 	}
-	for index := range wallets {
-		wallets[index].FirstSeenAt = wallets[index].FirstSeenAt.UTC()
+	var got []WalletTotals
+	var after *WalletCursor
+	for pages := 1; ; pages++ {
+		page, err := report.Wallets(context.Background(), "production", after, 2)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if page.Total != 3 {
+			t.Fatalf("page %d total = %d, want all 3 production wallets", pages, page.Total)
+		}
+		if len(page.Wallets) > 2 {
+			t.Fatalf("page %d held %d wallets, want at most the limit of 2", pages, len(page.Wallets))
+		}
+		got = append(got, page.Wallets...)
+		if page.Next == nil {
+			if pages != 2 {
+				t.Fatalf("the list ended after %d pages, want 2", pages)
+			}
+			break
+		}
+		if pages == 2 {
+			t.Fatal("the second page of three wallets named a next cursor")
+		}
+		after = page.Next
 	}
-	if !reflect.DeepEqual(wallets, want) {
-		t.Fatalf("wallets = %+v, want %+v", wallets, want)
+	for index := range got {
+		got[index].FirstSeenAt = got[index].FirstSeenAt.UTC()
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("wallets = %+v, want %+v", got, want)
+	}
+	for _, limit := range []int{0, 201} {
+		if _, err := report.Wallets(context.Background(), "production", nil, limit); !errors.As(err, new(Invalid)) {
+			t.Fatalf("limit %d: err = %v, want Invalid", limit, err)
+		}
 	}
 }
 

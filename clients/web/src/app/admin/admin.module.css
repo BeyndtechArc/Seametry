@@ -121,3 +121,19 @@
 .ledger td {
   color: var(--sm-text-primary);
 }
+
+/* The wallet list's page links: plain text links, the list's own controls,
+   not actions, so they take the form's link colour rather than a button. */
+.pages {
+  display: flex;
+  gap: var(--sm-space-5);
+}
+
+.pages a {
+  color: var(--sm-accent-touchText);
+}
+
+.pages a:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}

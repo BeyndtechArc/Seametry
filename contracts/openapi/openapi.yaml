@@ -738,14 +738,19 @@ paths:
     get:
       operationId: getAdminWallets
       tags: [admin]
-      summary: The 200 wallets most recently seen in a deployment, with all-time landed totals.
+      summary: The wallets seen in a deployment, newest first seen first, a page at a time, with all-time landed totals.
       security:
         - accountToken: []
       parameters:
         - $ref: '#/components/parameters/AdminDeployment'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/AdminPageLimit'
       responses:
         "200":
-          description: Newest first seen first.
+          description: >
+            One page, newest first seen first. next_cursor is present while
+            older wallets remain; a cursor from another deployment or one
+            that does not parse is refused with a 400.
           content:
             application/json:
               schema:
@@ -1019,6 +1024,16 @@ components:
         enum: [production, preview, development]
         default: production
       description: Which deployment's record to read; deployments are never mixed.
+    AdminPageLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+      description: How many rows one page holds.
     Mint:
       name: mint
       in: path
@@ -1130,7 +1145,7 @@ components:
             $ref: '#/components/schemas/AdminSource'
     AdminWallets:
       type: object
-      required: [deployment, wallets]
+      required: [deployment, wallets, total]
       properties:
         deployment:
           type: string
@@ -1139,6 +1154,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdminWallet'
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Every wallet seen in the deployment, all time, across all pages.
+        next_cursor:
+          type: string
+          description: Present while older wallets remain; pass it as cursor for the next page.
     AdminActivity:
       type: object
       required: [period, rows]

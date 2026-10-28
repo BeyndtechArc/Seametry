@@ -18,7 +18,8 @@ type Meta = components["schemas"]["Meta"];
 
 export type Section<T> = { state: "read"; data: T; readAt: string } | { state: "unavailable"; detail: string };
 
-export type AdminQuery = { from?: string; to?: string; deployment?: string };
+/** wallets is the wallet list's cursor, opaque and the Gateway's to check. */
+export type AdminQuery = { from?: string; to?: string; deployment?: string; wallets?: string };
 
 export type AdminRead = {
   query: AdminQuery;
@@ -92,13 +93,26 @@ export async function readAdmin(cookie: string | null, query: AdminQuery): Promi
   }
   if (typeof admitted === "string" || admitted.status !== 200) return undefined;
   const overview = (await admitted.json()) as { data: AdminOverview; meta: Meta };
+  // The wallet list is all time, so it takes the deployment and its own
+  // cursor and never the period.
   const deployment = new URLSearchParams();
   if (parameters.has("deployment")) deployment.set("deployment", parameters.get("deployment")!);
+  const walletPage = new URLSearchParams(deployment);
+  if (query.wallets) walletPage.set("cursor", query.wallets);
   const [sources, wallets, activity, optIns] = await Promise.all([
     section<AdminSources>(gateway, issued.token, "sources", parameters),
-    section<AdminWallets>(gateway, issued.token, "wallets", deployment),
+    section<AdminWallets>(gateway, issued.token, "wallets", walletPage),
     section<AdminActivity>(gateway, issued.token, "activity", parameters),
     section<AdminEmailOptIns>(gateway, issued.token, "email-optins", parameters),
   ]);
   return { query, refusedRange, overview: overview.data, readAt: overview.meta.as_of, sources, wallets, activity, optIns };
+}
+
+/** The page's own address with the wallet list at cursor, or at its newest page when cursor is undefined. */
+export function walletPageHref(query: AdminQuery, cursor?: string): string {
+  const search = new URLSearchParams();
+  for (const key of ["from", "to", "deployment"] as const) if (query[key]) search.set(key, query[key]!);
+  if (cursor) search.set("wallets", cursor);
+  const rendered = search.toString();
+  return `/admin${rendered ? `?${rendered}` : ""}#wallets`;
 }

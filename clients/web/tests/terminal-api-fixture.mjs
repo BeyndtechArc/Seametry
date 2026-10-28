@@ -173,9 +173,20 @@ function adminAnswer(token, operation, search) {
         { source: "unknown", seen_wallets: 1, activated_wallets: 1, active_wallets: 1, volume: adminUSDC("400000"), fee_revenue: adminUSDC("1200") },
       ] } } };
     case "wallets":
-      return { status: 200, body: { meta: adminMeta, data: { deployment: period.deployment, wallets: empty ? [] : [
-        { address: wallet, first_seen_at: "2026-10-11T09:00:00Z", source: "storm", quotes: 2, landed_legs: 2, volume: adminUSDC("1500000"), fee_revenue: adminUSDC("4500") },
-      ] } } };
+      // Two wallets, one per page, so tests/admin.spec.ts can follow the
+      // cursor; any other cursor is refused as the Gateway refuses one.
+      if (empty) return { status: 200, body: { meta: adminMeta, data: { deployment: period.deployment, wallets: [], total: 0 } } };
+      if (!search.get("cursor")) {
+        return { status: 200, body: { meta: adminMeta, data: { deployment: period.deployment, total: 2, next_cursor: "fixture-older-wallets", wallets: [
+          { address: wallet, first_seen_at: "2026-10-11T09:00:00Z", source: "storm", quotes: 2, landed_legs: 2, volume: adminUSDC("1500000"), fee_revenue: adminUSDC("4500") },
+        ] } } };
+      }
+      if (search.get("cursor") === "fixture-older-wallets") {
+        return { status: 200, body: { meta: adminMeta, data: { deployment: period.deployment, total: 2, wallets: [
+          { address: "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM", first_seen_at: "2026-10-05T09:00:00Z", source: "unknown", quotes: 1, landed_legs: 0, volume: adminUSDC("0"), fee_revenue: adminUSDC("0") },
+        ] } } };
+      }
+      return { status: 400, body: { title: "Activity report refused", status: 400, detail: "GetAdminWallets: cursor is not one this wallet list issued" } };
     case "activity":
       return { status: 200, body: { meta: adminMeta, data: { period, rows: empty ? [] : [
         { at: "2026-10-19T09:00:00Z", source: "chain", event: "landed", wallet, detail: "NVDAx" },

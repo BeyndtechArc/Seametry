@@ -434,7 +434,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The 200 wallets most recently seen in a deployment, with all-time landed totals. */
+        /** The wallets seen in a deployment, newest first seen first, a page at a time, with all-time landed totals. */
         get: operations["getAdminWallets"];
         put?: never;
         post?: never;
@@ -638,6 +638,13 @@ export interface components {
             /** @enum {string} */
             deployment: "production" | "preview" | "development";
             wallets: components["schemas"]["AdminWallet"][];
+            /**
+             * Format: int64
+             * @description Every wallet seen in the deployment, all time, across all pages.
+             */
+            total: number;
+            /** @description Present while older wallets remain; pass it as cursor for the next page. */
+            next_cursor?: string;
         };
         AdminActivity: {
             period: components["schemas"]["AdminPeriod"];
@@ -1328,6 +1335,8 @@ export interface components {
         AdminTo: string;
         /** @description Which deployment's record to read; deployments are never mixed. */
         AdminDeployment: "production" | "preview" | "development";
+        /** @description How many rows one page holds. */
+        AdminPageLimit: number;
         /** @description The mint's base58 address. */
         Mint: string;
         AlloyAddress: string;
@@ -2006,6 +2015,10 @@ export interface operations {
             query?: {
                 /** @description Which deployment's record to read; deployments are never mixed. */
                 deployment?: components["parameters"]["AdminDeployment"];
+                /** @description An opaque cursor from a previous page. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description How many rows one page holds. */
+                limit?: components["parameters"]["AdminPageLimit"];
             };
             header?: never;
             path?: never;
@@ -2013,7 +2026,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Newest first seen first. */
+            /** @description One page, newest first seen first. next_cursor is present while older wallets remain; a cursor from another deployment or one that does not parse is refused with a 400. */
             200: {
                 headers: {
                     [name: string]: unknown;

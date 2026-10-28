@@ -57,6 +57,9 @@ reported, and are counted only in the funnel.
 - **Source.** The first-touch ref code a wallet's first quote carried, or
   `unknown` when none was kept. Sources show seen, activated and active
   wallets, volume and fee revenue per code.
+- **Wallets.** Every wallet seen in the deployment, all time, newest first
+  seen first, 50 to a page (at most 200) by an opaque cursor the Gateway
+  issues, with the total across all pages.
 - **Recent activity.** The 50 newest rows of the record before the period's
   end, each labelled `server`, `client` or `chain`. Only a `chain` row whose
   event is `landed` says something settled.
