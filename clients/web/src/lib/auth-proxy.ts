@@ -5,6 +5,14 @@ const fallbackOrigin = "https://api.seametry.xyz";
 // RFC 9110 section 7.6.1: these describe the connection to the auth service,
 // not the one to the browser, so they stop here.
 const hopByHopHeaders = ["connection", "keep-alive", "proxy-connection", "te", "trailer", "transfer-encoding", "upgrade"];
+// The only request headers that reach the auth service. Better Auth reads
+// the session cookie, the body's type, and origin, referer and fetch
+// metadata for its CSRF check (better-auth 1.7 origin-check), and keeps the
+// user agent on the session it writes. Everything else stops here: the
+// browser's word on X-Forwarded-*, Forwarded or X-Real-IP is not this
+// service's to pass on, and an Authorization header would be a second
+// credential beside the cookie the auth service never asked for.
+const forwardedRequestHeaders = ["accept", "content-type", "cookie", "origin", "referer", "sec-fetch-dest", "sec-fetch-mode", "sec-fetch-site", "user-agent"];
 // Headers.delete throws on a name outside the RFC 9110 token grammar, which
 // would turn a malformed Connection value into a 503 for the whole request.
 const headerName = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
@@ -63,10 +71,11 @@ function browserResponseHeaders(upstream: Headers) {
 export async function proxyAccountRequest(request: Request) {
   const incoming = new URL(request.url);
   const target = new URL(`${incoming.pathname}${incoming.search}`, authOrigin());
-  const headers = new Headers(request.headers);
-  headers.delete("connection");
-  headers.delete("content-length");
-  headers.delete("host");
+  const headers = new Headers();
+  for (const name of forwardedRequestHeaders) {
+    const value = request.headers.get(name);
+    if (value !== null) headers.set(name, value);
+  }
 
   try {
     const response = await fetch(target, {
