@@ -37,9 +37,12 @@ type OptIn struct {
 	Address        string
 	ConsentVersion string
 	RefCode        string
-	Wallet         string
-	Page           string
-	Deployment     string
+	// Wallet is unverified metadata: the wallet the browser said was
+	// connected, checked only for shape. No signature proves the holder
+	// controls it, and the row stores it with wallet_verified false.
+	Wallet     string
+	Page       string
+	Deployment string
 }
 
 var (

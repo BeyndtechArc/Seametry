@@ -1246,7 +1246,7 @@ type EmailOptIn struct {
 	// RefCode The first-touch ref code this browser kept (ActivityFirstTouch.ref_code), when there is one.
 	RefCode *string `json:"ref_code,omitempty"`
 
-	// Wallet The connected wallet, only when the visitor chose to include it.
+	// Wallet Unverified. The wallet the browser said was connected, only when the visitor chose to include it. Nothing proves the visitor controls it; it is kept marked unverified and never treated as the holder's.
 	Wallet *string `json:"wallet,omitempty"`
 }
 
@@ -1267,7 +1267,7 @@ type FeedbackSubmission struct {
 	// ReplyTo An email address the visitor chose to give, for a reply.
 	ReplyTo *string `json:"reply_to,omitempty"`
 
-	// Wallet The connected wallet, only when the visitor chose to include it.
+	// Wallet Unverified. The wallet the browser said was connected, only when the visitor chose to include it. Nothing proves the visitor controls it; it is kept marked unverified and never treated as the holder's.
 	Wallet *string `json:"wallet,omitempty"`
 }
 

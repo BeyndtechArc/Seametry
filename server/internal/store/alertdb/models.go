@@ -9,16 +9,18 @@ import (
 )
 
 type AlertEmailOptin struct {
-	ID               pgtype.UUID        `db:"id" json:"id"`
-	Address          pgtype.Text        `db:"address" json:"address"`
-	ConsentVersion   string             `db:"consent_version" json:"consent_version"`
-	ConsentedAt      pgtype.Timestamptz `db:"consented_at" json:"consented_at"`
-	RefCode          pgtype.Text        `db:"ref_code" json:"ref_code"`
+	ID             pgtype.UUID        `db:"id" json:"id"`
+	Address        pgtype.Text        `db:"address" json:"address"`
+	ConsentVersion string             `db:"consent_version" json:"consent_version"`
+	ConsentedAt    pgtype.Timestamptz `db:"consented_at" json:"consented_at"`
+	RefCode        pgtype.Text        `db:"ref_code" json:"ref_code"`
+	// Unverified: the wallet the browser said was connected, kept as given. No signature proves the holder controls it; see wallet_verified.
 	Wallet           pgtype.Text        `db:"wallet" json:"wallet"`
 	Page             pgtype.Text        `db:"page" json:"page"`
 	Deployment       string             `db:"deployment" json:"deployment"`
 	UnsubscribeToken pgtype.Text        `db:"unsubscribe_token" json:"unsubscribe_token"`
 	UnsubscribedAt   pgtype.Timestamptz `db:"unsubscribed_at" json:"unsubscribed_at"`
+	WalletVerified   bool               `db:"wallet_verified" json:"wallet_verified"`
 }
 
 type AlertFeedback struct {

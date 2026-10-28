@@ -1576,7 +1576,11 @@ components:
           description: An email address the visitor chose to give, for a reply.
         wallet:
           type: string
-          description: The connected wallet, only when the visitor chose to include it.
+          description: >
+            Unverified. The wallet the browser said was connected, only when
+            the visitor chose to include it. Nothing proves the visitor
+            controls it; it is kept marked unverified and never treated as
+            the holder's.
         page:
           type: string
           maxLength: 500
@@ -1601,7 +1605,11 @@ components:
           description: The first-touch ref code this browser kept (ActivityFirstTouch.ref_code), when there is one.
         wallet:
           type: string
-          description: The connected wallet, only when the visitor chose to include it.
+          description: >
+            Unverified. The wallet the browser said was connected, only when
+            the visitor chose to include it. Nothing proves the visitor
+            controls it; it is kept marked unverified and never treated as
+            the holder's.
         page:
           type: string
           enum: [first_allocation, feedback]

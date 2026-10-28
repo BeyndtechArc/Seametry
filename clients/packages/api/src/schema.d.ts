@@ -898,7 +898,7 @@ export interface components {
             message: string;
             /** @description An email address the visitor chose to give, for a reply. */
             reply_to?: string;
-            /** @description The connected wallet, only when the visitor chose to include it. */
+            /** @description Unverified. The wallet the browser said was connected, only when the visitor chose to include it. Nothing proves the visitor controls it; it is kept marked unverified and never treated as the holder's. */
             wallet?: string;
             /** @description The path the visitor was on. */
             page?: string;
@@ -911,7 +911,7 @@ export interface components {
             consent_version: string;
             /** @description The first-touch ref code this browser kept (ActivityFirstTouch.ref_code), when there is one. */
             ref_code?: string;
-            /** @description The connected wallet, only when the visitor chose to include it. */
+            /** @description Unverified. The wallet the browser said was connected, only when the visitor chose to include it. Nothing proves the visitor controls it; it is kept marked unverified and never treated as the holder's. */
             wallet?: string;
             /**
              * @description Where the field was shown.
