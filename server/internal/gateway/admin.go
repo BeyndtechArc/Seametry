@@ -2,7 +2,10 @@ package gateway
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,7 +19,7 @@ import (
 type AdminRecord interface {
 	Overview(ctx context.Context, period execution.Period) (execution.Overview, error)
 	Sources(ctx context.Context, period execution.Period) ([]execution.SourceTotals, error)
-	Wallets(ctx context.Context, deployment string) ([]execution.WalletTotals, error)
+	Wallets(ctx context.Context, deployment string, after *execution.WalletCursor, limit int) (execution.WalletPage, error)
 	RecentActivity(ctx context.Context, period execution.Period) ([]execution.RecordedRow, error)
 }
 
@@ -175,19 +178,70 @@ func (s Server) GetAdminWallets(ctx context.Context, request api.GetAdminWallets
 	if request.Params.Deployment != nil {
 		deployment = string(*request.Params.Deployment)
 	}
-	wallets, err := s.AdminRecord.Wallets(ctx, deployment)
+	limit := 50
+	if request.Params.Limit != nil {
+		limit = *request.Params.Limit
+	}
+	var after *execution.WalletCursor
+	if request.Params.Cursor != nil {
+		cursor, err := decodeWalletCursor(*request.Params.Cursor, deployment)
+		if err != nil {
+			status, problem := activityProblem("GetAdminWallets", err)
+			return api.GetAdminWalletsdefaultApplicationProblemPlusJSONResponse{Body: problem, StatusCode: status}, nil
+		}
+		after = &cursor
+	}
+	// The record refuses a limit out of range too; checking here keeps a
+	// refused page from costing a read.
+	if limit < 1 || limit > execution.MaxWalletPage {
+		status, problem := activityProblem("GetAdminWallets", execution.Invalid{Reason: fmt.Sprintf("a page of %d wallets is not between 1 and %d", limit, execution.MaxWalletPage)})
+		return api.GetAdminWalletsdefaultApplicationProblemPlusJSONResponse{Body: problem, StatusCode: status}, nil
+	}
+	page, err := s.AdminRecord.Wallets(ctx, deployment, after, limit)
 	if err != nil {
 		status, problem := activityProblem("GetAdminWallets", err)
 		return api.GetAdminWalletsdefaultApplicationProblemPlusJSONResponse{Body: problem, StatusCode: status}, nil
 	}
-	data := api.AdminWallets{Deployment: api.AdminWalletsDeployment(deployment), Wallets: make([]api.AdminWallet, 0, len(wallets))}
-	for _, wallet := range wallets {
+	data := api.AdminWallets{Deployment: api.AdminWalletsDeployment(deployment), Wallets: make([]api.AdminWallet, 0, len(page.Wallets)), Total: page.Total}
+	for _, wallet := range page.Wallets {
 		data.Wallets = append(data.Wallets, api.AdminWallet{
 			Address: wallet.Address, FirstSeenAt: wallet.FirstSeenAt.UTC(), Source: wallet.Source, Quotes: wallet.Quotes, LandedLegs: wallet.LandedLegs,
 			Volume: usdc(wallet.VolumeAtoms), FeeRevenue: usdc(wallet.FeeAtoms),
 		})
 	}
+	if page.Next != nil {
+		next := encodeWalletCursor(*page.Next, deployment)
+		data.NextCursor = &next
+	}
 	return api.GetAdminWallets200JSONResponse{Data: data, Meta: s.adminMeta()}, nil
+}
+
+// A wallet cursor is opaque to callers: base64url of the deployment, the
+// last row's first quote in Unix microseconds (Postgres's resolution, so the
+// boundary row compares equal) and its address. Naming the deployment lets a
+// cursor carried into another deployment's list be refused, not misread.
+func encodeWalletCursor(cursor execution.WalletCursor, deployment string) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(fmt.Sprintf("w1|%s|%d|%s", deployment, cursor.FirstSeenAt.UnixMicro(), cursor.Address)))
+}
+
+func decodeWalletCursor(encoded, deployment string) (execution.WalletCursor, error) {
+	refused := execution.Invalid{Reason: "cursor is not one this wallet list issued"}
+	raw, err := base64.RawURLEncoding.DecodeString(encoded)
+	if err != nil {
+		return execution.WalletCursor{}, refused
+	}
+	parts := strings.Split(string(raw), "|")
+	if len(parts) != 4 || parts[0] != "w1" || parts[3] == "" {
+		return execution.WalletCursor{}, refused
+	}
+	if parts[1] != deployment {
+		return execution.WalletCursor{}, execution.Invalid{Reason: fmt.Sprintf("cursor is for the %s list, not %s", parts[1], deployment)}
+	}
+	micros, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil {
+		return execution.WalletCursor{}, refused
+	}
+	return execution.WalletCursor{FirstSeenAt: time.UnixMicro(micros).UTC(), Address: parts[3]}, nil
 }
 
 func (s Server) GetAdminActivity(ctx context.Context, request api.GetAdminActivityRequestObject) (api.GetAdminActivityResponseObject, error) {

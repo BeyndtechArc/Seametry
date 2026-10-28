@@ -129,8 +129,11 @@ GROUP BY source
 ORDER BY volume_atoms DESC, activated_wallets DESC, source;
 
 -- name: AdminWallets :many
--- The 200 wallets most recently seen in the deployment, all time, each
--- with what its landed legs moved. A wallet's address is public chain data.
+-- One page of the wallets seen in the deployment, newest first seen first,
+-- all time, each with what its landed legs moved. A page starts after the
+-- previous page's last (first_seen_at, wallet), so a wallet first seen while
+-- paging shifts nothing already read. A wallet's address is public chain
+-- data.
 WITH landed AS (
     SELECT l.wallet, l.fee_credited_atoms,
            GREATEST(0, CASE q.kind WHEN 'buy' THEN -l.wallet_usdc_delta ELSE l.wallet_usdc_delta END) AS notional
@@ -150,8 +153,15 @@ SELECT s.wallet::text AS address, s.at::timestamptz AS first_seen_at, s.quotes,
 FROM seen s
 JOIN execution.wallets w ON w.address = s.wallet
 LEFT JOIN totals t ON t.wallet = s.wallet
+WHERE sqlc.narg(after_at)::timestamptz IS NULL
+   OR s.at < sqlc.narg(after_at)::timestamptz
+   OR (s.at = sqlc.narg(after_at)::timestamptz AND s.wallet > sqlc.narg(after_wallet)::text)
 ORDER BY s.at DESC, s.wallet
-LIMIT 200;
+LIMIT sqlc.arg(page_limit);
+
+-- name: AdminWalletCount :one
+-- Every wallet seen in the deployment, all time, the list's total.
+SELECT count(DISTINCT wallet)::bigint FROM execution.quotes WHERE deployment = sqlc.arg(deployment);
 
 -- name: AdminRecentActivity :many
 -- The 50 most recent rows of the record before period_to, each with the

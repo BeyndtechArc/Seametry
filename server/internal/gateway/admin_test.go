@@ -21,6 +21,10 @@ import (
 type heldAdmin struct {
 	period execution.Period
 	reads  int
+	// The last wallet page asked for, and whether older wallets remain.
+	after     *execution.WalletCursor
+	limit     int
+	moreAfter *execution.WalletCursor
 }
 
 func (h *heldAdmin) Overview(_ context.Context, period execution.Period) (execution.Overview, error) {
@@ -36,9 +40,10 @@ func (h *heldAdmin) Sources(_ context.Context, period execution.Period) ([]execu
 	return []execution.SourceTotals{{Source: "unknown", SeenWallets: 1, VolumeAtoms: "0", FeeAtoms: "0"}}, nil
 }
 
-func (h *heldAdmin) Wallets(_ context.Context, deployment string) ([]execution.WalletTotals, error) {
+func (h *heldAdmin) Wallets(_ context.Context, deployment string, after *execution.WalletCursor, limit int) (execution.WalletPage, error) {
 	h.reads++
-	return nil, nil
+	h.after, h.limit = after, limit
+	return execution.WalletPage{Total: 7, Next: h.moreAfter}, nil
 }
 
 func (h *heldAdmin) RecentActivity(_ context.Context, period execution.Period) ([]execution.RecordedRow, error) {
@@ -212,5 +217,43 @@ func TestAdminOptInsNeverCarryAFullAddress(t *testing.T) {
 	}
 	if strings.Contains(response.Body.String(), "storm@example.com") || !strings.Contains(response.Body.String(), `"masked_address":"s***@e***.com"`) {
 		t.Fatalf("email-optins body = %s, want only the masked address", response.Body.String())
+	}
+}
+
+func TestAdminWalletsPageByAnOpaqueCursorThatRoundTrips(t *testing.T) {
+	now := time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)
+	last := execution.WalletCursor{FirstSeenAt: time.Date(2026, 10, 11, 9, 0, 0, 123456000, time.UTC), Address: linkedWallet}
+	held := &heldAdmin{moreAfter: &last}
+	handler, sign := adminHandler(t, "storm@example.com", held, now)
+	token := sign(adminClaims{"storm@example.com", true})
+
+	response := getActivity(handler, "/v1/admin/wallets?limit=2", token)
+	var body struct {
+		Data struct {
+			Total      int64   `json:"total"`
+			NextCursor *string `json:"next_cursor"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil || response.Code != http.StatusOK {
+		t.Fatalf("first page = %d (%v): %s", response.Code, err, response.Body.String())
+	}
+	if held.after != nil || held.limit != 2 || body.Data.Total != 7 || body.Data.NextCursor == nil || *body.Data.NextCursor == "" {
+		t.Fatalf("first page: after %v limit %d total %d next %v, want no cursor, limit 2, total 7 and a next cursor", held.after, held.limit, body.Data.Total, body.Data.NextCursor)
+	}
+
+	held.moreAfter = nil
+	response = getActivity(handler, "/v1/admin/wallets?cursor="+*body.Data.NextCursor, token)
+	if response.Code != http.StatusOK || held.after == nil || !held.after.FirstSeenAt.Equal(last.FirstSeenAt) || held.after.Address != last.Address || held.limit != 50 {
+		t.Fatalf("second page = %d, after %+v limit %d, want the first page's last row and the default 50: %s", response.Code, held.after, held.limit, response.Body.String())
+	}
+	if strings.Contains(response.Body.String(), "next_cursor") {
+		t.Fatalf("the last page named a next cursor: %s", response.Body.String())
+	}
+
+	for _, refused := range []string{"cursor=not-a-cursor", "limit=0", "limit=201"} {
+		held.reads = 0
+		if response := getActivity(handler, "/v1/admin/wallets?"+refused, token); response.Code != http.StatusBadRequest || held.reads != 0 {
+			t.Fatalf("GET wallets?%s = %d after %d reads, want 400 before any read: %s", refused, response.Code, held.reads, response.Body.String())
+		}
 	}
 }

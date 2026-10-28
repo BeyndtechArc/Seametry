@@ -153,15 +153,53 @@ type WalletTotals struct {
 	VolumeAtoms, FeeAtoms string
 }
 
-// Wallets are the 200 most recently seen in a deployment, with all-time
-// totals: a wallet list is read whole, not by period.
-func (r *Report) Wallets(ctx context.Context, deployment string) ([]WalletTotals, error) {
+// MaxWalletPage bounds one read of the wallet list, the contract's maximum.
+const MaxWalletPage = 200
+
+// WalletCursor is where a page of wallets ends: the last row's first quote
+// and address, the list's order.
+type WalletCursor struct {
+	FirstSeenAt time.Time
+	Address     string
+}
+
+// WalletPage is one page of the all-time wallet list. Total counts every
+// wallet in the deployment, and Next is set while older ones remain.
+type WalletPage struct {
+	Wallets []WalletTotals
+	Total   int64
+	Next    *WalletCursor
+}
+
+// Wallets are the wallets seen in a deployment, newest first, with all-time
+// totals: a wallet list is read by page, not by period.
+func (r *Report) Wallets(ctx context.Context, deployment string, after *WalletCursor, limit int) (WalletPage, error) {
 	if !Deployments[deployment] {
-		return nil, Invalid{fmt.Sprintf("deployment %q is not production, preview or development", deployment)}
+		return WalletPage{}, Invalid{fmt.Sprintf("deployment %q is not production, preview or development", deployment)}
 	}
-	rows, err := r.q.AdminWallets(ctx, deployment)
+	if limit < 1 || limit > MaxWalletPage {
+		return WalletPage{}, Invalid{fmt.Sprintf("a page of %d wallets is not between 1 and %d", limit, MaxWalletPage)}
+	}
+	// One row past the limit says whether another page follows without a
+	// second query.
+	params := executiondb.AdminWalletsParams{Deployment: deployment, PageLimit: int32(limit + 1)}
+	if after != nil {
+		params.AfterAt = pgtype.Timestamptz{Time: after.FirstSeenAt, Valid: true}
+		params.AfterWallet = pgtype.Text{String: after.Address, Valid: true}
+	}
+	rows, err := r.q.AdminWallets(ctx, params)
 	if err != nil {
-		return nil, fmt.Errorf("execution: reading wallets: %w", err)
+		return WalletPage{}, fmt.Errorf("execution: reading wallets: %w", err)
+	}
+	total, err := r.q.AdminWalletCount(ctx, deployment)
+	if err != nil {
+		return WalletPage{}, fmt.Errorf("execution: counting wallets: %w", err)
+	}
+	page := WalletPage{Total: total}
+	if len(rows) > limit {
+		rows = rows[:limit]
+		last := rows[limit-1]
+		page.Next = &WalletCursor{FirstSeenAt: last.FirstSeenAt.Time, Address: last.Address}
 	}
 	wallets := make([]WalletTotals, 0, len(rows))
 	for _, row := range rows {
@@ -170,7 +208,8 @@ func (r *Report) Wallets(ctx context.Context, deployment string) ([]WalletTotals
 			VolumeAtoms: atoms(row.VolumeAtoms), FeeAtoms: atoms(row.FeeAtoms),
 		})
 	}
-	return wallets, nil
+	page.Wallets = wallets
+	return page, nil
 }
 
 // RecordedRow is one row of the record as written: Source says whose word

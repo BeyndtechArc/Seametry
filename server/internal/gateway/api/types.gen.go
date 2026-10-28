@@ -1090,7 +1090,13 @@ type AdminWalletStates struct {
 // AdminWallets defines model for AdminWallets.
 type AdminWallets struct {
 	Deployment AdminWalletsDeployment `json:"deployment"`
-	Wallets    []AdminWallet          `json:"wallets"`
+
+	// NextCursor Present while older wallets remain; pass it as cursor for the next page.
+	NextCursor *string `json:"next_cursor,omitempty"`
+
+	// Total Every wallet seen in the deployment, all time, across all pages.
+	Total   int64         `json:"total"`
+	Wallets []AdminWallet `json:"wallets"`
 }
 
 // AdminWalletsDeployment defines model for AdminWallets.Deployment.
@@ -1687,6 +1693,9 @@ type AdminDeployment string
 // AdminFrom defines model for AdminFrom.
 type AdminFrom = time.Time
 
+// AdminPageLimit defines model for AdminPageLimit.
+type AdminPageLimit = int
+
 // AdminTo defines model for AdminTo.
 type AdminTo = time.Time
 
@@ -1772,6 +1781,12 @@ type GetAdminSourcesParamsDeployment string
 type GetAdminWalletsParams struct {
 	// Deployment Which deployment's record to read; deployments are never mixed.
 	Deployment *GetAdminWalletsParamsDeployment `form:"deployment,omitempty" json:"deployment,omitempty"`
+
+	// Cursor An opaque cursor from a previous page.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit How many rows one page holds.
+	Limit *AdminPageLimit `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // GetAdminWalletsParamsDeployment defines parameters for GetAdminWallets.

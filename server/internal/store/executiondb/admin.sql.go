@@ -400,17 +400,29 @@ func (q *Queries) AdminSources(ctx context.Context, arg AdminSourcesParams) ([]A
 	return items, nil
 }
 
+const adminWalletCount = `-- name: AdminWalletCount :one
+SELECT count(DISTINCT wallet)::bigint FROM execution.quotes WHERE deployment = $1
+`
+
+// Every wallet seen in the deployment, all time, the list's total.
+func (q *Queries) AdminWalletCount(ctx context.Context, deployment string) (int64, error) {
+	row := q.db.QueryRow(ctx, adminWalletCount, deployment)
+	var column_1 int64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const adminWallets = `-- name: AdminWallets :many
 WITH landed AS (
     SELECT l.wallet, l.fee_credited_atoms,
            GREATEST(0, CASE q.kind WHEN 'buy' THEN -l.wallet_usdc_delta ELSE l.wallet_usdc_delta END) AS notional
     FROM execution.legs l
     JOIN execution.quotes q ON q.id = l.quote_id
-    WHERE l.chain_outcome = 'landed' AND q.deployment = $1
+    WHERE l.chain_outcome = 'landed' AND q.deployment = $4
 ), totals AS (
     SELECT wallet, count(*) AS landed_legs, sum(notional) AS volume, sum(fee_credited_atoms) AS fees FROM landed GROUP BY wallet
 ), seen AS (
-    SELECT sq.wallet, min(sq.prepared_at) AS at, count(*) AS quotes FROM execution.quotes sq WHERE sq.deployment = $1 GROUP BY sq.wallet
+    SELECT sq.wallet, min(sq.prepared_at) AS at, count(*) AS quotes FROM execution.quotes sq WHERE sq.deployment = $4 GROUP BY sq.wallet
 )
 SELECT s.wallet::text AS address, s.at::timestamptz AS first_seen_at, s.quotes,
        COALESCE(w.first_source ->> 'ref_code', 'unknown')::text AS source,
@@ -420,9 +432,19 @@ SELECT s.wallet::text AS address, s.at::timestamptz AS first_seen_at, s.quotes,
 FROM seen s
 JOIN execution.wallets w ON w.address = s.wallet
 LEFT JOIN totals t ON t.wallet = s.wallet
+WHERE $1::timestamptz IS NULL
+   OR s.at < $1::timestamptz
+   OR (s.at = $1::timestamptz AND s.wallet > $2::text)
 ORDER BY s.at DESC, s.wallet
-LIMIT 200
+LIMIT $3
 `
+
+type AdminWalletsParams struct {
+	AfterAt     pgtype.Timestamptz `db:"after_at" json:"after_at"`
+	AfterWallet pgtype.Text        `db:"after_wallet" json:"after_wallet"`
+	PageLimit   int32              `db:"page_limit" json:"page_limit"`
+	Deployment  string             `db:"deployment" json:"deployment"`
+}
 
 type AdminWalletsRow struct {
 	Address     string             `db:"address" json:"address"`
@@ -434,10 +456,18 @@ type AdminWalletsRow struct {
 	FeeAtoms    pgtype.Numeric     `db:"fee_atoms" json:"fee_atoms"`
 }
 
-// The 200 wallets most recently seen in the deployment, all time, each
-// with what its landed legs moved. A wallet's address is public chain data.
-func (q *Queries) AdminWallets(ctx context.Context, deployment string) ([]AdminWalletsRow, error) {
-	rows, err := q.db.Query(ctx, adminWallets, deployment)
+// One page of the wallets seen in the deployment, newest first seen first,
+// all time, each with what its landed legs moved. A page starts after the
+// previous page's last (first_seen_at, wallet), so a wallet first seen while
+// paging shifts nothing already read. A wallet's address is public chain
+// data.
+func (q *Queries) AdminWallets(ctx context.Context, arg AdminWalletsParams) ([]AdminWalletsRow, error) {
+	rows, err := q.db.Query(ctx, adminWallets,
+		arg.AfterAt,
+		arg.AfterWallet,
+		arg.PageLimit,
+		arg.Deployment,
+	)
 	if err != nil {
 		return nil, err
 	}

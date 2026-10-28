@@ -111,3 +111,27 @@ test("an admin whose sections the Gateway cannot answer sees each one named unav
     await expect(page.getByRole("region", { name })).toContainText("Nothing from this section is shown.");
   }
 });
+
+test("the wallet list pages by the Gateway's cursor and says how many wallets there are in all", async ({ page }) => {
+  await signIn(page, "fixture-admin");
+  await page.goto("/admin?deployment=production");
+  const wallets = page.locator("section", { has: page.getByRole("heading", { name: "Wallets", exact: true }) });
+  await expect(wallets.getByText("1 of 2 wallets, newest first seen first")).toBeVisible();
+  await expect(wallets.getByRole("row", { name: /FFyr/ })).toBeVisible();
+  await wallets.getByRole("link", { name: "Older wallets" }).click();
+  await expect(page).toHaveURL(/wallets=fixture-older-wallets/);
+  await expect(page).toHaveURL(/deployment=production/);
+  await expect(wallets.getByRole("row", { name: /9WzD/ })).toBeVisible();
+  await expect(wallets.getByRole("row", { name: /FFyr/ })).toHaveCount(0);
+  await expect(wallets.getByRole("link", { name: "Older wallets" })).toHaveCount(0);
+  await expect(wallets.getByRole("link", { name: "Newest wallets" })).toBeVisible();
+});
+
+test("a wallet cursor the Gateway refuses shows the wallet list unavailable, and the rest of the page still reads", async ({ page }) => {
+  await signIn(page, "fixture-admin");
+  const response = await page.goto("/admin?wallets=forged");
+  expect(response?.status()).toBe(200);
+  const wallets = page.locator("section", { has: page.getByRole("heading", { name: "Wallets", exact: true }) });
+  await expect(wallets.getByText("The Gateway answered 400 for wallets.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sources", exact: true })).toBeVisible();
+});
