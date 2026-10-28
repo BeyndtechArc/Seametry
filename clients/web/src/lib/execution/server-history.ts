@@ -50,7 +50,7 @@ function legOf(kind: "buy" | "sell", leg: WalletLeg): Leg {
     spend,
     phase: phaseOf(leg),
     signedAt: leg.submitted_at,
-    ...(chain ? { endedAt: chain.block_time ?? chain.reconciled_at, chainConfirmed: true } : {}),
+    ...(chain ? { endedAt: chain.block_time ?? chain.reconciled_at, chainAnswer: chain.outcome } : {}),
     ...(receivedAtoms && receivedScale !== undefined ? { received: { atoms: receivedAtoms, scale: receivedScale, unit: kind === "buy" ? symbol : "USDC" } } : {}),
   };
 }

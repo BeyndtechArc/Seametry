@@ -33,7 +33,7 @@ const dayOf = (iso: string) => iso.slice(0, 10);
 const sourceNames: Record<string, string> = { server: "Seametry sent", client: "Browser reported", chain: "Chain answered" };
 
 function eventName(source: string, event: string): string {
-  if (source === "chain") return event === "landed" ? "Settled: landed" : event === "failed" ? "Failed on chain" : event === "dropped" ? "Dropped unseen" : event;
+  if (source === "chain") return event === "landed" ? "Settled: landed" : event === "failed" ? "Failed, confirmed by the chain" : event === "dropped" ? "Expired, never seen on chain" : event;
   if (source === "server") return event.replace(/^quote_/, "Quote ").replace(/^leg_/, "Leg ").replace(/_/g, " ");
   return event.replace(/_/g, " ");
 }
@@ -95,6 +95,9 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const chainAge = overview.last_reconciled_at ? age(overview.last_reconciled_at, now) : undefined;
   const chainSource = "Solana mainnet, read by Seametry's reconciler";
   const funnel = overview.funnel;
+  // Until the reconciler has written an answer, a chain-measured figure is
+  // unobserved: a zero then says nothing about what settled.
+  const chainState = overview.last_reconciled_at ? "verified" : "empty";
 
   return (
     <PublicShell>
@@ -117,10 +120,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             <p>What moved and who traded in the period. Definitions: docs/prd/ADMIN.md.</p>
           </header>
           <div className={styles.figures}>
-            <Figure label="Volume" value={usdc(overview.volume)} unit="USDC" source={chainSource} state="verified" age={chainAge} observedAt={overview.last_reconciled_at} size="regular" />
-            <Figure label="Fee revenue" value={usdc(overview.fee_revenue)} unit="USDC" source={chainSource} state="verified" age={chainAge} observedAt={overview.last_reconciled_at} size="regular" />
+            <Figure label="Volume" value={usdc(overview.volume)} unit="USDC" source={chainSource} state={chainState} age={chainAge} observedAt={overview.last_reconciled_at} size="regular" />
+            <Figure label="Fee revenue" value={usdc(overview.fee_revenue)} unit="USDC" source={chainSource} state={chainState} age={chainAge} observedAt={overview.last_reconciled_at} size="regular" />
             <Figure label="Tip cost" value={usdc(overview.tip_cost)} unit="USDC" source="Quoted tip offset of chain-measured volume" state="unverified" size="regular" />
-            <Figure label="Landed legs" value={String(overview.landed_legs)} source={chainSource} state="verified" size="regular" />
+            <Figure label="Landed legs" value={String(overview.landed_legs)} source={chainSource} state={chainState} size="regular" />
           </div>
           <table className={styles.ledger}>
             <caption>Wallets in the period</caption>

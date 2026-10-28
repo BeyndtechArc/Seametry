@@ -63,6 +63,7 @@ test("an admin reads every section, labelled by whose word each figure is, with 
 
   const activity = page.getByRole("region", { name: "Recent activity" });
   await expect(activity.locator("tr[data-source=chain]")).toContainText("Settled: landed");
+  await expect(page.getByRole("figure").filter({ has: page.getByText("Volume", { exact: true }) })).toContainText("Verified");
   await expect(activity.locator("tr[data-source=server]")).toContainText("Seametry sent");
   await expect(activity.locator("tr[data-source=server]")).not.toContainText("Settled");
   await expect(activity.locator("tr[data-source=client]")).toContainText("Browser reported");
@@ -94,6 +95,12 @@ test("an admin with an empty record sees each section say what is absent", async
   await signIn(page, "fixture-admin-empty");
   await page.goto("/admin");
   await expect(page.getByText("The reconciler has not written a chain answer yet.", { exact: false })).toBeVisible();
+  // With no reconciler answer, a chain-measured figure is unobserved, not verified.
+  for (const label of ["Volume", "Fee revenue", "Landed legs"]) {
+    const figure = page.getByRole("figure").filter({ has: page.getByText(label, { exact: true }) });
+    await expect(figure).toContainText("No observation yet");
+    await expect(figure).not.toContainText("Verified");
+  }
   await expect(page.getByText("No quote was prepared in this period.")).toBeVisible();
   await expect(page.getByText("No leg was sent in this period.")).toBeVisible();
   await expect(page.getByText("No wallet was seen or traded in this period.")).toBeVisible();
