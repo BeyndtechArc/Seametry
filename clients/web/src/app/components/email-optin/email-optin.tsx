@@ -6,6 +6,7 @@ import { Callout } from "@seametry/ui/callout";
 import { CONSENT_TEXT, CONSENT_VERSION, plainAddress, type OptInPage } from "@/lib/email-optin";
 import { firstRefCode } from "@/lib/first-touch";
 import styles from "./email-optin.module.css";
+import { walletOptInLabel } from "./wallet-label";
 
 type Stage = { state: "writing" } | { state: "sending" } | { state: "kept"; unsubscribe: string } | { state: "refused"; reason: string };
 
@@ -63,7 +64,7 @@ export function EmailOptIn({ page, wallet, onDismiss, onKept }: { page: OptInPag
       {wallet ? (
         <label className={styles.consent}>
           <input type="checkbox" checked={includeWallet} onChange={(event) => setIncludeWallet(event.target.checked)} />
-          <span>Keep my connected wallet {wallet.slice(0, 4)}…{wallet.slice(-4)} with the address, so a settlement email can name its trades.</span>
+          <span>{walletOptInLabel(wallet)}</span>
         </label>
       ) : null}
       {stage.state === "refused" ? <Callout tone="blocked" announce>{stage.reason}</Callout> : null}
