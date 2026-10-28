@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -290,5 +291,25 @@ func TestAdminPeriodRefusesAnUnknownDeploymentAndABackwardsOrOverlongRange(t *te
 		} else if _, ok := err.(Invalid); !ok {
 			t.Fatalf("period %+v: %v, want an Invalid", period, err)
 		}
+	}
+}
+
+func TestAdminPeriodThatStartsAfterNowIsRefusedAndNamedAsFuture(t *testing.T) {
+	report, _ := freshReport(t)
+	now := day(20, 12)
+	for _, period := range []Period{
+		{From: day(21, 0), To: day(22, 0), Deployment: "production", Now: now},
+		{From: now, To: day(22, 0), Deployment: "production", Now: now},
+	} {
+		_, err := report.Overview(context.Background(), period)
+		var invalid Invalid
+		if !errors.As(err, &invalid) || !strings.Contains(invalid.Reason, "in the future") {
+			t.Fatalf("period from %s read at %s: err = %v, want an Invalid naming it in the future", period.From, now, err)
+		}
+	}
+	// A period that has begun reads, even when its end is still ahead: the
+	// date form's last day ends at the next midnight.
+	if _, err := report.Overview(context.Background(), Period{From: day(19, 0), To: day(21, 0), Deployment: "production", Now: now}); err != nil {
+		t.Fatalf("a period running past now was refused: %v", err)
 	}
 }

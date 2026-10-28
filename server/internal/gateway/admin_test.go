@@ -324,3 +324,13 @@ func TestAnAdminReadsBeyondThePolicyAreRefusedBeforeTheRecordIsRead(t *testing.T
 		t.Fatalf("a read a minute later = %d, want the policy refilled", response.Code)
 	}
 }
+
+func TestAnAdminPeriodThatStartsAfterNowIsRefusedAsFuture(t *testing.T) {
+	now := time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)
+	held := &heldAdmin{}
+	handler, sign := adminHandler(t, "storm@example.com", held, now)
+	response := getActivity(handler, "/v1/admin/overview?from=2026-11-01T00:00:00Z&to=2026-11-02T00:00:00Z", sign(adminClaims{"storm@example.com", true}))
+	if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "is in the future") {
+		t.Fatalf("a period in November read on 27 October = %d: %s, want 400 naming it in the future", response.Code, response.Body.String())
+	}
+}

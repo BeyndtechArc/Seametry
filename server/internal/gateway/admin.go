@@ -207,7 +207,8 @@ func (r *statusRecorder) Write(body []byte) (int, error) {
 const AdminDefaultPeriod = 30 * 24 * time.Hour
 
 func (s Server) adminPeriod(from, to *time.Time, deployment *string) execution.Period {
-	period := execution.Period{To: s.Now().UTC(), Deployment: "production"}
+	now := s.Now().UTC()
+	period := execution.Period{To: now, Deployment: "production", Now: now}
 	if to != nil {
 		period.To = to.UTC()
 	}
