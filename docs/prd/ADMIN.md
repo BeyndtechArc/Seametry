@@ -20,6 +20,19 @@ account token it exchanges for the visitor's session cookie. No token, figure
 source or secret is sent to the browser, and the page adds no cookie, no
 analytics and nothing collected from the visitor.
 
+## Audit and read policy
+
+- Every admitted read writes one `seametry: admin read` log line: the
+  operation, the account's subject id, the time and the outcome (`ok`,
+  `refused`, `not_found`, `rate_limited`, `error`). It never carries the
+  account's email, the query or anything the read returned. A caller the
+  gate refuses is not audited; it was answered as a missing path.
+- One account makes at most 120 admin reads a minute (one page load is
+  five); past that the Gateway answers 429 with Retry-After before the
+  record is read. Each admitted read is bounded to 10 s.
+- Already bounded before this: a period of at most 366 days, 200 wallets,
+  50 activity rows and 20 opt-ins per read, and the web page's 8 s wait.
+
 ## Every figure
 
 Each figure is read for a period, `[from, to)` in UTC, by default the 30 days

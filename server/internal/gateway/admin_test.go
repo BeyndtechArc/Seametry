@@ -66,6 +66,11 @@ type adminClaims struct {
 // whatever email claims a test names.
 func adminHandler(t *testing.T, allowlist string, held *heldAdmin, now time.Time) (http.Handler, func(adminClaims) string) {
 	t.Helper()
+	return adminHandlerWith(t, held, now, gateway.AdminGate(allowlist))
+}
+
+func adminHandlerWith(t *testing.T, held *heldAdmin, now time.Time, gate func(http.Handler) http.Handler) (http.Handler, func(adminClaims) string) {
+	t.Helper()
 	public, private, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		t.Fatal(err)
@@ -88,7 +93,7 @@ func adminHandler(t *testing.T, allowlist string, held *heldAdmin, now time.Time
 	core.Now = func() time.Time { return now }
 	handler := gateway.NewHandler(core, gateway.ServiceSecret(reportSecret), func(next http.Handler) http.Handler {
 		return verifier.Middleware(next, func() time.Time { return now })
-	}, gateway.AdminGate(allowlist))
+	}, gate)
 	sign := func(claims adminClaims) string {
 		header, _ := json.Marshal(map[string]string{"alg": "EdDSA", "kid": "key-1", "typ": "JWT"})
 		body := map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix(), "wallets": []string{}}
@@ -255,5 +260,67 @@ func TestAdminWalletsPageByAnOpaqueCursorThatRoundTrips(t *testing.T) {
 		if response := getActivity(handler, "/v1/admin/wallets?"+refused, token); response.Code != http.StatusBadRequest || held.reads != 0 {
 			t.Fatalf("GET wallets?%s = %d after %d reads, want 400 before any read: %s", refused, response.Code, held.reads, response.Body.String())
 		}
+	}
+}
+
+func TestEveryAdmittedAdminReadIsAuditedBySubjectAndOutcomeWithNoEmailOrResult(t *testing.T) {
+	now := time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)
+	held := &heldAdmin{}
+	var events []gateway.AdminReadEvent
+	gate := gateway.AdminGateWith("storm@example.com", gateway.AdminGateOptions{
+		Audit: func(event gateway.AdminReadEvent) { events = append(events, event) }, ReadsPerMinute: 60, Now: func() time.Time { return now },
+	})
+	handler, sign := adminHandlerWith(t, held, now, gate)
+	token := sign(adminClaims{"storm@example.com", true})
+
+	getActivity(handler, "/v1/admin/overview", token)
+	getActivity(handler, "/v1/admin/overview?from=2026-10-02T00:00:00Z&to=2026-10-01T00:00:00Z", token)
+	getActivity(handler, "/v1/admin/nothing-here", token)
+	getActivity(handler, "/v1/admin/overview", sign(adminClaims{"holder@example.com", true}))
+	want := []gateway.AdminReadEvent{
+		{Operation: "overview", Subject: "account-1", At: now, Outcome: "ok"},
+		{Operation: "overview", Subject: "account-1", At: now, Outcome: "refused"},
+		{Operation: "nothing-here", Subject: "account-1", At: now, Outcome: "not_found"},
+	}
+	if len(events) != len(want) {
+		t.Fatalf("audited %d reads, want the 3 admitted ones and none for the refused caller: %+v", len(events), events)
+	}
+	for index := range want {
+		if events[index] != want[index] {
+			t.Fatalf("event %d = %+v, want %+v", index, events[index], want[index])
+		}
+	}
+	encoded, _ := json.Marshal(events)
+	for _, absent := range []string{"@", "storm", "2000000"} {
+		if strings.Contains(string(encoded), absent) {
+			t.Fatalf("an audit event carries %q: %s", absent, encoded)
+		}
+	}
+}
+
+func TestAnAdminReadsBeyondThePolicyAreRefusedBeforeTheRecordIsRead(t *testing.T) {
+	now := time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)
+	held := &heldAdmin{}
+	var outcomes []string
+	gate := gateway.AdminGateWith("storm@example.com", gateway.AdminGateOptions{
+		Audit: func(event gateway.AdminReadEvent) { outcomes = append(outcomes, event.Outcome) }, ReadsPerMinute: 3, Now: func() time.Time { return now },
+	})
+	handler, sign := adminHandlerWith(t, held, now, gate)
+	token := sign(adminClaims{"storm@example.com", true})
+	for range 3 {
+		if response := getActivity(handler, "/v1/admin/sources", token); response.Code != http.StatusOK {
+			t.Fatalf("a read within the policy = %d", response.Code)
+		}
+	}
+	response := getActivity(handler, "/v1/admin/sources", token)
+	if response.Code != http.StatusTooManyRequests || response.Header().Get("Retry-After") == "" || held.reads != 3 {
+		t.Fatalf("the fourth read in a minute = %d, Retry-After %q, after %d record reads; want 429 with Retry-After and 3 reads", response.Code, response.Header().Get("Retry-After"), held.reads)
+	}
+	if outcomes[len(outcomes)-1] != "rate_limited" {
+		t.Fatalf("the refused read was audited as %q, want rate_limited", outcomes[len(outcomes)-1])
+	}
+	now = now.Add(time.Minute)
+	if response := getActivity(handler, "/v1/admin/sources", token); response.Code != http.StatusOK {
+		t.Fatalf("a read a minute later = %d, want the policy refilled", response.Code)
 	}
 }
