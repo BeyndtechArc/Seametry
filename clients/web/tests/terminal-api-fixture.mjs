@@ -212,7 +212,11 @@ const server = createServer((request, response) => {
     request.on("end", () => {
       const parsed = JSON.parse(body);
       activityReports.push({ kind: path.slice("/v1/internal/".length).replace(/^activity\//, ""), secret: request.headers["x-seametry-service-secret"] ?? null, body: parsed });
-      if (path === "/v1/internal/email-optins") {
+      // A Gateway from before field-and-code refusals echoed the address it
+      // refused; tests/email-optin.spec.ts checks the web route never does.
+      if (path === "/v1/internal/email-optins" && String(parsed.address).includes("gateway-refuses")) {
+        writeJson(response, 400, { title: "Email opt-in refused", status: 400, detail: `RecordEmailOptIn: address "${parsed.address}" is not one plain email address` });
+      } else if (path === "/v1/internal/email-optins") {
         writeJson(response, 202, { data: { unsubscribe_token: `fixture-token-${activityReports.length}` } });
       } else if (path === "/v1/internal/email-optins/unsubscribe" && parsed.token === "fixture-used-token") {
         writeJson(response, 404, { title: "Unsubscribe link not recognised", status: 404, detail: "WithdrawEmailOptIn: fixture" });

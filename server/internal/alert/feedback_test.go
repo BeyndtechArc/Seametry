@@ -161,3 +161,15 @@ func TestFeedbackIsRefusedNamingWhatIsWrong(t *testing.T) {
 		}
 	}
 }
+
+func TestARefusedReplyAddressIsNamedByFieldAndCodeNeverRepeated(t *testing.T) {
+	desk := NewFeedback(nil, nil)
+	_, _, err := desk.Receive(context.Background(), Submission{Message: "x", ReplyTo: "Holder <holder.private@example.com>", Deployment: "production"})
+	var invalid Invalid
+	if !errors.As(err, &invalid) || invalid.Field != "reply_to" || invalid.Code != "malformed" {
+		t.Fatalf("got %#v, want Invalid with field reply_to and code malformed", err)
+	}
+	if strings.Contains(err.Error(), "holder.private") {
+		t.Fatalf("the refusal repeats the address: %q", err.Error())
+	}
+}

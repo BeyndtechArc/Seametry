@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentDeployment } from "@/lib/activity";
 import { CONSENT_VERSION, OPT_IN_PAGES, plainAddress, type OptInPage } from "@/lib/email-optin";
 import { postInternal } from "@/lib/internal-gateway";
+import { logRefusal } from "@/lib/refusal-log";
 import { recordedRef } from "@/lib/ref-link";
 
 const WINDOW_MS = 10 * 60_000;
@@ -57,8 +58,8 @@ export async function POST(request: NextRequest) {
   }
   if (!response) return NextResponse.json({ error: "Email updates are not connected on this deployment. Nothing was kept." }, { status: 503 });
   if (response.status === 400) {
-    console.warn(`Email opt-in refused by the Gateway: ${(await response.text()).slice(0, 300)}`);
-    return NextResponse.json({ error: "Seametry could not accept this address as written. Nothing was kept." }, { status: 400 });
+    const reference = await logRefusal("Email opt-in", response);
+    return NextResponse.json({ error: "Seametry could not accept this address as written. Nothing was kept.", reference }, { status: 400 });
   }
   if (!response.ok) return NextResponse.json({ error: "The address could not be kept just now. Nothing was kept." }, { status: 503 });
   const kept = (await response.json()) as { data: { unsubscribe_token: string } };
