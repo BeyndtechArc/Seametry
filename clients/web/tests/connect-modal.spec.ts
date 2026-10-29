@@ -5,9 +5,17 @@ import { registerTestWallet } from "./test-wallet";
 // control, wallets first, then Google. The auth routes are answered here, as
 // the account service would answer them through the proxy.
 const shots = process.env.SEAMETRY_AUTH_SHOTS;
+// SEAMETRY_AUTH_THEME=dark takes the same states in the dark theme.
+const shotTheme = process.env.SEAMETRY_AUTH_THEME === "dark" ? "dark" : "light";
 async function shot(page: Page, name: string) {
-  if (shots) await page.screenshot({ path: `${shots}/${name}.png` });
+  if (!shots) return;
+  // Taken after the dialog's arrival has finished.
+  await page.waitForTimeout(350);
+  await page.screenshot({ path: `${shots}/${shotTheme}-${name}.png` });
 }
+test.beforeEach(async ({ context }) => {
+  if (shots) await context.addInitScript((mode) => localStorage.setItem("seametry-theme-v1", mode), shotTheme);
+});
 
 const input = {
   domain: "localhost:3847", statement: "Sign in to Seametry. This does not approve a transaction.", uri: "http://localhost:3847",
@@ -32,7 +40,9 @@ async function account(page: Page, { signedIn = false, verify = { status: 200, b
   return calls;
 }
 
-const modal = (page: Page) => page.getByRole("dialog", { name: "Connect a wallet" });
+const modal = (page: Page) => page.getByRole("dialog", { name: "Sign in to Seametry" });
+// A row's accessible name is its action; its visible text is the wallet and a badge.
+const names = (locator: ReturnType<Page["locator"]>) => locator.evaluateAll((nodes) => nodes.map((node) => node.getAttribute("aria-label") ?? node.textContent ?? ""));
 
 test("Connect opens one modal: wallets first, then Google, and no email option yet", async ({ page }) => {
   await account(page);
@@ -43,7 +53,7 @@ test("Connect opens one modal: wallets first, then Google, and no email option y
   await expect(dialog).toBeVisible();
   const options = dialog.getByRole("button");
   await expect(dialog.getByRole("button", { name: "Connect Test wallet" })).toBeVisible();
-  const labels = await options.allTextContents();
+  const labels = await names(options);
   expect(labels.indexOf("Connect Test wallet")).toBeLessThan(labels.indexOf("Continue with Google"));
   await expect(dialog.getByText(/email/i)).toHaveCount(0);
   await shot(page, "modal-choose");
@@ -54,8 +64,8 @@ test("detected wallets list Phantom, Solflare and Backpack first, then the rest"
   for (const name of ["Zeta", "Backpack", "Solflare", "Phantom"]) await registerTestWallet(page, { trusted: false, name });
   await page.goto("/app/allocation");
   await page.locator("#app-wallet").click();
-  const names = await modal(page).getByRole("button", { name: /^Connect / }).allTextContents();
-  expect(names).toEqual(["Connect Phantom", "Connect Solflare", "Connect Backpack", "Connect Zeta"]);
+  const order = await names(modal(page).getByRole("button", { name: /^Connect / }));
+  expect(order).toEqual(["Connect Phantom", "Connect Solflare", "Connect Backpack", "Connect Zeta"]);
 });
 
 test("Escape closes the modal and returns focus to Connect; Tab stays inside it", async ({ page }) => {
@@ -117,7 +127,7 @@ for (const [label, verify, text] of [
   await page.locator("#app-wallet").click();
   await modal(page).getByRole("button", { name: "Connect Test wallet" }).click();
   await expect(modal(page).getByRole("alert")).toHaveText(text);
-  if (verify.status === 409) await shot(page, "modal-owned-elsewhere");
+  await shot(page, verify.status === 409 ? "modal-owned-elsewhere" : "modal-expired");
 });
 
 test("a wallet that cannot sign messages still connects, and the modal closes", async ({ page }) => {
@@ -146,6 +156,7 @@ test("no wallet in a desktop browser: install links, and Google still offered", 
 
 test("no wallet on a phone: open this page in Phantom or Solflare, inside the screen", async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1" });
+  if (shots) await context.addInitScript((mode) => localStorage.setItem("seametry-theme-v1", mode), shotTheme);
   const page = await context.newPage();
   await account(page);
   await page.goto("/app/positions");
@@ -171,8 +182,22 @@ test("already signed in: the chip opens the account menu, and the modal links ra
   await page.locator("#app-wallet").click();
   await expect(modal(page)).toBeHidden();
   await page.getByTestId("account-menu").getByRole("button", { name: "Link a wallet" }).click();
-  const dialog = modal(page);
+  const dialog = page.getByRole("dialog", { name: "Link a wallet" });
   await expect(dialog.getByText("Choose the wallet to link to your account.", { exact: false })).toBeVisible();
   await expect(dialog.getByRole("button", { name: "Continue with Google" })).toHaveCount(0);
   await shot(page, "modal-signed-in-link");
+});
+
+test("on a phone with a wallet, the sign-in sheet rises from the bottom edge", async ({ browser }) => {
+  test.skip(!shots, "a screenshot of the layout auth-modal.spec.ts asserts");
+  const context = await browser.newContext({ viewport: { width: 375, height: 667 } });
+  await context.addInitScript((mode) => localStorage.setItem("seametry-theme-v1", mode), shotTheme);
+  const page = await context.newPage();
+  await account(page);
+  await registerTestWallet(page, { trusted: false, signsIn: true });
+  await page.goto("/app/allocation");
+  await page.locator("#app-wallet").click();
+  await expect(modal(page)).toBeVisible();
+  await shot(page, "modal-phone-choose");
+  await context.close();
 });

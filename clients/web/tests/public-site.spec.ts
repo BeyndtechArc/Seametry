@@ -261,7 +261,7 @@ test("the wallet state lives in the app's top bar, and connecting signs nothing"
   await expect(state).toBeVisible();
   await state.click();
   // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
-  await expect(page.getByRole("dialog", { name: "Connect a wallet" }).getByText("No signing wallet is available in this browser. Install one, then reload this page.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Sign in to Seametry" }).getByText("No signing wallet is available in this browser. Install one, then reload this page.", { exact: true })).toBeVisible();
 
   await page.goto("/app/allocation");
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();

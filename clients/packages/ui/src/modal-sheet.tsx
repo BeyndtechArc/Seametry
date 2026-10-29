@@ -157,3 +157,44 @@ export function ProcessOutcome({ kind, title, children }: { kind: "pending" | "s
     </section>
   );
 }
+
+export type AuthDialogProps = {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  /** One line under the title. */
+  lead?: ReactNode;
+  /** The product mark above the title, decorative. */
+  mark?: ReactNode;
+  closeLabel?: string;
+  children: ReactNode;
+  footer?: ReactNode;
+  onClosed?: () => void;
+};
+
+/**
+ * components.md, Auth dialog: the one centred form for signing in or
+ * connecting, a full-width sheet from the bottom on a phone. It shares the
+ * native dialog contract (focus containment, Escape, return of focus) with
+ * ModalSheet and ProcessDialog.
+ */
+export function AuthDialog({ open, onClose, title, lead, mark, closeLabel = "Close", children, footer, onClosed }: AuthDialogProps) {
+  const { dialogProps, close } = useNativeDialog(open, onClose, onClosed);
+  const titleId = useId();
+  const leadId = useId();
+
+  return (
+    <dialog {...dialogProps} className={styles.auth} aria-labelledby={titleId} aria-describedby={lead ? leadId : undefined}>
+      <button className={`${styles.iconClose} ${styles.authClose}`} type="button" onClick={close} aria-label={closeLabel}>
+        <Icon name="close" />
+      </button>
+      <header className={styles.authHeader}>
+        {mark ? <span className={styles.authMark} aria-hidden="true">{mark}</span> : null}
+        <h2 id={titleId}>{title}</h2>
+        {lead ? <p id={leadId}>{lead}</p> : null}
+      </header>
+      <div className={styles.authBody}>{children}</div>
+      {footer ? <footer className={styles.authFooter}>{footer}</footer> : null}
+    </dialog>
+  );
+}

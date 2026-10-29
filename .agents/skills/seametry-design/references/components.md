@@ -206,6 +206,13 @@ A hairline, `line.rule`, 0.5px on high-density screens. The primary structural d
 **Data:** caller-owned steps, glyphs and states. The component owns no product data and never rewrites a technical message; the caller supplies both the plain sentence and the raw one.
 **Rules:** a step is understood from its title and mark alone; anything longer belongs to the page, not the step. No percentage, and time is not estimated. A stopped step always says what did not happen (nothing signed, nothing founded) when that is the case. The raw message is never the only explanation. The turning ring is the only spinner the system allows, and under reduced motion it holds still.
 
+### Auth dialog
+**Answers:** how do I sign in, or which wallet do I connect, without leaving this page?
+**Anatomy:** native dialog centred in the viewport (a full-width sheet from the bottom edge under 520px); the house mark on a raised tile; the title ("Sign in to Seametry", "Connect a wallet" or "Link a wallet"); one line of lead copy; wallet rows (brand, name, a Detected or Install badge); an "or" rule and Google; a footer with the Non-custodial note and the Terms and Privacy policy links. Email sign-in has a reserved place after Google and is not drawn until it exists.
+**Identity:** a `radius.punch` plate on `surface.sheet` with 1px `line.rule` edges and a `line.strong` top edge; rows are `radius.surface` on the ground. Elevation is tone and a dimmed ground; no shadow, blur or glow.
+**States:** choose; waiting on the wallet (its mark, the one action to take there, and a hairline progress bar, still under reduced motion); a problem in words (declined, expired, owned by another account) with Try again where it can help; no wallet (install rows, and on a phone the hand-off links); signed in (connect or link, no Google).
+**Rules:** never a raw wallet or server error; every target at least 44px; the native focus and Escape contract, focus returning to the opening control.
+
 ### Process dialog
 **Answers:** what is the request I just started doing, without leaving the page that started it?
 **Anatomy:** native dialog centred in the viewport; quiet register label; title; a Step register; an icon-only round close control labelled for assistive technology, a named full-round case; optional footer for the one follow-up action.

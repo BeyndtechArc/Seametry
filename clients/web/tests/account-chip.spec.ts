@@ -55,7 +55,7 @@ test("signed out with no wallet, the chip reads Connect and opens the modal", as
   await expect(chip(page)).toHaveText("Connect");
   await shot(page, "chip-signed-out");
   await chip(page).click();
-  await expect(page.getByRole("dialog", { name: "Connect a wallet" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Sign in to Seametry" })).toBeVisible();
 });
 
 test("a wallet-only account: short address, no email yet, its short id, and copy", async ({ page, context }) => {
@@ -102,8 +102,8 @@ test("Google with no wallet: the chip offers to link one, and linking signs with
   await chip(page).click();
   await expect(menu(page)).toContainText("No wallet linked yet.");
   await menu(page).getByRole("button", { name: "Link a wallet" }).click();
-  await page.getByRole("dialog", { name: "Connect a wallet" }).getByRole("button", { name: "Connect Test wallet" }).click();
-  await expect(page.getByRole("dialog", { name: "Connect a wallet" })).toBeHidden();
+  await page.getByRole("dialog", { name: "Link a wallet" }).getByRole("button", { name: "Connect Test wallet" }).click();
+  await expect(page.getByRole("dialog", { name: "Link a wallet" })).toBeHidden();
   expect(calls.verify).toBe(1);
   await expect(menu(page).getByRole("listitem").filter({ hasText: address })).toHaveCount(1);
 });

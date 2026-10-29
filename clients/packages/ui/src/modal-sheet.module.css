@@ -263,6 +263,163 @@
 .outcomeBody h3 { margin: 0; font-size: var(--sm-font-size-title-s); }
 .outcomeBody p { margin: 0; color: var(--sm-text-secondary); line-height: 1.5; }
 
+/* components.md, Auth dialog: centred, one column, hairline edged. Elevation
+   is tone (sheet over a dimmed ground) and the highlight hairline, as the
+   house allows no cast shadow and no backdrop blur outside the lens. */
+.auth {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  width: min(calc(100% - var(--sm-space-7) * 2), 420px);
+  max-width: none;
+  max-height: min(calc(100dvh - var(--sm-space-9) * 2), 720px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--sm-line-rule);
+  border-top-color: var(--sm-line-strong);
+  border-radius: var(--sm-radius-punch);
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-sheet);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    transform var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide),
+    opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
+}
+
+.auth:not([open]) { display: none; }
+
+.auth[data-closing] {
+  opacity: 0;
+  transform: translateY(var(--sm-space-3)) scale(0.98);
+  transition:
+    transform var(--sm-motion-duration-overlay) var(--sm-motion-easing-exit),
+    opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-exit);
+}
+
+@starting-style {
+  .auth[open] {
+    opacity: 0;
+    transform: translateY(var(--sm-space-4)) scale(0.98);
+  }
+}
+
+.auth::backdrop {
+  background: color-mix(in srgb, var(--sm-surface-ground) 82%, transparent);
+  opacity: 1;
+  transition: opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
+}
+
+.auth[data-closing]::backdrop { opacity: 0; }
+
+@starting-style {
+  .auth[open]::backdrop { opacity: 0; }
+}
+
+.authClose {
+  position: absolute;
+  top: var(--sm-space-4);
+  right: var(--sm-space-4);
+  z-index: 1;
+  background: transparent;
+}
+
+.authClose:hover {
+  background: var(--sm-surface-raised);
+}
+
+.authHeader {
+  display: grid;
+  justify-items: center;
+  gap: var(--sm-space-3);
+  padding: var(--sm-space-9) var(--sm-space-8) var(--sm-space-6);
+  text-align: center;
+}
+
+.authMark {
+  display: grid;
+  place-items: center;
+  width: var(--sm-space-10);
+  height: var(--sm-space-10);
+  margin-bottom: var(--sm-space-2);
+  border: 1px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-surface);
+  background: var(--sm-surface-raised);
+}
+
+.authMark img,
+.authMark svg {
+  width: var(--sm-space-8);
+  height: var(--sm-space-8);
+}
+
+.authHeader h2 {
+  margin: 0;
+  color: var(--sm-text-primary);
+  font-family: var(--sm-font-family-display);
+  font-size: var(--sm-font-size-title);
+  font-weight: var(--sm-font-weight-regular);
+  letter-spacing: var(--sm-font-tracking-title);
+}
+
+.authHeader p {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-small);
+  line-height: 1.5;
+}
+
+.authBody {
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--sm-space-8) var(--sm-space-7);
+}
+
+.authFooter {
+  padding: var(--sm-space-5) var(--sm-space-8) calc(var(--sm-space-5) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--sm-line-rule);
+  color: var(--sm-text-secondary);
+  font-size: var(--sm-font-size-micro);
+}
+
+@media (max-width: 520px) {
+  .auth {
+    inset: auto 0 0;
+    width: 100%;
+    max-height: 100dvh;
+    margin: 0;
+    border-width: 1px 0 0;
+    border-radius: var(--sm-radius-punch) var(--sm-radius-punch) 0 0;
+    transform: translateY(0);
+  }
+
+  .auth[data-closing] { transform: translateY(100%); }
+
+  @starting-style {
+    .auth[open] {
+      opacity: 1;
+      transform: translateY(100%);
+    }
+  }
+
+  .authHeader {
+    padding: var(--sm-space-8) var(--sm-space-7) var(--sm-space-5);
+  }
+
+  .authBody {
+    padding: 0 var(--sm-space-7) var(--sm-space-6);
+  }
+
+  .authFooter {
+    padding-inline: var(--sm-space-7);
+  }
+}
+
 /* Without motion, opening and closing are immediate; the close still waits
    for its one-millisecond transition, so the same code path runs. */
 @media (prefers-reduced-motion: reduce) {
@@ -271,7 +428,10 @@
   .dialog[data-closing],
   .process[data-closing],
   .dialog::backdrop,
-  .process::backdrop {
+  .process::backdrop,
+  .auth,
+  .auth[data-closing],
+  .auth::backdrop {
     transition-duration: 1ms;
   }
 }

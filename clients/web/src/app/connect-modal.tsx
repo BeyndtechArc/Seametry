@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import type { WalletName } from "@solana/wallet-adapter-base";
 import { ContinueAction, QuietAction } from "@seametry/ui";
-import { ModalSheet } from "@seametry/ui/modal-sheet";
+import { Icon } from "@seametry/ui/icons";
+import { AuthDialog } from "@seametry/ui/modal-sheet";
 import { authClient } from "@/lib/auth-client";
 import type { AccountSession } from "@/lib/account-session";
 import { announceSessionChange } from "@/lib/account-session";
@@ -53,7 +54,7 @@ type Step =
  */
 export function ConnectModal({ open, onClose, onConnected, session, link = false }: { open: boolean; onClose: () => void; onConnected?: () => void; session: AccountSession & { refresh: () => void }; link?: boolean }) {
   const { wallets, wallet, connected, select, connect } = useWallet();
-  const { failure, clear } = useWalletFailure();
+  const { clear } = useWalletFailure();
   const [step, setStep] = useState<Step>({ kind: "choose" });
   const pathname = usePathname();
   const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
@@ -101,8 +102,9 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
       if ((signedOut || link) && (candidate.signIn || candidate.signMessage)) void signInWith(step.name, candidate);
       else finish();
     };
-    const refused = (error: { message?: string }) => {
-      setStep({ kind: "problem", name: step.name, message: `Connection was not completed: ${error.message || failure || "the wallet refused."}`, retry: true });
+    // The wallet's own error text is not shown; it is often an internal code.
+    const refused = () => {
+      setStep({ kind: "problem", name: step.name, message: `${step.name} did not complete the connection. Nothing changed.`, retry: true });
     };
     adapter.on("connect", connectedNow);
     adapter.on("error", refused);
@@ -165,19 +167,53 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
   } : undefined;
   const allocation = pathname === "/app/allocation";
 
-  return (
-    <ModalSheet open={open} onClose={close} title="Connect a wallet" register={signedOut ? "Sign in" : "Wallet"} closeLabel="Close">
-      <div ref={body} className={styles.connectModal} data-testid="connect-modal" data-step={step.kind}>
-        {session.state === "signed-in" && link ? <p>Choose the wallet to link to your account. Linking signs a message, never a transaction.</p> : null}
-        {session.state === "signed-in" && !link ? <p>You are signed in. Connecting a wallet shows its balances here; it asks for no signature.</p> : null}
-        {signedOut ? <p>Choose a wallet. Signing in with it signs a message, never a transaction.</p> : null}
+  const title = signedOut ? "Sign in to Seametry" : link ? "Link a wallet" : "Connect a wallet";
+  const lead = signedOut
+    ? "Your wallet is your account. Signing in signs a message, never a transaction."
+    : link
+      ? "Choose the wallet to link to your account. Linking signs a message, never a transaction."
+      : "You are signed in. Connecting a wallet shows its balances here; it asks for no signature.";
+  const detected = new Set(ordered.map((entry) => entry.adapter.name as string));
+  const installable = installLinks.filter((entry) => !detected.has(entry.name));
+  const pending = step.kind === "connecting" || step.kind === "signing" ? step : null;
+  const pendingIcon = pending ? wallets.find((entry) => entry.adapter.name === pending.name)?.adapter.icon : undefined;
 
-        {step.kind === "connecting" ? <p role="status">Approve the connection in {step.name}.</p> : null}
-        {step.kind === "signing" ? (
-          <p role="status">{step.phase === "wallet" ? `Check ${step.name} to sign in.` : "Confirming the signature."}</p>
+  return (
+    <AuthDialog
+      open={open}
+      onClose={close}
+      title={title}
+      lead={lead}
+      // next/image writes an inline style attribute, which the CSP refuses on
+      // server-rendered markup; brand-mark.tsx draws the mark the same way.
+      // eslint-disable-next-line @next/next/no-img-element
+      mark={<img src="/logo.svg" width={32} height={32} alt="" />}
+      closeLabel="Close"
+      footer={
+        <div className={styles.authFooterLine}>
+          <span><Icon name="key" /> Non-custodial. Nothing moves without your signature.</span>
+          <span className={styles.authLegal}><a href="/terms">Terms</a><a href="/privacy-policy">Privacy policy</a></span>
+        </div>
+      }
+    >
+      <div ref={body} className={styles.connectModal} data-testid="connect-modal" data-step={step.kind}>
+        {pending ? (
+          <div className={styles.authPending}>
+            <span className={styles.authPendingMark} aria-hidden="true">
+              {pendingIcon ? <Image src={pendingIcon} width={28} height={28} alt="" unoptimized /> : <Icon name="wallet" />}
+            </span>
+            <p role="status">
+              {pending.kind === "connecting" ? `Approve the connection in ${pending.name}.` : pending.phase === "wallet" ? `Check ${pending.name} to sign in.` : "Confirming the signature."}
+            </p>
+            <span className={styles.authPendingHint}>
+              {pending.kind === "connecting" ? "Waiting for the wallet." : pending.phase === "wallet" ? "The wallet shows a message to sign. It is not a transaction." : "Checking the signature with Seametry."}
+            </span>
+            <span className={styles.authProgress} aria-hidden="true"><span /></span>
+          </div>
         ) : null}
+
         {step.kind === "problem" ? (
-          <div className={styles.connectProblem}>
+          <div className={styles.authProblem}>
             <p role="alert">{step.message}</p>
             <div className={styles.connectActions}>
               {step.retry ? <ContinueAction onClick={() => (connected && wallet ? void signInWith(step.name, signing(wallet.adapter)) : choose(step.name))}>Try again</ContinueAction> : null}
@@ -186,32 +222,39 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
           </div>
         ) : null}
 
-        {step.kind === "choose" || step.kind === "connecting" ? (
+        {step.kind === "choose" ? (
           <section className={styles.connectSection} aria-label="Wallets">
             {!hydrated ? (
-              <p role="status">Looking for wallets in this browser.</p>
-            ) : ordered.length === 0 ? (
-              <>
-                <p>No signing wallet is available in this browser. Install one, then reload this page.</p>
-                {installLinks.map((link) => (
-                  <a key={link.name} className={styles.walletChoice} href={link.href} target="_blank" rel="noreferrer">
-                    <span />
-                    <span>Install {link.name}</span>
-                  </a>
-                ))}
-              </>
+              <p role="status" className={styles.authNote}>Looking for wallets in this browser.</p>
             ) : (
-              ordered.map((entry) => (
-                <button className={styles.walletChoice} type="button" key={entry.adapter.name} disabled={step.kind === "connecting"} onClick={() => choose(entry.adapter.name)}>
-                  <Image className={styles.walletBrand} src={entry.adapter.icon} width={24} height={24} alt="" unoptimized />
-                  <span>Connect {entry.adapter.name}</span>
-                </button>
-              ))
+              <>
+                {ordered.length === 0 ? <p className={styles.authNote}>No signing wallet is available in this browser. Install one, then reload this page.</p> : null}
+                <ul className={styles.walletRows}>
+                  {ordered.map((entry) => (
+                    <li key={entry.adapter.name}>
+                      <button className={styles.walletRow} type="button" aria-label={`Connect ${entry.adapter.name}`} onClick={() => choose(entry.adapter.name)}>
+                        <Image className={styles.walletBrand} src={entry.adapter.icon} width={28} height={28} alt="" unoptimized />
+                        <span className={styles.walletName}>{entry.adapter.name}</span>
+                        <span className={styles.walletBadge} data-kind="detected">Detected</span>
+                      </button>
+                    </li>
+                  ))}
+                  {installable.map((entry) => (
+                    <li key={entry.name}>
+                      <a className={styles.walletRow} href={entry.href} target="_blank" rel="noreferrer" aria-label={`Install ${entry.name}`}>
+                        <span className={styles.walletBlank} aria-hidden="true"><Icon name="wallet" /></span>
+                        <span className={styles.walletName}>{entry.name}</span>
+                        <span className={styles.walletBadge} data-kind="install">Install <Icon name="external" /></span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
             {handoff ? (
               <div className={styles.phoneWalletHandoff}>
-                <a className={styles.walletChoice} href={handoff.phantom}>{allocation ? "Open Allocation in Phantom" : "Open this page in Phantom"}</a>
-                <a className={styles.walletChoice} href={handoff.solflare}>{allocation ? "Open Allocation in Solflare" : "Open this page in Solflare"}</a>
+                <a className={styles.walletRow} href={handoff.phantom}><span className={styles.walletName}>{allocation ? "Open Allocation in Phantom" : "Open this page in Phantom"}</span></a>
+                <a className={styles.walletRow} href={handoff.solflare}><span className={styles.walletName}>{allocation ? "Open Allocation in Solflare" : "Open this page in Solflare"}</span></a>
                 <p>{allocation ? "The plan travels with either link. Quotes and signatures do not." : "Review the action in your wallet before signing."}</p>
               </div>
             ) : null}
@@ -219,11 +262,18 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
         ) : null}
 
         {signedOut && step.kind === "choose" ? (
-          <section className={styles.connectSection} aria-label="Other ways to sign in">
-            <QuietAction onClick={() => void authClient.signIn.social({ provider: "google", callbackURL: `${window.location.pathname}${window.location.search}` })}>Continue with Google</QuietAction>
-          </section>
+          <>
+            <div className={styles.authDivider} role="separator">or</div>
+            <section className={styles.connectSection} aria-label="Other ways to sign in">
+              <button className={styles.walletRow} type="button" data-kind="provider" onClick={() => void authClient.signIn.social({ provider: "google", callbackURL: `${window.location.pathname}${window.location.search}` })}>
+                <span className={styles.walletBlank} aria-hidden="true"><Icon name="google" /></span>
+                <span className={styles.walletName}>Continue with Google</span>
+              </button>
+            </section>
+            {/* Email sign-in is reserved here and arrives with PR8. */}
+          </>
         ) : null}
       </div>
-    </ModalSheet>
+    </AuthDialog>
   );
 }
