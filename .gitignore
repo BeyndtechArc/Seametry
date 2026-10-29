@@ -32,3 +32,8 @@ coverage.txt
 # Storm's visual reference set (third-party screenshots and studies).
 # Kept local: it guides the art direction but is not ours to publish.
 /references/
+
+# Outreach lead exports (third parties' names and handles). Kept local: the
+# repository is public and these are not ours to publish.
+/seametry-leads-*.json
+/colosseum-leads*.csv
