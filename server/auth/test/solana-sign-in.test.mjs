@@ -200,13 +200,32 @@ test("signing in with a wallet owned by another account while signed in is refus
   assert.equal(session.user.id, me.result.body.user.id);
 });
 
-test("signing in with an unowned wallet while signed in is refused, not linked", async () => {
+test("signing with an unowned wallet while signed in links it to that account", async () => {
   const h = harness();
   const me = await signIn(h, Keypair.generate());
+  const cookie = sessionCookie(me.result.cookie);
   const fresh = Keypair.generate();
-  const { result } = await signIn(h, fresh, { cookie: sessionCookie(me.result.cookie) });
-  assert.equal(result.status, 409);
-  assert.equal(h.links.has(fresh.publicKey.toBase58()), false);
+  const address = fresh.publicKey.toBase58();
+  const { result } = await signIn(h, fresh, { cookie });
+  assert.equal(result.status, 200);
+  assert.deepEqual(result.body, { linked: true, user: { id: me.result.body.user.id, walletAddress: address } });
+  assert.equal(result.cookie.includes("session_token="), false);
+  assert.equal(h.links.get(address), me.result.body.user.id);
+  assert.equal(h.db.user.length, 1);
+  assert.ok(h.db.account.some((row) => row.providerId === "solana" && row.accountId === address && row.userId === me.result.body.user.id));
+  const session = await h.auth.api.getSession({ headers: new Headers({ cookie }) });
+  assert.equal(session.user.id, me.result.body.user.id);
+});
+
+test("signing again with a wallet already linked to this account changes nothing", async () => {
+  const h = harness();
+  const keypair = Keypair.generate();
+  const me = await signIn(h, keypair);
+  const { result } = await signIn(h, keypair, { cookie: sessionCookie(me.result.cookie) });
+  assert.equal(result.status, 200);
+  assert.equal(result.body.linked, true);
+  assert.equal(h.db.account.length, 1);
+  assert.equal(h.db.user.length, 1);
 });
 
 test("a wallet-only account is never email-verified and its token carries no email", async () => {

@@ -33,6 +33,12 @@ export function poolWallets(pool) {
   };
 }
 
+async function ensureWalletAccount(adapter, address, userId) {
+  if (!(await adapter.findAccountByKey({ providerId: "solana", accountId: address }))) {
+    await adapter.createAccount({ userId, providerId: "solana", accountId: address });
+  }
+}
+
 const NONCE_PREFIX = "solana-sign-in:";
 const NONCE_LIFETIME_MS = 5 * 60 * 1000;
 const STATEMENT = "Sign in to Seametry. This does not approve a transaction.";
@@ -55,9 +61,10 @@ function bytes(encoded, length) {
 //
 // Ownership of a wallet is seametry_wallet_link, the same table the link flow
 // and the service token's wallets claim read (wallets.ownerOf / wallets.claim).
-// A wallet nobody owns gets a new wallet-only account. Signing in while a
-// session is open is refused: linking a wallet to a signed-in account is the
-// signed-challenge link flow, not this one.
+// Signed out, a wallet nobody owns gets a new wallet-only account. Signed in,
+// the same signature links an unowned wallet to the open account and keeps
+// its session; a wallet owned by another account is refused (409), never
+// merged.
 export function solanaSignIn({ trustedOrigins, wallets, chainId = "solana:mainnet", now = () => new Date() }) {
   const trusted = new Set(trustedOrigins);
   const originOf = (ctx) => {
@@ -114,13 +121,15 @@ export function solanaSignIn({ trustedOrigins, wallets, chainId = "solana:mainne
         if (!valid) refuse("UNAUTHORIZED", "INVALID_SIGNATURE", "The wallet signature could not be verified.");
 
         let owner = await wallets.ownerOf(address);
+        const adapter = ctx.context.internalAdapter;
         const current = await getSessionFromCtx(ctx);
         if (current) {
           if (owner && owner !== current.user.id) refuse("CONFLICT", "WALLET_OWNED", "This wallet belongs to another account.");
-          if (!owner) refuse("CONFLICT", "SIGNED_IN", "You are already signed in. Link this wallet from your account instead.");
+          if (!owner && !(await wallets.claim(address, current.user.id))) refuse("CONFLICT", "WALLET_OWNED", "This wallet belongs to another account.");
+          await ensureWalletAccount(adapter, address, current.user.id);
+          return ctx.json({ linked: true, user: { id: current.user.id, walletAddress: address } });
         }
 
-        const adapter = ctx.context.internalAdapter;
         let user = owner ? await adapter.findUserById(owner) : undefined;
         if (!user) {
           const created = await adapter.createUser({ name: address, email: walletEmail(address), emailVerified: false });
@@ -132,9 +141,7 @@ export function solanaSignIn({ trustedOrigins, wallets, chainId = "solana:mainne
             if (!user) refuse("CONFLICT", "WALLET_OWNED", "This wallet belongs to another account.");
           }
         }
-        if (!(await adapter.findAccountByKey({ providerId: "solana", accountId: address }))) {
-          await adapter.createAccount({ userId: user.id, providerId: "solana", accountId: address });
-        }
+        await ensureWalletAccount(adapter, address, user.id);
 
         const session = await adapter.createSession(user.id);
         if (!session) refuse("INTERNAL_SERVER_ERROR", "SESSION_FAILED", "Sign-in failed. Try again.");
