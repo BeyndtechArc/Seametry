@@ -1,37 +1,22 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
-import type { WalletName } from "@solana/wallet-adapter-base";
 import { QuietAction } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
 import { formatAmount, formatBalance } from "@/lib/amount";
 import { relativeEvidenceAge } from "@/lib/storm-fixture";
 import type { Balances } from "@/lib/wallet/balances";
-import { useWalletFailure, walletNetwork } from "@/lib/wallet-provider";
+import { useAccountSession } from "@/lib/account-session";
+import { walletNetwork } from "@/lib/wallet-provider";
 import { NetworkBadge } from "./app/_shell/page-header";
+import { ConnectModal } from "./connect-modal";
 import styles from "./site.module.css";
-
-const noSubscription = () => () => {};
-const subscribeToPlanUrl = (changed: () => void) => {
-  window.addEventListener("seametry:plan-url", changed);
-  window.addEventListener("popstate", changed);
-  return () => {
-    window.removeEventListener("seametry:plan-url", changed);
-    window.removeEventListener("popstate", changed);
-  };
-};
 
 function middle(address: string) {
   return `${address.slice(0, 4)}…${address.slice(-4)}`;
-}
-
-function walletBrowseLink(pageUrl: string, wallet: "phantom" | "solflare") {
-  const page = new URL(pageUrl);
-  const base = wallet === "phantom" ? "https://phantom.com/ul/browse/" : "https://solflare.com/ul/v1/browse/";
-  return `${base}${encodeURIComponent(page.href)}?ref=${encodeURIComponent(page.origin)}`;
 }
 
 type BalanceReading = { state: "reading" } | { state: "read"; balances: Balances } | { state: "unavailable"; reason: string };
@@ -90,16 +75,18 @@ function Holdings({ reading, network }: { reading: BalanceReading | undefined; n
 }
 
 /**
- * components.md, Wallet state. A native disclosure, so opening it by
- * keyboard and announcing it need no script of this component's own.
- * Connecting signs nothing and moves nothing, so it is never a Key.
+ * components.md, Wallet state. Connected, a native disclosure, so opening it
+ * by keyboard and announcing it need no script of this component's own.
+ * Not connected, the same control opens the connect modal, which also signs
+ * in when the account service is configured (accountConfigured).
  */
-export function WalletState() {
-  const { publicKey, connected, connecting, wallets, wallet, select, connect, disconnect } = useWallet();
-  const { failure, clear } = useWalletFailure();
-  // A silent reconnect on reload may fail quietly; only a choice made here
-  // earns an error message.
-  const [chose, setChose] = useState(false);
+export function WalletState({ accountConfigured = false }: { accountConfigured?: boolean }) {
+  const { publicKey, connected, connecting, wallet, disconnect } = useWallet();
+  const session = useAccountSession(accountConfigured);
+  const [choosing, setChoosing] = useState(false);
+  // After the modal connects a wallet, the disclosure opens on its balances,
+  // as it did when the wallet list lived inside it.
+  const details = useRef<HTMLDetailsElement>(null);
   const [refresh, setRefresh] = useState(0);
   const address = publicKey?.toBase58();
   const pathname = usePathname();
@@ -107,34 +94,16 @@ export function WalletState() {
   const reading = useBalances(connected ? address : undefined, network, refresh);
   const visibleAsset = network === "mainnet" ? "USDC" : "SOL";
   const visibleHolding = reading?.state === "read" ? reading.balances.holdings.find((holding) => holding.asset === visibleAsset) : undefined;
-  const connectionError = chose && !connected ? failure : undefined;
-  // The server sees no wallet, while a browser with one installed lists it on
-  // its first render, so the two disagreed and React redrew the header (error
-  // number 418) for every visitor with a wallet. The list waits until after the
-  // page has hydrated; false on the server and during hydration, true after.
-  const hydrated = useSyncExternalStore(noSubscription, () => true, () => false);
-  const pageUrl = useSyncExternalStore(subscribeToPlanUrl, () => window.location.href, () => "");
-  const phone = hydrated && /Android|iPhone|iPad|iPod/.test(navigator.userAgent);
-  const handoff = phone && pageUrl ? {
-    phantom: walletBrowseLink(pageUrl, "phantom"),
-    solflare: walletBrowseLink(pageUrl, "solflare"),
-  } : undefined;
   const displayedBalance = visibleHolding ? `${formatBalance(visibleHolding.atoms, visibleHolding.scale)} ${visibleAsset}` : undefined;
 
-  const choose = (name: WalletName) => {
-    clear();
-    setChose(true);
-    // Choosing the wallet already selected (after declining its prompt, say)
-    // does not change the adapter, so the provider will not connect again on
-    // its own. The provider is already subscribed to that adapter, so asking
-    // it directly is safe; its error reaches useWalletFailure.
-    if (wallet?.adapter.name === name) void connect().catch(() => {});
-    else select(name);
-  };
-
   return (
-    <details className={styles.walletState} data-testid="wallet-state" onToggle={(event) => { if (event.currentTarget.open) setRefresh((value) => value + 1); }}>
-      <summary id="app-wallet" data-connected={connected || undefined} aria-label={connected && address ? `Wallet ${address}. ${displayedBalance ?? "Balance loading or unavailable"}` : "Connect wallet"}>
+    <>
+    <details ref={details} className={styles.walletState} data-testid="wallet-state" onToggle={(event) => { if (event.currentTarget.open) setRefresh((value) => value + 1); }}>
+      <summary id="app-wallet" onClick={(event) => {
+        if (connected) return;
+        event.preventDefault();
+        setChoosing(true);
+      }} data-connected={connected || undefined} aria-label={connected && address ? `Wallet ${address}. ${displayedBalance ?? "Balance loading or unavailable"}` : "Connect wallet"}>
         {connecting ? <span className={styles.walletLabel}>Connecting</span> : connected && address ? <><span className={styles.walletBalance}>{displayedBalance ?? "Wallet"}</span><span className={styles.walletLabel}>{middle(address)}</span></> : <span className={styles.walletLabel}>Connect</span>}
         <span className={styles.walletIcon} data-connected={connected || undefined}>
           {connected && wallet ? <Image src={wallet.adapter.icon} width={22} height={22} alt="" unoptimized /> : <Icon name="wallet" />}
@@ -152,27 +121,10 @@ export function WalletState() {
             <Holdings reading={reading} network={network} />
             <QuietAction icon="wallet" onClick={() => void disconnect()}>Disconnect wallet</QuietAction>
           </div>
-        ) : !hydrated ? (
-          <p>Looking for wallets in this browser.</p>
-        ) : wallets.length === 0 ? (
-          <p>No signing wallet is available in this browser. On a phone, open this page in Phantom or Solflare to connect and review each action.</p>
-        ) : (
-          wallets.map((wallet) => (
-            <button className={styles.walletChoice} type="button" key={wallet.adapter.name} disabled={connecting} onClick={() => choose(wallet.adapter.name)}>
-              <Image className={styles.walletBrand} src={wallet.adapter.icon} width={24} height={24} alt="" unoptimized />
-              <span>Connect {wallet.adapter.name}</span>
-            </button>
-          ))
-        )}
-        {!connected && handoff ? (
-          <div className={styles.phoneWalletHandoff}>
-            <a className={styles.walletChoice} href={handoff.phantom}>{pathname === "/app/allocation" ? "Open Allocation in Phantom" : "Open this page in Phantom"}</a>
-            <a className={styles.walletChoice} href={handoff.solflare}>{pathname === "/app/allocation" ? "Open Allocation in Solflare" : "Open this page in Solflare"}</a>
-            <p>{pathname === "/app/allocation" ? "The plan travels with either link. Quotes and signatures do not." : "Review the action in your wallet before signing."}</p>
-          </div>
         ) : null}
-        {connectionError ? <p role="alert">Connection was not completed: {connectionError}</p> : null}
       </div>
     </details>
+    <ConnectModal open={choosing} onClose={() => setChoosing(false)} onConnected={() => { if (details.current) details.current.open = true; }} session={session} />
+    </>
   );
 }

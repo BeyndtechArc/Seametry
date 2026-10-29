@@ -48,7 +48,8 @@ async function postJson(post: typeof fetch, path: string, body: unknown) {
   return { status: response.status, ok: response.ok, body: parsed };
 }
 
-export async function signInWithSolana(wallet: SignInWallet, post: typeof fetch = fetch): Promise<SolanaSignInResult> {
+// onSigned runs once the wallet has signed, before the service confirms it.
+export async function signInWithSolana(wallet: SignInWallet, post: typeof fetch = fetch, { onSigned }: { onSigned?: () => void } = {}): Promise<SolanaSignInResult> {
   if (!wallet.signIn && !(wallet.signMessage && wallet.address && wallet.publicKey)) return refused("unsupported");
   let nonce;
   try {
@@ -74,6 +75,7 @@ export async function signInWithSolana(wallet: SignInWallet, post: typeof fetch 
     return refused(declined(error) ? "rejected" : "failed");
   }
 
+  onSigned?.();
   let verified;
   try {
     verified = await postJson(post, "/api/auth/solana/verify", {

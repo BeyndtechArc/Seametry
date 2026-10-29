@@ -217,15 +217,15 @@ test("the docs carry one page tree, search with stated states, and a contents ra
   await expect(page).toHaveURL(/\/docs\/the-key$/);
 });
 
-test("sign in distinguishes an account from its wallet while setup is unavailable", async ({ page }) => {
+test("sign in distinguishes an account from its wallet", async ({ page }) => {
   await page.goto("/sign-in");
 
   await expect(page.getByRole("heading", { level: 1, name: "Your account, your wallet." })).toBeVisible();
-  await expect(page.getByText("Account sign-in is unavailable while its database and provider are being configured.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByText("Each Allocation belongs to its signing address.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign message" })).toHaveCount(0);
   await expect(page.getByRole("main").locator("input")).toHaveCount(0);
-  await expect(page.getByRole("main").getByRole("link", { name: "Open the Allocation" })).toHaveAttribute("href", "/app/allocation");
+  await expect(page.getByRole("main").getByRole("link", { name: "Explore without an account" })).toHaveAttribute("href", "/app/allocation");
 });
 
 test("the public site publishes the terms and privacy policy used for account consent", async ({ page }) => {
@@ -261,7 +261,7 @@ test("the wallet state lives in the app's top bar, and connecting signs nothing"
   await expect(state).toBeVisible();
   await state.click();
   // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
-  await expect(bar.getByText("No signing wallet is available in this browser. On a phone, open this page in Phantom or Solflare to connect and review each action.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Connect a wallet" }).getByText("No signing wallet is available in this browser. Install one, then reload this page.", { exact: true })).toBeVisible();
 
   await page.goto("/app/allocation");
   await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();

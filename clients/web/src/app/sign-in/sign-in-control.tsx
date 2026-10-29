@@ -25,7 +25,8 @@ function ConfiguredSignInControl({ returnTo }: { returnTo: string }) {
 
   if (isPending) return <p role="status">Reading your account session.</p>;
 
-  if (session) {
+  // Only a session naming a user is signed in.
+  if (session?.user) {
     return (
       <>
         <p>Signed in as {session.user.email}. Connecting a wallet remains a separate step before signing a transaction.</p>

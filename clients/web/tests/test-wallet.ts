@@ -11,8 +11,15 @@ import type { Page } from "@playwright/test";
  * with its guard instructions added; built in Node, where the message can be
  * recompiled.
  */
-export async function registerTestWallet(page: Page, { trusted, signs = false, declines = false, rewrites = {} }: { trusted: boolean; signs?: boolean; declines?: boolean; rewrites?: Record<string, string> }) {
-  await page.addInitScript(({ trustedWallet, signsTransactions, declinesTransactions, rewritten }) => {
+/**
+ * signsIn adds solana:signIn and solana:signMessage, so Sign in with Solana
+ * can be exercised: the wallet signs whatever message the page asks for
+ * with a fixed 64-byte signature, and the auth routes are answered by the
+ * test. declinesSignIn throws Phantom's cancel wording instead. name sets
+ * the wallet's display name, for ordering tests.
+ */
+export async function registerTestWallet(page: Page, { trusted, signs = false, declines = false, rewrites = {}, signsIn = false, declinesSignIn = false, name = "Test wallet" }: { trusted: boolean; signs?: boolean; declines?: boolean; rewrites?: Record<string, string>; signsIn?: boolean; declinesSignIn?: boolean; name?: string }) {
+  await page.addInitScript(({ trustedWallet, signsTransactions, declinesTransactions, rewritten, signsInMessages, declinesSignInMessages, walletName }) => {
     // A signing wallet writes a distinct 64-byte signature into the first
     // signature slot (byte 0 is the compact count) and leaves the message
     // alone, as a real wallet does, so flows that read the signed
@@ -35,14 +42,14 @@ export async function registerTestWallet(page: Page, { trusted, signs = false, d
       address: "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d",
       publicKey,
       chains: ["solana:mainnet", "solana:devnet"],
-      features: ["solana:signTransaction"],
+      features: signsInMessages ? ["solana:signTransaction", "solana:signIn", "solana:signMessage"] : ["solana:signTransaction"],
       label: "Test account",
       icon: undefined,
     };
     let accounts: typeof account[] = trustedWallet ? [account] : [];
     const wallet = {
       version: "1.0.0",
-      name: "Test wallet",
+      name: walletName,
       icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>",
       chains: ["solana:mainnet", "solana:devnet"],
       get accounts() { return accounts; },
@@ -71,10 +78,31 @@ export async function registerTestWallet(page: Page, { trusted, signs = false, d
             return inputs.map((input) => ({ signedTransaction: sign(input.transaction) }));
           },
         },
+        ...(signsInMessages ? {
+          "solana:signIn": {
+            version: "1.0.0",
+            signIn: async (...inputs: Record<string, string>[]) => {
+              if (declinesSignInMessages) throw new Error("User rejected the request.");
+              accounts = [account];
+              listeners.forEach((listener) => listener({ accounts }));
+              return inputs.map((input) => {
+                const text = `${input.domain} wants you to sign in with your Solana account:\n${account.address}\n\n${input.statement}\n\nURI: ${input.uri}\nVersion: ${input.version}\nChain ID: ${input.chainId}\nNonce: ${input.nonce}\nIssued At: ${input.issuedAt}\nExpiration Time: ${input.expirationTime}`;
+                return { account, signedMessage: new TextEncoder().encode(text), signature: new Uint8Array(64).fill(7) };
+              });
+            },
+          },
+          "solana:signMessage": {
+            version: "1.0.0",
+            signMessage: async (...inputs: { message: Uint8Array }[]) => {
+              if (declinesSignInMessages) throw new Error("User rejected the request.");
+              return inputs.map((input) => ({ signedMessage: input.message, signature: new Uint8Array(64).fill(7) }));
+            },
+          },
+        } : {}),
       },
     };
     window.addEventListener("wallet-standard:app-ready", (event) => {
       (event as CustomEvent<{ register: (entry: unknown) => void }>).detail.register(wallet);
     });
-  }, { trustedWallet: trusted, signsTransactions: signs, declinesTransactions: declines, rewritten: rewrites });
+  }, { trustedWallet: trusted, signsTransactions: signs, declinesTransactions: declines, rewritten: rewrites, signsInMessages: signsIn, declinesSignInMessages: declinesSignIn, walletName: name });
 }
