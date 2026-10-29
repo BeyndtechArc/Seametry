@@ -2,10 +2,11 @@
 // pool per role, and the migration runner that gives each schema its own
 // role and its own migration history before any service reads from it.
 //
-// The outbox dispatcher and the object store interface (server/internal/
-// gateway/server.go's doc comment, mirroring docs/prd/API.md section 10)
-// are not built here yet; nothing in this repository needs them before a
-// service has data to dispatch or a raw payload to store.
+// The object store interface (server/internal/gateway/server.go's doc
+// comment, mirroring docs/prd/API.md section 10) is not built here yet. The
+// outbox has no dispatcher here either: Execution keeps its own,
+// execution.outbox, and a reader pulls through Execution's interface
+// (docs/SERVICE_CATALOG.md section 3.6).
 package store
 
 import (
@@ -13,6 +14,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io/fs"
+	"math"
 
 	"github.com/pressly/goose/v3"
 	gooselock "github.com/pressly/goose/v3/lock"
@@ -27,7 +29,11 @@ import (
 // database has a public schema to hold this one, deploy-time-only exception
 // to "a service owns its tables" (ENGINEERING_STANDARD.md section 10). No
 // running service queries this table; only this function does.
-func Migrate(ctx context.Context, db *sql.DB, schema string) ([]*goose.MigrationResult, error) {
+//
+// upTo stops at that migration version, Latest for every one; a test uses a
+// lower version to write rows as an older schema held them, then proves
+// what a later migration does with them.
+func Migrate(ctx context.Context, db *sql.DB, schema string, upTo int64) ([]*goose.MigrationResult, error) {
 	sub, err := fs.Sub(migrations.FS, schema)
 	if err != nil {
 		return nil, fmt.Errorf("store: %s has no migrations directory: %w", schema, err)
@@ -46,17 +52,20 @@ func Migrate(ctx context.Context, db *sql.DB, schema string) ([]*goose.Migration
 	if err != nil {
 		return nil, fmt.Errorf("store: building the migration provider for %s: %w", schema, err)
 	}
-	results, err := provider.Up(ctx)
+	results, err := provider.UpTo(ctx, upTo)
 	if err != nil {
 		return nil, fmt.Errorf("store: migrating %s: %w", schema, err)
 	}
 	return results, nil
 }
 
+// Latest is Migrate's target for every migration a schema has.
+const Latest int64 = math.MaxInt64
+
 // MigrateAll applies every schema in migrations.Schemas, in order.
 func MigrateAll(ctx context.Context, db *sql.DB) error {
 	for _, schema := range migrations.Schemas {
-		if _, err := Migrate(ctx, db, schema); err != nil {
+		if _, err := Migrate(ctx, db, schema, Latest); err != nil {
 			return err
 		}
 	}

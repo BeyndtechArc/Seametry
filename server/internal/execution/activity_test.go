@@ -21,6 +21,28 @@ import (
 // SEAMETRY_TEST_DATABASE_URL.
 func freshReport(t *testing.T) (*Report, *pgxpool.Pool) {
 	t.Helper()
+	dsn := freshDatabase(t)
+	ctx := context.Background()
+	db, err := store.Open(dsn)
+	if err != nil {
+		t.Fatalf("opening the test database: %v", err)
+	}
+	if err := store.MigrateAll(ctx, db); err != nil {
+		t.Fatalf("migrating the test database: %v", err)
+	}
+	db.Close()
+	pool, err := store.OpenPool(ctx, dsn)
+	if err != nil {
+		t.Fatalf("opening a pool on the test database: %v", err)
+	}
+	t.Cleanup(pool.Close)
+	return NewReport(pool), pool
+}
+
+// freshDatabase creates an empty database for one test, dropped when it
+// ends, and answers its address.
+func freshDatabase(t *testing.T) string {
+	t.Helper()
 	adminDSN := os.Getenv("SEAMETRY_TEST_DATABASE_URL")
 	if adminDSN == "" {
 		t.Skip("SEAMETRY_TEST_DATABASE_URL is not set; the record's guarantees are Postgres constraints and need a real Postgres to prove")
@@ -44,25 +66,12 @@ func freshReport(t *testing.T) (*Report, *pgxpool.Pool) {
 		t.Fatalf("SEAMETRY_TEST_DATABASE_URL is not a URL: %v", err)
 	}
 	parsed.Path = "/" + name
-	db, err := store.Open(parsed.String())
-	if err != nil {
-		t.Fatalf("opening %s: %v", name, err)
-	}
-	if err := store.MigrateAll(ctx, db); err != nil {
-		t.Fatalf("migrating %s: %v", name, err)
-	}
-	db.Close()
-	pool, err := store.OpenPool(ctx, parsed.String())
-	if err != nil {
-		t.Fatalf("opening a pool on %s: %v", name, err)
-	}
 	t.Cleanup(func() {
-		pool.Close()
 		if _, err := admin.ExecContext(ctx, "DROP DATABASE "+name+" WITH (FORCE)"); err != nil {
 			t.Errorf("dropping %s: %v", name, err)
 		}
 	})
-	return NewReport(pool), pool
+	return parsed.String()
 }
 
 const (

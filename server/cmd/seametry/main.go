@@ -37,6 +37,7 @@ import (
 	"github.com/BeyndtechArc/Seametry/server/internal/basket"
 	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
+	"github.com/BeyndtechArc/Seametry/server/internal/growth"
 	"github.com/BeyndtechArc/Seametry/server/internal/identity"
 	"github.com/BeyndtechArc/Seametry/server/internal/receipt"
 	"github.com/BeyndtechArc/Seametry/server/internal/solana"
@@ -193,6 +194,7 @@ func serve() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go settle(ctx, report, mainnet, feeWallet, alert.NewNotices(pool, mailer))
+	go project(ctx, growth.NewEvents(pool), report)
 
 	serveErr := make(chan error, 1)
 	go func() {

@@ -54,6 +54,16 @@ type ExecutionLeg struct {
 	ReconciledAt         pgtype.Timestamptz `db:"reconciled_at" json:"reconciled_at"`
 }
 
+type ExecutionOutbox struct {
+	ID         int64              `db:"id" json:"id"`
+	Xid        pgtype.Uint64      `db:"xid" json:"xid"`
+	Kind       string             `db:"kind" json:"kind"`
+	Wallet     pgtype.Text        `db:"wallet" json:"wallet"`
+	Payload    []byte             `db:"payload" json:"payload"`
+	OccurredAt pgtype.Timestamptz `db:"occurred_at" json:"occurred_at"`
+	WrittenAt  pgtype.Timestamptz `db:"written_at" json:"written_at"`
+}
+
 type ExecutionQuote struct {
 	ID            pgtype.UUID        `db:"id" json:"id"`
 	Wallet        string             `db:"wallet" json:"wallet"`
