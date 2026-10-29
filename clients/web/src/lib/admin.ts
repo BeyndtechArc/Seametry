@@ -71,14 +71,17 @@ async function section<T>(gateway: string, token: string, path: string, paramete
 }
 
 /**
- * Everything the Admin page shows, or undefined when the page must not
- * exist for this request. The session cookie is exchanged for a token here
+ * Everything the Admin page shows, "signed-out" when the visitor has no
+ * session to ask with (the page sends them to sign in), or undefined when
+ * the page must not exist for this request. The session cookie is exchanged for a token here
  * and the token goes only to the Gateway.
  */
-export async function readAdmin(cookie: string | null, query: AdminQuery): Promise<AdminRead | undefined> {
+export async function readAdmin(cookie: string | null, query: AdminQuery): Promise<AdminRead | "signed-out" | undefined> {
   const gateway = process.env.SEAMETRY_API_URL?.trim().replace(/\/$/, "");
-  if (!gateway || !cookie) return undefined;
+  if (!gateway) return undefined;
+  if (!cookie) return "signed-out";
   const issued = await exchangeAccountToken(cookie);
+  if ("signedOut" in issued) return "signed-out";
   if (!("token" in issued)) return undefined;
   let parameters = adminParameters(query);
   let admitted = await read(gateway, issued.token, "overview", parameters);

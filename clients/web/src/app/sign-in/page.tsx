@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { TextAction } from "@seametry/ui";
 import { accountServiceConfigured } from "@/lib/auth-proxy";
+import { safeReturnPath } from "@/lib/return-path";
 import { PublicShell, SectionHeading } from "../public-shell";
 import { SiteWalletProvider } from "@/lib/wallet-provider";
 import { SignInControl } from "./sign-in-control";
@@ -12,8 +13,10 @@ export const metadata: Metadata = {
   description: "Open a Seametry account or continue with an external wallet.",
 };
 
-export default async function SignInPage() {
+export default async function SignInPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
+  const { next } = await searchParams;
+  const returnTo = safeReturnPath(typeof next === "string" ? next : undefined) ?? "/sign-in";
   return (
     <PublicShell current="sign-in">
       <header className={styles.accessPanel}>
@@ -26,9 +29,9 @@ export default async function SignInPage() {
             transaction. You can browse the catalogue without an account.
           </p>
         </div>
-        <div className={styles.signInBoundary}>
+        <div className={styles.signInBoundary} data-return-to={returnTo}>
           <SiteWalletProvider>
-            <SignInControl configured={accountServiceConfigured()} />
+            <SignInControl configured={accountServiceConfigured()} returnTo={returnTo} />
           </SiteWalletProvider>
           <TextAction href="/app/alloys">Inspect live Alloys</TextAction>
         </div>

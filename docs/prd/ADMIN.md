@@ -11,9 +11,13 @@ Signed in with Google, with an email Google verified, that the Gateway's
 decision is the Gateway's: the account authority's service token carries
 `email` and `email_verified`, and `AdminGate` in
 `server/internal/gateway/admin.go` admits `/v1/admin/*` only for that pair.
-Everyone else, signed out included, gets the same 404 as a path that does not
-exist, from the Gateway and from the web page, so the Admin's existence is not
-advertised. An empty or unset allowlist admits no one.
+A signed-out visitor to the web page is sent to `/sign-in?next=/admin` and
+back after signing in; the return path is accepted only when it is a path on
+this site (`clients/web/src/lib/return-path.ts`). Everyone signed in but not
+admitted gets the same 404 as a path that does not exist, from the Gateway and
+from the web page. The redirect does reveal that /admin exists; who may read
+it is still decided only in the Gateway. An empty or unset allowlist admits no
+one.
 
 The web page reads only through `/v1/admin/*`, on the server, with the
 account token it exchanges for the visitor's session cookie. No token, figure

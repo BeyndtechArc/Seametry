@@ -14,17 +14,27 @@ async function signIn(page: Page, name: string) {
 // site's not-found page rendered from the payload, as /docs/{unknown} is; a
 // route that matches nothing is rendered in the HTML itself. Both are 404
 // and both show the same page, which is what each half below checks.
-test("signed out, signed in as anyone else, or with an unknown session, /admin answers 404 with no redirect and nothing of the Admin", async ({ request }) => {
-  for (const headers of [{}, session("fixture-member"), session("forged")]) {
+test("signed out or with an unknown session, /admin redirects to sign-in and names /admin, query included, as the way back", async ({ request }) => {
+  for (const headers of [{}, session("forged")]) {
     for (const path of ["/admin", "/admin?from=2026-10-01&to=2026-10-20&deployment=preview"]) {
       const response = await request.get(path, { headers, maxRedirects: 0 });
       const label = `${path} with ${JSON.stringify(headers)}`;
-      expect(response.status(), label).toBe(404);
-      expect(response.headers()["location"], label).toBeUndefined();
-      const html = await response.text();
-      for (const absent of ["Seametry&#x27;s record", "Seametry's record", "Admin", "fixture-member-token", "Read the period"]) {
-        expect(html, `${label} carries ${absent}`).not.toContain(absent);
-      }
+      expect([303, 307], label).toContain(response.status());
+      const location = new URL(response.headers()["location"] ?? "", "http://localhost:3847");
+      expect(location.pathname, label).toBe("/sign-in");
+      expect(location.searchParams.get("next"), label).toBe(path);
+    }
+  }
+});
+
+test("signed in as anyone else, /admin answers 404 with no redirect and nothing of the Admin", async ({ request }) => {
+  for (const path of ["/admin", "/admin?from=2026-10-01&to=2026-10-20&deployment=preview"]) {
+    const response = await request.get(path, { headers: session("fixture-member"), maxRedirects: 0 });
+    expect(response.status(), path).toBe(404);
+    expect(response.headers()["location"], path).toBeUndefined();
+    const html = await response.text();
+    for (const absent of ["Seametry&#x27;s record", "Seametry's record", "Admin", "fixture-member-token", "Read the period"]) {
+      expect(html, `${path} carries ${absent}`).not.toContain(absent);
     }
   }
 });
@@ -33,13 +43,11 @@ test("a non-admin's /admin shows the same not-found page as a missing route", as
   await page.goto("/no-such-route-in-the-register");
   const missing = await page.getByRole("heading", { level: 1 }).textContent();
   expect(missing).toBeTruthy();
-  for (const name of [undefined, "fixture-member"]) {
-    if (name) await signIn(page, name);
-    const response = await page.goto("/admin");
-    expect(response?.status()).toBe(404);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(missing!);
-    await expect(page.getByText("Seametry's record")).toHaveCount(0);
-  }
+  await signIn(page, "fixture-member");
+  const response = await page.goto("/admin");
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(missing!);
+  await expect(page.getByText("Seametry's record")).toHaveCount(0);
 });
 
 test("an admin reads every section, labelled by whose word each figure is, with no token or full address in the page", async ({ page }) => {

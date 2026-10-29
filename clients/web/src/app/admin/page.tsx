@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Figure } from "@seametry/ui";
 import { formatAmount } from "@/lib/amount";
 import { readAdmin, walletPageHref, type AdminQuery, type AdminRead, type Section } from "@/lib/admin";
@@ -83,11 +83,21 @@ function RangeForm({ query, period }: { query: AdminQuery; period: AdminRead["ov
   );
 }
 
+function searchOf(raw: Record<string, string | string[] | undefined>): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(raw)) for (const one of [value].flat()) if (typeof one === "string") search.append(key, one);
+  const rendered = search.toString();
+  return rendered ? `?${rendered}` : "";
+}
+
 export default async function AdminPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const raw = await searchParams;
   const one = (value: string | string[] | undefined) => (typeof value === "string" ? value : undefined);
   const query: AdminQuery = { from: one(raw.from), to: one(raw.to), deployment: one(raw.deployment), wallets: one(raw.wallets) };
   const admin = await readAdmin((await headers()).get("cookie"), query);
+  // Signed out, the way in is sign-in and back here. Signed in, who is an
+  // admin stays the Gateway's answer, and anyone else sees the plain 404.
+  if (admin === "signed-out") redirect(`/sign-in?next=${encodeURIComponent(`/admin${searchOf(raw)}`)}`);
   if (!admin) notFound();
 
   const now = Date.parse(admin.readAt);
