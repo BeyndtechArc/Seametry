@@ -1442,11 +1442,65 @@ components:
           $ref: '#/components/schemas/ActivityRefusal'
         first_touch:
           $ref: '#/components/schemas/ActivityFirstTouch'
+        conditions:
+          $ref: '#/components/schemas/ActivityConditions'
         legs:
           type: array
           description: Empty exactly when refusal is present.
           items:
             $ref: '#/components/schemas/ActivityLeg'
+    ActivityConditions:
+      type: object
+      description: >
+        What the admission policy stated for each stock the request named,
+        as the review shows it: the decision and the reasons behind it,
+        under one policy version and snapshot. Sent by the server from the
+        snapshot it holds, so it says what was stated, not what a reader
+        looked at.
+      required: [policy_version, snapshot_at, legs]
+      properties:
+        policy_version:
+          type: string
+          minLength: 1
+          maxLength: 40
+        snapshot_at:
+          type: string
+          format: date-time
+        legs:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/ActivityLegCondition'
+    ActivityLegCondition:
+      type: object
+      required: [mint, reasons]
+      properties:
+        mint:
+          type: string
+          description: The stock's base58 mint address.
+        decision:
+          type: string
+          pattern: '^[A-Z_]{1,20}$'
+          description: >
+            ALLOW, WARN or BLOCK today. Absent when the snapshot holds no
+            decision for this mint, which a sale of a stock no longer
+            admitted can be; a value not listed here is kept as sent.
+        reasons:
+          type: array
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/ActivityConditionReason'
+    ActivityConditionReason:
+      type: object
+      required: [code, severity]
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z0-9_]{1,80}$'
+        severity:
+          type: string
+          pattern: '^[A-Z_]{1,20}$'
     ActivityRefusal:
       type: object
       required: [status, text]

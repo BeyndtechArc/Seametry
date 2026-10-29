@@ -110,6 +110,17 @@ func (s Server) RecordActivityQuote(ctx context.Context, request api.RecordActiv
 			UTMContent: optional(touch.UtmContent), UTMTerm: optional(touch.UtmTerm), RefCode: optional(touch.RefCode),
 		}
 	}
+	if stated := body.Conditions; stated != nil {
+		conditions := &execution.Conditions{PolicyVersion: stated.PolicyVersion, SnapshotAt: stated.SnapshotAt}
+		for _, leg := range stated.Legs {
+			condition := execution.LegCondition{Mint: leg.Mint, Decision: optional(leg.Decision), Reasons: []execution.ConditionReason{}}
+			for _, reason := range leg.Reasons {
+				condition.Reasons = append(condition.Reasons, execution.ConditionReason{Code: reason.Code, Severity: reason.Severity})
+			}
+			conditions.Legs = append(conditions.Legs, condition)
+		}
+		quote.Conditions = conditions
+	}
 	for _, leg := range body.Legs {
 		quote.Legs = append(quote.Legs, execution.Leg{
 			ID: leg.Id, Mint: leg.Mint, Symbol: leg.Symbol, In: activityAmount(leg.In), Out: activityAmount(leg.Out), Floor: activityAmount(leg.Floor),

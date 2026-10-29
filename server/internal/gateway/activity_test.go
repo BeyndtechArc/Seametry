@@ -48,6 +48,10 @@ const quoteBody = `{
   "id": "5f0c2f5e-7a1d-4c2b-9b8e-1d2c3b4a5f60", "wallet": "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM",
   "network": "mainnet", "kind": "sell", "plan_size": 1, "deployment": "production", "prepared_at": "2026-10-16T09:00:00Z",
   "first_touch": {"referrer_host": "x.com", "utm_campaign": "colosseum", "ref_code": "dm-colosseum_fan"},
+  "conditions": {"policy_version": "policy-2026.10.1", "snapshot_at": "2026-09-23T00:00:00Z", "legs": [
+    {"mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh", "decision": "WARN", "reasons": [{"code": "ISSUER_CAN_FREEZE", "severity": "WARN"}]},
+    {"mint": "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM", "reasons": []}
+  ]},
   "legs": [{
     "id": "0d6a4d2e-1b3c-4e5f-8a7b-9c0d1e2f3a4b", "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh", "symbol": "NVDAx",
     "in": {"atoms": "450000", "scale": 8}, "out": {"atoms": "996449", "scale": 6}, "floor": {"atoms": "986484", "scale": 6},
@@ -109,6 +113,16 @@ func TestAQuoteReportReachesTheRecordWhole(t *testing.T) {
 	}
 	if leg.Out != (execution.Amount{Atoms: "996449", Scale: 6}) || leg.TipOffsetBps != 6 || leg.Landing != "sender" {
 		t.Fatalf("leg fields lost on the way: %+v", leg)
+	}
+	stated := quote.Conditions
+	if stated == nil || stated.PolicyVersion != "policy-2026.10.1" || len(stated.Legs) != 2 {
+		t.Fatalf("conditions lost on the way: %+v", stated)
+	}
+	if first := stated.Legs[0]; first.Decision != "WARN" || len(first.Reasons) != 1 || first.Reasons[0] != (execution.ConditionReason{Code: "ISSUER_CAN_FREEZE", Severity: "WARN"}) {
+		t.Fatalf("the first stock's conditions: %+v", first)
+	}
+	if second := stated.Legs[1]; second.Decision != "" || len(second.Reasons) != 0 {
+		t.Fatalf("a stock with no decision gained one: %+v", second)
 	}
 }
 

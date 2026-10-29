@@ -3,6 +3,8 @@ package execution
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -222,5 +224,52 @@ func TestTheOutboxMigrationWritesTheRecordAlreadyKeptInOrder(t *testing.T) {
 	}
 	if !events[3].OccurredAt.Equal(time.Date(2026, 10, 20, 9, 1, 5, 0, time.UTC)) {
 		t.Fatalf("settled at %s, want the block time", events[3].OccurredAt)
+	}
+}
+
+func TestTheConditionsAQuoteStatedAreKeptAndTravelInItsOutboxEvent(t *testing.T) {
+	report, pool := freshReport(t)
+	ctx := context.Background()
+	quote := preparedQuote(t, nil)
+	quote.Conditions = &Conditions{
+		PolicyVersion: "policy-2026.10.1", SnapshotAt: time.Date(2026, 9, 23, 0, 0, 0, 0, time.FixedZone("WAT", 3600)),
+		Legs: []LegCondition{
+			{Mint: nvdax, Decision: "WARN", Reasons: []ConditionReason{{Code: "ISSUER_CAN_FREEZE", Severity: "WARN"}, {Code: "ISSUER_CAN_PAUSE", Severity: "WARN"}}},
+			{Mint: holder, Decision: "HOLD_FOR_REVIEW", Reasons: []ConditionReason{}},
+			{Mint: "So11111111111111111111111111111111111111112", Reasons: []ConditionReason{}},
+		},
+	}
+	if err := report.RecordQuote(ctx, quote); err != nil {
+		t.Fatalf("recording the quote: %v", err)
+	}
+	var kept []byte
+	if err := pool.QueryRow(ctx, "SELECT conditions FROM execution.quotes WHERE id = $1", quote.ID).Scan(&kept); err != nil {
+		t.Fatal(err)
+	}
+	var stored Conditions
+	if err := json.Unmarshal(kept, &stored); err != nil {
+		t.Fatal(err)
+	}
+	if stored.PolicyVersion != "policy-2026.10.1" || !stored.SnapshotAt.Equal(time.Date(2026, 9, 22, 23, 0, 0, 0, time.UTC)) || len(stored.Legs) != 3 {
+		t.Fatalf("kept conditions: %+v", stored)
+	}
+	if stored.Legs[1].Decision != "HOLD_FOR_REVIEW" || stored.Legs[2].Decision != "" || len(stored.Legs[0].Reasons) != 2 {
+		t.Fatalf("a decision was changed on the way in: %+v", stored.Legs)
+	}
+	events := outboxHolding(t, report, OutboxCursor{}, 1)
+	var carried struct{ Conditions Conditions }
+	if err := json.Unmarshal(events[0].Payload, &carried); err != nil {
+		t.Fatal(err)
+	}
+	if len(carried.Conditions.Legs) != 3 || carried.Conditions.Legs[0].Reasons[1].Code != "ISSUER_CAN_PAUSE" {
+		t.Fatalf("the outbox event carries %+v", carried.Conditions)
+	}
+
+	bad := preparedQuote(t, nil)
+	bad.Conditions = &Conditions{PolicyVersion: "policy-2026.10.1", SnapshotAt: time.Now(), Legs: []LegCondition{{Mint: nvdax, Reasons: []ConditionReason{{Code: "freeze", Severity: "WARN"}}}}}
+	err := report.RecordQuote(ctx, bad)
+	var invalid Invalid
+	if !errors.As(err, &invalid) || !strings.Contains(invalid.Reason, "conditions.legs[0].reasons[0].code") {
+		t.Fatalf("a malformed reason code: got %v, want it refused by name", err)
 	}
 }
