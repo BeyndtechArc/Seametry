@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
+import { themeBootScript, themeColor } from "@seametry/ui/theme-boot";
 import "@seametry/ui/tokens.css";
 import "./globals.css";
 import { FirstTouchSignal } from "./first-touch-signal";
@@ -30,16 +32,26 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Seametry", description: "Open-AP ETFs on Solana: baskets that keep working when issuers freeze.", images: [flyer] },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+// The browser chrome follows the mode: ThemeControl and the head script
+// rewrite this meta when the page is dark.
+export const viewport: Viewport = { themeColor: themeColor.light };
+
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // The CSP admits inline script only with this request's nonce (src/proxy.ts).
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
     <html
       lang="en"
-      // Rendered light on the server so the first paint is already the
-      // default mode (ThemeControl in @seametry/ui); a stored dark choice is
-      // applied on mount.
+      // Rendered light on the server; the head script below sets the stored,
+      // system or route default before first paint, so the attribute the
+      // client hydrates can differ from this one by design.
       data-theme="light"
+      suppressHydrationWarning
       className={`${sentient.variable} ${switzer.variable} ${fragmentMono.variable}`}
     >
+      <head>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body>
         <FirstTouchSignal />
         {children}

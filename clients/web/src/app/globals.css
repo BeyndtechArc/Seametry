@@ -19,6 +19,24 @@ html[data-theme="dark"] {
   color-scheme: dark;
 }
 
+/* Figures draw the touch hue from the primitive scale in light; dark takes
+   the sage accent so no lime survives on the near-black ground. */
+html {
+  --figure-touch: var(--sm-scale-touch-500);
+  --figure-touch-ink: var(--sm-scale-touch-50);
+}
+
+html[data-theme="dark"] {
+  --figure-touch: var(--sm-accent-touch);
+  --figure-touch-ink: var(--sm-text-onTouch);
+}
+
+/* Selected text takes the provenance field tint in either mode. */
+::selection {
+  background: color-mix(in srgb, var(--sm-accent-provenance) 32%, var(--sm-surface-ground));
+  color: var(--sm-text-primary);
+}
+
 html,
 body {
   max-width: 100vw;

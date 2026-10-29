@@ -10,6 +10,7 @@
     "./modal-sheet": "./src/modal-sheet.tsx",
     "./plates": "./src/plates.tsx",
     "./theme-control": "./src/theme-control.tsx",
+    "./theme-boot": "./src/theme-boot.ts",
     "./tokens.css": "./src/generated/tokens.css",
     "./tokens": "./src/generated/tokens.ts",
     "./toast": "./src/toast.tsx",

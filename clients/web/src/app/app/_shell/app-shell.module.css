@@ -180,9 +180,18 @@
   }
 
   .statusBar {
-    display: block;
+    display: flex;
+    align-items: center;
     border-top: 0.5px solid var(--sm-line-rule);
     background: var(--sm-surface-sheet);
+  }
+
+  .statusBar > nav {
+    flex: 1;
+  }
+
+  .statusTheme {
+    margin-right: var(--sm-space-8);
   }
 
   .statusInner {

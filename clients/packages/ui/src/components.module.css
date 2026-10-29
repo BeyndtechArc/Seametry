@@ -1136,6 +1136,62 @@
   height: var(--sm-space-6);
 }
 
+/* Light, dark or system: three 44px segments on one hairline track. */
+.themeChoice {
+  display: inline-flex;
+  gap: var(--sm-space-1);
+  padding: var(--sm-space-1);
+  border: 1px solid var(--sm-line-rule);
+  border-radius: var(--sm-radius-control);
+}
+
+.themeOption {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sm-space-2);
+  min-width: var(--sm-size-target);
+  min-height: var(--sm-size-target);
+  padding: 0 var(--sm-space-3);
+  border-radius: var(--sm-radius-control);
+  color: var(--sm-text-secondary);
+  cursor: pointer;
+}
+
+.themeOption input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.themeOption svg {
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
+}
+
+.themeOption:has(input:checked) {
+  background: var(--sm-surface-raised);
+  color: var(--sm-text-primary);
+}
+
+.themeOption:has(input:focus-visible) {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: 0;
+}
+
+@media (max-width: 520px) {
+  .themeOption span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
 .key:focus-visible,
 .routeAction:focus-visible,
 .quietAction:focus-visible,

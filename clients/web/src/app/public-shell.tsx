@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Digest, RegisterFooter, Rule } from "@seametry/ui";
+import { ThemeChoice } from "@seametry/ui/theme-control";
 import { publicIncident, publicIncidentAge } from "@/lib/public-evidence";
 import { FooterScene } from "./components/footer/footer-scene";
 import { ClosingWordmark } from "./components/footer/wordmark";
@@ -29,6 +30,7 @@ export function PublicShell({
         ]}
         accounts={[{ label: "Seametry on X", href: "https://x.com/seametry_", icon: "x-account" }]}
         finale={<ClosingWordmark />}
+        settings={<ThemeChoice />}
       >
         <FooterScene />
       </RegisterFooter>

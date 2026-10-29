@@ -22,46 +22,46 @@
 }
 
 .plateGround {
-  fill: var(--sm-scale-touch-500);
+  fill: var(--figure-touch);
 }
 
 .plateInk {
-  fill: var(--sm-scale-touch-50);
+  fill: var(--figure-touch-ink);
 }
 
 .plateHairline {
   fill: none;
-  stroke: var(--sm-scale-touch-50);
+  stroke: var(--figure-touch-ink);
   stroke-width: 0.6;
 }
 
 .plateEngraving {
   fill: none;
-  stroke: var(--sm-scale-touch-500);
+  stroke: var(--figure-touch);
   stroke-width: 0.45;
   opacity: 0.55;
 }
 
 .plateSpoke {
-  stroke: var(--sm-scale-touch-500);
+  stroke: var(--figure-touch);
   stroke-width: 1.6;
 }
 
 .plateCentre {
-  fill: var(--sm-scale-touch-500);
-  stroke: var(--sm-scale-touch-50);
+  fill: var(--figure-touch);
+  stroke: var(--figure-touch-ink);
   stroke-width: 1;
 }
 
 .plateNode {
-  fill: var(--sm-scale-touch-50);
-  stroke: var(--sm-scale-touch-500);
+  fill: var(--figure-touch-ink);
+  stroke: var(--figure-touch);
   stroke-width: 1.4;
 }
 
 .plateSocket {
-  fill: var(--sm-scale-touch-500);
-  stroke: var(--sm-scale-touch-50);
+  fill: var(--figure-touch);
+  stroke: var(--figure-touch-ink);
   stroke-width: 1.2;
   stroke-dasharray: 2 1.6;
 }

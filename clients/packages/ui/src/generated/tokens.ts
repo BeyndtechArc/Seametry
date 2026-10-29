@@ -2,47 +2,47 @@
 export const theme = {
   "dark": {
     "surface": {
-      "ground": "#14180A",
-      "sheet": "#1B2010",
-      "raised": "#232915",
-      "tray": "#2D3420",
-      "inverse": "#ECEEDF"
+      "ground": "#1B1B18",
+      "sheet": "#222320",
+      "raised": "#2A2C28",
+      "tray": "#333631",
+      "inverse": "#E8EAE2"
     },
     "text": {
-      "primary": "#ECEEDF",
-      "secondary": "#B4B9A2",
-      "tertiary": "#9CA289",
-      "faint": "#5E644A",
-      "onTouch": "#141803",
-      "inverse": "#14180A"
+      "primary": "#E8EAE2",
+      "secondary": "#B8BCB0",
+      "tertiary": "#9CA194",
+      "faint": "#5D6158",
+      "onTouch": "#121A14",
+      "inverse": "#1B1B18"
     },
     "line": {
-      "rule": "#343B26",
-      "strong": "#4E573A",
-      "highlight": "rgba(236,246,232,0.06)"
+      "rule": "#353831",
+      "strong": "#4C5146",
+      "highlight": "rgba(233,240,228,0.06)"
     },
     "accent": {
-      "touch": "#98AD39",
-      "touchPressed": "#8DA32C",
-      "provenance": "#AAA8D0",
+      "touch": "#8DAE8A",
+      "touchPressed": "#7D9F7A",
+      "provenance": "#ABA9D2",
       "provenanceField": "#3A20D6",
-      "touchText": "#AFC45F"
+      "touchText": "#A3C29F"
     },
     "status": {
       "success": "#8FCBA4",
       "warning": "#E3C178",
-      "error": "#DEA098"
+      "error": "#E6A69D"
     },
     "figure": {
-      "frozen": "#B84C40"
+      "frozen": "#D06A5C"
     },
     "feature": {
-      "ground": "#171C03",
-      "sheet": "#1F2507",
-      "raised": "#2A310F",
+      "ground": "#1C2420",
+      "sheet": "#222C27",
+      "raised": "#2A352F",
       "text": {
-        "primary": "#ECEEDF",
-        "secondary": "#B4B9A2"
+        "primary": "#E8EAE2",
+        "secondary": "#B7C1B5"
       }
     }
   },

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@seametry/ui/icons";
-import { ThemeControl } from "@seametry/ui/theme-control";
+import { ThemeChoice, ThemeControl } from "@seametry/ui/theme-control";
 import { BrandMark } from "../../brand-mark";
 import { WalletState } from "../../wallet-state";
 import { ActivityDock } from "../_activity/activity";
@@ -60,6 +60,7 @@ export function AppShell({ children, accountConfigured = false }: { children: Re
             </Link>
           ))}
         </nav>
+        <ThemeChoice defaultTheme="dark" className={styles.statusTheme} />
       </footer>
     </div>
   );
