@@ -105,6 +105,76 @@ func TestVerifierCarriesTheEmailOnlyAsVerifiedWhenTheAuthoritySaidSo(t *testing.
 	}
 }
 
+func TestVerifierReadsSignInMethodsAndKYCLevelWithDefaults(t *testing.T) {
+	public, private := keypair(t)
+	const origin = "https://accounts.example"
+	verifier, err := NewVerifier(origin, "", jwksClient(t, func(int) map[string]any { return jwksBody("key-1", public) }))
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 10, 9, 12, 0, 0, 0, time.UTC)
+	cases := []struct {
+		name        string
+		methods     any
+		kyc         any
+		wantMethods []string
+		wantKYC     string
+	}{
+		{"no claims", nil, nil, []string{}, "none"},
+		{"wallet and google", []string{"solana", "google"}, "none", []string{"solana", "google"}, "none"},
+		{"email", []string{"email"}, nil, []string{"email"}, "none"},
+		{"unknown method dropped", []string{"passkey", "solana"}, nil, []string{"solana"}, "none"},
+		{"repeated method once", []string{"solana", "solana"}, nil, []string{"solana"}, "none"},
+		{"unknown level reads as none", nil, "full", []string{}, "none"},
+		{"empty level reads as none", nil, "", []string{}, "none"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			claims := map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix()}
+			if tc.methods != nil {
+				claims["auth_methods"] = tc.methods
+			}
+			if tc.kyc != nil {
+				claims["kyc_level"] = tc.kyc
+			}
+			subject, err := verifier.Verify(context.Background(), signedToken(t, private, "key-1", claims), now)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if fmt.Sprint(subject.AuthMethods) != fmt.Sprint(tc.wantMethods) || subject.AuthMethods == nil || subject.KYCLevel != tc.wantKYC {
+				t.Fatalf("methods = %#v kyc %q, want %v kyc %q", subject.AuthMethods, subject.KYCLevel, tc.wantMethods, tc.wantKYC)
+			}
+		})
+	}
+}
+
+func TestVerifierRefusesMalformedSignInMethodsAndKYCLevel(t *testing.T) {
+	public, private := keypair(t)
+	const origin = "https://accounts.example"
+	verifier, err := NewVerifier(origin, "", jwksClient(t, func(int) map[string]any { return jwksBody("key-1", public) }))
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 10, 9, 12, 0, 0, 0, time.UTC)
+	for name, extra := range map[string]map[string]any{
+		"methods as a string": {"auth_methods": "solana"},
+		"method as a number":  {"auth_methods": []any{1}},
+		"too many methods":    {"auth_methods": []string{"a", "b", "c", "d", "e", "f", "g", "h", "i"}},
+		"level as a number":   {"kyc_level": 3},
+		"level as a list":     {"kyc_level": []string{"none"}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			claims := map[string]any{"sub": "account-1", "iss": origin, "aud": origin, "exp": now.Add(time.Minute).Unix()}
+			for key, value := range extra {
+				claims[key] = value
+			}
+			if _, err := verifier.Verify(context.Background(), signedToken(t, private, "key-1", claims), now); err == nil {
+				t.Fatalf("a token with %s was accepted", name)
+			}
+		})
+	}
+}
+
 func TestVerifierNormalizesATrailingSlashOnTheIssuer(t *testing.T) {
 	public, private := keypair(t)
 	const origin = "https://accounts.example"

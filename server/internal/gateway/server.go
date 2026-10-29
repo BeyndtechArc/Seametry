@@ -79,9 +79,17 @@ func (s Server) GetMe(ctx context.Context, request api.GetMeRequestObject) (api.
 	}
 	now := s.Now().UTC()
 	return api.GetMe200JSONResponse{
-		Data: api.AccountSubject{Id: subject.AccountID},
+		Data: accountSubject(subject),
 		Meta: api.Meta{AsOf: now, ServedAt: now, Completeness: api.Complete},
 	}, nil
+}
+
+func accountSubject(subject identity.Subject) api.AccountSubject {
+	methods := make([]api.AccountSubjectAuthMethods, 0, len(subject.AuthMethods))
+	for _, method := range subject.AuthMethods {
+		methods = append(methods, api.AccountSubjectAuthMethods(method))
+	}
+	return api.AccountSubject{Id: subject.AccountID, AuthMethods: methods, KycLevel: api.AccountSubjectKycLevel(identity.KYCNone)}
 }
 
 func (Server) GetAlloyNav(ctx context.Context, request api.GetAlloyNavRequestObject) (api.GetAlloyNavResponseObject, error) {

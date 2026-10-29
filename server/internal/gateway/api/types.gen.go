@@ -9,6 +9,42 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AccountSubjectAuthMethods.
+const (
+	Email  AccountSubjectAuthMethods = "email"
+	Google AccountSubjectAuthMethods = "google"
+	Solana AccountSubjectAuthMethods = "solana"
+)
+
+// Valid indicates whether the value is a known member of the AccountSubjectAuthMethods enum.
+func (e AccountSubjectAuthMethods) Valid() bool {
+	switch e {
+	case Email:
+		return true
+	case Google:
+		return true
+	case Solana:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AccountSubjectKycLevel.
+const (
+	None AccountSubjectKycLevel = "none"
+)
+
+// Valid indicates whether the value is a known member of the AccountSubjectKycLevel enum.
+func (e AccountSubjectKycLevel) Valid() bool {
+	switch e {
+	case None:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ActivityFunnelDeployment.
 const (
 	ActivityFunnelDeploymentDevelopment ActivityFunnelDeployment = "development"
@@ -815,9 +851,21 @@ func (e GetInstrumentDepthParamsDirection) Valid() bool {
 
 // AccountSubject defines model for AccountSubject.
 type AccountSubject struct {
+	// AuthMethods How this account can sign in, in the account authority's order. Empty when the token named none.
+	AuthMethods []AccountSubjectAuthMethods `json:"auth_methods"`
+
 	// Id The opaque Better Auth account subject. The service token also carries the wallets the account linked, for GET /me/activity, and its email with whether the provider verified it, which only the admin check reads; neither is returned here.
 	Id string `json:"id"`
+
+	// KycLevel The account's identity verification level. Always none until a verification provider exists.
+	KycLevel AccountSubjectKycLevel `json:"kyc_level"`
 }
+
+// AccountSubjectAuthMethods defines model for AccountSubject.AuthMethods.
+type AccountSubjectAuthMethods string
+
+// AccountSubjectKycLevel The account's identity verification level. Always none until a verification provider exists.
+type AccountSubjectKycLevel string
 
 // ActivityFirstTouch Where the browser first arrived, held in its own storage and sent with a wallet's first quote. Every field is optional and capped.
 type ActivityFirstTouch struct {

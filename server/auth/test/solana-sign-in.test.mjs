@@ -235,9 +235,13 @@ test("a wallet-only account is never email-verified and its token carries no ema
   const user = h.db.user.find((row) => row.id === result.body.user.id);
   assert.equal(user.emailVerified, false);
   assert.ok(user.email.endsWith(`@${WALLET_EMAIL_DOMAIN}`));
-  const pool = { async query() { return { rows: [{ address: keypair.publicKey.toBase58() }] }; } };
+  const pool = {
+    async query(text) {
+      return text.startsWith("SELECT address") ? { rows: [{ address: keypair.publicKey.toBase58() }] } : { rows: [{ provider: "solana" }] };
+    },
+  };
   const payload = await serviceTokenPayload(pool)({ user });
-  assert.deepEqual(payload, { wallets: [keypair.publicKey.toBase58()], email: "", email_verified: false });
+  assert.deepEqual(payload, { wallets: [keypair.publicKey.toBase58()], email: "", email_verified: false, auth_methods: ["solana"], kyc_level: "none" });
   const forged = await serviceTokenPayload(pool)({ user: { ...user, emailVerified: true } });
   assert.equal(forged.email, "");
   assert.equal(forged.email_verified, false);

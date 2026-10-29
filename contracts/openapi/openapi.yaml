@@ -1298,7 +1298,7 @@ components:
           $ref: '#/components/schemas/Amount'
     AccountSubject:
       type: object
-      required: [id]
+      required: [id, auth_methods, kyc_level]
       properties:
         id:
           type: string
@@ -1307,6 +1307,20 @@ components:
             carries the wallets the account linked, for GET /me/activity, and
             its email with whether the provider verified it, which only the
             admin check reads; neither is returned here.
+        auth_methods:
+          type: array
+          description: >
+            How this account can sign in, in the account authority's order.
+            Empty when the token named none.
+          items:
+            type: string
+            enum: [solana, google, email]
+        kyc_level:
+          type: string
+          description: >
+            The account's identity verification level. Always none until a
+            verification provider exists.
+          enum: [none]
     WalletHistory:
       type: object
       required: [wallets, executions]
