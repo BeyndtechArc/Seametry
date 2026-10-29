@@ -240,8 +240,16 @@ the Gateway process every 30 seconds, settles each sent leg against mainnet
 (landed or failed with what moved for the wallet and into the fee account, or
 dropped 20 blocks past its deadline unseen), and the chain's first answer
 stands. `seametry import-activity` records trades found only in the fee
-account's public history as `chain` legs. Funnel steps are deleted after 24
-months, the privacy policy's retention. The Admin's aggregate reads
+account's public history as `chain` legs. The outbox, `execution.outbox`:
+each change to the record (a quote recorded, a leg sent, a leg settled, a
+funnel step) writes its event in the same SQL statement as the change, and
+another service reads it only through `Report.OutboxSince`, ordered by the
+writing transaction so a reader resuming from its cursor never skips an
+event a slower transaction committed later. The price of that order: a
+writing transaction left running anywhere on the same PostgreSQL server,
+the account authority's database included, holds every read back until it
+ends, delayed and never lost. No amount travels in it. Funnel steps, and their outbox events,
+are deleted after 24 months, the privacy policy's retention. The Admin's aggregate reads
 (`/v1/admin/*`, definitions in `docs/prd/ADMIN.md`) are Execution's reads of
 this record; they write nothing.
 
@@ -401,6 +409,33 @@ for whoever keeps using it. That is the point of it, and it is why the Rust
 implementation is bound to the Go core by shared vectors before deployment
 rather than tested against it afterward.
 
+
+### 3.13 Growth
+
+**Purpose.** The GTM Admin's record of people and what they did, so
+outreach rests on evidence (`.plan/gtm-admin.plan.md`).
+
+**Owns.** The `growth` schema. Built today: `growth.events`, one timeline
+per wallet, projected every 15 seconds from Execution's outbox in the
+Gateway process, each event named as `noun.verb` (`preflight.run`,
+`leg.sent`, `leg.landed`, `wallet.connected` and the other funnel steps)
+with whose word it is (`server`, `client`, `chain`) and the outbox row it
+came from, so projecting again or rebuilding from the start writes each
+event once. An outbox kind or outcome it does not know is kept as
+`outbox.unrecognised` or `leg.unrecognised` with what came. Projected
+funnel steps follow the funnel's 24-month retention. To come, per the plan:
+people, identities and their provenance, imported leads, lifecycle stages,
+scores, patterns, drafts and the outreach audit.
+
+**Never.** The source of anything another service owns: money and outcomes
+are Execution's, read through its interface, and no amount is kept here.
+Writes no other schema.
+
+**Depends on.** Execution, through its outbox.
+
+**Failure.** A stopped projection delays the Admin's timeline and nothing
+else; the next pass resumes from the stored cursor.
+
 ---
 
 ## 4. Deployment topology
@@ -501,7 +536,10 @@ There is no second event bus.
 | `observation.degraded` | Observation | Market State, Alert |
 | `divergence.crossed` | Market State | Alert |
 | `session.changed` | Market State | Alert |
-| `execution.settled` | Execution | Receipt and Audit, Alert |
+| `execution.quoted` | Execution | Growth |
+| `execution.sent` | Execution | Growth |
+| `execution.settled` | Execution | Growth; Receipt and Audit and Alert to come (Alert reads the reconciler's pass today) |
+| `execution.funnel_step` | Execution | Growth |
 | `execution.deviated` | Execution | Receipt and Audit, Alert |
 | `receipt.sealed` | Receipt and Audit | Alert, Gateway |
 

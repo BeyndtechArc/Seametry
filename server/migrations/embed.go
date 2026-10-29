@@ -24,4 +24,5 @@ var Schemas = []string{
 	"alert",
 	"identity",
 	"gateway",
+	"growth",
 }
