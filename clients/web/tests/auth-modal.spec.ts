@@ -93,3 +93,20 @@ test("in dark the dialog paints the dark sheet and its rows read on it", async (
   const name = await dialog.getByRole("button", { name: "Connect Test wallet" }).evaluate((node) => getComputedStyle(node).color);
   expect(name).toBe(await resolve(page, theme.dark.text.primary));
 });
+
+// The auth dialog alone casts a soft shadow and blurs the dimmed page behind
+// it (Storm, 30 October 2026); components.md, Auth dialog.
+for (const mode of ["light", "dark"] as const) test(`in ${mode} the dialog lifts on a soft shadow over a blurred backdrop`, async ({ page }) => {
+  await page.addInitScript((value) => localStorage.setItem("seametry-theme-v1", value), mode);
+  await signedOut(page);
+  await registerTestWallet(page, { trusted: false, signsIn: true });
+  await page.goto("/app/allocation");
+  await page.locator("#app-wallet").click();
+  const dialog = signIn(page);
+  await expect(dialog).toBeVisible();
+  const shadow = await dialog.evaluate((node) => getComputedStyle(node).boxShadow);
+  expect(shadow).not.toBe("none");
+  expect(shadow.split("px").length).toBeGreaterThan(9);
+  const blur = await dialog.evaluate((node) => getComputedStyle(node, "::backdrop").backdropFilter);  // design-lint-disable-line lens-scope: reads the computed value, applies nothing
+  expect(blur).toContain("blur(6px)");
+});

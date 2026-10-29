@@ -263,10 +263,18 @@
 .outcomeBody h3 { margin: 0; font-size: var(--sm-font-size-title-s); }
 .outcomeBody p { margin: 0; color: var(--sm-text-secondary); line-height: 1.5; }
 
-/* components.md, Auth dialog: centred, one column, hairline edged. Elevation
-   is tone (sheet over a dimmed ground) and the highlight hairline, as the
-   house allows no cast shadow and no backdrop blur outside the lens. */
+/* components.md, Auth dialog: centred, one column, hairline edged. It is the
+   one component allowed a cast shadow and a blurred backdrop (Storm, 30
+   October 2026), both only through --auth-elevation and --auth-blur, which
+   the design lint admits in this file alone. The ink is the theme's darkest
+   text, so the shadow reads on light and on the near-black ground. */
 .auth {
+  --auth-ink: var(--sm-text-primary);
+  --auth-elevation:
+    0 1px 2px color-mix(in srgb, var(--auth-ink) 6%, transparent),
+    0 12px 28px -10px color-mix(in srgb, var(--auth-ink) 16%, transparent),
+    0 32px 64px -24px color-mix(in srgb, var(--auth-ink) 20%, transparent);
+  box-shadow: var(--auth-elevation);
   position: fixed;
   inset: 0;
   display: grid;
@@ -307,8 +315,18 @@
   }
 }
 
+:global(html[data-theme="dark"]) .auth {
+  --auth-ink: var(--sm-text-onTouch);
+  --auth-elevation:
+    0 1px 2px color-mix(in srgb, var(--auth-ink) 40%, transparent),
+    0 16px 32px -10px color-mix(in srgb, var(--auth-ink) 55%, transparent),
+    0 40px 80px -24px color-mix(in srgb, var(--auth-ink) 65%, transparent);
+}
+
 .auth::backdrop {
-  background: color-mix(in srgb, var(--sm-surface-ground) 82%, transparent);
+  /* Literal, not a custom property: the CSS minifier drops a var() here. */
+  backdrop-filter: blur(6px) saturate(1.1);
+  background: color-mix(in srgb, var(--sm-surface-ground) 64%, transparent);
   opacity: 1;
   transition: opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
 }
@@ -417,6 +435,15 @@
 
   .authFooter {
     padding-inline: var(--sm-space-7);
+  }
+}
+
+/* Without transparency the ground is dimmed more instead and nothing is
+   blurred; a browser that cannot blur keeps the 64% dim. */
+@media (prefers-reduced-transparency: reduce) {
+  .auth::backdrop {
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--sm-surface-ground) 88%, transparent);
   }
 }
 
