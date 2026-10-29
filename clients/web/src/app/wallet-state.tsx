@@ -164,7 +164,7 @@ export function WalletState({ accountConfigured = false }: { accountConfigured?:
         data-account={accountState}
         data-linked={linked === undefined ? undefined : String(linked)}
         data-network={wrongNetwork ? "wrong" : undefined}
-        aria-label={connected && address ? `Wallet ${address}. ${displayedBalance ?? "Balance loading or unavailable"}${wrongNetwork ? `. Not on ${networkName}` : ""}` : user ? `Account ${email ?? user.id.slice(0, 8)}` : "Connect wallet"}
+        aria-label={connected && address ? `Wallet ${address}. ${displayedBalance ?? "Balance loading or unavailable"}${wrongNetwork ? `. Not on ${networkName}` : ""}` : user ? `Account ${email ?? user.id.slice(0, 8)}` : "Sign in"}
       >
         {email ? <span className={styles.accountInitial} data-testid="account-initial" aria-hidden="true">{email.slice(0, 1).toUpperCase()}</span> : null}
         {connecting ? <span className={styles.walletLabel}>Connecting</span> : connected && address ? (
@@ -176,7 +176,7 @@ export function WalletState({ accountConfigured = false }: { accountConfigured?:
           </>
         ) : user ? (
           <span className={styles.walletLabel}>{wallets?.length === 0 ? "Link wallet" : "Connect"}</span>
-        ) : <span className={styles.walletLabel}>Connect</span>}
+        ) : <span className={styles.walletLabel}>Sign in</span>}
         <span className={styles.walletIcon} data-connected={connected || undefined}>
           {connected && wallet ? <Image src={wallet.adapter.icon} width={22} height={22} alt="" unoptimized /> : <Icon name="wallet" />}
           {wrongNetwork || linked === false ? <span className={styles.chipWarning} aria-hidden="true" /> : null}

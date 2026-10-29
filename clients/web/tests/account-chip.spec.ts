@@ -48,11 +48,12 @@ async function chosenBefore(page: Page) {
 }
 const menu = (page: Page) => page.getByTestId("account-menu");
 
-test("signed out with no wallet, the chip reads Connect and opens the modal", async ({ page }) => {
+test("signed out with no wallet, the chip reads Sign in and opens the modal", async ({ page }) => {
   await signedIn(page, undefined);
   await page.goto("/app/allocation");
   await expect(chip(page)).toHaveAttribute("data-account", "signed-out");
-  await expect(chip(page)).toHaveText("Connect");
+  await expect(chip(page)).toHaveText("Sign in");
+  await expect(chip(page)).toHaveAccessibleName("Sign in");
   await shot(page, "chip-signed-out");
   await chip(page).click();
   await expect(page.getByRole("dialog", { name: "Sign in to Seametry" })).toBeVisible();

@@ -253,18 +253,18 @@ test("the public site publishes the terms and privacy policy used for account co
 test("the wallet state lives in the app's top bar, and connecting signs nothing", async ({ page }) => {
   await page.goto("/");
   // The public rail carries reading pages and one way into the app, never a wallet.
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toHaveCount(0);
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Sign in" })).toHaveCount(0);
 
   await page.goto("/app");
   const bar = page.getByRole("banner");
-  const state = bar.locator("summary", { hasText: "Connect" });
+  const state = bar.locator("summary", { hasText: "Sign in" });
   await expect(state).toBeVisible();
   await state.click();
   // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
   await expect(page.getByRole("dialog", { name: "Sign in to Seametry" }).getByText("No signing wallet is available in this browser. Install one, then reload this page.", { exact: true })).toBeVisible();
 
   await page.goto("/app/allocation");
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Sign in" })).toBeVisible();
 });
 
 test("the Allocation keeps its terms behind an info note, and the order sheet still states the fee and slippage", async ({ page }) => {
@@ -404,7 +404,7 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   const appTabs = page.getByRole("navigation", { name: "Mobile product" });
   await expect(appTabs.getByRole("link")).toHaveCount(5);
   await expect(appTabs.getByRole("link", { name: "Allocation" })).toHaveAttribute("href", "/app/baskets/build");
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Sign in" })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("button", { name: "Use light mode" })).toBeVisible();
   const appOrder = await page.evaluate(() => ({
     wallet: document.querySelector<HTMLElement>("#app-wallet")?.getBoundingClientRect().left,
@@ -571,7 +571,7 @@ test("the app header connects a wallet and keeps the mode control beside it", as
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app");
 
-  const login = page.getByTestId("app-header-actions").locator("summary", { hasText: "Connect" });
+  const login = page.getByTestId("app-header-actions").locator("summary", { hasText: "Sign in" });
   await expect(login).toBeVisible();
   const treatment = await login.evaluate((summary) => {
     const probe = document.createElement("span");
@@ -661,7 +661,7 @@ test("the app shell marks only the current tab with an icon, and keeps one globa
 
   for (const path of ["/app/baskets/build", "/app/compose"]) {
     await page.goto(path);
-    await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toHaveCount(1);
+    await expect(page.getByRole("banner").locator("summary", { hasText: "Sign in" })).toHaveCount(1);
   }
 });
 

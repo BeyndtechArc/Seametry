@@ -292,7 +292,7 @@ test("a Strike opens its steps and stops at the first with what did not happen",
   });
   await registerTestWallet(page, { trusted: true });
   await page.goto(`/app/alloys/${alloyAddress}`);
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Strike or Melt" }).click();
   const actions = page.getByRole("dialog", { name: "Strike or Melt" });

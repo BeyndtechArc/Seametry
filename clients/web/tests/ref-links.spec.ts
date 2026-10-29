@@ -88,7 +88,7 @@ test("a first quote after /r/x carries ref_code x in its first touch, and a late
 
   const prepared = page.waitForRequest("**/api/allocation/sell/prepare");
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("tab", { name: /^Allocations/ }).click();
   await page.getByRole("button", { name: "Sell Ref Seven" }).click();
