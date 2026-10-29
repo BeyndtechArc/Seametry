@@ -10,6 +10,7 @@ import type { PreparedLeg } from "./allocation/execution";
 // lib/activity.ts sends them.
 
 export type ActivityQuote = components["schemas"]["ActivityQuote"];
+export type ActivityConditions = components["schemas"]["ActivityConditions"];
 export type ActivitySubmission = components["schemas"]["ActivitySubmission"];
 export type FirstTouch = components["schemas"]["ActivityFirstTouch"];
 type Deployment = ActivityQuote["deployment"];
@@ -33,6 +34,41 @@ export function firstTouchFrom(value: unknown): FirstTouch | undefined {
   return Object.keys(touch).length > 0 ? touch : undefined;
 }
 
+/** The part of the admissions snapshot the conditions read, so a test can pass its own. */
+type ConditionSource = {
+  as_of: string;
+  policy_version: string;
+  instruments: { instrument: { mint: string }; capacity_decision: { decision: string; reasons: { code: string; severity: string }[] } }[];
+};
+
+const BASE58_ADDRESS = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+
+/**
+ * What the admission policy stated for each stock a request named, as the
+ * review shows it: the decision at the size the Allocation admits, and the
+ * code and severity of each reason. A mint the snapshot holds no decision
+ * for is listed without one. A string that is not an address is left out:
+ * the record refuses a report naming one, and the trade's record matters
+ * more than one malformed name in it.
+ */
+export function conditionsFor(mints: readonly string[], snapshot: ConditionSource): ActivityConditions | undefined {
+  const named = [...new Set(mints)].filter((mint) => BASE58_ADDRESS.test(mint)).slice(0, 20);
+  if (named.length === 0) return undefined;
+  return {
+    policy_version: snapshot.policy_version.slice(0, 40),
+    snapshot_at: new Date(snapshot.as_of).toISOString(),
+    legs: named.map((mint) => {
+      const admission = snapshot.instruments.find((entry) => entry.instrument.mint === mint);
+      if (!admission) return { mint, reasons: [] };
+      return {
+        mint,
+        decision: admission.capacity_decision.decision,
+        reasons: admission.capacity_decision.reasons.slice(0, 20).map(({ code, severity }) => ({ code, severity })),
+      };
+    }),
+  };
+}
+
 /** Vercel names the deployment; anything else is a local or test run. */
 export function deployment(vercelEnv: string | undefined): Deployment {
   return vercelEnv === "production" || vercelEnv === "preview" ? vercelEnv : "development";
@@ -43,7 +79,7 @@ export function transactionDigest(base64: string): string {
   return messageDigest(VersionedTransaction.deserialize(Buffer.from(base64, "base64")).message.serialize());
 }
 
-export function quoteReport({ id, wallet, kind, subject, templateId, planSize, firstTouch, preparedAt, deploymentName, legs, refusal }: {
+export function quoteReport({ id, wallet, kind, subject, templateId, planSize, firstTouch, conditions, preparedAt, deploymentName, legs, refusal }: {
   id: string;
   wallet: string;
   kind: "buy" | "sell";
@@ -51,6 +87,7 @@ export function quoteReport({ id, wallet, kind, subject, templateId, planSize, f
   templateId?: string;
   planSize: number;
   firstTouch?: FirstTouch;
+  conditions?: ActivityConditions;
   preparedAt: Date;
   deploymentName: Deployment;
   legs: (PreparedLeg & { id: string })[];
@@ -61,6 +98,7 @@ export function quoteReport({ id, wallet, kind, subject, templateId, planSize, f
     ...(subject ? { subject: subject.slice(0, 200) } : {}),
     ...(templateId ? { template_id: templateId.slice(0, 200) } : {}),
     ...(firstTouch ? { first_touch: firstTouch } : {}),
+    ...(conditions ? { conditions } : {}),
     ...(refusal ? { refusal: { status: refusal.status, text: refusal.text.slice(0, 2000) } } : {}),
     legs: refusal ? [] : legs.map((leg) => ({
       id: leg.id,

@@ -79,6 +79,7 @@ type ExecutionQuote struct {
 	RefusalText   pgtype.Text        `db:"refusal_text" json:"refusal_text"`
 	Source        string             `db:"source" json:"source"`
 	RecordedAt    pgtype.Timestamptz `db:"recorded_at" json:"recorded_at"`
+	Conditions    []byte             `db:"conditions" json:"conditions"`
 }
 
 type ExecutionWallet struct {

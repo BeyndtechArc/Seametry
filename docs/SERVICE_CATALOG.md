@@ -228,7 +228,9 @@ signs, and knowing exactly what happened to it.
 approval snapshots; simulation results; submission; confirmation and finality
 tracking. The activity record, in the `execution` schema: every wallet that
 asked for a quote, signed in or not, with its first-touch source; each quote
-prepared or refused and its reason; each leg's terms and what happened when it
+prepared or refused and its reason, with what the admission policy stated
+for each stock it named (the decision, and each reason's code and severity,
+under one policy version and snapshot; none recorded is unknown, not none); each leg's terms and what happened when it
 was sent; and the funnel steps a browser reports. Every row names its source:
 `server` rows come from the web routes over a service secret, `client` rows
 from a browser and never count as volume, a fee or an outcome, and only
@@ -417,7 +419,8 @@ outreach rests on evidence (`.plan/gtm-admin.plan.md`).
 
 **Owns.** The `growth` schema. Built today: `growth.events`, one timeline
 per wallet, projected every 15 seconds from Execution's outbox in the
-Gateway process, each event named as `noun.verb` (`preflight.run`,
+Gateway process, each event named as `noun.verb` (`preflight.run`, carrying the conditions
+the policy stated,
 `leg.sent`, `leg.landed`, `wallet.connected` and the other funnel steps)
 with whose word it is (`server`, `client`, `chain`) and the outbox row it
 came from, so projecting again or rebuilding from the start writes each

@@ -210,6 +210,15 @@ surface, CI read from GitHub, and a merge only on Storm's word.
    projection, **1b** the warnings a review showed, **1c** the Hall poller and
    visit counts.
 
+   Status: 1a merged (#61, 29 October 2026). 1b records, with each quote,
+   what the admission policy stated for every stock the request named: the
+   decision and each reason's code and severity, under one policy version
+   and snapshot. The review's warnings are exactly these: an issuer power, a
+   WARN decision. Anything that stops a trade (no route, a frozen account)
+   is already recorded as a refusal with its reason. The server writes them
+   from the snapshot it holds, so they say what was stated, not what a
+   reader looked at; no browser report is added.
+
    The outbox in 1a is the one `SERVICE_CATALOG.md` section 7 and
    `ENGINEERING_STANDARD.md` section 10 already require, built for the first
    time:

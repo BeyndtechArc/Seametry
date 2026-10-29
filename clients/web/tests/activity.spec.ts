@@ -1,7 +1,8 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
 import { Keypair, VersionedTransaction } from "@solana/web3.js";
 import { messageDigest } from "../src/lib/allocation/approval";
-import { deployment, firstTouchFrom, quoteReport, submissionReport } from "../src/lib/activity-report";
+import { conditionsFor, deployment, firstTouchFrom, quoteReport, submissionReport } from "../src/lib/activity-report";
+import { admissions } from "../src/lib/allocation/admissions";
 import { preparedLeg, TEST_WALLET } from "./execution-fixture";
 
 type Report = { kind: string; secret: string | null; body: Record<string, unknown> };
@@ -30,6 +31,26 @@ test("a quote report carries every leg's terms and the digest its approval binds
   });
   expect(refused.legs).toEqual([]);
   expect(refused.refusal).toEqual({ status: 402, text: "Add SOL before selling." });
+});
+
+test("the conditions name what the policy stated for each stock, once, and a stock it holds nothing for without a decision", () => {
+  const warned = "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh";
+  const unknown = "So11111111111111111111111111111111111111112";
+  const snapshot = {
+    as_of: "2026-09-23T12:00:00+01:00", policy_version: "policy-2026.10.1",
+    instruments: [{ instrument: { mint: warned }, capacity_decision: { decision: "WARN", reasons: [{ code: "ISSUER_CAN_FREEZE", severity: "WARN", fact: "The issuer can freeze this account." }] } }],
+  };
+  expect(conditionsFor([warned, unknown, warned, "not a mint"], snapshot)).toEqual({
+    policy_version: "policy-2026.10.1",
+    snapshot_at: "2026-09-23T11:00:00.000Z",
+    legs: [
+      { mint: warned, decision: "WARN", reasons: [{ code: "ISSUER_CAN_FREEZE", severity: "WARN" }] },
+      { mint: unknown, reasons: [] },
+    ],
+  });
+  expect(conditionsFor(["not a mint"], snapshot)).toBeUndefined();
+  const many = Array.from({ length: 25 }, (_, index) => `${"1".repeat(31)}${"ABCDEFGHJKLMNPQRSTUVWXYZa"[index]}`);
+  expect(conditionsFor(many, snapshot)!.legs).toHaveLength(20);
 });
 
 test("a first touch keeps only capped strings, and an empty one is none", () => {
@@ -80,6 +101,13 @@ test("a refused purchase is recorded with its reason, its wallet and no legs", a
   expect(report.body).toMatchObject({
     kind: "buy", network: "mainnet", plan_size: 1, subject: "Prime Seven", deployment: "development",
     first_touch: { referrer_host: "x.com" }, legs: [], refusal: { status: 400, text: "The Allocation names a constituent more than once." },
+  });
+  // A refusal still records what the policy stated for the stock it named, once.
+  const admission = admissions.instruments.find((entry) => entry.instrument.mint === mint)!;
+  expect(report.body.conditions).toEqual({
+    policy_version: admissions.policy_version,
+    snapshot_at: new Date(admissions.as_of).toISOString(),
+    legs: [{ mint, decision: admission.capacity_decision.decision, reasons: admission.capacity_decision.reasons.map(({ code, severity }) => ({ code, severity })) }],
   });
 });
 

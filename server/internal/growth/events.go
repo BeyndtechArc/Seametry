@@ -88,13 +88,16 @@ type payload struct {
 	Outcome       string `json:"outcome,omitempty"`
 	Result        string `json:"result,omitempty"`
 	RefusalStatus *int   `json:"refusal_status,omitempty"`
-	PlanSize      int    `json:"plan_size,omitempty"`
-	Subject       string `json:"subject,omitempty"`
-	TemplateID    string `json:"template_id,omitempty"`
-	Symbol        string `json:"symbol,omitempty"`
-	Mint          string `json:"mint,omitempty"`
-	Deployment    string `json:"deployment,omitempty"`
-	Source        string `json:"source,omitempty"`
+	// What the policy stated for each stock, as Execution kept it; null for
+	// a quote recorded without them, which is unknown, not "none stated".
+	Conditions json.RawMessage `json:"conditions,omitempty"`
+	PlanSize   int             `json:"plan_size,omitempty"`
+	Subject    string          `json:"subject,omitempty"`
+	TemplateID string          `json:"template_id,omitempty"`
+	Symbol     string          `json:"symbol,omitempty"`
+	Mint       string          `json:"mint,omitempty"`
+	Deployment string          `json:"deployment,omitempty"`
+	Source     string          `json:"source,omitempty"`
 }
 
 // project names one outbox event as a timeline event. An outbox kind this
@@ -111,7 +114,8 @@ func project(event execution.OutboxEvent) (growthdb.InsertEventParams, error) {
 	case "execution.quoted":
 		kind, source = "preflight.run", p.Source
 		properties = map[string]any{"quote_id": p.QuoteID, "kind": p.Kind, "network": p.Network, "result": p.Outcome,
-			"refusal_status": p.RefusalStatus, "plan_size": p.PlanSize, "subject": p.Subject, "template_id": p.TemplateID}
+			"refusal_status": p.RefusalStatus, "plan_size": p.PlanSize, "subject": p.Subject, "template_id": p.TemplateID,
+			"conditions": p.Conditions}
 	case "execution.sent":
 		kind, source = "leg.sent", p.Source
 		properties = map[string]any{"leg_id": p.LegID, "quote_id": p.QuoteID, "kind": p.Kind, "symbol": p.Symbol, "mint": p.Mint, "result": p.Result}
