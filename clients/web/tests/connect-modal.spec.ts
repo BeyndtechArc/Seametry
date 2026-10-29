@@ -162,16 +162,17 @@ test("no wallet on a phone: open this page in Phantom or Solflare, inside the sc
   await context.close();
 });
 
-test("already signed in: the modal names the account and connecting asks for no signature", async ({ page }) => {
-  const calls = await account(page, { signedIn: true });
+test("already signed in: the chip opens the account menu, and the modal links rather than signs in", async ({ page }) => {
+  await account(page, { signedIn: true });
+  await page.route("**/api/account/wallets", (route) => route.fulfill({ json: { wallets: [] } }));
+  await page.route("**/api/auth/list-accounts", (route) => route.fulfill({ json: [{ providerId: "solana" }] }));
   await registerTestWallet(page, { trusted: false, signsIn: true });
   await page.goto("/app/allocation");
   await page.locator("#app-wallet").click();
+  await expect(modal(page)).toBeHidden();
+  await page.getByTestId("account-menu").getByRole("button", { name: "Link a wallet" }).click();
   const dialog = modal(page);
-  await expect(dialog.getByText("You are signed in.", { exact: false })).toBeVisible();
+  await expect(dialog.getByText("Choose the wallet to link to your account.", { exact: false })).toBeVisible();
   await expect(dialog.getByRole("button", { name: "Continue with Google" })).toHaveCount(0);
-  await shot(page, "modal-signed-in");
-  await dialog.getByRole("button", { name: "Connect Test wallet" }).click();
-  await expect(dialog).toBeHidden();
-  expect(calls.nonce).toBe(0);
+  await shot(page, "modal-signed-in-link");
 });

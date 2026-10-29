@@ -68,6 +68,7 @@
 }
 
 .walletIcon {
+  position: relative;
   display: inline-grid;
   place-items: center;
   width: var(--sm-size-target);
@@ -243,6 +244,74 @@
 .walletChoice:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: var(--sm-space-1);
+}
+
+.accountInitial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--sm-size-target);
+  color: var(--sm-text-inverse);
+  background: var(--sm-surface-inverse);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.balanceSkeleton {
+  display: inline-block;
+  width: var(--sm-space-10);
+  height: var(--sm-space-4);
+  background: var(--sm-surface-raised);
+}
+
+.chipWarning {
+  position: absolute;
+  top: var(--sm-space-2);
+  right: var(--sm-space-2);
+  width: var(--sm-space-3);
+  height: var(--sm-space-3);
+  border-radius: 50%;
+  background: var(--sm-status-warning);
+}
+
+.accountMenu {
+  display: grid;
+  gap: var(--sm-space-3);
+  padding-top: var(--sm-space-4);
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.accountMenu header {
+  display: grid;
+  gap: var(--sm-space-1);
+}
+
+.accountMenu header span,
+.accountMenu > p {
+  margin: 0;
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-small);
+}
+
+.accountMenu ul {
+  display: grid;
+  gap: var(--sm-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accountMenu li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sm-space-3);
+}
+
+.accountMenu code {
+  font-family: var(--sm-font-family-digest);
+  font-size: var(--sm-font-size-micro);
+  font-variant-ligatures: none;
+  overflow-wrap: anywhere;
 }
 
 .connectModal {

@@ -51,7 +51,7 @@ type Step =
  * Google. Email sign-in is not offered until it exists. The native dialog
  * gives the modal its focus containment, Escape and return of focus.
  */
-export function ConnectModal({ open, onClose, onConnected, session }: { open: boolean; onClose: () => void; onConnected?: () => void; session: AccountSession & { refresh: () => void } }) {
+export function ConnectModal({ open, onClose, onConnected, session, link = false }: { open: boolean; onClose: () => void; onConnected?: () => void; session: AccountSession & { refresh: () => void }; link?: boolean }) {
   const { wallets, wallet, connected, select, connect } = useWallet();
   const { failure, clear } = useWalletFailure();
   const [step, setStep] = useState<Step>({ kind: "choose" });
@@ -98,7 +98,7 @@ export function ConnectModal({ open, onClose, onConnected, session }: { open: bo
     if (!adapter) return;
     const connectedNow = () => {
       const candidate = signing(adapter);
-      if (signedOut && (candidate.signIn || candidate.signMessage)) void signInWith(step.name, candidate);
+      if ((signedOut || link) && (candidate.signIn || candidate.signMessage)) void signInWith(step.name, candidate);
       else finish();
     };
     const refused = (error: { message?: string }) => {
@@ -112,7 +112,7 @@ export function ConnectModal({ open, onClose, onConnected, session }: { open: bo
     };
     // The handlers read the step and session at the moment they fire.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, wallets, signedOut]);
+  }, [step, wallets, signedOut, link]);
 
   // The native modal dialog makes the page behind it inert, but Tab can still
   // leave for the browser's own controls; this keeps it cycling inside.
@@ -168,7 +168,8 @@ export function ConnectModal({ open, onClose, onConnected, session }: { open: bo
   return (
     <ModalSheet open={open} onClose={close} title="Connect a wallet" register={signedOut ? "Sign in" : "Wallet"} closeLabel="Close">
       <div ref={body} className={styles.connectModal} data-testid="connect-modal" data-step={step.kind}>
-        {session.state === "signed-in" ? <p>You are signed in. Connecting a wallet shows its balances here; it asks for no signature.</p> : null}
+        {session.state === "signed-in" && link ? <p>Choose the wallet to link to your account. Linking signs a message, never a transaction.</p> : null}
+        {session.state === "signed-in" && !link ? <p>You are signed in. Connecting a wallet shows its balances here; it asks for no signature.</p> : null}
         {signedOut ? <p>Choose a wallet. Signing in with it signs a message, never a transaction.</p> : null}
 
         {step.kind === "connecting" ? <p role="status">Approve the connection in {step.name}.</p> : null}

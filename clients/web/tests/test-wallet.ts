@@ -18,8 +18,8 @@ import type { Page } from "@playwright/test";
  * test. declinesSignIn throws Phantom's cancel wording instead. name sets
  * the wallet's display name, for ordering tests.
  */
-export async function registerTestWallet(page: Page, { trusted, signs = false, declines = false, rewrites = {}, signsIn = false, declinesSignIn = false, name = "Test wallet" }: { trusted: boolean; signs?: boolean; declines?: boolean; rewrites?: Record<string, string>; signsIn?: boolean; declinesSignIn?: boolean; name?: string }) {
-  await page.addInitScript(({ trustedWallet, signsTransactions, declinesTransactions, rewritten, signsInMessages, declinesSignInMessages, walletName }) => {
+export async function registerTestWallet(page: Page, { trusted, signs = false, declines = false, rewrites = {}, signsIn = false, declinesSignIn = false, name = "Test wallet", chains = ["solana:mainnet", "solana:devnet"] }: { trusted: boolean; signs?: boolean; declines?: boolean; rewrites?: Record<string, string>; signsIn?: boolean; declinesSignIn?: boolean; name?: string; chains?: string[] }) {
+  await page.addInitScript(({ trustedWallet, signsTransactions, declinesTransactions, rewritten, signsInMessages, declinesSignInMessages, walletName, accountChains }) => {
     // A signing wallet writes a distinct 64-byte signature into the first
     // signature slot (byte 0 is the compact count) and leaves the message
     // alone, as a real wallet does, so flows that read the signed
@@ -41,7 +41,7 @@ export async function registerTestWallet(page: Page, { trusted, signs = false, d
     const account = {
       address: "4vJ9JU1bJJE96FWSJKvHsmmFZjwQXW8UTQpLzMAnX1d",
       publicKey,
-      chains: ["solana:mainnet", "solana:devnet"],
+      chains: accountChains,
       features: signsInMessages ? ["solana:signTransaction", "solana:signIn", "solana:signMessage"] : ["solana:signTransaction"],
       label: "Test account",
       icon: undefined,
@@ -104,5 +104,5 @@ export async function registerTestWallet(page: Page, { trusted, signs = false, d
     window.addEventListener("wallet-standard:app-ready", (event) => {
       (event as CustomEvent<{ register: (entry: unknown) => void }>).detail.register(wallet);
     });
-  }, { trustedWallet: trusted, signsTransactions: signs, declinesTransactions: declines, rewritten: rewrites, signsInMessages: signsIn, declinesSignInMessages: declinesSignIn, walletName: name });
+  }, { trustedWallet: trusted, signsTransactions: signs, declinesTransactions: declines, rewritten: rewrites, signsInMessages: signsIn, declinesSignInMessages: declinesSignIn, walletName: name, accountChains: chains });
 }
