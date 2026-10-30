@@ -73,7 +73,7 @@ test("the choice is offered as light, dark and system, persists across pages, an
   await expect.poll(() => themeColors(page)).toEqual([theme.light.surface.ground]);
 });
 
-test("the dark ground is the warm near-black, and text selection is themed", async ({ page }) => {
+test("the dark ground is the olive-black touchstone, and text selection is themed", async ({ page }) => {
   await page.addInitScript((key) => localStorage.setItem(key, "dark"), storageKey);
   await page.goto("/");
   const resolve = (css: string) => page.evaluate((value) => {

@@ -263,36 +263,29 @@
 .outcomeBody h3 { margin: 0; font-size: var(--sm-font-size-title-s); }
 .outcomeBody p { margin: 0; color: var(--sm-text-secondary); line-height: 1.5; }
 
-/* components.md, Auth dialog: centred, one column, hairline edged. It is the
-   one component allowed a cast shadow and a blurred backdrop (Storm, 30
-   October 2026), both only through --auth-elevation and --auth-blur, which
-   the design lint admits in this file alone. The ink is the theme's darkest
-   text, so the shadow reads on light and on the near-black ground. */
+/* components.md, Auth dialog: the Process dialog's centred plate with the
+   Modal sheet's registration cut. The soft shadow and blurred backdrop it
+   carried from 30 October 2026 were removed the same day: they made it read
+   as a generic wallet modal rather than a Seametry plate. */
 .auth {
-  --auth-ink: var(--sm-text-primary);
-  --auth-elevation:
-    0 1px 2px color-mix(in srgb, var(--auth-ink) 6%, transparent),
-    0 12px 28px -10px color-mix(in srgb, var(--auth-ink) 16%, transparent),
-    0 32px 64px -24px color-mix(in srgb, var(--auth-ink) 20%, transparent);
-  box-shadow: var(--auth-elevation);
   position: fixed;
   inset: 0;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
-  width: min(calc(100% - var(--sm-space-7) * 2), 420px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(calc(100% - var(--sm-space-7) * 2), calc(var(--sm-space-13) * 3));
   max-width: none;
-  max-height: min(calc(100dvh - var(--sm-space-9) * 2), 720px);
+  max-height: min(calc(100dvh - var(--sm-space-9) * 2), calc(var(--sm-space-13) * 5));
   margin: auto;
   padding: 0;
-  border: 1px solid var(--sm-line-rule);
-  border-top-color: var(--sm-line-strong);
-  border-radius: var(--sm-radius-punch);
+  border: 0;
+  border-top: 0.5px solid var(--sm-line-highlight);
   color: var(--sm-text-primary);
-  background: var(--sm-surface-sheet);
+  background: var(--sm-surface-raised);
+  clip-path: polygon(var(--sm-space-5) 0, 100% 0, 100% 100%, 0 100%, 0 var(--sm-space-5));
   overflow: hidden;
   overscroll-behavior: contain;
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translateY(0);
   transition:
     transform var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide),
     opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
@@ -302,7 +295,7 @@
 
 .auth[data-closing] {
   opacity: 0;
-  transform: translateY(var(--sm-space-3)) scale(0.98);
+  transform: translateY(var(--sm-space-4)) scale(0.98);
   transition:
     transform var(--sm-motion-duration-overlay) var(--sm-motion-easing-exit),
     opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-exit);
@@ -311,22 +304,12 @@
 @starting-style {
   .auth[open] {
     opacity: 0;
-    transform: translateY(var(--sm-space-4)) scale(0.98);
+    transform: translateY(var(--sm-space-5)) scale(0.98);
   }
 }
 
-:global(html[data-theme="dark"]) .auth {
-  --auth-ink: var(--sm-text-onTouch);
-  --auth-elevation:
-    0 1px 2px color-mix(in srgb, var(--auth-ink) 40%, transparent),
-    0 16px 32px -10px color-mix(in srgb, var(--auth-ink) 55%, transparent),
-    0 40px 80px -24px color-mix(in srgb, var(--auth-ink) 65%, transparent);
-}
-
 .auth::backdrop {
-  /* Literal, not a custom property: the CSS minifier drops a var() here. */
-  backdrop-filter: blur(6px) saturate(1.1);
-  background: color-mix(in srgb, var(--sm-surface-ground) 64%, transparent);
+  background: color-mix(in srgb, var(--sm-surface-ground) 76%, transparent);
   opacity: 1;
   transition: opacity var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
 }
@@ -337,41 +320,23 @@
   .auth[open]::backdrop { opacity: 0; }
 }
 
-.authClose {
-  position: absolute;
-  top: var(--sm-space-4);
-  right: var(--sm-space-4);
-  z-index: 1;
-  background: transparent;
-}
-
-.authClose:hover {
-  background: var(--sm-surface-raised);
-}
-
 .authHeader {
-  display: grid;
-  justify-items: center;
-  gap: var(--sm-space-3);
-  padding: var(--sm-space-9) var(--sm-space-8) var(--sm-space-6);
-  text-align: center;
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--sm-space-5);
+  padding: var(--sm-space-7) var(--sm-space-7) var(--sm-space-6);
+  border-bottom: 0.5px solid var(--sm-line-strong);
 }
 
-.authMark {
+.authHeader > div {
   display: grid;
-  place-items: center;
-  width: var(--sm-space-10);
-  height: var(--sm-space-10);
-  margin-bottom: var(--sm-space-2);
-  border: 1px solid var(--sm-line-rule);
-  border-radius: var(--sm-radius-surface);
-  background: var(--sm-surface-raised);
+  gap: var(--sm-space-2);
 }
 
-.authMark img,
-.authMark svg {
-  width: var(--sm-space-8);
-  height: var(--sm-space-8);
+.authHeader span {
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
 }
 
 .authHeader h2 {
@@ -384,8 +349,8 @@
 }
 
 .authHeader p {
-  max-width: 34ch;
-  margin: 0;
+  max-width: 40ch;
+  margin: var(--sm-space-2) 0 0;
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
   line-height: 1.5;
@@ -395,24 +360,26 @@
   min-width: 0;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 0 var(--sm-space-8) var(--sm-space-7);
+  padding: var(--sm-space-6) var(--sm-space-7) var(--sm-space-7);
 }
 
 .authFooter {
-  padding: var(--sm-space-5) var(--sm-space-8) calc(var(--sm-space-5) + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--sm-line-rule);
-  color: var(--sm-text-secondary);
+  padding: var(--sm-space-4) var(--sm-space-7) calc(var(--sm-space-4) + env(safe-area-inset-bottom));
+  border-top: 0.5px solid var(--sm-line-rule);
+  color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
 }
 
+/* A phone gets the Modal sheet's bottom sheet: full width, the sheet radius
+   on its top corners, no cut. */
 @media (max-width: 520px) {
   .auth {
     inset: auto 0 0;
     width: 100%;
     max-height: 100dvh;
     margin: 0;
-    border-width: 1px 0 0;
-    border-radius: var(--sm-radius-punch) var(--sm-radius-punch) 0 0;
+    border-radius: var(--sm-radius-sheet) var(--sm-radius-sheet) 0 0;
+    clip-path: none;
     transform: translateY(0);
   }
 
@@ -426,24 +393,15 @@
   }
 
   .authHeader {
-    padding: var(--sm-space-8) var(--sm-space-7) var(--sm-space-5);
+    padding: var(--sm-space-6) var(--sm-space-6) var(--sm-space-5);
   }
 
   .authBody {
-    padding: 0 var(--sm-space-7) var(--sm-space-6);
+    padding: var(--sm-space-5) var(--sm-space-6) var(--sm-space-6);
   }
 
   .authFooter {
-    padding-inline: var(--sm-space-7);
-  }
-}
-
-/* Without transparency the ground is dimmed more instead and nothing is
-   blurred; a browser that cannot blur keeps the 64% dim. */
-@media (prefers-reduced-transparency: reduce) {
-  .auth::backdrop {
-    backdrop-filter: none;
-    background: color-mix(in srgb, var(--sm-surface-ground) 88%, transparent);
+    padding-inline: var(--sm-space-6);
   }
 }
 

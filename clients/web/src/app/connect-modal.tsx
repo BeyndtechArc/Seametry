@@ -8,6 +8,7 @@ import type { WalletName } from "@solana/wallet-adapter-base";
 import { ContinueAction, QuietAction } from "@seametry/ui";
 import { Icon } from "@seametry/ui/icons";
 import { AuthDialog } from "@seametry/ui/modal-sheet";
+import { StatusMark } from "@seametry/ui/timeline";
 import { authClient } from "@/lib/auth-client";
 import type { AccountSession } from "@/lib/account-session";
 import { announceSessionChange } from "@/lib/account-session";
@@ -168,30 +169,33 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
   const allocation = pathname === "/app/allocation";
 
   const title = signedOut ? "Sign in to Seametry" : link ? "Link a wallet" : "Connect a wallet";
+  // Only a session read as signed in may say so: while it is being read, or
+  // where accounts are not configured, the dialog only connects.
+  const connectLead = "Connecting a wallet shows its balances here; it asks for no signature.";
   const lead = signedOut
     ? "Your wallet is your account. Signing in signs a message, never a transaction."
     : link
       ? "Choose the wallet to link to your account. Linking signs a message, never a transaction."
-      : "You are signed in. Connecting a wallet shows its balances here; it asks for no signature.";
+      : session.state === "signed-in"
+        ? `You are signed in. ${connectLead}`
+        : session.state === "unconfigured"
+          ? `Account sign-in is unavailable here. ${connectLead}`
+          : connectLead;
   const detected = new Set(ordered.map((entry) => entry.adapter.name as string));
   const installable = installLinks.filter((entry) => !detected.has(entry.name));
   const pending = step.kind === "connecting" || step.kind === "signing" ? step : null;
-  const pendingIcon = pending ? wallets.find((entry) => entry.adapter.name === pending.name)?.adapter.icon : undefined;
 
   return (
     <AuthDialog
       open={open}
       onClose={close}
+      register={signedOut || link ? "Account" : "Wallet"}
       title={title}
       lead={lead}
-      // next/image writes an inline style attribute, which the CSP refuses on
-      // server-rendered markup; brand-mark.tsx draws the mark the same way.
-      // eslint-disable-next-line @next/next/no-img-element
-      mark={<img src="/logo.svg" width={32} height={32} alt="" />}
       closeLabel="Close"
       footer={
         <div className={styles.authFooterLine}>
-          <span><Icon name="key" /> Non-custodial. Nothing moves without your signature.</span>
+          <span>Non-custodial. Nothing moves without your signature.</span>
           <span className={styles.authLegal}><a href="/terms">Terms</a><a href="/privacy-policy">Privacy policy</a></span>
         </div>
       }
@@ -199,21 +203,21 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
       <div ref={body} className={styles.connectModal} data-testid="connect-modal" data-step={step.kind}>
         {pending ? (
           <div className={styles.authPending}>
-            <span className={styles.authPendingMark} aria-hidden="true">
-              {pendingIcon ? <Image src={pendingIcon} width={28} height={28} alt="" unoptimized /> : <Icon name="wallet" />}
-            </span>
-            <p role="status">
-              {pending.kind === "connecting" ? `Approve the connection in ${pending.name}.` : pending.phase === "wallet" ? `Check ${pending.name} to sign in.` : "Confirming the signature."}
-            </p>
-            <span className={styles.authPendingHint}>
-              {pending.kind === "connecting" ? "Waiting for the wallet." : pending.phase === "wallet" ? "The wallet shows a message to sign. It is not a transaction." : "Checking the signature with Seametry."}
-            </span>
-            <span className={styles.authProgress} aria-hidden="true"><span /></span>
+            <StatusMark state="running" />
+            <div>
+              <p role="status">
+                {pending.kind === "connecting" ? `Approve the connection in ${pending.name}.` : pending.phase === "wallet" ? `Check ${pending.name} to sign in.` : "Confirming the signature."}
+              </p>
+              <span className={styles.authPendingHint}>
+                {pending.kind === "connecting" ? "Waiting for the wallet." : pending.phase === "wallet" ? "The wallet shows a message to sign. It is not a transaction." : "Checking the signature with Seametry."}
+              </span>
+            </div>
           </div>
         ) : null}
 
         {step.kind === "problem" ? (
-          <div className={styles.authProblem}>
+          <div className={styles.dialogProblem}>
+            <StatusMark state="stopped" />
             <p role="alert">{step.message}</p>
             <div className={styles.connectActions}>
               {step.retry ? <ContinueAction onClick={() => (connected && wallet ? void signInWith(step.name, signing(wallet.adapter)) : choose(step.name))}>Try again</ContinueAction> : null}

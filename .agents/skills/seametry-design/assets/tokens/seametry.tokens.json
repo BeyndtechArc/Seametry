@@ -2,78 +2,79 @@
   "$description": "Seametry design tokens. W3C Design Tokens Community Group format. Single source of truth: never hand-edit generated tokens.css or tokens.ts.",
   "theme": {
     "dark": {
-      "$description": "Warm near-black operational surfaces (#1B1B18, Storm, 29 October 2026), with a charcoal-green track for feature surfaces and a muted sage for primary actions. Ratios are checked by shared/tools/design/contrast_test.mjs.",
+      "$description": "The touchstone. Olive-black operational surfaces, in the hue of the house's deck (clients/web/public/Slide-*.png, ground #171C03).",
       "surface": {
         "$type": "color",
         "ground": {
-          "$value": "#1B1B18",
-          "$description": "Warm near-black ground. Never pure black."
+          "$value": "#14180A",
+          "$description": "Operational olive-black ground, a step quieter than the deck's #171C03 so feature surfaces still read above it."
         },
         "sheet": {
-          "$value": "#222320"
+          "$value": "#1C2013",
+          "$description": "Each step above the ground loses chroma as it gains lightness (OKLCH 0.024, 0.021, 0.019 at hue 122), so a pane reads as a lighter olive-black, not khaki (Storm, 30 October 2026)."
         },
         "raised": {
-          "$value": "#2A2C28"
+          "$value": "#25281D"
         },
         "tray": {
-          "$value": "#333631"
+          "$value": "#2F3228"
         },
         "inverse": {
-          "$value": "#E8EAE2"
+          "$value": "#ECEEDF"
         }
       },
       "text": {
         "$type": "color",
         "primary": {
-          "$value": "#E8EAE2",
-          "$description": "Bone. 14.22:1 on ground, 10.10:1 on tray."
+          "$value": "#ECEEDF",
+          "$description": "Bone, as on the deck. 15.34:1 on ground, 11.11:1 on tray."
         },
         "secondary": {
-          "$value": "#B8BCB0",
-          "$description": "Readable supporting text. 8.93:1 on ground, 6.34:1 on tray."
+          "$value": "#B4B9A2",
+          "$description": "Readable supporting text. 8.93:1 on ground, 6.47:1 on tray."
         },
         "tertiary": {
-          "$value": "#9CA194",
-          "$description": "Lowest readable text step. 6.53:1 on ground, 5.97:1 on sheet."
+          "$value": "#9CA289",
+          "$description": "Lowest readable text step. 6.82:1 on ground, 4.94:1 on tray."
         },
         "faint": {
-          "$value": "#5D6158",
+          "$value": "#5E644A",
           "$description": "Decorative only. Never for text a user must read."
         },
         "onTouch": {
-          "$value": "#121A14",
-          "$description": "Text on the touch fill. 7.23:1 on touch, 6.01:1 on touchPressed."
+          "$value": "#141803",
+          "$description": "Text on the touch fill. 7.21:1 on touch, 6.38:1 on touchPressed."
         },
         "inverse": {
-          "$value": "#1B1B18",
-          "$description": "14.22:1 on surface.inverse."
+          "$value": "#14180A",
+          "$description": "15.34:1 on surface.inverse."
         }
       },
       "line": {
         "$type": "color",
         "rule": {
-          "$value": "#353831"
+          "$value": "#35382D"
         },
         "strong": {
-          "$value": "#4C5146"
+          "$value": "#505546"
         },
         "highlight": {
-          "$value": "rgba(233,240,228,0.06)",
+          "$value": "rgba(236,246,232,0.06)",
           "$description": "Top-edge hairline on raised surfaces. The only light effect allowed."
         }
       },
       "accent": {
         "$type": "color",
         "touch": {
-          "$value": "#8DAE8A",
-          "$description": "Muted sage fill on keys and full-round controls. 7.03:1 against the ground, so the control reads as a shape before its label is read."
+          "$value": "#98AD39",
+          "$description": "Fill on keys and full-round controls only, the deck's lime. 7.19:1 against the ground, so the control reads as a shape before its label is read."
         },
         "touchPressed": {
-          "$value": "#7D9F7A"
+          "$value": "#8DA32C"
         },
         "provenance": {
-          "$value": "#ABA9D2",
-          "$description": "Muted provenance mark, outline and focus ring. 7.68:1 on ground, 6.27:1 on raised. Never bare text."
+          "$value": "#AAA8D0",
+          "$description": "Muted provenance mark, outline and focus ring. Never bare text."
         },
         "provenanceField": {
           "$value": "#3A20D6",
@@ -81,8 +82,8 @@
         },
         "touchText": {
           "$type": "color",
-          "$value": "#A3C29F",
-          "$description": "Light sage for links and small touchable marks. 8.86:1 on ground, 8.11:1 on sheet."
+          "$value": "#AFC45F",
+          "$description": "Light lime for links and small touchable marks. 9.34:1 on ground, 6.77:1 on tray."
         }
       },
       "status": {
@@ -95,39 +96,39 @@
           "$value": "#E3C178"
         },
         "error": {
-          "$value": "#E6A69D"
+          "$value": "#DEA098"
         }
       },
       "figure": {
         "$type": "color",
         "$description": "Reserved for hero instruments' drawn parts. Never text and never a surface.",
         "frozen": {
-          "$value": "#D06A5C",
-          "$description": "An issuer-frozen leg: its collar, padlock and held Claim. A saturated brick, because status.error is a pastel in dark and read as pink (Storm, 12 October 2026). 4.85:1 on ground."
+          "$value": "#B84C40",
+          "$description": "An issuer-frozen leg: its collar, padlock and held Claim. A saturated brick, because status.error is a pastel in dark and read as pink (Storm, 12 October 2026)."
         }
       },
       "feature": {
         "$type": "color",
-        "$description": "The charcoal-green track. Reserved for named feature surfaces (see foundations.md section 5b): hero sections, alloy ceremony panels, sponsor profile headers, the Explorer landing. Never the default app background.",
+        "$description": "The olive track. Reserved for named feature surfaces (see foundations.md section 5b): hero sections, alloy ceremony panels, sponsor profile headers, the Explorer landing. Never the default app background.",
         "ground": {
-          "$value": "#1C2420",
-          "$description": "Deep desaturated green-black."
+          "$value": "#171C03",
+          "$description": "The deck's own ground."
         },
         "sheet": {
-          "$value": "#222C27"
+          "$value": "#1F2507"
         },
         "raised": {
-          "$value": "#2A352F"
+          "$value": "#2A310F"
         },
         "text": {
           "$type": "color",
           "primary": {
-            "$value": "#E8EAE2",
-            "$description": "Bone. 13.08:1 on feature.ground."
+            "$value": "#ECEEDF",
+            "$description": "Bone. 14.84:1 on feature.ground, 11.56:1 on feature.raised."
           },
           "secondary": {
-            "$value": "#B7C1B5",
-            "$description": "8.55:1 on feature.ground, 6.86:1 on feature.raised."
+            "$value": "#B4B9A2",
+            "$description": "8.64:1 on feature.ground, 7.84:1 on feature.sheet; restricted to feature.ground/sheet, see foundations.md 5b."
           }
         }
       }

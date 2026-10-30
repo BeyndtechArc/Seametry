@@ -12,14 +12,6 @@ const TOKEN_FILE = /tokens\.(css|ts|json)$|\.tokens\.json$/;
 // matching backdrop-filter, feDisplacementMap, or a specular box-shadow stack outside
 // them is unauthorised sprawl, which is exactly how glassmorphism-as-slop happens.
 const LENS_ALLOWED = /(?:^|[\\/])(lens|components[\\/]lens|illustrations)[\\/]/;
-// The one exception to no shadow and no blur (Storm, 30 October 2026): the auth
-// dialog in modal-sheet.module.css: box-shadow only through --auth-elevation,
-// and a backdrop blur of at most two digits of px, or none for the
-// reduced-transparency fallback (components.md, Auth dialog). The blur is a
-// literal because the CSS minifier drops a var() in backdrop-filter.
-const AUTH_ELEVATION_FILE = /(?:^|[\\/])packages[\\/]ui[\\/]src[\\/]modal-sheet\.module\.css$/;
-const AUTH_ELEVATION_LINE = /^\s*(box-shadow\s*:\s*var\(--auth-elevation\)|backdrop-filter\s*:\s*(none|blur\(\d{1,2}px\)(\s+saturate\([\d.]+\))?))\s*;\s*$/;
-const authElevation = (l, f) => AUTH_ELEVATION_FILE.test(f) && AUTH_ELEVATION_LINE.test(l);
 const SURFACE_MARK = /(surface-raised|surface-tray|surface\.raised|surface\.tray|['"]raised['"]|['"]tray['"])/;
 
 const RULES = [
@@ -27,7 +19,7 @@ const RULES = [
     msg: 'Raw colour literal. Use a token (var(--sm-...) or theme.*).' },
   { id: 'raw-rgba', test: (l, f) => !TOKEN_FILE.test(f) && /\brgba?\(/.test(l), msg: 'Raw rgb/rgba. Use a token.' },
   // React Native's shadow props are shadows only in the mobile app; elsewhere "elevation" is a camera angle.
-  { id: 'shadow', test: (l, f) => (!authElevation(l, f) && /(box-shadow|boxShadow)\s*:/.test(l) && !/var\(--sm-line-highlight\)|(box-shadow|boxShadow)\s*:\s*['"]?none/.test(l)) || (/(?:^|[\\/])mobile[\\/]/.test(f) && /\b(shadowColor|shadowOpacity|shadowRadius|shadowOffset|elevation)\s*:/.test(l)),
+  { id: 'shadow', test: (l, f) => (/(box-shadow|boxShadow)\s*:/.test(l) && !/var\(--sm-line-highlight\)|(box-shadow|boxShadow)\s*:\s*['"]?none/.test(l)) || (/(?:^|[\\/])mobile[\\/]/.test(f) && /\b(shadowColor|shadowOpacity|shadowRadius|shadowOffset|elevation)\s*:/.test(l)),
     msg: 'Shadows are banned. Elevation is tone; the only light effect is the line.highlight top hairline.' },
   { id: 'gradient', test: (l) => /(linear|radial|conic)-gradient\(|LinearGradient/.test(l), msg: 'Gradients are decoration. Banned outside approved ceremony components.' },
   { id: 'uppercase', test: (l) => /text-transform\s*:\s*uppercase|textTransform\s*:\s*['"]uppercase/.test(l), msg: 'No all-caps labels. Sentence case only.' },
@@ -39,7 +31,7 @@ const RULES = [
     msg: 'voice.md bans APY outright. Price movement, reinvested dividends and opted-in yield stay named and separated; never collapsed into a stablecoin-style rate.' },
   { id: 'animation-lib', test: (l) => /from\s+['"](framer-motion|motion\/react|motion|lenis|@studio-freight\/lenis|react-spring|animejs)['"]/.test(l),
     msg: 'Only GSAP (web) and Reanimated (mobile) are allowed animation libraries.' },
-  { id: 'lens-scope', test: (l, f) => !LENS_ALLOWED.test(f) && !authElevation(l, f) && (/backdrop-filter|backdropFilter|feDisplacementMap|feTurbulence/.test(l)),
+  { id: 'lens-scope', test: (l, f) => !LENS_ALLOWED.test(f) && (/backdrop-filter|backdropFilter|feDisplacementMap|feTurbulence/.test(l)),
     msg: 'The Lens material is restricted to lens/ and illustrations/ components. See foundations.md section 5b.' },
   // The value is extracted and tested directly. A negative lookahead placed
   // after \s* backtracks: the engine retries with \s* matching nothing,

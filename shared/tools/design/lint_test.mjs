@@ -85,12 +85,3 @@ test('the Lens is accepted inside a cross-platform components/lens path', () => 
   const source = '.x { backdrop-filter: blur(var(--sm-space-5)); }';
   assert.deepEqual(lint(join('components', 'lens', 'rail.css'), source), []);
 });
-
-// The auth dialog alone may cast its elevation and blur its backdrop (Storm,
-// 30 October 2026): its shadow only through --auth-elevation, its blur small.
-test('the auth dialog may use its elevation and backdrop blur, and nothing else may', () => {
-  const allowed = '.auth {\n  box-shadow: var(--auth-elevation);\n}\n.auth::backdrop {\n  backdrop-filter: blur(6px) saturate(1.1);\n}\n@media (prefers-reduced-transparency: reduce) {\n  .auth::backdrop {\n    backdrop-filter: none;\n  }\n}\n';
-  assert.deepEqual(lint('clients/packages/ui/src/modal-sheet.module.css', allowed), []);
-  assert.deepEqual(lint('clients/packages/ui/src/other.module.css', allowed).sort(), ['lens-scope', 'lens-scope', 'shadow']);
-  assert.deepEqual(lint('clients/packages/ui/src/modal-sheet.module.css', '.process {\n  box-shadow: 0 1px 2px var(--sm-text-primary);\n  backdrop-filter: blur(120px);\n}\n').sort(), ['lens-scope', 'shadow']);
-});

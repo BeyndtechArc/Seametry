@@ -312,13 +312,18 @@
   line-height: 1.5;
 }
 
-/* One wallet per row: brand, name, and whether this browser has it. */
+/* A ledger, one wallet per ruled row: its own mark, its name, and whether
+   this browser has it. Square, like every catalogue row. */
 .walletRows {
   display: grid;
-  gap: var(--sm-space-2);
   margin: 0;
   padding: 0;
+  border-top: 0.5px solid var(--sm-line-rule);
   list-style: none;
+}
+
+.walletRows > li {
+  border-bottom: 0.5px solid var(--sm-line-rule);
 }
 
 .walletRow {
@@ -327,30 +332,26 @@
   align-items: center;
   gap: var(--sm-space-4);
   width: 100%;
-  min-height: 52px;
-  padding: var(--sm-space-2) var(--sm-space-4);
-  border: 1px solid var(--sm-line-rule);
-  border-radius: var(--sm-radius-surface);
+  min-height: 56px;
+  padding: var(--sm-space-2) var(--sm-space-3);
+  border: 0;
   color: var(--sm-text-primary);
-  background: var(--sm-surface-ground);
+  background: transparent;
   font: inherit;
   font-weight: var(--sm-font-weight-medium);
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  transition:
-    border-color var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide),
-    background-color var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
+  transition: background-color var(--sm-motion-duration-overlay) var(--sm-motion-easing-glide);
 }
 
 .walletRow:hover {
-  border-color: var(--sm-line-strong);
-  background: var(--sm-surface-raised);
+  background: var(--sm-surface-sheet);
 }
 
 .walletRow:focus-visible {
   outline: 2px solid var(--sm-accent-provenance);
-  outline-offset: var(--sm-space-1);
+  outline-offset: calc(var(--sm-space-1) * -1);
 }
 
 .walletName {
@@ -361,31 +362,29 @@
 .walletBlank {
   display: grid;
   place-items: center;
-  width: var(--sm-space-8);
-  height: var(--sm-space-8);
+  width: var(--sm-space-7);
+  height: var(--sm-space-7);
+  justify-self: center;
+  border: 0.5px solid var(--sm-line-strong);
   color: var(--sm-text-secondary);
 }
 
 .walletBlank svg {
-  width: var(--sm-space-6);
-  height: var(--sm-space-6);
+  width: var(--sm-space-5);
+  height: var(--sm-space-5);
 }
 
 .walletBadge {
   display: inline-flex;
   align-items: center;
   gap: var(--sm-space-1);
-  padding: var(--sm-space-1) var(--sm-space-3);
-  border: 1px solid var(--sm-line-rule);
-  border-radius: var(--sm-radius-control);
-  color: var(--sm-text-secondary);
+  color: var(--sm-text-tertiary);
   font-size: var(--sm-font-size-micro);
   font-weight: var(--sm-font-weight-regular);
 }
 
-.walletBadge[data-kind="detected"] {
-  border-color: color-mix(in srgb, var(--sm-status-success) 40%, var(--sm-line-rule));
-  color: var(--sm-status-success);
+.walletRow:hover .walletBadge[data-kind="install"] {
+  color: var(--sm-accent-touchText);
 }
 
 .walletBadge svg {
@@ -409,79 +408,46 @@
   background: var(--sm-line-rule);
 }
 
-/* Waiting on the wallet: which wallet, what to do there, and a quiet bar. */
+/* Waiting on the wallet: the running Status mark beside the one thing to do
+   there. The mark is the only moving part. */
 .authPending {
   display: grid;
-  justify-items: center;
-  gap: var(--sm-space-3);
-  padding: var(--sm-space-6) var(--sm-space-4);
-  border: 1px solid var(--sm-line-rule);
-  border-radius: var(--sm-radius-surface);
-  background: var(--sm-surface-ground);
-  text-align: center;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sm-space-4);
+  padding: var(--sm-space-5) 0;
+  border-block: 0.5px solid var(--sm-line-rule);
 }
 
 .authPending p {
-  margin: 0;
+  margin: 0 0 var(--sm-space-1);
   color: var(--sm-text-primary);
   font-weight: var(--sm-font-weight-medium);
-}
-
-.authPendingMark {
-  display: grid;
-  place-items: center;
-  width: var(--sm-space-10);
-  height: var(--sm-space-10);
-  border: 1px solid var(--sm-line-rule);
-  border-radius: var(--sm-radius-surface);
-  background: var(--sm-surface-raised);
-}
-
-.authPendingMark svg {
-  width: var(--sm-space-6);
-  height: var(--sm-space-6);
 }
 
 .authPendingHint {
   color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
+  line-height: 1.5;
 }
 
-.authProgress {
-  position: relative;
-  width: 60%;
-  height: 2px;
-  margin-top: var(--sm-space-2);
-  overflow: hidden;
-  background: var(--sm-line-rule);
-}
-
-.authProgress span {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 40%;
-  background: var(--sm-accent-touch);
-  animation: authProgress 1.4s var(--sm-motion-easing-glide) infinite;
-}
-
-@keyframes authProgress {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(250%); }
-}
-
-.authProblem {
+.dialogProblem {
   display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
   gap: var(--sm-space-4);
-  padding: var(--sm-space-5);
-  border: 1px solid color-mix(in srgb, var(--sm-status-error) 45%, var(--sm-line-rule));
-  border-radius: var(--sm-radius-surface);
-  background: var(--sm-surface-ground);
+  padding: var(--sm-space-5) 0;
+  border-block: 0.5px solid var(--sm-line-rule);
 }
 
-.authProblem p {
+.dialogProblem p {
   margin: 0;
   color: var(--sm-text-primary);
   line-height: 1.5;
+}
+
+.dialogProblem .connectActions {
+  grid-column: 2;
 }
 
 .connectProblem {
@@ -526,17 +492,6 @@
   gap: var(--sm-space-2) var(--sm-space-5);
 }
 
-.authFooterLine > span:first-child {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sm-space-2);
-}
-
-.authFooterLine svg {
-  width: var(--sm-space-4);
-  height: var(--sm-space-4);
-}
-
 .authLegal {
   display: inline-flex;
   gap: var(--sm-space-4);
@@ -560,14 +515,12 @@
 
 @media (prefers-reduced-motion: reduce) {
   .walletRow { transition: none; }
-  .authProgress span { animation: none; width: 100%; opacity: 0.5; }
 }
 
 .walletBrand {
   justify-self: center;
   width: var(--sm-space-7);
   height: var(--sm-space-7);
-  border-radius: var(--sm-radius-surface);
 }
 
 .textLink {

@@ -49,6 +49,6 @@
   height: auto;
 }
 
-.tone2 { fill: color-mix(in srgb, var(--figure-touch) 15%, var(--sm-surface-ground)); }
-.tone1 { fill: color-mix(in srgb, var(--figure-touch) 45%, var(--sm-surface-ground)); }
-.tone0 { fill: color-mix(in srgb, var(--figure-touch) 80%, var(--sm-surface-ground)); }
+.tone2 { fill: color-mix(in srgb, var(--sm-scale-touch-500) 15%, var(--sm-surface-ground)); }
+.tone1 { fill: color-mix(in srgb, var(--sm-scale-touch-500) 45%, var(--sm-surface-ground)); }
+.tone0 { fill: color-mix(in srgb, var(--sm-scale-touch-500) 80%, var(--sm-surface-ground)); }

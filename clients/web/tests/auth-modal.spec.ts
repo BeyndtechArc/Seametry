@@ -80,7 +80,7 @@ test("on a phone the dialog is a full-width sheet anchored to the bottom, inside
   await context.close();
 });
 
-test("in dark the dialog paints the dark sheet and its rows read on it", async ({ page }) => {
+test("in dark the dialog paints the raised surface and its rows read on it", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("seametry-theme-v1", "dark"));
   await signedOut(page);
   await registerTestWallet(page, { trusted: false, signsIn: true });
@@ -89,14 +89,14 @@ test("in dark the dialog paints the dark sheet and its rows read on it", async (
   const dialog = signIn(page);
   await expect(dialog).toBeVisible();
   const background = await dialog.evaluate((node) => getComputedStyle(node).backgroundColor);
-  expect(background).toBe(await resolve(page, theme.dark.surface.sheet));
+  expect(background).toBe(await resolve(page, theme.dark.surface.raised));
   const name = await dialog.getByRole("button", { name: "Connect Test wallet" }).evaluate((node) => getComputedStyle(node).color);
   expect(name).toBe(await resolve(page, theme.dark.text.primary));
 });
 
-// The auth dialog alone casts a soft shadow and blurs the dimmed page behind
-// it (Storm, 30 October 2026); components.md, Auth dialog.
-for (const mode of ["light", "dark"] as const) test(`in ${mode} the dialog lifts on a soft shadow over a blurred backdrop`, async ({ page }) => {
+// components.md, Auth dialog: a plate like the Process dialog, elevated by
+// tone alone, with the registration cut at its top-left corner.
+for (const mode of ["light", "dark"] as const) test(`in ${mode} the dialog is a cut plate with no shadow over an unblurred page`, async ({ page }) => {
   await page.addInitScript((value) => localStorage.setItem("seametry-theme-v1", value), mode);
   await signedOut(page);
   await registerTestWallet(page, { trusted: false, signsIn: true });
@@ -104,9 +104,20 @@ for (const mode of ["light", "dark"] as const) test(`in ${mode} the dialog lifts
   await page.locator("#app-wallet").click();
   const dialog = signIn(page);
   await expect(dialog).toBeVisible();
-  const shadow = await dialog.evaluate((node) => getComputedStyle(node).boxShadow);
-  expect(shadow).not.toBe("none");
-  expect(shadow.split("px").length).toBeGreaterThan(9);
+  await expect(dialog.getByText("Account", { exact: true })).toBeVisible();
+  expect(await dialog.evaluate((node) => getComputedStyle(node).boxShadow)).toBe("none");
+  expect(await dialog.evaluate((node) => getComputedStyle(node).clipPath)).toContain("polygon");
   const blur = await dialog.evaluate((node) => getComputedStyle(node, "::backdrop").backdropFilter);  // design-lint-disable-line lens-scope: reads the computed value, applies nothing
-  expect(blur).toContain("blur(6px)");
+  expect(blur).toBe("none");
+});
+
+test("while the session is still being read, the dialog connects and never says signed in", async ({ page }) => {
+  await page.route("**/api/auth/get-session", () => {});
+  await registerTestWallet(page, { trusted: false, signsIn: true });
+  await page.goto("/app/allocation");
+  await page.locator("#app-wallet").click();
+  const dialog = page.getByRole("dialog", { name: "Connect a wallet" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText("Connecting a wallet shows its balances here", { exact: false })).toBeVisible();
+  await expect(dialog.getByText("You are signed in", { exact: false })).toHaveCount(0);
 });
