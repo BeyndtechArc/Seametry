@@ -444,8 +444,19 @@ browser through the web deployment and counted for production only. It
 holds nothing that tells one visitor from another, and a `dm-<handle>` code
 is counted as `dm`.
 
-To come, per the plan: people, identities and their provenance, imported
-leads, lifecycle stages, scores, patterns, drafts and the outreach audit.
+`growth.people` and `growth.identities` hold who Growth knows of. A person
+comes from a lead file, through `seametry growth import-ledger`, or from an
+account token. Imported people and identities stay marked as imported and
+unverified, carry the lawful basis the import stated, and can be removed as
+one batch. An identity is verified only on the account authority's word: the
+token's account and the wallets it names. A wallet already held by another
+person stays there and the clash is kept as `identity.conflict`. Joining
+accounts is off (`SEAMETRY_GROWTH_JOIN_ACCOUNTS`) until the account authority
+signals deletion, because the privacy policy promises deletion removes linked
+addresses. No email address is held.
+
+To come, per the plan: edges, lifecycle stages, scores, patterns, drafts and
+the outreach audit.
 
 **Never.** The source of anything another service owns: money and outcomes
 are Execution's, read through its interface, and no amount is kept here.

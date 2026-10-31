@@ -58,6 +58,7 @@ export default function PrivacyPolicyPage() {
           <div className={styles.paperText}>
             <p>When account storage is enabled, Seametry may also retain saved Allocation plans, Hallmarks, linked addresses and the network attached to each record. A reusable basket template copied to another wallet becomes a new plan for that wallet.</p>
             <p>We also process session cookies, request timestamps, IP-derived country codes, browser and device information, and security logs needed to operate, rate-limit and investigate the service. We do not create an account merely because you browse the public site or connect a wallet.</p>
+            <p>Beyndtech Arc also keeps an outreach list of people and teams who may have an interest in Seametry, drawn from public hackathon project pages and public profiles. Each entry holds a name, a project or category label, a public handle and page link, where the entry came from, why it was added, and the lawful basis recorded for it. It holds no email address. We may contact people on the list by direct message. You may ask for your entry to be corrected or removed, as section 07 describes.</p>
           </div>
         </section>
 

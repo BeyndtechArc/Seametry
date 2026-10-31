@@ -1,10 +1,12 @@
 package gateway_test
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -22,7 +24,56 @@ func (f accountRoundTrip) RoundTrip(request *http.Request) (*http.Response, erro
 	return f(request)
 }
 
-func TestAccountTokenReachesTheGatewayAsAnOpaqueSubject(t *testing.T) {
+type heldJoins struct {
+	joined chan identity.Subject
+	err    error
+}
+
+func (h heldJoins) Join(_ context.Context, subject identity.Subject, _ time.Time) error {
+	h.joined <- subject
+	return h.err
+}
+
+func TestAVerifiedAccountJoinsGrowthAndAFailedJoinCannotFailTheRequest(t *testing.T) {
+	verifier, token, now := accountVerifier(t)
+	held := heldJoins{joined: make(chan identity.Subject, 1), err: errors.New("the record is down")}
+	reached := false
+	handler := verifier.Middleware(gateway.JoinAccounts(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		reached = true
+		w.WriteHeader(http.StatusNoContent)
+	}), held), func() time.Time { return now })
+	request := httptest.NewRequest(http.MethodGet, "/v1/anything", nil)
+	request.Header.Set("Authorization", "Bearer "+token)
+	response := httptest.NewRecorder()
+
+	handler.ServeHTTP(response, request)
+
+	if !reached || response.Code != http.StatusNoContent {
+		t.Fatalf("reached %t, HTTP %d; a failed join must leave the request alone", reached, response.Code)
+	}
+	select {
+	case subject := <-held.joined:
+		if subject.AccountID != "account-1" {
+			t.Errorf("joined %q, want the token's subject", subject.AccountID)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("the verified account never reached Growth")
+	}
+}
+
+func TestARequestWithoutAnAccountJoinsNothing(t *testing.T) {
+	held := heldJoins{joined: make(chan identity.Subject, 1)}
+	handler := gateway.JoinAccounts(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), held)
+	handler.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/v1/anything", nil))
+	select {
+	case subject := <-held.joined:
+		t.Errorf("a request with no token joined %+v", subject)
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+func accountVerifier(t *testing.T) (*identity.Verifier, string, time.Time) {
+	t.Helper()
 	public, private, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		t.Fatal(err)
@@ -47,7 +98,11 @@ func TestAccountTokenReachesTheGatewayAsAnOpaqueSubject(t *testing.T) {
 		t.Fatal(err)
 	}
 	now := time.Date(2026, 10, 9, 12, 0, 0, 0, time.UTC)
-	token := accountToken(t, private, now, origin)
+	return verifier, accountToken(t, private, now, origin), now
+}
+
+func TestAccountTokenReachesTheGatewayAsAnOpaqueSubject(t *testing.T) {
+	verifier, token, now := accountVerifier(t)
 	core := gateway.NewServer(nil, nil)
 	core.Now = func() time.Time { return now }
 	handler := gateway.NewHandler(core, func(next http.Handler) http.Handler {

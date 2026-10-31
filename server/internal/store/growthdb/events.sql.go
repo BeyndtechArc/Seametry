@@ -208,16 +208,29 @@ type WalletTimelineParams struct {
 	RowLimit int32              `db:"row_limit" json:"row_limit"`
 }
 
+type WalletTimelineRow struct {
+	ID         int64              `db:"id" json:"id"`
+	Type       string             `db:"type" json:"type"`
+	Wallet     pgtype.Text        `db:"wallet" json:"wallet"`
+	Properties []byte             `db:"properties" json:"properties"`
+	Source     string             `db:"source" json:"source"`
+	Deployment pgtype.Text        `db:"deployment" json:"deployment"`
+	Origin     string             `db:"origin" json:"origin"`
+	OriginKey  string             `db:"origin_key" json:"origin_key"`
+	OccurredAt pgtype.Timestamptz `db:"occurred_at" json:"occurred_at"`
+	ReceivedAt pgtype.Timestamptz `db:"received_at" json:"received_at"`
+}
+
 // One wallet's events before a time, newest first.
-func (q *Queries) WalletTimeline(ctx context.Context, arg WalletTimelineParams) ([]GrowthEvent, error) {
+func (q *Queries) WalletTimeline(ctx context.Context, arg WalletTimelineParams) ([]WalletTimelineRow, error) {
 	rows, err := q.db.Query(ctx, walletTimeline, arg.Wallet, arg.Before, arg.RowLimit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GrowthEvent
+	var items []WalletTimelineRow
 	for rows.Next() {
-		var i GrowthEvent
+		var i WalletTimelineRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Type,

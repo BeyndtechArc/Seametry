@@ -63,6 +63,13 @@ test("the unsubscribe link withdraws with one button, and a used link says so", 
   await expect(page.getByText("This link carries no token")).toBeVisible();
 });
 
+test("the privacy policy says what the outreach list keeps and how to leave it", async ({ page }) => {
+  await page.goto("/privacy-policy");
+  await expect(page.getByText(/public hackathon project pages and public profiles/)).toBeVisible();
+  await expect(page.getByText(/It holds no email address/)).toBeVisible();
+  await expect(page.getByText(/ask for your entry to be corrected or removed/)).toBeVisible();
+});
+
 test("the privacy policy says what an opt-in keeps, why, and how to stop it", async ({ page }) => {
   await page.goto("/privacy-policy");
   await expect(page.getByText("Effective 31 October 2026")).toBeVisible();

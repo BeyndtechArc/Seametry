@@ -5,6 +5,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -41,6 +42,34 @@ type VisitCounter interface {
 func (s Server) WithVisits(visits VisitCounter) Server {
 	s.Visits = visits
 	return s
+}
+
+// AccountJoiner is Growth's person record, as the Gateway needs it.
+// *growth.People satisfies it.
+type AccountJoiner interface {
+	Join(ctx context.Context, subject identity.Subject, now time.Time) error
+}
+
+// joinTimeout bounds a join that runs after its request has gone.
+const joinTimeout = 5 * time.Second
+
+// JoinAccounts tells Growth about each verified account a request arrives
+// with. It sits here because no single route sees every account: the web
+// never calls GET /v1/me. The join runs beside the request, not inside it,
+// so a slow or failing record can never delay or fail a trade.
+func JoinAccounts(next http.Handler, joiner AccountJoiner) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if subject, ok := identity.SubjectFromContext(r.Context()); ok {
+			go func() {
+				ctx, cancel := context.WithTimeout(context.Background(), joinTimeout)
+				defer cancel()
+				if err := joiner.Join(ctx, subject, time.Now()); err != nil {
+					slog.Warn("seametry: joining an account to Growth", "error", err.Error())
+				}
+			}()
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 const serviceSecretHeader = "X-Seametry-Service-Secret"

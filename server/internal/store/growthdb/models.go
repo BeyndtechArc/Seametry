@@ -33,6 +33,41 @@ type GrowthEvent struct {
 	OriginKey  string             `db:"origin_key" json:"origin_key"`
 	OccurredAt pgtype.Timestamptz `db:"occurred_at" json:"occurred_at"`
 	ReceivedAt pgtype.Timestamptz `db:"received_at" json:"received_at"`
+	PersonID   pgtype.UUID        `db:"person_id" json:"person_id"`
+}
+
+type GrowthIdentity struct {
+	ID          int64              `db:"id" json:"id"`
+	PersonID    pgtype.UUID        `db:"person_id" json:"person_id"`
+	Kind        string             `db:"kind" json:"kind"`
+	Value       string             `db:"value" json:"value"`
+	Provenance  string             `db:"provenance" json:"provenance"`
+	Verified    bool               `db:"verified" json:"verified"`
+	FirstSeenAt pgtype.Timestamptz `db:"first_seen_at" json:"first_seen_at"`
+	LastSeenAt  pgtype.Timestamptz `db:"last_seen_at" json:"last_seen_at"`
+}
+
+type GrowthPerson struct {
+	ID                 pgtype.UUID        `db:"id" json:"id"`
+	Kind               string             `db:"kind" json:"kind"`
+	DisplayName        string             `db:"display_name" json:"display_name"`
+	Stage              string             `db:"stage" json:"stage"`
+	OutreachStatus     string             `db:"outreach_status" json:"outreach_status"`
+	CreatedFrom        string             `db:"created_from" json:"created_from"`
+	LawfulBasis        pgtype.Text        `db:"lawful_basis" json:"lawful_basis"`
+	LawfulBasisNote    pgtype.Text        `db:"lawful_basis_note" json:"lawful_basis_note"`
+	ImportBatch        pgtype.Text        `db:"import_batch" json:"import_batch"`
+	ImportKey          pgtype.Text        `db:"import_key" json:"import_key"`
+	ImportDigest       pgtype.Text        `db:"import_digest" json:"import_digest"`
+	ImportedFit        pgtype.Int4        `db:"imported_fit" json:"imported_fit"`
+	ImportedSignal     pgtype.Int4        `db:"imported_signal" json:"imported_signal"`
+	ImportedReach      pgtype.Int4        `db:"imported_reach" json:"imported_reach"`
+	ImportedEngagement pgtype.Int4        `db:"imported_engagement" json:"imported_engagement"`
+	ImportedScore      pgtype.Int4        `db:"imported_score" json:"imported_score"`
+	ImportedTier       pgtype.Text        `db:"imported_tier" json:"imported_tier"`
+	ImportDetail       []byte             `db:"import_detail" json:"import_detail"`
+	CreatedAt          pgtype.Timestamptz `db:"created_at" json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `db:"updated_at" json:"updated_at"`
 }
 
 type GrowthVisitCount struct {
