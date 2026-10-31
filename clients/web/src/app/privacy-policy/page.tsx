@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
     <PublicShell>
       <article className={styles.paper}>
         <header className={styles.storyHero}>
-          <span>Effective 30 October 2026</span>
+          <span>Effective 31 October 2026</span>
           <h1>Privacy policy</h1>
           <p>This policy explains how Beyndtech Arc handles personal data when you use Seametry.</p>
         </header>
