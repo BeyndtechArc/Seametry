@@ -38,7 +38,7 @@ in a form where signing in adds utility rather than changing what is known.
   the response is out, with one retry. A lost report costs the record, not
   the trade, and a sent leg's outcome is still recoverable from chain.
 - **First touch is sent with a first trade only.** No cookie, no page-view
-  tracking of a visitor. Since 30 October 2026 (GTM milestone 1c), an entry
+  tracking of a visitor. Since 31 October 2026 (GTM milestone 1c), an entry
   to the site reports its landing page and referral code to an anonymous
   daily count in Growth, with nothing kept in the browser for it
   (`docs/SERVICE_CATALOG.md` section 3.13).
