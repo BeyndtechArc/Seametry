@@ -89,6 +89,9 @@ type ServerInterface interface {
 	// RecordActivitySubmission What happened when a prepared leg was sent, found by the message digest its approval binds.
 	// (POST /internal/activity/submissions)
 	RecordActivitySubmission(w http.ResponseWriter, r *http.Request)
+	// CountActivityVisit One browser session's landing page and referral code, added to that day's count.
+	// (POST /internal/activity/visits)
+	CountActivityVisit(w http.ResponseWriter, r *http.Request)
 	// RecordEmailOptIn An email address given with explicit consent to hear when the Hall launches and when the holder's trades settle.
 	// (POST /internal/email-optins)
 	RecordEmailOptIn(w http.ResponseWriter, r *http.Request)
@@ -993,6 +996,20 @@ func (siw *ServerInterfaceWrapper) RecordActivitySubmission(w http.ResponseWrite
 	handler.ServeHTTP(w, r)
 }
 
+// CountActivityVisit operation middleware
+func (siw *ServerInterfaceWrapper) CountActivityVisit(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CountActivityVisit(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // RecordEmailOptIn operation middleware
 func (siw *ServerInterfaceWrapper) RecordEmailOptIn(w http.ResponseWriter, r *http.Request) {
 
@@ -1337,6 +1354,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/email-optins", wrapper.RecordEmailOptIn)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/email-optins/unsubscribe", wrapper.WithdrawEmailOptIn)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/funnel", wrapper.RecordActivityFunnel)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/visits", wrapper.CountActivityVisit)
 
 	return m
 }
@@ -2332,6 +2350,39 @@ func (response RecordActivitySubmissiondefaultApplicationProblemPlusJSONResponse
 	return err
 }
 
+type CountActivityVisitRequestObject struct {
+	Body *CountActivityVisitJSONRequestBody
+}
+
+type CountActivityVisitResponseObject interface {
+	VisitCountActivityVisitResponse(w http.ResponseWriter) error
+}
+
+type CountActivityVisit204Response struct {
+}
+
+func (response CountActivityVisit204Response) VisitCountActivityVisitResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type CountActivityVisitdefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response CountActivityVisitdefaultApplicationProblemPlusJSONResponse) VisitCountActivityVisitResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type RecordEmailOptInRequestObject struct {
 	Body *RecordEmailOptInJSONRequestBody
 }
@@ -2851,6 +2902,9 @@ type StrictServerInterface interface {
 	// RecordActivitySubmission What happened when a prepared leg was sent, found by the message digest its approval binds.
 	// (POST /internal/activity/submissions)
 	RecordActivitySubmission(ctx context.Context, request RecordActivitySubmissionRequestObject) (RecordActivitySubmissionResponseObject, error)
+	// CountActivityVisit One browser session's landing page and referral code, added to that day's count.
+	// (POST /internal/activity/visits)
+	CountActivityVisit(ctx context.Context, request CountActivityVisitRequestObject) (CountActivityVisitResponseObject, error)
 	// RecordEmailOptIn An email address given with explicit consent to hear when the Hall launches and when the holder's trades settle.
 	// (POST /internal/email-optins)
 	RecordEmailOptIn(ctx context.Context, request RecordEmailOptInRequestObject) (RecordEmailOptInResponseObject, error)
@@ -3536,6 +3590,37 @@ func (sh *strictHandler) RecordActivitySubmission(w http.ResponseWriter, r *http
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(RecordActivitySubmissionResponseObject); ok {
 		if err := validResponse.VisitRecordActivitySubmissionResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CountActivityVisit operation middleware
+func (sh *strictHandler) CountActivityVisit(w http.ResponseWriter, r *http.Request) {
+	var request CountActivityVisitRequestObject
+
+	var body CountActivityVisitJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.CountActivityVisit(ctx, request.(CountActivityVisitRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CountActivityVisit")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(CountActivityVisitResponseObject); ok {
+		if err := validResponse.VisitCountActivityVisitResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

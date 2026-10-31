@@ -54,6 +54,28 @@ func alloyDiscriminator() [8]byte {
 	return d
 }
 
+// hallInstructions are chain/programs/hall/src/lib.rs's instruction
+// handlers, in the order the program declares them.
+var hallInstructions = []string{"initialize_alloy", "create", "redeem", "withdraw", "sync"}
+
+// HallInstruction names the Hall instruction an instruction's data calls,
+// by Anchor's convention: the first 8 bytes are sha256("global:<name>").
+// Confirmed on 30 October 2026 against all 89 Hall instructions in the
+// devnet Hall's 39 transactions, every one of which matched a name here.
+// Data that matches none answers "", which a caller keeps as unrecognised.
+func HallInstruction(data []byte) string {
+	if len(data) < discriminatorSize {
+		return ""
+	}
+	for _, name := range hallInstructions {
+		sum := sha256.Sum256([]byte("global:" + name))
+		if string(sum[:discriminatorSize]) == string(data[:discriminatorSize]) {
+			return name
+		}
+	}
+	return ""
+}
+
 // ChainAlloy is chain/programs/hall/src/state.rs::Alloy, decoded from a raw
 // account. Every field name matches the Rust struct's own field name.
 type ChainAlloy struct {

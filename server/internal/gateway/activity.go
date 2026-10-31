@@ -11,6 +11,7 @@ import (
 
 	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway/api"
+	"github.com/BeyndtechArc/Seametry/server/internal/growth"
 	"github.com/BeyndtechArc/Seametry/server/internal/identity"
 )
 
@@ -26,6 +27,19 @@ type ActivityReport interface {
 // activity operations answer 503 rather than accepting reports they cannot keep.
 func (s Server) WithActivity(report ActivityReport) Server {
 	s.Activity = report
+	return s
+}
+
+// VisitCounter is Growth's visit count, as the Gateway needs it.
+// *growth.Visits satisfies it.
+type VisitCounter interface {
+	Count(ctx context.Context, at time.Time, landingPath, refCode string) error
+}
+
+// WithVisits gives the Gateway Growth's visit count. Without one, a visit
+// report answers 503.
+func (s Server) WithVisits(visits VisitCounter) Server {
+	s.Visits = visits
 	return s
 }
 
@@ -170,6 +184,29 @@ func (s Server) RecordActivityFunnel(ctx context.Context, request api.RecordActi
 		return api.RecordActivityFunneldefaultApplicationProblemPlusJSONResponse{Body: problem, StatusCode: status}, nil
 	}
 	return api.RecordActivityFunnel204Response{}, nil
+}
+
+// CountActivityVisit adds one production session to Growth's count. A
+// preview or development session is accepted and not counted, so testing a
+// deployment never reads as a visitor.
+func (s Server) CountActivityVisit(ctx context.Context, request api.CountActivityVisitRequestObject) (api.CountActivityVisitResponseObject, error) {
+	if s.Visits == nil {
+		return api.CountActivityVisitdefaultApplicationProblemPlusJSONResponse{Body: unconfigured("CountActivityVisit"), StatusCode: http.StatusServiceUnavailable}, nil
+	}
+	if request.Body.Deployment != api.ActivityVisitDeploymentProduction {
+		return api.CountActivityVisit204Response{}, nil
+	}
+	if err := s.Visits.Count(ctx, s.Now(), request.Body.LandingPath, optional(request.Body.RefCode)); err != nil {
+		if errors.Is(err, growth.ErrVisitShape) {
+			return api.CountActivityVisitdefaultApplicationProblemPlusJSONResponse{
+				Body: gatewayProblem(http.StatusBadRequest, "Visit refused", "CountActivityVisit: "+err.Error()), StatusCode: http.StatusBadRequest,
+			}, nil
+		}
+		return api.CountActivityVisitdefaultApplicationProblemPlusJSONResponse{
+			Body: gatewayProblem(http.StatusInternalServerError, "Visit not counted", "CountActivityVisit: "+err.Error()), StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+	return api.CountActivityVisit204Response{}, nil
 }
 
 func historyAmount(value *execution.Amount) *api.Amount {

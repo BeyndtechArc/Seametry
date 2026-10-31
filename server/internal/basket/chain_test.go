@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/BeyndtechArc/Seametry/server/internal/base58"
 	"github.com/BeyndtechArc/Seametry/server/internal/basket"
 	"github.com/BeyndtechArc/Seametry/server/internal/registry"
 )
@@ -130,5 +131,51 @@ func TestTokenAccountFrozenReadsRealAccounts(t *testing.T) {
 func TestTokenAccountFrozenRefusesShortData(t *testing.T) {
 	if _, err := basket.TokenAccountFrozen(make([]byte, 10)); err == nil {
 		t.Fatal("TokenAccountFrozen accepted 10 bytes, far short of a real token account")
+	}
+}
+
+// The Hall instructions in two captured devnet transactions (getTransaction,
+// jsonParsed), named from their data alone.
+func TestHallInstructionNamesRealDevnetInstructions(t *testing.T) {
+	for file, want := range map[string]string{"tx-create.json": "create", "tx-withdraw.json": "withdraw"} {
+		raw, err := os.ReadFile(filepath.Join("..", "..", "..", "shared", "fixtures", "hall-devnet", file))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var capture struct {
+			Result struct {
+				Transaction struct {
+					Message struct {
+						Instructions []struct {
+							ProgramID string `json:"programId"`
+							Data      string `json:"data"`
+						} `json:"instructions"`
+					} `json:"message"`
+				} `json:"transaction"`
+			} `json:"result"`
+		}
+		if err := json.Unmarshal(raw, &capture); err != nil {
+			t.Fatal(err)
+		}
+		named := 0
+		for _, instruction := range capture.Result.Transaction.Message.Instructions {
+			if instruction.ProgramID != basket.HallDevnetProgramID {
+				continue
+			}
+			data, err := base58.Decode(instruction.Data)
+			if err != nil {
+				t.Fatalf("%s: instruction data %q is not base58: %v", file, instruction.Data, err)
+			}
+			if got := basket.HallInstruction(data); got != want {
+				t.Errorf("%s: a Hall instruction was named %q, want %q", file, got, want)
+			}
+			named++
+		}
+		if named == 0 {
+			t.Errorf("%s holds no instruction for the devnet Hall %s", file, basket.HallDevnetProgramID)
+		}
+	}
+	if got := basket.HallInstruction([]byte{1, 2, 3, 4, 5, 6, 7, 8, 9}); got != "" {
+		t.Errorf("data matching no Hall instruction was named %q, want \"\"", got)
 	}
 }

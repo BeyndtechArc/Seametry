@@ -38,7 +38,10 @@ in a form where signing in adds utility rather than changing what is known.
   the response is out, with one retry. A lost report costs the record, not
   the trade, and a sent leg's outcome is still recoverable from chain.
 - **First touch is sent with a first trade only.** No cookie, no page-view
-  tracking, nothing sent for a visitor who never trades.
+  tracking of a visitor. Since 30 October 2026 (GTM milestone 1c), an entry
+  to the site reports its landing page and referral code to an anonymous
+  daily count in Growth, with nothing kept in the browser for it
+  (`docs/SERVICE_CATALOG.md` section 3.13).
 
 ## Rejected
 
@@ -49,9 +52,9 @@ in a form where signing in adds utility rather than changing what is known.
 - **Third-party product analytics.** It would send wallet addresses and
   browsing to another processor for less than this record holds, and could
   not distinguish what settled from what a browser claimed.
-- **Recording page visits.** Acquisition comes from first touch on a first
-  trade; anything wider needs a consent decision for EU visitors and was
-  deferred.
+- **Recording visits per visitor.** Acquisition comes from first touch on a
+  first trade; following a visitor, or keeping anything in the browser to
+  count one, needs a consent decision for EU visitors and was deferred.
 
 ## Cost
 

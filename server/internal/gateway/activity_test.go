@@ -3,6 +3,8 @@ package gateway_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
+	"github.com/BeyndtechArc/Seametry/server/internal/growth"
 )
 
 type heldReports struct {
@@ -137,6 +140,54 @@ func TestARefusedReportNamesItsReason(t *testing.T) {
 	submission := `{"message_sha256": "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4", "submitted_at": "2026-10-16T09:00:05Z", "result": "sent"}`
 	if response := post(handler, "/v1/internal/activity/submissions", reportSecret, submission); response.Code != http.StatusNotFound {
 		t.Fatalf("an unknown leg: got %d, want 404", response.Code)
+	}
+}
+
+type heldVisits struct {
+	counted []string
+	answer  error
+}
+
+func (h *heldVisits) Count(_ context.Context, _ time.Time, landingPath, refCode string) error {
+	h.counted = append(h.counted, landingPath+"|"+refCode)
+	return h.answer
+}
+
+func TestOnlyAProductionVisitIsCountedAndOnlyBehindTheSecret(t *testing.T) {
+	held := &heldVisits{}
+	handler := gateway.NewHandler(gateway.NewServer(nil, nil).WithVisits(held), gateway.ServiceSecret(reportSecret))
+	if response := post(handler, "/v1/internal/activity/visits", "", `{"deployment": "production", "landing_path": "/"}`); response.Code != http.StatusUnauthorized {
+		t.Fatalf("without the secret: got %d, want 401", response.Code)
+	}
+	for _, body := range []string{
+		`{"deployment": "production", "landing_path": "/thesis", "ref_code": "dm-storm"}`,
+		`{"deployment": "production", "landing_path": "/"}`,
+		`{"deployment": "preview", "landing_path": "/"}`,
+		`{"deployment": "development", "landing_path": "/"}`,
+	} {
+		if response := post(handler, "/v1/internal/activity/visits", reportSecret, body); response.Code != http.StatusNoContent {
+			t.Fatalf("%s: got %d %s, want 204", body, response.Code, response.Body.String())
+		}
+	}
+	if strings.Join(held.counted, ",") != "/thesis|dm-storm,/|" {
+		t.Fatalf("counted %v; want the two production sessions alone", held.counted)
+	}
+}
+
+func TestAVisitOfTheWrongShapeIsRefusedNamingTheField(t *testing.T) {
+	held := &heldVisits{answer: fmt.Errorf("%w: landing_path must be a site path", growth.ErrVisitShape)}
+	handler := gateway.NewHandler(gateway.NewServer(nil, nil).WithVisits(held), gateway.ServiceSecret(reportSecret))
+	response := post(handler, "/v1/internal/activity/visits", reportSecret, `{"deployment": "production", "landing_path": "/"}`)
+	if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "landing_path") {
+		t.Fatalf("got %d %s, want 400 naming the field", response.Code, response.Body.String())
+	}
+	held.answer = errors.New("the database is down")
+	if response := post(handler, "/v1/internal/activity/visits", reportSecret, `{"deployment": "production", "landing_path": "/"}`); response.Code != http.StatusInternalServerError {
+		t.Fatalf("a failure to count: got %d, want 500, the Gateway's fault rather than the sender's", response.Code)
+	}
+	unset := gateway.NewHandler(gateway.NewServer(nil, nil), gateway.ServiceSecret(reportSecret))
+	if response := post(unset, "/v1/internal/activity/visits", reportSecret, `{"deployment": "production", "landing_path": "/"}`); response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("with no count configured: got %d, want 503", response.Code)
 	}
 }
 

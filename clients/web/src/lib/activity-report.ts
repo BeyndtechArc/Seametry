@@ -69,6 +69,29 @@ export function conditionsFor(mints: readonly string[], snapshot: ConditionSourc
   };
 }
 
+export type ActivityVisit = components["schemas"]["ActivityVisit"];
+
+// growth.visit_counts' own shapes (server/migrations/growth/00003).
+const VISIT_PATH = /^\/[A-Za-z0-9/_.-]{0,199}$/;
+const VISIT_REF = /^[a-z0-9][a-z0-9_-]{0,39}$/;
+
+/** What a path the count cannot hold is counted as, so it is seen rather than dropped. */
+export const UNRECOGNISED_PATH = "/unrecognised";
+
+/**
+ * One entry as Growth counts it: the page and the referral code, and nothing
+ * that tells this visitor from another. A dm-<handle> code names the person a
+ * message went to, so it is counted as its channel, dm. A path the count
+ * cannot hold is counted as UNRECOGNISED_PATH; a code of the wrong shape is
+ * left out, since ref-link.ts already records any code it does not know as
+ * "unknown" before it reaches here.
+ */
+export function visitReport(path: unknown, refCode: unknown, deploymentName: Deployment): ActivityVisit {
+  const landingPath = typeof path === "string" && VISIT_PATH.test(path) ? path : UNRECOGNISED_PATH;
+  const code = typeof refCode === "string" && VISIT_REF.test(refCode) ? (refCode.startsWith("dm-") ? "dm" : refCode) : undefined;
+  return { deployment: deploymentName, landing_path: landingPath, ...(code ? { ref_code: code } : {}) };
+}
+
 /** Vercel names the deployment; anything else is a local or test run. */
 export function deployment(vercelEnv: string | undefined): Deployment {
   return vercelEnv === "production" || vercelEnv === "preview" ? vercelEnv : "development";
