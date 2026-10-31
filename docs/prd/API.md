@@ -263,6 +263,7 @@ One database, one schema per service, each service connecting as a role granted 
 | `alert` | Subscriptions, rules, delivery attempts |
 | `identity` | Go-owned API keys, plans, entitlements and usage; the account service owns its users, wallet links and sessions in a separate database |
 | `gateway` | Stored idempotent responses |
+| `growth` | The GTM Admin's record: each wallet's event timeline projected from Execution's outbox, and the cursor it resumes from (`docs/SERVICE_CATALOG.md` section 3.13) |
 
 Every schema that emits events has its own `outbox` table, written in the same transaction as the change it describes (standard section 10). One dispatcher in the process reads them all and feeds the stream and Alert.
 

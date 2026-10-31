@@ -601,6 +601,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/activity/visits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * One browser session's landing page and referral code, added to that day's count.
+         * @description Growth keeps a count per day, page and code and nothing that tells one visitor from another: no identifier, address or wallet is sent or kept. The browser's word: a count says how many sessions reported, not how many people visited.
+         */
+        post: operations["countActivityVisit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -848,8 +868,27 @@ export interface components {
             prepared_at: string;
             refusal?: components["schemas"]["ActivityRefusal"];
             first_touch?: components["schemas"]["ActivityFirstTouch"];
+            conditions?: components["schemas"]["ActivityConditions"];
             /** @description Empty exactly when refusal is present. */
             legs: components["schemas"]["ActivityLeg"][];
+        };
+        /** @description What the admission policy stated for each stock the request named, as the review shows it: the decision and the reasons behind it, under one policy version and snapshot. Sent by the server from the snapshot it holds, so it says what was stated, not what a reader looked at. */
+        ActivityConditions: {
+            policy_version: string;
+            /** Format: date-time */
+            snapshot_at: string;
+            legs: components["schemas"]["ActivityLegCondition"][];
+        };
+        ActivityLegCondition: {
+            /** @description The stock's base58 mint address. */
+            mint: string;
+            /** @description ALLOW, WARN or BLOCK today. Absent when the snapshot holds no decision for this mint, which a sale of a stock no longer admitted can be; a value not listed here is kept as sent. */
+            decision?: string;
+            reasons: components["schemas"]["ActivityConditionReason"][];
+        };
+        ActivityConditionReason: {
+            code: string;
+            severity: string;
         };
         ActivityRefusal: {
             status: number;
@@ -900,6 +939,17 @@ export interface components {
             /** @enum {string} */
             deployment: "production" | "preview" | "development";
             events: components["schemas"]["ActivityFunnelEvent"][];
+        };
+        ActivityVisit: {
+            /**
+             * @description Only production visits are counted; the others are accepted and not counted.
+             * @enum {string}
+             */
+            deployment: "production" | "preview" | "development";
+            /** @description The page a browser session opened first, without its query. */
+            landing_path: string;
+            /** @description The referral code the session arrived with, as clients/web/src/lib/ref-link.ts records it. Absent when there was none. */
+            ref_code?: string;
         };
         ActivityFunnelEvent: {
             /** @description wallet_connected, review_opened, signature_requested, signature_declined, signature_failed or sheet_abandoned. Any other value is kept as unrecognised. A string, not an enum, so a newer browser's kind reaches the record instead of failing to bind. */
@@ -2254,6 +2304,29 @@ export interface operations {
         };
         responses: {
             /** @description Recorded. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    countActivityVisit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityVisit"];
+            };
+        };
+        responses: {
+            /** @description Counted, or accepted and not counted for a deployment other than production. */
             204: {
                 headers: {
                     [name: string]: unknown;

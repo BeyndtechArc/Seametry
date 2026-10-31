@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -17,16 +20,46 @@ import (
 // evidence already committed to this repository into it. It needs a real
 // Postgres, so it skips, naming the variable, when SEAMETRY_TEST_DATABASE_URL
 // is unset, the same gate every other Postgres test in this repository uses.
+//
+// It replays into a database of its own. It counts every observation it
+// finds, and the Gateway's tests seed observations into the shared one while
+// this runs in parallel, so on the shared database its count depended on
+// which finished first.
 func TestReplayWritesToPostgres(t *testing.T) {
-	dsn := os.Getenv("SEAMETRY_TEST_DATABASE_URL")
-	if dsn == "" {
+	adminDSN := os.Getenv("SEAMETRY_TEST_DATABASE_URL")
+	if adminDSN == "" {
 		t.Skip("SEAMETRY_TEST_DATABASE_URL is not set; this test needs a real Postgres 18 to replay into")
 	}
 	ctx := context.Background()
 
-	admin, err := store.Open(dsn)
+	server, err := store.Open(adminDSN)
 	if err != nil {
 		t.Fatalf("opening the admin connection: %v", err)
+	}
+	defer server.Close()
+	suffix := make([]byte, 6)
+	if _, err := rand.Read(suffix); err != nil {
+		t.Fatal(err)
+	}
+	name := "replay_" + hex.EncodeToString(suffix)
+	if _, err := server.ExecContext(ctx, "CREATE DATABASE "+name); err != nil {
+		t.Fatalf("creating %s: %v", name, err)
+	}
+	defer func() {
+		if _, err := server.ExecContext(ctx, "DROP DATABASE "+name+" WITH (FORCE)"); err != nil {
+			t.Errorf("dropping %s: %v", name, err)
+		}
+	}()
+	parsed, err := url.Parse(adminDSN)
+	if err != nil {
+		t.Fatalf("SEAMETRY_TEST_DATABASE_URL is not a URL: %v", err)
+	}
+	parsed.Path = "/" + name
+	dsn := parsed.String()
+
+	admin, err := store.Open(dsn)
+	if err != nil {
+		t.Fatalf("opening %s: %v", name, err)
 	}
 	defer admin.Close()
 	if err := store.MigrateAll(ctx, admin); err != nil {

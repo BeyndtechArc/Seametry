@@ -416,16 +416,26 @@ type TokenBalance struct {
 }
 
 // Transaction is what a settled transaction recorded: who paid, what it
-// cost, whether it failed, and every token balance it touched.
+// cost, whether it failed, every token balance it touched, and the
+// instructions it called directly.
 type Transaction struct {
-	Signature  string
-	Slot       uint64
-	BlockTime  *int64
-	FeePayer   string
-	Fee        uint64
-	Err        json.RawMessage
-	PreTokens  []TokenBalance
-	PostTokens []TokenBalance
+	Signature    string
+	Slot         uint64
+	BlockTime    *int64
+	FeePayer     string
+	Fee          uint64
+	Err          json.RawMessage
+	PreTokens    []TokenBalance
+	PostTokens   []TokenBalance
+	Instructions []Instruction
+}
+
+// Instruction is one top-level instruction of a transaction. Data is nil
+// for an instruction the cluster parsed into fields (the System and Token
+// programs), whose raw bytes jsonParsed does not return.
+type Instruction struct {
+	ProgramID string
+	Data      []byte
 }
 
 type parsedTokenBalance struct {
@@ -466,6 +476,10 @@ func (c *Client) GetTransaction(ctx context.Context, signature string) (*Transac
 				AccountKeys []struct {
 					Pubkey string `json:"pubkey"`
 				} `json:"accountKeys"`
+				Instructions []struct {
+					ProgramID string `json:"programId"`
+					Data      string `json:"data"`
+				} `json:"instructions"`
 			} `json:"message"`
 		} `json:"transaction"`
 		Meta *struct {
@@ -481,10 +495,23 @@ func (c *Client) GetTransaction(ctx context.Context, signature string) (*Transac
 	if parsed.Meta == nil || len(parsed.Transaction.Message.AccountKeys) == 0 || len(parsed.Transaction.Signatures) == 0 {
 		return nil, fmt.Errorf("solana: getTransaction %s returned no metadata, account keys or signature", signature)
 	}
+	instructions := make([]Instruction, len(parsed.Transaction.Message.Instructions))
+	for i, instruction := range parsed.Transaction.Message.Instructions {
+		instructions[i].ProgramID = instruction.ProgramID
+		if instruction.Data == "" {
+			continue
+		}
+		data, err := base58.Decode(instruction.Data)
+		if err != nil {
+			return nil, fmt.Errorf("solana: getTransaction %s: instruction %d's data is not base58: %w", signature, i, err)
+		}
+		instructions[i].Data = data
+	}
 	return &Transaction{
 		Signature: parsed.Transaction.Signatures[0], Slot: parsed.Slot, BlockTime: parsed.BlockTime,
 		FeePayer: parsed.Transaction.Message.AccountKeys[0].Pubkey, Fee: parsed.Meta.Fee, Err: parsed.Meta.Err,
 		PreTokens: tokenBalances(parsed.Meta.PreTokenBalances), PostTokens: tokenBalances(parsed.Meta.PostTokenBalances),
+		Instructions: instructions,
 	}, nil
 }
 

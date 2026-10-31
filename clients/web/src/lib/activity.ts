@@ -3,7 +3,8 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { PublicKey } from "@solana/web3.js";
-import { deployment, firstTouchFrom, quoteReport, type ActivityQuote, type ActivitySubmission } from "./activity-report";
+import { conditionsFor, deployment, firstTouchFrom, quoteReport, visitReport, type ActivityQuote, type ActivitySubmission } from "./activity-report";
+import { admissions } from "./allocation/admissions";
 import type { PreparedLeg } from "./allocation/execution";
 import { postInternal } from "./internal-gateway";
 
@@ -37,12 +38,14 @@ async function send(path: string, body: unknown) {
  * stopped it. A request whose wallet is not an address names nobody, so it
  * is not reported.
  */
-export function recordPrepared({ quoteId, wallet, kind, body, planSize, legs, refusal }: {
+export function recordPrepared({ quoteId, wallet, kind, body, planSize, mints, legs, refusal }: {
   quoteId: string;
   wallet: unknown;
   kind: "buy" | "sell";
   body: { subject?: unknown; templateId?: unknown; firstTouch?: unknown };
   planSize: number;
+  /** Every stock the request named, so a refusal still records what the policy stated for them. */
+  mints: string[];
   legs?: PreparedLeg[];
   refusal?: { status: number; text: string };
 }) {
@@ -57,6 +60,7 @@ export function recordPrepared({ quoteId, wallet, kind, body, planSize, legs, re
     subject: typeof body.subject === "string" ? body.subject : undefined,
     templateId: typeof body.templateId === "string" ? body.templateId : undefined,
     firstTouch: firstTouchFrom(body.firstTouch),
+    conditions: conditionsFor(mints, admissions),
     legs: (legs ?? []).map((leg) => ({ ...leg, id: randomUUID() })),
     refusal,
   });
@@ -69,4 +73,9 @@ export function recordSubmission(report: ActivitySubmission | undefined) {
 
 export function recordFunnel(events: { kind: string; wallet?: string; quote_id?: string }[]) {
   after(() => send("funnel", { deployment: currentDeployment, events }));
+}
+
+export function recordVisit(path: unknown, refCode: unknown) {
+  const report = visitReport(path, refCode, currentDeployment);
+  after(() => send("visits", report));
 }

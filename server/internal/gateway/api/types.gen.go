@@ -162,6 +162,27 @@ func (e ActivitySubmissionResult) Valid() bool {
 	}
 }
 
+// Defines values for ActivityVisitDeployment.
+const (
+	ActivityVisitDeploymentDevelopment ActivityVisitDeployment = "development"
+	ActivityVisitDeploymentPreview     ActivityVisitDeployment = "preview"
+	ActivityVisitDeploymentProduction  ActivityVisitDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the ActivityVisitDeployment enum.
+func (e ActivityVisitDeployment) Valid() bool {
+	switch e {
+	case ActivityVisitDeploymentDevelopment:
+		return true
+	case ActivityVisitDeploymentPreview:
+		return true
+	case ActivityVisitDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AdminPeriodDeployment.
 const (
 	AdminPeriodDeploymentDevelopment AdminPeriodDeployment = "development"
@@ -867,6 +888,19 @@ type AccountSubjectAuthMethods string
 // AccountSubjectKycLevel The account's identity verification level. Always none until a verification provider exists.
 type AccountSubjectKycLevel string
 
+// ActivityConditionReason defines model for ActivityConditionReason.
+type ActivityConditionReason struct {
+	Code     string `json:"code"`
+	Severity string `json:"severity"`
+}
+
+// ActivityConditions What the admission policy stated for each stock the request named, as the review shows it: the decision and the reasons behind it, under one policy version and snapshot. Sent by the server from the snapshot it holds, so it says what was stated, not what a reader looked at.
+type ActivityConditions struct {
+	Legs          []ActivityLegCondition `json:"legs"`
+	PolicyVersion string                 `json:"policy_version"`
+	SnapshotAt    time.Time              `json:"snapshot_at"`
+}
+
 // ActivityFirstTouch Where the browser first arrived, held in its own storage and sent with a wallet's first quote. Every field is optional and capped.
 type ActivityFirstTouch struct {
 	LandingPath *string `json:"landing_path,omitempty"`
@@ -925,8 +959,20 @@ type ActivityLeg struct {
 // ActivityLegLanding defines model for ActivityLeg.Landing.
 type ActivityLegLanding string
 
+// ActivityLegCondition defines model for ActivityLegCondition.
+type ActivityLegCondition struct {
+	// Decision ALLOW, WARN or BLOCK today. Absent when the snapshot holds no decision for this mint, which a sale of a stock no longer admitted can be; a value not listed here is kept as sent.
+	Decision *string `json:"decision,omitempty"`
+
+	// Mint The stock's base58 mint address.
+	Mint    string                    `json:"mint"`
+	Reasons []ActivityConditionReason `json:"reasons"`
+}
+
 // ActivityQuote defines model for ActivityQuote.
 type ActivityQuote struct {
+	// Conditions What the admission policy stated for each stock the request named, as the review shows it: the decision and the reasons behind it, under one policy version and snapshot. Sent by the server from the snapshot it holds, so it says what was stated, not what a reader looked at.
+	Conditions *ActivityConditions     `json:"conditions,omitempty"`
 	Deployment ActivityQuoteDeployment `json:"deployment"`
 
 	// FirstTouch Where the browser first arrived, held in its own storage and sent with a wallet's first quote. Every field is optional and capped.
@@ -977,6 +1023,21 @@ type ActivitySubmission struct {
 
 // ActivitySubmissionResult defines model for ActivitySubmission.Result.
 type ActivitySubmissionResult string
+
+// ActivityVisit defines model for ActivityVisit.
+type ActivityVisit struct {
+	// Deployment Only production visits are counted; the others are accepted and not counted.
+	Deployment ActivityVisitDeployment `json:"deployment"`
+
+	// LandingPath The page a browser session opened first, without its query.
+	LandingPath string `json:"landing_path"`
+
+	// RefCode The referral code the session arrived with, as clients/web/src/lib/ref-link.ts records it. Absent when there was none.
+	RefCode *string `json:"ref_code,omitempty"`
+}
+
+// ActivityVisitDeployment Only production visits are counted; the others are accepted and not counted.
+type ActivityVisitDeployment string
 
 // AdminActivity defines model for AdminActivity.
 type AdminActivity struct {
@@ -1935,6 +1996,9 @@ type RecordActivityQuoteJSONRequestBody = ActivityQuote
 
 // RecordActivitySubmissionJSONRequestBody defines body for RecordActivitySubmission for application/json ContentType.
 type RecordActivitySubmissionJSONRequestBody = ActivitySubmission
+
+// CountActivityVisitJSONRequestBody defines body for CountActivityVisit for application/json ContentType.
+type CountActivityVisitJSONRequestBody = ActivityVisit
 
 // RecordEmailOptInJSONRequestBody defines body for RecordEmailOptIn for application/json ContentType.
 type RecordEmailOptInJSONRequestBody = EmailOptIn

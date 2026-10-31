@@ -11,14 +11,27 @@ ON CONFLICT (address) DO UPDATE SET
     first_source_at = COALESCE(execution.wallets.first_source_at, EXCLUDED.first_source_at);
 
 -- name: InsertQuote :execrows
--- A retried report carries the same id and changes nothing.
-INSERT INTO execution.quotes (
-    id, wallet, network, kind, subject, template_id, plan_size, deployment,
-    prepared_at, outcome, refusal_status, refusal_text, source
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+-- A retried report carries the same id and changes nothing, and writes no
+-- second outbox row. The count is the outbox rows written, one per quote
+-- inserted.
+WITH inserted AS (
+    INSERT INTO execution.quotes (
+        id, wallet, network, kind, subject, template_id, plan_size, deployment,
+        prepared_at, outcome, refusal_status, refusal_text, source, conditions
+    ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    )
+    ON CONFLICT (id) DO NOTHING
+    RETURNING *
 )
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO execution.outbox (kind, wallet, payload, occurred_at)
+SELECT 'execution.quoted', i.wallet, jsonb_build_object(
+           'quote_id', i.id, 'kind', i.kind, 'network', i.network, 'outcome', i.outcome,
+           'refusal_status', i.refusal_status, 'plan_size', i.plan_size, 'subject', i.subject,
+           'template_id', i.template_id, 'deployment', i.deployment, 'source', i.source,
+           'conditions', i.conditions),
+       i.prepared_at
+FROM inserted i;
 
 -- name: InsertLeg :exec
 INSERT INTO execution.legs (
@@ -33,15 +46,34 @@ ON CONFLICT (id) DO NOTHING;
 
 -- name: RecordSubmission :execrows
 -- The first submission of a leg is kept. A second report for the same
--- message, a retry or a duplicate request, changes nothing.
-UPDATE execution.legs
-SET signature = sqlc.narg(signature), submitted_at = sqlc.arg(submitted_at),
-    submit_result = sqlc.arg(submit_result), submit_text = sqlc.narg(submit_text)
-WHERE message_sha256 = sqlc.arg(message_sha256) AND submit_result IS NULL;
+-- message, a retry or a duplicate request, changes nothing and writes no
+-- outbox row. The count is the outbox rows written, one per leg updated.
+WITH sent AS (
+    UPDATE execution.legs
+    SET signature = sqlc.narg(signature), submitted_at = sqlc.arg(submitted_at),
+        submit_result = sqlc.arg(submit_result), submit_text = sqlc.narg(submit_text)
+    WHERE message_sha256 = sqlc.arg(message_sha256) AND submit_result IS NULL
+    RETURNING *
+)
+INSERT INTO execution.outbox (kind, wallet, payload, occurred_at)
+SELECT 'execution.sent', s.wallet, jsonb_build_object(
+           'leg_id', s.id, 'quote_id', s.quote_id, 'kind', q.kind, 'symbol', s.symbol, 'mint', s.mint,
+           'result', s.submit_result, 'deployment', q.deployment, 'source', s.source),
+       s.submitted_at
+FROM sent s JOIN execution.quotes q ON q.id = s.quote_id;
 
 -- name: InsertFunnelEvent :exec
-INSERT INTO execution.funnel_events (kind, raw_kind, wallet, quote_id, deployment, received_at, source)
-VALUES ($1, $2, $3, $4, $5, $6, 'client');
+WITH step AS (
+    INSERT INTO execution.funnel_events (kind, raw_kind, wallet, quote_id, deployment, received_at, source)
+    VALUES ($1, $2, $3, $4, $5, $6, 'client')
+    RETURNING *
+)
+INSERT INTO execution.outbox (kind, wallet, payload, occurred_at)
+SELECT 'execution.funnel_step', f.wallet, jsonb_build_object(
+           'funnel_id', f.id, 'kind', f.kind, 'raw_kind', f.raw_kind, 'quote_id', f.quote_id,
+           'deployment', f.deployment),
+       f.received_at
+FROM step f;
 
 -- name: WalletHistory :many
 -- The sent legs of the 200 most recent quotes for these wallets, newest

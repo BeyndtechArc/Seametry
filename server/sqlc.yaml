@@ -49,3 +49,14 @@ sql:
         emit_json_tags: true
         emit_db_tags: true
         emit_exact_table_names: false
+  - schema: "migrations/growth"
+    queries: "queries/growth"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "growthdb"
+        out: "internal/store/growthdb"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_db_tags: true
+        emit_exact_table_names: false

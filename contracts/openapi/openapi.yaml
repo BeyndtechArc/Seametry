@@ -986,6 +986,29 @@ paths:
           description: Recorded.
         default:
           $ref: '#/components/responses/Problem'
+  /internal/activity/visits:
+    post:
+      operationId: countActivityVisit
+      tags: [activity]
+      summary: One browser session's landing page and referral code, added to that day's count.
+      description: >
+        Growth keeps a count per day, page and code and nothing that tells
+        one visitor from another: no identifier, address or wallet is sent
+        or kept. The browser's word: a count says how many sessions
+        reported, not how many people visited.
+      security:
+        - serviceSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityVisit'
+      responses:
+        "204":
+          description: Counted, or accepted and not counted for a deployment other than production.
+        default:
+          $ref: '#/components/responses/Problem'
 
 components:
   securitySchemes:
@@ -1456,11 +1479,65 @@ components:
           $ref: '#/components/schemas/ActivityRefusal'
         first_touch:
           $ref: '#/components/schemas/ActivityFirstTouch'
+        conditions:
+          $ref: '#/components/schemas/ActivityConditions'
         legs:
           type: array
           description: Empty exactly when refusal is present.
           items:
             $ref: '#/components/schemas/ActivityLeg'
+    ActivityConditions:
+      type: object
+      description: >
+        What the admission policy stated for each stock the request named,
+        as the review shows it: the decision and the reasons behind it,
+        under one policy version and snapshot. Sent by the server from the
+        snapshot it holds, so it says what was stated, not what a reader
+        looked at.
+      required: [policy_version, snapshot_at, legs]
+      properties:
+        policy_version:
+          type: string
+          minLength: 1
+          maxLength: 40
+        snapshot_at:
+          type: string
+          format: date-time
+        legs:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/ActivityLegCondition'
+    ActivityLegCondition:
+      type: object
+      required: [mint, reasons]
+      properties:
+        mint:
+          type: string
+          description: The stock's base58 mint address.
+        decision:
+          type: string
+          pattern: '^[A-Z_]{1,20}$'
+          description: >
+            ALLOW, WARN or BLOCK today. Absent when the snapshot holds no
+            decision for this mint, which a sale of a stock no longer
+            admitted can be; a value not listed here is kept as sent.
+        reasons:
+          type: array
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/ActivityConditionReason'
+    ActivityConditionReason:
+      type: object
+      required: [code, severity]
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z0-9_]{1,80}$'
+        severity:
+          type: string
+          pattern: '^[A-Z_]{1,20}$'
     ActivityRefusal:
       type: object
       required: [status, text]
@@ -1580,6 +1657,22 @@ components:
           maxItems: 20
           items:
             $ref: '#/components/schemas/ActivityFunnelEvent'
+    ActivityVisit:
+      type: object
+      required: [deployment, landing_path]
+      properties:
+        deployment:
+          type: string
+          enum: [production, preview, development]
+          description: Only production visits are counted; the others are accepted and not counted.
+        landing_path:
+          type: string
+          pattern: '^/[A-Za-z0-9/_.-]{0,199}$'
+          description: The page a browser session opened first, without its query.
+        ref_code:
+          type: string
+          pattern: '^[a-z0-9][a-z0-9_-]{0,39}$'
+          description: The referral code the session arrived with, as clients/web/src/lib/ref-link.ts records it. Absent when there was none.
     ActivityFunnelEvent:
       type: object
       required: [kind]

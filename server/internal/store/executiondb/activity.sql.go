@@ -12,8 +12,17 @@ import (
 )
 
 const insertFunnelEvent = `-- name: InsertFunnelEvent :exec
-INSERT INTO execution.funnel_events (kind, raw_kind, wallet, quote_id, deployment, received_at, source)
-VALUES ($1, $2, $3, $4, $5, $6, 'client')
+WITH step AS (
+    INSERT INTO execution.funnel_events (kind, raw_kind, wallet, quote_id, deployment, received_at, source)
+    VALUES ($1, $2, $3, $4, $5, $6, 'client')
+    RETURNING id, kind, raw_kind, wallet, quote_id, deployment, received_at, source
+)
+INSERT INTO execution.outbox (kind, wallet, payload, occurred_at)
+SELECT 'execution.funnel_step', f.wallet, jsonb_build_object(
+           'funnel_id', f.id, 'kind', f.kind, 'raw_kind', f.raw_kind, 'quote_id', f.quote_id,
+           'deployment', f.deployment),
+       f.received_at
+FROM step f
 `
 
 type InsertFunnelEventParams struct {
@@ -95,13 +104,24 @@ func (q *Queries) InsertLeg(ctx context.Context, arg InsertLegParams) error {
 }
 
 const insertQuote = `-- name: InsertQuote :execrows
-INSERT INTO execution.quotes (
-    id, wallet, network, kind, subject, template_id, plan_size, deployment,
-    prepared_at, outcome, refusal_status, refusal_text, source
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+WITH inserted AS (
+    INSERT INTO execution.quotes (
+        id, wallet, network, kind, subject, template_id, plan_size, deployment,
+        prepared_at, outcome, refusal_status, refusal_text, source, conditions
+    ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    )
+    ON CONFLICT (id) DO NOTHING
+    RETURNING id, wallet, network, kind, subject, template_id, plan_size, deployment, prepared_at, outcome, refusal_status, refusal_text, source, recorded_at, conditions
 )
-ON CONFLICT (id) DO NOTHING
+INSERT INTO execution.outbox (kind, wallet, payload, occurred_at)
+SELECT 'execution.quoted', i.wallet, jsonb_build_object(
+           'quote_id', i.id, 'kind', i.kind, 'network', i.network, 'outcome', i.outcome,
+           'refusal_status', i.refusal_status, 'plan_size', i.plan_size, 'subject', i.subject,
+           'template_id', i.template_id, 'deployment', i.deployment, 'source', i.source,
+           'conditions', i.conditions),
+       i.prepared_at
+FROM inserted i
 `
 
 type InsertQuoteParams struct {
@@ -118,9 +138,12 @@ type InsertQuoteParams struct {
 	RefusalStatus pgtype.Int4        `db:"refusal_status" json:"refusal_status"`
 	RefusalText   pgtype.Text        `db:"refusal_text" json:"refusal_text"`
 	Source        string             `db:"source" json:"source"`
+	Conditions    []byte             `db:"conditions" json:"conditions"`
 }
 
-// A retried report carries the same id and changes nothing.
+// A retried report carries the same id and changes nothing, and writes no
+// second outbox row. The count is the outbox rows written, one per quote
+// inserted.
 func (q *Queries) InsertQuote(ctx context.Context, arg InsertQuoteParams) (int64, error) {
 	result, err := q.db.Exec(ctx, insertQuote,
 		arg.ID,
@@ -136,6 +159,7 @@ func (q *Queries) InsertQuote(ctx context.Context, arg InsertQuoteParams) (int64
 		arg.RefusalStatus,
 		arg.RefusalText,
 		arg.Source,
+		arg.Conditions,
 	)
 	if err != nil {
 		return 0, err
@@ -144,10 +168,19 @@ func (q *Queries) InsertQuote(ctx context.Context, arg InsertQuoteParams) (int64
 }
 
 const recordSubmission = `-- name: RecordSubmission :execrows
-UPDATE execution.legs
-SET signature = $1, submitted_at = $2,
-    submit_result = $3, submit_text = $4
-WHERE message_sha256 = $5 AND submit_result IS NULL
+WITH sent AS (
+    UPDATE execution.legs
+    SET signature = $1, submitted_at = $2,
+        submit_result = $3, submit_text = $4
+    WHERE message_sha256 = $5 AND submit_result IS NULL
+    RETURNING id, quote_id, wallet, mint, symbol, in_atoms, in_scale, out_atoms, floor_atoms, out_scale, routing_fee_bps, tip_offset_bps, simulated_fee_atoms, tip_lamports, landing, last_valid_block_height, message_sha256, signature, submitted_at, submit_result, submit_text, source, chain_outcome, slot, block_time, chain_error, network_fee_lamports, wallet_usdc_delta, wallet_token_delta, token_scale, fee_credited_atoms, reconciled_at
+)
+INSERT INTO execution.outbox (kind, wallet, payload, occurred_at)
+SELECT 'execution.sent', s.wallet, jsonb_build_object(
+           'leg_id', s.id, 'quote_id', s.quote_id, 'kind', q.kind, 'symbol', s.symbol, 'mint', s.mint,
+           'result', s.submit_result, 'deployment', q.deployment, 'source', s.source),
+       s.submitted_at
+FROM sent s JOIN execution.quotes q ON q.id = s.quote_id
 `
 
 type RecordSubmissionParams struct {
@@ -159,7 +192,8 @@ type RecordSubmissionParams struct {
 }
 
 // The first submission of a leg is kept. A second report for the same
-// message, a retry or a duplicate request, changes nothing.
+// message, a retry or a duplicate request, changes nothing and writes no
+// outbox row. The count is the outbox rows written, one per leg updated.
 func (q *Queries) RecordSubmission(ctx context.Context, arg RecordSubmissionParams) (int64, error) {
 	result, err := q.db.Exec(ctx, recordSubmission,
 		arg.Signature,

@@ -12,10 +12,14 @@ import (
 )
 
 const deleteFunnelEventsBefore = `-- name: DeleteFunnelEventsBefore :execrows
+WITH outboxed AS (
+    DELETE FROM execution.outbox WHERE kind = 'execution.funnel_step' AND occurred_at < $1
+)
 DELETE FROM execution.funnel_events WHERE received_at < $1
 `
 
-// The privacy policy keeps funnel steps 24 months.
+// The privacy policy keeps funnel steps 24 months, and their outbox rows go
+// with them. The count is the funnel steps deleted.
 func (q *Queries) DeleteFunnelEventsBefore(ctx context.Context, receivedAt pgtype.Timestamptz) (int64, error) {
 	result, err := q.db.Exec(ctx, deleteFunnelEventsBefore, receivedAt)
 	if err != nil {
@@ -25,6 +29,7 @@ func (q *Queries) DeleteFunnelEventsBefore(ctx context.Context, receivedAt pgtyp
 }
 
 const insertImportedLeg = `-- name: InsertImportedLeg :exec
+WITH imported AS (
 INSERT INTO execution.legs (
     id, quote_id, wallet, mint, symbol, message_sha256, signature, submitted_at, submit_result, source,
     chain_outcome, slot, block_time, chain_error, network_fee_lamports, wallet_usdc_delta,
@@ -36,6 +41,14 @@ INSERT INTO execution.legs (
     $14, $15, $16, $17
 )
 ON CONFLICT DO NOTHING
+RETURNING id, quote_id, wallet, mint, symbol, in_atoms, in_scale, out_atoms, floor_atoms, out_scale, routing_fee_bps, tip_offset_bps, simulated_fee_atoms, tip_lamports, landing, last_valid_block_height, message_sha256, signature, submitted_at, submit_result, submit_text, source, chain_outcome, slot, block_time, chain_error, network_fee_lamports, wallet_usdc_delta, wallet_token_delta, token_scale, fee_credited_atoms, reconciled_at
+)
+INSERT INTO execution.outbox (kind, wallet, payload, occurred_at)
+SELECT 'execution.settled', l.wallet, jsonb_build_object(
+           'leg_id', l.id, 'quote_id', l.quote_id, 'kind', q.kind, 'symbol', l.symbol, 'mint', l.mint,
+           'outcome', l.chain_outcome, 'deployment', q.deployment, 'source', l.source),
+       COALESCE(l.block_time, l.reconciled_at)
+FROM imported l JOIN execution.quotes q ON q.id = l.quote_id
 `
 
 type InsertImportedLegParams struct {
@@ -59,7 +72,8 @@ type InsertImportedLegParams struct {
 }
 
 // Also on message_sha256: a leg the server recorded whose submission report
-// was lost carries the same message, and the server's row is kept.
+// was lost carries the same message, and the server's row is kept, and the
+// outbox row is the server leg's own when it settles.
 func (q *Queries) InsertImportedLeg(ctx context.Context, arg InsertImportedLegParams) error {
 	_, err := q.db.Exec(ctx, insertImportedLeg,
 		arg.ID,
@@ -129,14 +143,78 @@ func (q *Queries) LegWithSignature(ctx context.Context, signature pgtype.Text) (
 	return exists, err
 }
 
+const outboxSince = `-- name: OutboxSince :many
+SELECT o.id, o.xid::text AS xid, o.kind, o.wallet, o.payload, o.occurred_at
+FROM execution.outbox o
+WHERE (o.xid, o.id) > ($1::text::xid8, $2::bigint)
+  AND o.xid < pg_snapshot_xmin(pg_current_snapshot())
+ORDER BY o.xid, o.id
+LIMIT $3
+`
+
+type OutboxSinceParams struct {
+	AfterXid string `db:"after_xid" json:"after_xid"`
+	AfterID  int64  `db:"after_id" json:"after_id"`
+	RowLimit int32  `db:"row_limit" json:"row_limit"`
+}
+
+type OutboxSinceRow struct {
+	ID         int64              `db:"id" json:"id"`
+	Xid        string             `db:"xid" json:"xid"`
+	Kind       string             `db:"kind" json:"kind"`
+	Wallet     pgtype.Text        `db:"wallet" json:"wallet"`
+	Payload    []byte             `db:"payload" json:"payload"`
+	OccurredAt pgtype.Timestamptz `db:"occurred_at" json:"occurred_at"`
+}
+
+// Rows after the cursor, oldest transaction first, written only by
+// transactions older than every one still running, so no row can later
+// appear behind the cursor. xid travels as text, which xid8 converts to
+// and from exactly, so the cursor is one opaque string to the caller.
+func (q *Queries) OutboxSince(ctx context.Context, arg OutboxSinceParams) ([]OutboxSinceRow, error) {
+	rows, err := q.db.Query(ctx, outboxSince, arg.AfterXid, arg.AfterID, arg.RowLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []OutboxSinceRow
+	for rows.Next() {
+		var i OutboxSinceRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Xid,
+			&i.Kind,
+			&i.Wallet,
+			&i.Payload,
+			&i.OccurredAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const settleLeg = `-- name: SettleLeg :execrows
-UPDATE execution.legs SET
-    chain_outcome = $1, slot = $2, block_time = $3,
-    chain_error = $4, network_fee_lamports = $5,
-    wallet_usdc_delta = $6, wallet_token_delta = $7,
-    token_scale = $8, fee_credited_atoms = $9,
-    reconciled_at = $10
-WHERE id = $11 AND chain_outcome IS NULL
+WITH settled AS (
+    UPDATE execution.legs SET
+        chain_outcome = $1, slot = $2, block_time = $3,
+        chain_error = $4, network_fee_lamports = $5,
+        wallet_usdc_delta = $6, wallet_token_delta = $7,
+        token_scale = $8, fee_credited_atoms = $9,
+        reconciled_at = $10
+    WHERE execution.legs.id = $11 AND execution.legs.chain_outcome IS NULL
+    RETURNING id, quote_id, wallet, mint, symbol, in_atoms, in_scale, out_atoms, floor_atoms, out_scale, routing_fee_bps, tip_offset_bps, simulated_fee_atoms, tip_lamports, landing, last_valid_block_height, message_sha256, signature, submitted_at, submit_result, submit_text, source, chain_outcome, slot, block_time, chain_error, network_fee_lamports, wallet_usdc_delta, wallet_token_delta, token_scale, fee_credited_atoms, reconciled_at
+)
+INSERT INTO execution.outbox (kind, wallet, payload, occurred_at)
+SELECT 'execution.settled', s.wallet, jsonb_build_object(
+           'leg_id', s.id, 'quote_id', s.quote_id, 'kind', q.kind, 'symbol', s.symbol, 'mint', s.mint,
+           'outcome', s.chain_outcome, 'deployment', q.deployment, 'source', s.source),
+       COALESCE(s.block_time, s.reconciled_at)
+FROM settled s JOIN execution.quotes q ON q.id = s.quote_id
 `
 
 type SettleLegParams struct {
@@ -153,7 +231,8 @@ type SettleLegParams struct {
 	ID                 pgtype.UUID        `db:"id" json:"id"`
 }
 
-// Only an unsettled leg is settled: the chain's first answer stands.
+// Only an unsettled leg is settled: the chain's first answer stands, and
+// writes the one outbox row. The count is the outbox rows written.
 func (q *Queries) SettleLeg(ctx context.Context, arg SettleLegParams) (int64, error) {
 	result, err := q.db.Exec(ctx, settleLeg,
 		arg.ChainOutcome,

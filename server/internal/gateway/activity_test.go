@@ -3,6 +3,8 @@ package gateway_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
+	"github.com/BeyndtechArc/Seametry/server/internal/growth"
 )
 
 type heldReports struct {
@@ -48,6 +51,10 @@ const quoteBody = `{
   "id": "5f0c2f5e-7a1d-4c2b-9b8e-1d2c3b4a5f60", "wallet": "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM",
   "network": "mainnet", "kind": "sell", "plan_size": 1, "deployment": "production", "prepared_at": "2026-10-16T09:00:00Z",
   "first_touch": {"referrer_host": "x.com", "utm_campaign": "colosseum", "ref_code": "dm-colosseum_fan"},
+  "conditions": {"policy_version": "policy-2026.10.1", "snapshot_at": "2026-09-23T00:00:00Z", "legs": [
+    {"mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh", "decision": "WARN", "reasons": [{"code": "ISSUER_CAN_FREEZE", "severity": "WARN"}]},
+    {"mint": "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM", "reasons": []}
+  ]},
   "legs": [{
     "id": "0d6a4d2e-1b3c-4e5f-8a7b-9c0d1e2f3a4b", "mint": "Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh", "symbol": "NVDAx",
     "in": {"atoms": "450000", "scale": 8}, "out": {"atoms": "996449", "scale": 6}, "floor": {"atoms": "986484", "scale": 6},
@@ -110,6 +117,16 @@ func TestAQuoteReportReachesTheRecordWhole(t *testing.T) {
 	if leg.Out != (execution.Amount{Atoms: "996449", Scale: 6}) || leg.TipOffsetBps != 6 || leg.Landing != "sender" {
 		t.Fatalf("leg fields lost on the way: %+v", leg)
 	}
+	stated := quote.Conditions
+	if stated == nil || stated.PolicyVersion != "policy-2026.10.1" || len(stated.Legs) != 2 {
+		t.Fatalf("conditions lost on the way: %+v", stated)
+	}
+	if first := stated.Legs[0]; first.Decision != "WARN" || len(first.Reasons) != 1 || first.Reasons[0] != (execution.ConditionReason{Code: "ISSUER_CAN_FREEZE", Severity: "WARN"}) {
+		t.Fatalf("the first stock's conditions: %+v", first)
+	}
+	if second := stated.Legs[1]; second.Decision != "" || len(second.Reasons) != 0 {
+		t.Fatalf("a stock with no decision gained one: %+v", second)
+	}
 }
 
 func TestARefusedReportNamesItsReason(t *testing.T) {
@@ -123,6 +140,54 @@ func TestARefusedReportNamesItsReason(t *testing.T) {
 	submission := `{"message_sha256": "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4", "submitted_at": "2026-10-16T09:00:05Z", "result": "sent"}`
 	if response := post(handler, "/v1/internal/activity/submissions", reportSecret, submission); response.Code != http.StatusNotFound {
 		t.Fatalf("an unknown leg: got %d, want 404", response.Code)
+	}
+}
+
+type heldVisits struct {
+	counted []string
+	answer  error
+}
+
+func (h *heldVisits) Count(_ context.Context, _ time.Time, landingPath, refCode string) error {
+	h.counted = append(h.counted, landingPath+"|"+refCode)
+	return h.answer
+}
+
+func TestOnlyAProductionVisitIsCountedAndOnlyBehindTheSecret(t *testing.T) {
+	held := &heldVisits{}
+	handler := gateway.NewHandler(gateway.NewServer(nil, nil).WithVisits(held), gateway.ServiceSecret(reportSecret))
+	if response := post(handler, "/v1/internal/activity/visits", "", `{"deployment": "production", "landing_path": "/"}`); response.Code != http.StatusUnauthorized {
+		t.Fatalf("without the secret: got %d, want 401", response.Code)
+	}
+	for _, body := range []string{
+		`{"deployment": "production", "landing_path": "/thesis", "ref_code": "dm-storm"}`,
+		`{"deployment": "production", "landing_path": "/"}`,
+		`{"deployment": "preview", "landing_path": "/"}`,
+		`{"deployment": "development", "landing_path": "/"}`,
+	} {
+		if response := post(handler, "/v1/internal/activity/visits", reportSecret, body); response.Code != http.StatusNoContent {
+			t.Fatalf("%s: got %d %s, want 204", body, response.Code, response.Body.String())
+		}
+	}
+	if strings.Join(held.counted, ",") != "/thesis|dm-storm,/|" {
+		t.Fatalf("counted %v; want the two production sessions alone", held.counted)
+	}
+}
+
+func TestAVisitOfTheWrongShapeIsRefusedNamingTheField(t *testing.T) {
+	held := &heldVisits{answer: fmt.Errorf("%w: landing_path must be a site path", growth.ErrVisitShape)}
+	handler := gateway.NewHandler(gateway.NewServer(nil, nil).WithVisits(held), gateway.ServiceSecret(reportSecret))
+	response := post(handler, "/v1/internal/activity/visits", reportSecret, `{"deployment": "production", "landing_path": "/"}`)
+	if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "landing_path") {
+		t.Fatalf("got %d %s, want 400 naming the field", response.Code, response.Body.String())
+	}
+	held.answer = errors.New("the database is down")
+	if response := post(handler, "/v1/internal/activity/visits", reportSecret, `{"deployment": "production", "landing_path": "/"}`); response.Code != http.StatusInternalServerError {
+		t.Fatalf("a failure to count: got %d, want 500, the Gateway's fault rather than the sender's", response.Code)
+	}
+	unset := gateway.NewHandler(gateway.NewServer(nil, nil), gateway.ServiceSecret(reportSecret))
+	if response := post(unset, "/v1/internal/activity/visits", reportSecret, `{"deployment": "production", "landing_path": "/"}`); response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("with no count configured: got %d, want 503", response.Code)
 	}
 }
 

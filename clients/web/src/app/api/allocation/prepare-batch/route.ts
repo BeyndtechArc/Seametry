@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
   }
 
   const quoteId = randomUUID();
-  const reported = { quoteId, wallet: body.wallet, kind: "buy" as const, body, planSize: body.planMints.length };
+  const reported = { quoteId, wallet: body.wallet, kind: "buy" as const, body, planSize: body.planMints.length, mints: body.legs.map((leg) => leg.mint!) };
   try {
     const legs = await prepareBatch(
       configured.config,

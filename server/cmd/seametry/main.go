@@ -37,6 +37,7 @@ import (
 	"github.com/BeyndtechArc/Seametry/server/internal/basket"
 	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
+	"github.com/BeyndtechArc/Seametry/server/internal/growth"
 	"github.com/BeyndtechArc/Seametry/server/internal/identity"
 	"github.com/BeyndtechArc/Seametry/server/internal/receipt"
 	"github.com/BeyndtechArc/Seametry/server/internal/solana"
@@ -161,7 +162,8 @@ func serve() error {
 		WithActivity(report).
 		WithFeedback(alert.NewFeedback(pool, mailer)).
 		WithEmailOptIns(alert.NewOptIns(pool)).
-		WithAdmin(report, alert.NewOptIns(pool))
+		WithAdmin(report, alert.NewOptIns(pool)).
+		WithVisits(growth.NewVisits(pool))
 	authOrigin := strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_ORIGIN"))
 	if authOrigin == "" {
 		return errors.New("SEAMETRY_AUTH_ORIGIN is not set; serve needs the Better Auth issuer to verify account subjects")
@@ -193,6 +195,9 @@ func serve() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	go settle(ctx, report, mainnet, feeWallet, alert.NewNotices(pool, mailer))
+	growthEvents := growth.NewEvents(pool)
+	go project(ctx, growthEvents, report)
+	go readHallActivity(ctx, growthEvents, hall, basket.HallDevnetProgramID, "devnet")
 
 	serveErr := make(chan error, 1)
 	go func() {
