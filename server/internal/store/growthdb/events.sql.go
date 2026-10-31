@@ -11,6 +11,29 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const advanceChainCursor = `-- name: AdvanceChainCursor :exec
+INSERT INTO growth.chain_cursors (origin, last_signature, last_slot, advanced_at)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (origin) DO UPDATE SET last_signature = EXCLUDED.last_signature, last_slot = EXCLUDED.last_slot, advanced_at = EXCLUDED.advanced_at
+`
+
+type AdvanceChainCursorParams struct {
+	Origin        string             `db:"origin" json:"origin"`
+	LastSignature string             `db:"last_signature" json:"last_signature"`
+	LastSlot      int64              `db:"last_slot" json:"last_slot"`
+	AdvancedAt    pgtype.Timestamptz `db:"advanced_at" json:"advanced_at"`
+}
+
+func (q *Queries) AdvanceChainCursor(ctx context.Context, arg AdvanceChainCursorParams) error {
+	_, err := q.db.Exec(ctx, advanceChainCursor,
+		arg.Origin,
+		arg.LastSignature,
+		arg.LastSlot,
+		arg.AdvancedAt,
+	)
+	return err
+}
+
 const advanceCursor = `-- name: AdvanceCursor :exec
 INSERT INTO growth.cursors (origin, after_xid, after_id, advanced_at)
 VALUES ($1, $2, $3, $4)
@@ -31,6 +54,39 @@ func (q *Queries) AdvanceCursor(ctx context.Context, arg AdvanceCursorParams) er
 		arg.AfterID,
 		arg.AdvancedAt,
 	)
+	return err
+}
+
+const chainCursor = `-- name: ChainCursor :one
+SELECT last_signature, last_slot FROM growth.chain_cursors WHERE origin = $1
+`
+
+type ChainCursorRow struct {
+	LastSignature string `db:"last_signature" json:"last_signature"`
+	LastSlot      int64  `db:"last_slot" json:"last_slot"`
+}
+
+func (q *Queries) ChainCursor(ctx context.Context, origin string) (ChainCursorRow, error) {
+	row := q.db.QueryRow(ctx, chainCursor, origin)
+	var i ChainCursorRow
+	err := row.Scan(&i.LastSignature, &i.LastSlot)
+	return i, err
+}
+
+const countVisit = `-- name: CountVisit :exec
+INSERT INTO growth.visit_counts (day, landing_path, ref_code, count)
+VALUES ($1, $2, $3, 1)
+ON CONFLICT (day, landing_path, ref_code) DO UPDATE SET count = growth.visit_counts.count + 1
+`
+
+type CountVisitParams struct {
+	Day         pgtype.Date `db:"day" json:"day"`
+	LandingPath string      `db:"landing_path" json:"landing_path"`
+	RefCode     string      `db:"ref_code" json:"ref_code"`
+}
+
+func (q *Queries) CountVisit(ctx context.Context, arg CountVisitParams) error {
+	_, err := q.db.Exec(ctx, countVisit, arg.Day, arg.LandingPath, arg.RefCode)
 	return err
 }
 
@@ -99,6 +155,43 @@ func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (int64
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const visitCounts = `-- name: VisitCounts :many
+SELECT day, landing_path, ref_code, count FROM growth.visit_counts
+WHERE day BETWEEN $1 AND $2
+ORDER BY day, landing_path, ref_code
+`
+
+type VisitCountsParams struct {
+	FromDay pgtype.Date `db:"from_day" json:"from_day"`
+	ToDay   pgtype.Date `db:"to_day" json:"to_day"`
+}
+
+// Every count from one day to another, inclusive.
+func (q *Queries) VisitCounts(ctx context.Context, arg VisitCountsParams) ([]GrowthVisitCount, error) {
+	rows, err := q.db.Query(ctx, visitCounts, arg.FromDay, arg.ToDay)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GrowthVisitCount
+	for rows.Next() {
+		var i GrowthVisitCount
+		if err := rows.Scan(
+			&i.Day,
+			&i.LandingPath,
+			&i.RefCode,
+			&i.Count,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const walletTimeline = `-- name: WalletTimeline :many

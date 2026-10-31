@@ -3,12 +3,40 @@ import { recordedRef } from "./ref-link";
 
 // Where this browser first arrived, kept in its own storage and sent once
 // per wallet, with that wallet's first quote. A visitor who never trades
-// sends nothing. Every read and write tolerates storage that is blocked or
-// cleared: losing a first touch costs attribution, never a trade.
+// sends only the page each entry to the site landed on and its referral
+// code, to a daily count that keeps nothing else (countVisit). Every read
+// and write tolerates storage that is blocked or cleared: losing a first
+// touch costs attribution, never a trade.
 
 const TOUCH = "seametry:first-touch";
 const SENT = "seametry:first-touch-sent";
 const UTM = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"] as const;
+
+/**
+ * Adds one entry to the day's count for the page it landed on and the
+ * referral code it came with. An entry is a page load whose referrer is not
+ * this site. It reads and writes nothing in the browser's storage: telling
+ * a reload from a new visit would need a mark kept on the device, and
+ * docs/decisions/2026-10-16-activity-record.md left anything kept on the
+ * device for counting visits to a consent decision not yet made. So a reload
+ * may count again, and a count is entries reported, not people.
+ */
+export function countVisit() {
+  const url = new URL(window.location.href);
+  try {
+    if (document.referrer && new URL(document.referrer).host === url.host) return;
+  } catch {
+    // An unreadable referrer is not this site's: the load is an entry.
+  }
+  const ref = url.searchParams.get("ref")?.trim();
+  const body = JSON.stringify({ path: url.pathname, ...(ref ? { ref: recordedRef(ref) } : {}) });
+  try {
+    if (navigator.sendBeacon?.("/api/activity/visits", new Blob([body], { type: "application/json" }))) return;
+  } catch {
+    // Some browsers refuse a beacon; fetch with keepalive is the same promise.
+  }
+  void fetch("/api/activity/visits", { method: "POST", headers: { "content-type": "application/json" }, body, keepalive: true }).catch(() => {});
+}
 
 export function captureFirstTouch() {
   try {

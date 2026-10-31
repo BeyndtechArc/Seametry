@@ -986,6 +986,29 @@ paths:
           description: Recorded.
         default:
           $ref: '#/components/responses/Problem'
+  /internal/activity/visits:
+    post:
+      operationId: countActivityVisit
+      tags: [activity]
+      summary: One browser session's landing page and referral code, added to that day's count.
+      description: >
+        Growth keeps a count per day, page and code and nothing that tells
+        one visitor from another: no identifier, address or wallet is sent
+        or kept. The browser's word: a count says how many sessions
+        reported, not how many people visited.
+      security:
+        - serviceSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityVisit'
+      responses:
+        "204":
+          description: Counted, or accepted and not counted for a deployment other than production.
+        default:
+          $ref: '#/components/responses/Problem'
 
 components:
   securitySchemes:
@@ -1620,6 +1643,22 @@ components:
           maxItems: 20
           items:
             $ref: '#/components/schemas/ActivityFunnelEvent'
+    ActivityVisit:
+      type: object
+      required: [deployment, landing_path]
+      properties:
+        deployment:
+          type: string
+          enum: [production, preview, development]
+          description: Only production visits are counted; the others are accepted and not counted.
+        landing_path:
+          type: string
+          pattern: '^/[A-Za-z0-9/_.-]{0,199}$'
+          description: The page a browser session opened first, without its query.
+        ref_code:
+          type: string
+          pattern: '^[a-z0-9][a-z0-9_-]{0,39}$'
+          description: The referral code the session arrived with, as clients/web/src/lib/ref-link.ts records it. Absent when there was none.
     ActivityFunnelEvent:
       type: object
       required: [kind]

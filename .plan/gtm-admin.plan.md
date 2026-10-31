@@ -219,6 +219,22 @@ surface, CI read from GitHub, and a merge only on Storm's word.
    from the snapshot it holds, so they say what was stated, not what a
    reader looked at; no browser report is added.
 
+   1c reads the Hall program's history into `chain` events and counts
+   entries to the site (`SERVICE_CATALOG.md` section 3.13). Two decisions
+   made on the way, both narrower than this plan first said:
+   - **Visits keep nothing on the device.** A once-per-session mark in
+     browser storage would be storage used for counting, which the
+     2026-10-16 activity-record decision left to a consent decision. An
+     entry is a page load whose referrer is not the site, so a reload can
+     count again.
+   - **A `dm-<handle>` code is counted as `dm`.** The handle names the person
+     a message went to; in a count by day and page it would say that person
+     visited. Per-person attribution stays with first touch on a first
+     trade, as the privacy policy already says.
+
+   Still open from milestone 1: `preflight.abandoned` (a warning, then no
+   submission within N minutes) and Expo reporting.
+
    The outbox in 1a is the one `SERVICE_CATALOG.md` section 7 and
    `ENGINEERING_STANDARD.md` section 10 already require, built for the first
    time:

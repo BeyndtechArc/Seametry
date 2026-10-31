@@ -8,6 +8,13 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type GrowthChainCursor struct {
+	Origin        string             `db:"origin" json:"origin"`
+	LastSignature string             `db:"last_signature" json:"last_signature"`
+	LastSlot      int64              `db:"last_slot" json:"last_slot"`
+	AdvancedAt    pgtype.Timestamptz `db:"advanced_at" json:"advanced_at"`
+}
+
 type GrowthCursor struct {
 	Origin     string             `db:"origin" json:"origin"`
 	AfterXid   string             `db:"after_xid" json:"after_xid"`
@@ -26,4 +33,11 @@ type GrowthEvent struct {
 	OriginKey  string             `db:"origin_key" json:"origin_key"`
 	OccurredAt pgtype.Timestamptz `db:"occurred_at" json:"occurred_at"`
 	ReceivedAt pgtype.Timestamptz `db:"received_at" json:"received_at"`
+}
+
+type GrowthVisitCount struct {
+	Day         pgtype.Date `db:"day" json:"day"`
+	LandingPath string      `db:"landing_path" json:"landing_path"`
+	RefCode     string      `db:"ref_code" json:"ref_code"`
+	Count       int64       `db:"count" json:"count"`
 }
