@@ -26,3 +26,22 @@ LIMIT sqlc.arg(row_limit);
 -- step.
 DELETE FROM growth.events
 WHERE origin = 'execution.outbox' AND source = 'client' AND occurred_at < $1;
+
+-- name: ChainCursor :one
+SELECT last_signature, last_slot FROM growth.chain_cursors WHERE origin = $1;
+
+-- name: AdvanceChainCursor :exec
+INSERT INTO growth.chain_cursors (origin, last_signature, last_slot, advanced_at)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (origin) DO UPDATE SET last_signature = EXCLUDED.last_signature, last_slot = EXCLUDED.last_slot, advanced_at = EXCLUDED.advanced_at;
+
+-- name: CountVisit :exec
+INSERT INTO growth.visit_counts (day, landing_path, ref_code, count)
+VALUES ($1, $2, $3, 1)
+ON CONFLICT (day, landing_path, ref_code) DO UPDATE SET count = growth.visit_counts.count + 1;
+
+-- name: VisitCounts :many
+-- Every count from one day to another, inclusive.
+SELECT day, landing_path, ref_code, count FROM growth.visit_counts
+WHERE day BETWEEN sqlc.arg(from_day) AND sqlc.arg(to_day)
+ORDER BY day, landing_path, ref_code;

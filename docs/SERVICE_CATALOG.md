@@ -426,18 +426,37 @@ with whose word it is (`server`, `client`, `chain`) and the outbox row it
 came from, so projecting again or rebuilding from the start writes each
 event once. An outbox kind or outcome it does not know is kept as
 `outbox.unrecognised` or `leg.unrecognised` with what came. Projected
-funnel steps follow the funnel's 24-month retention. To come, per the plan:
-people, identities and their provenance, imported leads, lifecycle stages,
-scores, patterns, drafts and the outreach audit.
+funnel steps follow the funnel's 24-month retention.
+
+The same timeline holds the Hall's own history, read every minute by
+polling the Hall program's signatures (`getSignaturesForAddress`, then
+`getTransaction` for each new one) and resuming from the last signature
+read. Each Hall instruction called directly becomes one `chain` event:
+`alloy.founded`, `alloy.struck` (create), `alloy.melted` (redeem),
+`leg.withdrawn` or `leg.synced`, under the transaction's fee payer, with the
+integer arguments as atoms; data naming no instruction is kept as
+`hall.unrecognised`. It is attached to a person only through a wallet the
+account token proved, once people exist.
+
+`growth.visit_counts` counts entries to the site (a page load whose referrer
+is not the site) per day, landing page and referral code, reported by the
+browser through the web deployment and counted for production only. It
+holds nothing that tells one visitor from another, and a `dm-<handle>` code
+is counted as `dm`.
+
+To come, per the plan: people, identities and their provenance, imported
+leads, lifecycle stages, scores, patterns, drafts and the outreach audit.
 
 **Never.** The source of anything another service owns: money and outcomes
 are Execution's, read through its interface, and no amount is kept here.
 Writes no other schema.
 
-**Depends on.** Execution, through its outbox.
+**Depends on.** Execution, through its outbox; the Hall program, through the
+devnet RPC the Gateway reads Alloys from.
 
 **Failure.** A stopped projection delays the Admin's timeline and nothing
-else; the next pass resumes from the stored cursor.
+else; the next pass resumes from the stored cursor. A Hall pass the RPC
+refuses ends there and the next resumes from the last signature read.
 
 ---
 

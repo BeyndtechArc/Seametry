@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
     <PublicShell>
       <article className={styles.paper}>
         <header className={styles.storyHero}>
-          <span>Effective 27 October 2026</span>
+          <span>Effective 31 October 2026</span>
           <h1>Privacy policy</h1>
           <p>This policy explains how Beyndtech Arc handles personal data when you use Seametry.</p>
         </header>
@@ -38,6 +38,7 @@ export default function PrivacyPolicyPage() {
           <div className={styles.paperText}>
             <p>When you ask Seametry for a quote, or buy or sell through it, we record the public address of the wallet that asked, whether or not you have signed in: each quote we prepared or refused and the reason we gave, the terms of each leg, and whether each leg was sent. Your browser also reports steps only it can see: a wallet connecting, a review opening, a signature being requested, declined or failing, and a review closed without signing.</p>
             <p>With a wallet&apos;s first quote, your browser sends where it first arrived on Seametry: the referring site&apos;s address, the first page you opened and any campaign tags in that link. If you arrived through a Seametry referral link (/r/ followed by a code), that referral code is kept with this first touch; a code made for a direct message can name the account it was sent to. It is held in your browser until then, sent once, and never sent if you do not trade. None of this uses a cookie, and we do not store your IP address with it.</p>
+            <p>Separately, when you open a Seametry page from another site or from a typed or saved link, your browser reports that page and any referral code in the link to a daily count. For a code made for a direct message, only the channel is counted, never the account it names. The count keeps the day, the page, the code and how many times each was reported, and nothing that tells one visitor from another: no address, wallet, cookie or identifier, and nothing is stored in your browser for it.</p>
             <p>When you send feedback, we keep your message, the page you came from, and the email address and wallet only if you chose to give them, and we mail them to the team&apos;s inbox.</p>
             <p>Trade records are kept as the history of what Seametry did for that wallet. Funnel steps are deleted after 24 months. If you sign in and link a wallet, your account shows that wallet&apos;s records on any device you sign in from; without signing in, a browser shows only the records it kept itself, and no one can read a wallet&apos;s records by typing its address. You may ask us to delete the records kept for a wallet you control; its transactions remain public on chain.</p>
           </div>

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -40,6 +42,61 @@ func newTestClient(t *testing.T, handler roundTripper) *Client {
 		t.Fatal(err)
 	}
 	return client
+}
+
+// A captured devnet Strike (shared/fixtures/hall-devnet/tx-create.json),
+// served as the cluster answered it: every top-level instruction comes back
+// in order, the Hall's with its raw data and a parsed one without.
+func TestGetTransactionKeepsEachTopLevelInstruction(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("..", "..", "..", "shared", "fixtures", "hall-devnet", "tx-create.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var capture struct {
+		Result json.RawMessage `json:"result"`
+	}
+	var answered struct {
+		Transaction struct {
+			Message struct {
+				Instructions []struct {
+					ProgramID string `json:"programId"`
+					Data      string `json:"data"`
+				} `json:"instructions"`
+			} `json:"message"`
+		} `json:"transaction"`
+	}
+	if err := json.Unmarshal(raw, &capture); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(capture.Result, &answered); err != nil {
+		t.Fatal(err)
+	}
+	client := newTestClient(t, func(*http.Request) (*http.Response, error) {
+		return reply(200, `{"jsonrpc":"2.0","id":1,"result":`+string(capture.Result)+`}`), nil
+	})
+	tx, err := client.GetTransaction(context.Background(), "46aLq1m6ZmPA9wREPubBHA3kXTbbqomk3kUWo3num42nG5b4M6FyYfb65w38MSs4Hzti54mGVwLrGWy3hQfZ83YW")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := answered.Transaction.Message.Instructions
+	if len(tx.Instructions) != len(want) || len(want) == 0 {
+		t.Fatalf("%d instructions, want the capture's %d", len(tx.Instructions), len(want))
+	}
+	hall := 0
+	for i, instruction := range tx.Instructions {
+		if instruction.ProgramID != want[i].ProgramID {
+			t.Errorf("instruction %d is %s, want %s", i, instruction.ProgramID, want[i].ProgramID)
+		}
+		if (want[i].Data == "") != (instruction.Data == nil) {
+			t.Errorf("instruction %d of %s: data %x, the capture carries %q", i, instruction.ProgramID, instruction.Data, want[i].Data)
+		}
+		if instruction.ProgramID == "GB1hX1FXQcAUWU23Ji6RtvhTzCKz84ScUsBeD7CqQnjE" {
+			hall++
+		}
+	}
+	if hall == 0 {
+		t.Error("no instruction of the devnet Hall came back from a captured Strike")
+	}
 }
 
 func TestCallReturnsTheResult(t *testing.T) {

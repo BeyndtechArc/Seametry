@@ -3,7 +3,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { after } from "next/server";
 import { PublicKey } from "@solana/web3.js";
-import { conditionsFor, deployment, firstTouchFrom, quoteReport, type ActivityQuote, type ActivitySubmission } from "./activity-report";
+import { conditionsFor, deployment, firstTouchFrom, quoteReport, visitReport, type ActivityQuote, type ActivitySubmission } from "./activity-report";
 import { admissions } from "./allocation/admissions";
 import type { PreparedLeg } from "./allocation/execution";
 import { postInternal } from "./internal-gateway";
@@ -73,4 +73,9 @@ export function recordSubmission(report: ActivitySubmission | undefined) {
 
 export function recordFunnel(events: { kind: string; wallet?: string; quote_id?: string }[]) {
   after(() => send("funnel", { deployment: currentDeployment, events }));
+}
+
+export function recordVisit(path: unknown, refCode: unknown) {
+  const report = visitReport(path, refCode, currentDeployment);
+  after(() => send("visits", report));
 }

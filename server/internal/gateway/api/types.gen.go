@@ -126,6 +126,27 @@ func (e ActivitySubmissionResult) Valid() bool {
 	}
 }
 
+// Defines values for ActivityVisitDeployment.
+const (
+	ActivityVisitDeploymentDevelopment ActivityVisitDeployment = "development"
+	ActivityVisitDeploymentPreview     ActivityVisitDeployment = "preview"
+	ActivityVisitDeploymentProduction  ActivityVisitDeployment = "production"
+)
+
+// Valid indicates whether the value is a known member of the ActivityVisitDeployment enum.
+func (e ActivityVisitDeployment) Valid() bool {
+	switch e {
+	case ActivityVisitDeploymentDevelopment:
+		return true
+	case ActivityVisitDeploymentPreview:
+		return true
+	case ActivityVisitDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AdminPeriodDeployment.
 const (
 	AdminPeriodDeploymentDevelopment AdminPeriodDeployment = "development"
@@ -954,6 +975,21 @@ type ActivitySubmission struct {
 
 // ActivitySubmissionResult defines model for ActivitySubmission.Result.
 type ActivitySubmissionResult string
+
+// ActivityVisit defines model for ActivityVisit.
+type ActivityVisit struct {
+	// Deployment Only production visits are counted; the others are accepted and not counted.
+	Deployment ActivityVisitDeployment `json:"deployment"`
+
+	// LandingPath The page a browser session opened first, without its query.
+	LandingPath string `json:"landing_path"`
+
+	// RefCode The referral code the session arrived with, as clients/web/src/lib/ref-link.ts records it. Absent when there was none.
+	RefCode *string `json:"ref_code,omitempty"`
+}
+
+// ActivityVisitDeployment Only production visits are counted; the others are accepted and not counted.
+type ActivityVisitDeployment string
 
 // AdminActivity defines model for AdminActivity.
 type AdminActivity struct {
@@ -1912,6 +1948,9 @@ type RecordActivityQuoteJSONRequestBody = ActivityQuote
 
 // RecordActivitySubmissionJSONRequestBody defines body for RecordActivitySubmission for application/json ContentType.
 type RecordActivitySubmissionJSONRequestBody = ActivitySubmission
+
+// CountActivityVisitJSONRequestBody defines body for CountActivityVisit for application/json ContentType.
+type CountActivityVisitJSONRequestBody = ActivityVisit
 
 // RecordEmailOptInJSONRequestBody defines body for RecordEmailOptIn for application/json ContentType.
 type RecordEmailOptInJSONRequestBody = EmailOptIn

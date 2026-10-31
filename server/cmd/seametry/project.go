@@ -13,6 +13,34 @@ import (
 // nothing against any provider's limits.
 const projectEvery = 15 * time.Second
 
+// hallEvery is how often Growth reads the Hall program's history. Each pass
+// costs one getSignaturesForAddress and one getTransaction per new
+// transaction, against the same RPC the Gateway reads Alloys from; the
+// public devnet endpoint refused rapid getTransaction calls with 429 when
+// this was written, so a pass stays small and frequent rather than large.
+const hallEvery = time.Minute
+
+// readHallActivity keeps Growth's chain events up with the Hall program. A
+// failed pass is logged and the next resumes from the stored signature.
+func readHallActivity(ctx context.Context, events *growth.Events, chain growth.HallChain, programID, cluster string) {
+	ticker := time.NewTicker(hallEvery)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+		written, err := events.ReadHall(ctx, chain, programID, cluster, time.Now())
+		if err != nil {
+			slog.Warn("seametry: reading the Hall's history", "cluster", cluster, "error", err.Error())
+		}
+		if written > 0 {
+			slog.Info("seametry: read Hall events", "cluster", cluster, "count", written)
+		}
+	}
+}
+
 // project keeps Growth's timeline up with the execution outbox, and deletes
 // projected funnel steps with the funnel's own retention. A failed pass is
 // logged and the next one resumes from the stored cursor; nothing it does
