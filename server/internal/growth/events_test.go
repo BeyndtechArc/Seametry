@@ -98,6 +98,9 @@ func record(t *testing.T, report *execution.Report, pool *pgxpool.Pool) [16]byte
 	quote := execution.Quote{
 		ID: quoteID, Wallet: holder, Network: "mainnet", Kind: "buy", Subject: "Prime Seven", PlanSize: 1,
 		Deployment: "production", PreparedAt: at,
+		Conditions: &execution.Conditions{PolicyVersion: "policy-2026.10.1", SnapshotAt: at.AddDate(0, -1, 0), Legs: []execution.LegCondition{
+			{Mint: nvdax, Decision: "WARN", Reasons: []execution.ConditionReason{{Code: "ISSUER_CAN_FREEZE", Severity: "WARN"}}},
+		}},
 		Legs: []execution.Leg{{
 			ID: legID, Mint: nvdax, Symbol: "NVDAx", In: execution.Amount{Atoms: "1000000", Scale: 6}, Out: execution.Amount{Atoms: "450000", Scale: 8},
 			Floor: execution.Amount{Atoms: "445500", Scale: 8}, RoutingFeeBps: 19, TipOffsetBps: 6, SimulatedFeeAtoms: "1900", TipLamports: "5000",
@@ -188,6 +191,41 @@ func TestTheProjectionNamesEachRecordedChangeWithWhoseWordItIs(t *testing.T) {
 	}
 	if !got[0].OccurredAt.Equal(at.Add(65 * time.Second)) {
 		t.Fatalf("landed at %s, want the block time", got[0].OccurredAt)
+	}
+	var preflight struct {
+		Conditions struct {
+			PolicyVersion string `json:"policy_version"`
+			Legs          []struct {
+				Decision string
+				Reasons  []struct{ Code string }
+			}
+		}
+	}
+	if err := json.Unmarshal(got[3].Properties, &preflight); err != nil {
+		t.Fatal(err)
+	}
+	if c := preflight.Conditions; c.PolicyVersion != "policy-2026.10.1" || len(c.Legs) != 1 || c.Legs[0].Decision != "WARN" || c.Legs[0].Reasons[0].Code != "ISSUER_CAN_FREEZE" {
+		t.Fatalf("preflight.run carries %+v, want what the policy stated", c)
+	}
+}
+
+func TestAQuoteRecordedWithoutConditionsSaysSoRatherThanNone(t *testing.T) {
+	events, report, _ := fresh(t)
+	quoteID := [16]byte{1}
+	if err := report.RecordQuote(context.Background(), execution.Quote{
+		ID: quoteID, Wallet: holder, Network: "mainnet", Kind: "buy", PlanSize: 1, Deployment: "production", PreparedAt: at,
+		Refusal: &execution.Refusal{Status: 400, Text: "The Allocation names a constituent more than once."},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	projectAll(t, events, report, 1)
+	got := timeline(t, events)
+	var properties map[string]json.RawMessage
+	if err := json.Unmarshal(got[0].Properties, &properties); err != nil {
+		t.Fatal(err)
+	}
+	if string(properties["conditions"]) != "null" {
+		t.Fatalf("conditions: got %s, want null, unknown rather than none", properties["conditions"])
 	}
 }
 

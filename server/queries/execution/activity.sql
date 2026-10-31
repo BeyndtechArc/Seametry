@@ -17,9 +17,9 @@ ON CONFLICT (address) DO UPDATE SET
 WITH inserted AS (
     INSERT INTO execution.quotes (
         id, wallet, network, kind, subject, template_id, plan_size, deployment,
-        prepared_at, outcome, refusal_status, refusal_text, source
+        prepared_at, outcome, refusal_status, refusal_text, source, conditions
     ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
     )
     ON CONFLICT (id) DO NOTHING
     RETURNING *
@@ -28,7 +28,8 @@ INSERT INTO execution.outbox (kind, wallet, payload, occurred_at)
 SELECT 'execution.quoted', i.wallet, jsonb_build_object(
            'quote_id', i.id, 'kind', i.kind, 'network', i.network, 'outcome', i.outcome,
            'refusal_status', i.refusal_status, 'plan_size', i.plan_size, 'subject', i.subject,
-           'template_id', i.template_id, 'deployment', i.deployment, 'source', i.source),
+           'template_id', i.template_id, 'deployment', i.deployment, 'source', i.source,
+           'conditions', i.conditions),
        i.prepared_at
 FROM inserted i;
 

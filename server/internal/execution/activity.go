@@ -105,7 +105,31 @@ type Quote struct {
 	PreparedAt time.Time
 	Refusal    *Refusal
 	FirstTouch *FirstTouch
+	Conditions *Conditions
 	Legs       []Leg
+}
+
+// Conditions is what the admission policy stated for each stock a quote
+// named, as the review shows it. Nil means none were sent, which is unknown,
+// not "nothing stated".
+type Conditions struct {
+	PolicyVersion string         `json:"policy_version"`
+	SnapshotAt    time.Time      `json:"snapshot_at"`
+	Legs          []LegCondition `json:"legs"`
+}
+
+// LegCondition is one stock's decision and its reasons. An empty Decision
+// means the snapshot held none for the mint; a decision or severity this
+// code does not list is kept as sent.
+type LegCondition struct {
+	Mint     string            `json:"mint"`
+	Decision string            `json:"decision,omitempty"`
+	Reasons  []ConditionReason `json:"reasons"`
+}
+
+type ConditionReason struct {
+	Code     string `json:"code"`
+	Severity string `json:"severity"`
 }
 
 type Submission struct {
@@ -124,6 +148,8 @@ type FunnelEvent struct {
 
 var (
 	digestPattern    = regexp.MustCompile(`^[0-9a-f]{64}$`)
+	decisionPattern  = regexp.MustCompile(`^[A-Z_]{1,20}$`)
+	reasonPattern    = regexp.MustCompile(`^[A-Z0-9_]{1,80}$`)
 	signaturePattern = regexp.MustCompile(`^[1-9A-HJ-NP-Za-km-z]{64,88}$`)
 	unsignedAtoms    = regexp.MustCompile(`^[0-9]{1,20}$`)
 	signedAtoms      = regexp.MustCompile(`^-?[0-9]{1,20}$`)
@@ -184,6 +210,42 @@ func (f *FirstTouch) check() error {
 	return capped("first_touch.landing_path", f.LandingPath, 500)
 }
 
+func (c *Conditions) check() error {
+	if c.PolicyVersion == "" {
+		return Invalid{"conditions.policy_version is empty"}
+	}
+	if err := capped("conditions.policy_version", c.PolicyVersion, 40); err != nil {
+		return err
+	}
+	if c.SnapshotAt.IsZero() {
+		return Invalid{"conditions.snapshot_at is missing"}
+	}
+	if len(c.Legs) == 0 || len(c.Legs) > 20 {
+		return Invalid{fmt.Sprintf("conditions.legs holds %d; 1 to 20 are kept", len(c.Legs))}
+	}
+	for i, leg := range c.Legs {
+		field := fmt.Sprintf("conditions.legs[%d]", i)
+		if err := address(field+".mint", leg.Mint); err != nil {
+			return err
+		}
+		if leg.Decision != "" && !decisionPattern.MatchString(leg.Decision) {
+			return Invalid{fmt.Sprintf("%s.decision %q is not 1 to 20 capital letters or underscores", field, leg.Decision)}
+		}
+		if len(leg.Reasons) > 20 {
+			return Invalid{fmt.Sprintf("%s.reasons holds %d; at most 20 are kept", field, len(leg.Reasons))}
+		}
+		for j, reason := range leg.Reasons {
+			if !reasonPattern.MatchString(reason.Code) {
+				return Invalid{fmt.Sprintf("%s.reasons[%d].code %q is not 1 to 80 capital letters, digits or underscores", field, j, reason.Code)}
+			}
+			if !decisionPattern.MatchString(reason.Severity) {
+				return Invalid{fmt.Sprintf("%s.reasons[%d].severity %q is not 1 to 20 capital letters or underscores", field, j, reason.Severity)}
+			}
+		}
+	}
+	return nil
+}
+
 func (q Quote) check() error {
 	if err := address("wallet", q.Wallet); err != nil {
 		return err
@@ -214,6 +276,11 @@ func (q Quote) check() error {
 			return err
 		}
 	}
+	if q.Conditions != nil {
+		if err := q.Conditions.check(); err != nil {
+			return err
+		}
+	}
 	if q.Refusal != nil {
 		if q.Refusal.Status < 400 || q.Refusal.Status > 599 {
 			return Invalid{fmt.Sprintf("refusal.status %d is not an HTTP error status", q.Refusal.Status)}
@@ -240,6 +307,14 @@ func (r *Report) RecordQuote(ctx context.Context, quote Quote) (err error) {
 	if quote.FirstTouch != nil && *quote.FirstTouch != (FirstTouch{}) {
 		if source, err = json.Marshal(quote.FirstTouch); err != nil {
 			return fmt.Errorf("execution: encoding the first-touch source: %w", err)
+		}
+	}
+	var conditions []byte
+	if quote.Conditions != nil {
+		snapshot := *quote.Conditions
+		snapshot.SnapshotAt = snapshot.SnapshotAt.UTC()
+		if conditions, err = json.Marshal(snapshot); err != nil {
+			return fmt.Errorf("execution: encoding the quote's conditions: %w", err)
 		}
 	}
 	legs := make([]executiondb.InsertLegParams, 0, len(quote.Legs))
@@ -275,7 +350,7 @@ func (r *Report) RecordQuote(ctx context.Context, quote Quote) (err error) {
 		Subject: optionalText(quote.Subject), TemplateID: optionalText(quote.TemplateID), PlanSize: int32(quote.PlanSize),
 		Deployment: quote.Deployment, PreparedAt: seen, Outcome: outcome,
 		RefusalStatus: pgtype.Int4{Int32: int32(refusal.Status), Valid: quote.Refusal != nil}, RefusalText: optionalText(refusal.Text),
-		Source: "server",
+		Source: "server", Conditions: conditions,
 	})
 	if err != nil {
 		return fmt.Errorf("execution: recording quote for %s: %w", quote.Wallet, err)

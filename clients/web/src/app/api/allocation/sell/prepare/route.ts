@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Supply wallet and at least one leg, each with mint and atoms as a string of digits." }, { status: 400 });
   }
   const quoteId = randomUUID();
-  const reported = { quoteId, wallet: body.wallet, kind: "sell" as const, body, planSize: body.legs.length };
+  const reported = { quoteId, wallet: body.wallet, kind: "sell" as const, body, planSize: body.legs.length, mints: body.legs.map((leg) => leg.mint!) };
   try {
     const legs = await prepareSales(configured.config, body.wallet, body.legs.map((leg) => ({ mint: leg.mint!, inAtoms: BigInt(leg.atoms!) })));
     recordPrepared({ ...reported, legs });

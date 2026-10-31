@@ -841,8 +841,27 @@ export interface components {
             prepared_at: string;
             refusal?: components["schemas"]["ActivityRefusal"];
             first_touch?: components["schemas"]["ActivityFirstTouch"];
+            conditions?: components["schemas"]["ActivityConditions"];
             /** @description Empty exactly when refusal is present. */
             legs: components["schemas"]["ActivityLeg"][];
+        };
+        /** @description What the admission policy stated for each stock the request named, as the review shows it: the decision and the reasons behind it, under one policy version and snapshot. Sent by the server from the snapshot it holds, so it says what was stated, not what a reader looked at. */
+        ActivityConditions: {
+            policy_version: string;
+            /** Format: date-time */
+            snapshot_at: string;
+            legs: components["schemas"]["ActivityLegCondition"][];
+        };
+        ActivityLegCondition: {
+            /** @description The stock's base58 mint address. */
+            mint: string;
+            /** @description ALLOW, WARN or BLOCK today. Absent when the snapshot holds no decision for this mint, which a sale of a stock no longer admitted can be; a value not listed here is kept as sent. */
+            decision?: string;
+            reasons: components["schemas"]["ActivityConditionReason"][];
+        };
+        ActivityConditionReason: {
+            code: string;
+            severity: string;
         };
         ActivityRefusal: {
             status: number;
