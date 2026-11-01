@@ -72,7 +72,7 @@ test("the privacy policy says what the outreach list keeps and how to leave it",
 
 test("the privacy policy says what an opt-in keeps, why, and how to stop it", async ({ page }) => {
   await page.goto("/privacy-policy");
-  await expect(page.getByText("Effective 31 October 2026")).toBeVisible();
+  await expect(page.getByText("Effective 1 November 2026")).toBeVisible();
   await expect(page.getByText(/erases the address, the wallet and the link itself/)).toBeVisible();
   await expect(page.getByText(/Today no email is sent to these addresses at all/)).toBeVisible();
   await expect(page.getByText(/infrastructure connection/)).toHaveCount(0);

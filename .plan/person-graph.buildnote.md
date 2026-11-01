@@ -8,4 +8,4 @@ States:      default only: the paragraph is static text.
              loading, empty, stale, unavailable, error: not applicable, nothing is fetched.
 Ceremony:    none
 Names:       none new in the interface
-Assumptions: The paragraph states no lawful basis because Storm has not chosen one (plan, section 6, question 4); the import cannot run without one. The effective date stays 31 October 2026 and moves to the ship date if this merges later.
+Assumptions: The paragraph states no lawful basis because Storm has not chosen one (plan, section 6, question 4); the import cannot run without one. The policy's effective date moves to 1 November 2026, the date this ships.
