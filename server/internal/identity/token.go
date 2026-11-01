@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -40,7 +41,24 @@ type Subject struct {
 	// them; a token without the claims reads as an unverified empty address.
 	Email         string
 	EmailVerified bool
+	// AuthMethods names how the account can sign in (solana, google, email),
+	// in the authority's order, unknown names dropped. KYCLevel is "none"
+	// until a verification provider exists; a level this Gateway does not
+	// know reads as none, so a new level never grants anything here first.
+	AuthMethods []string
+	KYCLevel    string
 }
+
+// KYCNone is the only KYC level the account authority issues today.
+const KYCNone = "none"
+
+// knownAuthMethods are the sign-in method names the account authority sends.
+var knownAuthMethods = map[string]bool{"solana": true, "google": true, "email": true}
+
+var knownKYCLevels = map[string]bool{KYCNone: true}
+
+// maxTokenAuthMethods bounds the claim well above the methods that exist.
+const maxTokenAuthMethods = 8
 
 // maxTokenEmailBytes is RFC 5321's limit on a forward path.
 const maxTokenEmailBytes = 254
@@ -79,6 +97,9 @@ type tokenClaims struct {
 	// A pointer, so a claim sent as anything but a JSON boolean fails to
 	// decode instead of reading as false or true.
 	EmailVerified *bool `json:"email_verified"`
+	// A claim of the wrong JSON type fails to decode, and refuses the token.
+	AuthMethods []string `json:"auth_methods"`
+	KYCLevel    *string  `json:"kyc_level"`
 }
 
 type jwksDocument struct {
@@ -242,8 +263,21 @@ func (v *Verifier) Verify(ctx context.Context, encoded string, now time.Time) (S
 	if len(claims.Email) > maxTokenEmailBytes {
 		return Subject{}, fmt.Errorf("identity: token email is %d bytes, expected at most %d", len(claims.Email), maxTokenEmailBytes)
 	}
+	if len(claims.AuthMethods) > maxTokenAuthMethods {
+		return Subject{}, fmt.Errorf("identity: token names %d sign-in methods, expected at most %d", len(claims.AuthMethods), maxTokenAuthMethods)
+	}
+	methods := make([]string, 0, len(claims.AuthMethods))
+	for _, method := range claims.AuthMethods {
+		if knownAuthMethods[method] && !slices.Contains(methods, method) {
+			methods = append(methods, method)
+		}
+	}
+	kyc := KYCNone
+	if claims.KYCLevel != nil && knownKYCLevels[*claims.KYCLevel] {
+		kyc = *claims.KYCLevel
+	}
 	verified := claims.EmailVerified != nil && *claims.EmailVerified && claims.Email != ""
-	return Subject{AccountID: claims.Subject, Wallets: claims.Wallets, Email: claims.Email, EmailVerified: verified}, nil
+	return Subject{AccountID: claims.Subject, Wallets: claims.Wallets, Email: claims.Email, EmailVerified: verified, AuthMethods: methods, KYCLevel: kyc}, nil
 }
 
 func (v *Verifier) key(id string) ed25519.PublicKey {

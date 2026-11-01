@@ -3,9 +3,9 @@ export const theme = {
   "dark": {
     "surface": {
       "ground": "#14180A",
-      "sheet": "#1B2010",
-      "raised": "#232915",
-      "tray": "#2D3420",
+      "sheet": "#1C2013",
+      "raised": "#25281D",
+      "tray": "#2F3228",
       "inverse": "#ECEEDF"
     },
     "text": {
@@ -17,8 +17,8 @@ export const theme = {
       "inverse": "#14180A"
     },
     "line": {
-      "rule": "#343B26",
-      "strong": "#4E573A",
+      "rule": "#35382D",
+      "strong": "#505546",
       "highlight": "rgba(236,246,232,0.06)"
     },
     "accent": {

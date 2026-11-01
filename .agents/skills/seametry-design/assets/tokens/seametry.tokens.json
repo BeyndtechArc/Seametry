@@ -10,13 +10,14 @@
           "$description": "Operational olive-black ground, a step quieter than the deck's #171C03 so feature surfaces still read above it."
         },
         "sheet": {
-          "$value": "#1B2010"
+          "$value": "#1C2013",
+          "$description": "Each step above the ground loses chroma as it gains lightness (OKLCH 0.024, 0.021, 0.019 at hue 122), so a pane reads as a lighter olive-black, not khaki (Storm, 30 October 2026)."
         },
         "raised": {
-          "$value": "#232915"
+          "$value": "#25281D"
         },
         "tray": {
-          "$value": "#2D3420"
+          "$value": "#2F3228"
         },
         "inverse": {
           "$value": "#ECEEDF"
@@ -26,15 +27,15 @@
         "$type": "color",
         "primary": {
           "$value": "#ECEEDF",
-          "$description": "Bone, as on the deck. 15.34:1 on ground, 11.00:1 on tray."
+          "$description": "Bone, as on the deck. 15.34:1 on ground, 11.11:1 on tray."
         },
         "secondary": {
           "$value": "#B4B9A2",
-          "$description": "Readable supporting text. 8.93:1 on ground, 6.41:1 on tray."
+          "$description": "Readable supporting text. 8.93:1 on ground, 6.47:1 on tray."
         },
         "tertiary": {
           "$value": "#9CA289",
-          "$description": "Lowest readable text step. 6.82:1 on ground, 4.89:1 on tray."
+          "$description": "Lowest readable text step. 6.82:1 on ground, 4.94:1 on tray."
         },
         "faint": {
           "$value": "#5E644A",
@@ -52,10 +53,10 @@
       "line": {
         "$type": "color",
         "rule": {
-          "$value": "#343B26"
+          "$value": "#35382D"
         },
         "strong": {
-          "$value": "#4E573A"
+          "$value": "#505546"
         },
         "highlight": {
           "$value": "rgba(236,246,232,0.06)",
@@ -82,7 +83,7 @@
         "touchText": {
           "$type": "color",
           "$value": "#AFC45F",
-          "$description": "Light lime for links and small touchable marks. 9.34:1 on ground, 6.70:1 on tray."
+          "$description": "Light lime for links and small touchable marks. 9.34:1 on ground, 6.77:1 on tray."
         }
       },
       "status": {

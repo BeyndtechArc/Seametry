@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import { WalletLinkControl } from "./wallet-link-control";
 import styles from "../site.module.css";
 
-export function SignInControl({ configured }: { configured: boolean }) {
+export function SignInControl({ configured, returnTo }: { configured: boolean; returnTo: string }) {
   if (!configured) {
     return (
       <>
@@ -15,17 +15,18 @@ export function SignInControl({ configured }: { configured: boolean }) {
       </>
     );
   }
-  return <ConfiguredSignInControl />;
+  return <ConfiguredSignInControl returnTo={returnTo} />;
 }
 
-function ConfiguredSignInControl() {
+function ConfiguredSignInControl({ returnTo }: { returnTo: string }) {
   const { data: session, isPending } = authClient.useSession();
   const [problem, setProblem] = useState<string>();
   const [working, setWorking] = useState(false);
 
   if (isPending) return <p role="status">Reading your account session.</p>;
 
-  if (session) {
+  // Only a session naming a user is signed in.
+  if (session?.user) {
     return (
       <>
         <p>Signed in as {session.user.email}. Connecting a wallet remains a separate step before signing a transaction.</p>
@@ -54,7 +55,7 @@ function ConfiguredSignInControl() {
       <ContinueAction disabled={working} onClick={async () => {
         setWorking(true);
         setProblem(undefined);
-        const result = await authClient.signIn.social({ provider: "google", callbackURL: "/sign-in" });
+        const result = await authClient.signIn.social({ provider: "google", callbackURL: returnTo });
         if (result.error) {
           setProblem(result.error.message ?? "Google sign-in did not complete.");
           setWorking(false);

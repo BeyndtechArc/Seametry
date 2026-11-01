@@ -358,7 +358,7 @@ test("the committed snapshot is the policy engine's, for every captured lot", ()
 
 test("the dashboard wallet disclosure opens below its header containment", async ({ page }) => {
   await page.goto("/app/allocation");
-  const trigger = page.getByText("Connect", { exact: true });
+  const trigger = page.getByText("Sign in", { exact: true });
   await trigger.click();
   const panel = page.getByText("No signing wallet is available in this browser.", { exact: false });
   await expect(panel).toBeVisible();
@@ -375,7 +375,7 @@ test("a page loaded with a wallet installed hydrates without React redrawing it"
   await registerTestWallet(page, { trusted: false });
   await page.goto("/app/alloys");
   await expect(page.getByRole("heading", { level: 1, name: "Alloys" })).toBeVisible();
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await expect(page.getByRole("button", { name: "Connect Test wallet" })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -383,7 +383,7 @@ test("a page loaded with a wallet installed hydrates without React redrawing it"
 test("a wallet that already trusts the site shows as connected the moment it is chosen", async ({ page }) => {
   await registerTestWallet(page, { trusted: true });
   await page.goto("/app/allocation");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
   await expect(page.getByTestId("wallet-account")).toBeVisible();
@@ -394,7 +394,7 @@ test("one Allocation decision preflights the whole plan and never signs a refuse
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx");
   expect(aapl).toBeDefined();
   await page.goto(`/app/allocation?selected=${aapl!.instrument.mint}&amount=1`);
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
   let prepares = 0;
@@ -417,7 +417,7 @@ test("a leg Seametry refuses to send is recorded as not sent, and nothing moved"
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
   const nvda = admissions.instruments.find((lot) => lot.instrument.symbol === "NVDAx")!;
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint},${nvda.instrument.mint}&amount=2`);
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: [preparedLeg(), preparedLeg()] }));
   await page.route("**/api/allocation/submit", (route) => route.fulfill({
@@ -445,7 +445,7 @@ test("a confirmed purchase lands in Activity with what it received and its signa
   await registerTestWallet(page, { trusted: true, signs: true });
   const aapl = admissions.instruments.find((lot) => lot.instrument.symbol === "AAPLx")!;
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.route("**/api/allocation/prepare-batch", (route) => route.fulfill({ json: [preparedLeg({ lastValidBlockHeight: 4_321 })] }));
   await acceptSubmits(page);
@@ -478,7 +478,7 @@ test("a published basket buys every constituent from its record with one Key pre
   await answerChain(page, () => ({ phase: "landed", changes: [] }));
 
   await page.goto("/app/baskets/prime-seven?amount=7");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   const order = page.getByRole("region", { name: "Buy Prime Seven" });
   // The amount came from the URL a wallet's in-app browser would open.
@@ -507,7 +507,7 @@ test("an allocation shows its two waits before the wallet, then hands over", asy
   });
 
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Buy allocation" }).click();
 
@@ -532,7 +532,7 @@ for (const landing of ["rpc", "sender"] as const) {
     });
     await answerChain(page, () => ({ phase: "sent" }));
     await page.goto(`/app/allocation?selected=${mints.join(",")}&amount=3`);
-    await page.getByText("Connect", { exact: true }).click();
+    await page.getByText("Sign in", { exact: true }).click();
     await page.getByRole("button", { name: "Connect Test wallet" }).click();
     await page.getByRole("button", { name: "Buy allocation" }).click();
     await expect.poll(() => arrivals.length, { timeout: 10_000 }).toBe(3);
@@ -638,7 +638,7 @@ test("a wallet short of funds is asked to fund or adjust, and no purchase is mar
   await page.route("**/api/allocation/submit", (route) => { submits += 1; return route.fulfill({ status: 500, json: { error: "must not be called" } }); });
 
   await page.goto("/app/baskets/prime-seven?amount=7");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   const order = page.getByRole("region", { name: "Buy Prime Seven" });
   await order.getByRole("button", { name: "Buy basket" }).click();
@@ -670,7 +670,7 @@ test("a purchase whose status cannot be read says so within a minute, and never 
   const asked = await answerChain(page, () => ({ status: 502 }));
 
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Buy allocation" }).click();
   const toasts = page.getByRole("region", { name: "Requests in progress" });
@@ -694,7 +694,7 @@ test("a purchase the network dropped says nothing moved and offers to buy exactl
   await answerChain(page, () => ({ phase: "dropped" }));
 
   await page.goto("/app/baskets/prime-seven?amount=7");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   const order = page.getByRole("region", { name: "Buy Prime Seven" });
   await order.getByRole("button", { name: "Buy basket" }).click();
@@ -721,7 +721,7 @@ test("a remix buys at the weights the reader set, exactly, and is recorded as a 
   await answerChain(page, () => ({ phase: "landed", changes: [] }));
 
   await page.goto("/app/baskets/build?basket=prime-seven");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Set amount" }).click();
   await page.getByLabel("USDC to spend").fill("100");
@@ -764,7 +764,7 @@ test("the amount step names and enforces the funding floor before wallet signing
 test("a detected Wallet Standard wallet connects from the dashboard header", async ({ page }) => {
   await registerTestWallet(page, { trusted: false });
   await page.goto("/app/allocation");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   const wallet = page.getByRole("button", { name: "Connect Test wallet" });
   await expect(wallet.locator("img")).toHaveCount(1);
   await wallet.click();

@@ -209,7 +209,7 @@ test("pressing Found separates progress from the final stopped outcome", async (
   // The test server has no funder key, so preparation stops at step one.
   await registerTestWallet(page, { trusted: true });
   await page.goto("/app/compose");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
 

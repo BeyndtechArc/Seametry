@@ -909,6 +909,7 @@ export function RegisterFooter({
   links,
   accounts = [],
   finale,
+  settings,
 }: {
   /** The footer's scene, above its one line of links. */
   children?: ReactNode;
@@ -917,6 +918,8 @@ export function RegisterFooter({
   links: Array<{ label: string; href: string }>;
   /** Seametry's accounts elsewhere, each an icon link named for assistive technology. */
   accounts?: Array<{ label: string; href: string; icon: IconName }>;
+  /** Reader settings on the link line, such as the theme choice. */
+  settings?: ReactNode;
 }) {
   return (
     <footer className={styles.registerFooter}>
@@ -934,6 +937,7 @@ export function RegisterFooter({
             ))}
           </ul>
         ) : null}
+        {settings}
       </div>
       {finale}
     </footer>

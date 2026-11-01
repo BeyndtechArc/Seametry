@@ -69,7 +69,7 @@ test("a one-stock buy a wallet guards is sent with the transaction Seametry appr
   await answerChain(page, () => ({ phase: "sent" }));
 
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Buy allocation" }).click();
 
@@ -92,7 +92,7 @@ test("a one-stock buy a wallet changes beyond its guards is stopped before anyth
   await page.route("**/api/allocation/submit", (route) => { submits += 1; return route.fulfill({ status: 500, json: { error: "must not be called" } }); });
 
   await page.goto(`/app/allocation?selected=${aapl.instrument.mint}&amount=1`);
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Buy allocation" }).click();
 

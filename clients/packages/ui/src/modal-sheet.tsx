@@ -157,3 +157,45 @@ export function ProcessOutcome({ kind, title, children }: { kind: "pending" | "s
     </section>
   );
 }
+
+export type AuthDialogProps = {
+  open: boolean;
+  onClose: () => void;
+  register: string;
+  title: string;
+  /** One line under the title. */
+  lead?: ReactNode;
+  closeLabel?: string;
+  children: ReactNode;
+  footer?: ReactNode;
+  onClosed?: () => void;
+};
+
+/**
+ * components.md, Auth dialog: the one centred form for signing in or
+ * connecting, a sheet from the bottom on a phone. It shares the native
+ * dialog contract (focus containment, Escape, return of focus) with
+ * ModalSheet and ProcessDialog, and the Process dialog's header.
+ */
+export function AuthDialog({ open, onClose, register, title, lead, closeLabel = "Close", children, footer, onClosed }: AuthDialogProps) {
+  const { dialogProps, close } = useNativeDialog(open, onClose, onClosed);
+  const titleId = useId();
+  const leadId = useId();
+
+  return (
+    <dialog {...dialogProps} className={styles.auth} aria-labelledby={titleId} aria-describedby={lead ? leadId : undefined}>
+      <header className={styles.authHeader}>
+        <div>
+          <span>{register}</span>
+          <h2 id={titleId}>{title}</h2>
+          {lead ? <p id={leadId}>{lead}</p> : null}
+        </div>
+        <button className={styles.iconClose} type="button" onClick={close} aria-label={closeLabel}>
+          <Icon name="close" />
+        </button>
+      </header>
+      <div className={styles.authBody}>{children}</div>
+      {footer ? <footer className={styles.authFooter}>{footer}</footer> : null}
+    </dialog>
+  );
+}

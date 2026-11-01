@@ -3,6 +3,7 @@ import { jwt } from "better-auth/plugins";
 import pg from "pg";
 import { appOrigins } from "./app-origins.mjs";
 import { serviceTokenPayload } from "./service-token.mjs";
+import { poolWallets, solanaSignIn } from "./solana-sign-in.mjs";
 
 const { Pool } = pg;
 
@@ -47,5 +48,6 @@ export const auth = betterAuth({
   },
   plugins: [
     jwt({ jwt: { definePayload: serviceTokenPayload(pool) } }),
+    solanaSignIn({ trustedOrigins, wallets: poolWallets(pool) }),
   ],
 });

@@ -213,9 +213,10 @@ Live change reaches clients over server-sent events.
 
 Linking a Solana address requires a separate proof:
 
-1. An authenticated account requests a single-use challenge for the address. The account service stores its account ID, address, origin, message and expiry for five minutes.
-2. The external wallet signs the message, not a transaction. The client returns the signature and challenge ID.
-3. The account service consumes the challenge, checks its expiry and the Ed25519 signature against the address, and enforces one account per linked address.
+1. The signed-in browser asks `POST /api/auth/solana/nonce` for a Sign in with Solana message. The account service writes the whole message (domain, URI, chain, a single-use nonce and a five-minute expiry) and stores it.
+2. The external wallet signs the message, not a transaction, through `solana:signIn` or `signMessage` over the same text. The client returns the signed message, signature and nonce to `POST /api/auth/solana/verify`.
+3. The account service consumes the nonce, checks every message field and the Ed25519 signature against the address, and links the wallet to the open session. One account per address: a wallet owned by another account is refused with 409. Signed out, the same proof signs in to the wallet's account, or opens a wallet-only one.
+4. `DELETE /api/account/wallets` unlinks a wallet, except an account's last way to sign in: a wallet-only account cannot unlink its last wallet (409, `LAST_SIGN_IN_METHOD`).
 
 An account may link several addresses. Every saved Allocation, purchase attempt and private receipt lookup names one owner address and network. Switching wallets changes the view; a combined portfolio must label each address. A saved template can be copied to another address as a new plan, but an executed Allocation cannot be reassigned by changing the account link. A transaction still needs its owning wallet's approval. Linking grants no custody (`SERVICE_CATALOG.md` section 3.9).
 

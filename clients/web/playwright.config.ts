@@ -33,6 +33,9 @@ export default defineConfig({
       // and spent devnet SOL. With them empty no test can sign or spend.
       env: {
         SEAMETRY_API_URL: "http://127.0.0.1:3846",
+        // Sign-in is configured, so the connect modal offers it; the fixture
+        // answers the auth routes no test answers itself.
+        SEAMETRY_AUTH_ORIGIN: "http://127.0.0.1:3846",
         JUPITER_API_URL: "http://127.0.0.1:3846/jupiter",
         JUPITER_API_KEY: "fixture",
         MAINNET_RPC_URL: "http://127.0.0.1:3846/mainnet-rpc",

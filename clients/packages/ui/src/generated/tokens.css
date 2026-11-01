@@ -95,9 +95,9 @@
   --sm-scale-olive-800: #CED2CD;
   --sm-scale-olive-900: #E8ECE7;
   --sm-surface-ground: #14180A;
-  --sm-surface-sheet: #1B2010;
-  --sm-surface-raised: #232915;
-  --sm-surface-tray: #2D3420;
+  --sm-surface-sheet: #1C2013;
+  --sm-surface-raised: #25281D;
+  --sm-surface-tray: #2F3228;
   --sm-surface-inverse: #ECEEDF;
   --sm-text-primary: #ECEEDF;
   --sm-text-secondary: #B4B9A2;
@@ -105,8 +105,8 @@
   --sm-text-faint: #5E644A;
   --sm-text-onTouch: #141803;
   --sm-text-inverse: #14180A;
-  --sm-line-rule: #343B26;
-  --sm-line-strong: #4E573A;
+  --sm-line-rule: #35382D;
+  --sm-line-strong: #505546;
   --sm-line-highlight: rgba(236,246,232,0.06);
   --sm-accent-touch: #98AD39;
   --sm-accent-touchPressed: #8DA32C;
@@ -190,9 +190,9 @@
 }
 :root[data-theme="dark"] {
   --sm-surface-ground: #14180A;
-  --sm-surface-sheet: #1B2010;
-  --sm-surface-raised: #232915;
-  --sm-surface-tray: #2D3420;
+  --sm-surface-sheet: #1C2013;
+  --sm-surface-raised: #25281D;
+  --sm-surface-tray: #2F3228;
   --sm-surface-inverse: #ECEEDF;
   --sm-text-primary: #ECEEDF;
   --sm-text-secondary: #B4B9A2;
@@ -200,8 +200,8 @@
   --sm-text-faint: #5E644A;
   --sm-text-onTouch: #141803;
   --sm-text-inverse: #14180A;
-  --sm-line-rule: #343B26;
-  --sm-line-strong: #4E573A;
+  --sm-line-rule: #35382D;
+  --sm-line-strong: #505546;
   --sm-line-highlight: rgba(236,246,232,0.06);
   --sm-accent-touch: #98AD39;
   --sm-accent-touchPressed: #8DA32C;
@@ -252,9 +252,9 @@
 }
 :where([data-sm-theme="dark"]) {
   --sm-surface-ground: #14180A;
-  --sm-surface-sheet: #1B2010;
-  --sm-surface-raised: #232915;
-  --sm-surface-tray: #2D3420;
+  --sm-surface-sheet: #1C2013;
+  --sm-surface-raised: #25281D;
+  --sm-surface-tray: #2F3228;
   --sm-surface-inverse: #ECEEDF;
   --sm-text-primary: #ECEEDF;
   --sm-text-secondary: #B4B9A2;
@@ -262,8 +262,8 @@
   --sm-text-faint: #5E644A;
   --sm-text-onTouch: #141803;
   --sm-text-inverse: #14180A;
-  --sm-line-rule: #343B26;
-  --sm-line-strong: #4E573A;
+  --sm-line-rule: #35382D;
+  --sm-line-strong: #505546;
   --sm-line-highlight: rgba(236,246,232,0.06);
   --sm-accent-touch: #98AD39;
   --sm-accent-touchPressed: #8DA32C;

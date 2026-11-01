@@ -39,7 +39,7 @@ test("a bought Allocation kept from before the engine is sold whole with one rev
   await answerChain(page, () => ({ phase: "landed", changes: [{ mint: USDC_MINT, atoms: "995000", scale: 6 }] }));
 
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("tab", { name: /^Allocations/ }).click();
   await page.getByRole("button", { name: "Sell Prime Seven" }).click();
@@ -81,7 +81,7 @@ test("a sale steps from amount to review in the sheet, then hands over to the to
   await answerChain(page, () => ({ phase: "landed", changes: [{ mint: USDC_MINT, atoms: "1000000", scale: 6 }] }));
 
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
@@ -124,7 +124,7 @@ test("a sale mainnet's check refuses ends at once as not sent, in a plain senten
   const asked = await answerChain(page, () => ({ phase: "sent" }));
 
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
@@ -173,7 +173,7 @@ test("a sheet plays its exit before it closes", async ({ page }) => {
     positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", atoms: "10000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
   } }));
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
@@ -197,7 +197,7 @@ test("a sale the network dropped says nothing moved and offers to sell again", a
   await answerChain(page, () => ({ phase: "dropped" }));
 
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
@@ -223,7 +223,7 @@ test("a wallet that declines leaves the sheet open, saying nothing was sent", as
   const submits = await acceptSubmits(page);
 
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });
@@ -245,7 +245,7 @@ test("holdings names the exit route without presenting it as redemption", async 
     positions: [{ mint: lot.instrument.mint, symbol: "AMZNx", name: "Amazon.com", atoms: "15000000", sellableAtoms: "10000000", scale: lot.decimals, tokenProgram: lot.token_program }],
   } }));
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   const row = page.getByRole("list", { name: "Instruments in this wallet" }).getByRole("listitem").filter({ hasText: "AMZNx" });
   await expect(row).toContainText("Amazon.com");
@@ -290,7 +290,7 @@ test("a purchase steps from amount to review in the sheet, quoted as one stock, 
   await answerChain(page, () => ({ phase: "landed", changes: [{ mint: lot.instrument.mint, atoms: "940000", scale: lot.decimals }] }));
 
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
   await page.getByRole("button", { name: "Trade AMZNx" }).click();
   const sheet = page.getByRole("dialog", { name: "Trade AMZNx" });

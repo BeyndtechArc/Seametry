@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ContinueAction, QuietAction, RouteAction } from "@seametry/ui";
+import { signInWithSolana } from "@/lib/solana-sign-in";
 import { WalletState } from "../wallet-state";
 import styles from "../site.module.css";
 
 type LinkedWallet = { address: string; verified_at: string };
 
 export function WalletLinkControl() {
-  const { publicKey, connected, signMessage } = useWallet();
+  const { publicKey, connected, signIn, signMessage } = useWallet();
   const [wallets, setWallets] = useState<LinkedWallet[]>();
   const [problem, setProblem] = useState<string>();
   const [working, setWorking] = useState(false);
@@ -29,33 +30,21 @@ export function WalletLinkControl() {
     return () => { current = false; };
   }, []);
 
+  // Signing in with the wallet while this session is open links it to this
+  // account (server/auth/src/solana-sign-in.mjs).
   async function link() {
-    if (!address || !signMessage) return;
+    if (!address || !publicKey || !(signIn || signMessage)) return;
     setWorking(true);
     setProblem(undefined);
-    try {
-      const challengeResponse = await fetch("/api/account/wallets/challenge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address }),
-      });
-      const challenge = await challengeResponse.json();
-      if (!challengeResponse.ok) throw new Error(challenge.error);
-      const signed = await signMessage(new TextEncoder().encode(challenge.message));
-      const signature = btoa(Array.from(signed, (byte) => String.fromCharCode(byte)).join(""));
-      const response = await fetch("/api/account/wallets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, challengeId: challenge.id, signature }),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-      setWallets((current) => [...(current ?? []), { address, verified_at: new Date().toISOString() }]);
-    } catch (error) {
-      setProblem(error instanceof Error ? error.message : "Wallet linking did not complete.");
-    } finally {
-      setWorking(false);
+    const result = await signInWithSolana({ address, publicKey: publicKey.toBytes(), signIn, signMessage });
+    if (result.state === "linked") {
+      setWallets((current) => [...(current ?? []).filter((wallet) => wallet.address !== address), { address, verified_at: new Date().toISOString() }]);
+    } else if (result.state === "signed-in") {
+      setProblem("This session ended before the wallet was linked. Reload to see the account you are signed in to.");
+    } else {
+      setProblem(result.message);
     }
+    setWorking(false);
   }
 
   async function unlink(addressToRemove: string) {
@@ -92,7 +81,7 @@ export function WalletLinkControl() {
       ))}
       <WalletState />
       {connected && address && !wallets?.some((wallet) => wallet.address === address) ? (
-        signMessage ? <ContinueAction disabled={working} onClick={() => void link()}>Link this wallet</ContinueAction>
+        signIn || signMessage ? <ContinueAction disabled={working} onClick={() => void link()}>Link this wallet</ContinueAction>
           : <p>This wallet does not support message signing here. Choose another wallet to link it.</p>
       ) : null}
       {!connected ? <RouteAction href="/app/allocation">Open the app</RouteAction> : null}

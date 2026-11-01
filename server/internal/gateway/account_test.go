@@ -64,7 +64,9 @@ func TestAccountTokenReachesTheGatewayAsAnOpaqueSubject(t *testing.T) {
 	}
 	var body struct {
 		Data struct {
-			ID string `json:"id"`
+			ID          string   `json:"id"`
+			AuthMethods []string `json:"auth_methods"`
+			KYCLevel    string   `json:"kyc_level"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
@@ -72,6 +74,9 @@ func TestAccountTokenReachesTheGatewayAsAnOpaqueSubject(t *testing.T) {
 	}
 	if body.Data.ID != "account-1" {
 		t.Fatalf("account ID = %q, want account-1", body.Data.ID)
+	}
+	if strings.Join(body.Data.AuthMethods, ",") != "solana,google" || body.Data.KYCLevel != "none" {
+		t.Fatalf("account methods %v and KYC level %q, want [solana google] and none", body.Data.AuthMethods, body.Data.KYCLevel)
 	}
 	if strings.Contains(response.Body.String(), "holder@example.com") {
 		t.Fatalf("account response exposes a profile field: %s", response.Body.String())
@@ -98,6 +103,7 @@ func accountToken(t *testing.T, private ed25519.PrivateKey, now time.Time, origi
 	}
 	payload, err := json.Marshal(map[string]any{
 		"sub": "account-1", "iss": origin, "aud": origin, "iat": now.Unix(), "exp": now.Add(time.Minute).Unix(),
+		"auth_methods": []string{"solana", "google"},
 	})
 	if err != nil {
 		t.Fatal(err)

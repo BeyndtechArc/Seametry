@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@seametry/ui/icons";
-import { ThemeControl } from "@seametry/ui/theme-control";
+import { ThemeChoice, ThemeControl } from "@seametry/ui/theme-control";
 import { BrandMark } from "../../brand-mark";
 import { WalletState } from "../../wallet-state";
 import { ActivityDock } from "../_activity/activity";
@@ -12,7 +12,7 @@ import { appGroups, mobileRoutes, readingRoutes } from "./routes";
 import styles from "./app-shell.module.css";
 
 /** components.md, App shell: the top bar carries wide routes; the bottom tabs keep product routes within reach on phones. */
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({ children, accountConfigured = false }: { children: ReactNode; accountConfigured?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -34,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
           <div className={styles.headerActions} data-testid="app-header-actions">
             <ActivityDock />
-            <WalletState />
+            <WalletState accountConfigured={accountConfigured} />
             <span className={styles.theme} data-testid="app-header-theme"><ThemeControl defaultTheme="dark" /></span>
           </div>
         </div>
@@ -60,6 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
+        <ThemeChoice defaultTheme="dark" className={styles.statusTheme} />
       </footer>
     </div>
   );

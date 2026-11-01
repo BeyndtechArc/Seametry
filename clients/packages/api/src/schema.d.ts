@@ -788,6 +788,13 @@ export interface components {
         AccountSubject: {
             /** @description The opaque Better Auth account subject. The service token also carries the wallets the account linked, for GET /me/activity, and its email with whether the provider verified it, which only the admin check reads; neither is returned here. */
             id: string;
+            /** @description How this account can sign in, in the account authority's order. Empty when the token named none. */
+            auth_methods: ("solana" | "google" | "email")[];
+            /**
+             * @description The account's identity verification level. Always none until a verification provider exists.
+             * @enum {string}
+             */
+            kyc_level: "none";
         };
         WalletHistory: {
             /** @description The linked wallets this answer read, from the account token. */

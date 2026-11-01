@@ -93,7 +93,7 @@ async function answerHistory(page: Page, answer: HistoryAnswer, status = 200) {
 async function openHoldings(page: Page) {
   await registerTestWallet(page, { trusted: true });
   await page.goto("/app/positions");
-  await page.getByText("Connect", { exact: true }).click();
+  await page.getByText("Sign in", { exact: true }).click();
   await page.getByRole("button", { name: "Connect Test wallet" }).click();
 }
 

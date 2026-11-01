@@ -217,15 +217,15 @@ test("the docs carry one page tree, search with stated states, and a contents ra
   await expect(page).toHaveURL(/\/docs\/the-key$/);
 });
 
-test("sign in distinguishes an account from its wallet while setup is unavailable", async ({ page }) => {
+test("sign in distinguishes an account from its wallet", async ({ page }) => {
   await page.goto("/sign-in");
 
   await expect(page.getByRole("heading", { level: 1, name: "Your account, your wallet." })).toBeVisible();
-  await expect(page.getByText("Account sign-in is unavailable while its database and provider are being configured.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
   await expect(page.getByText("Each Allocation belongs to its signing address.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign message" })).toHaveCount(0);
   await expect(page.getByRole("main").locator("input")).toHaveCount(0);
-  await expect(page.getByRole("main").getByRole("link", { name: "Open the Allocation" })).toHaveAttribute("href", "/app/allocation");
+  await expect(page.getByRole("main").getByRole("link", { name: "Explore without an account" })).toHaveAttribute("href", "/app/allocation");
 });
 
 test("the public site publishes the terms and privacy policy used for account consent", async ({ page }) => {
@@ -253,18 +253,18 @@ test("the public site publishes the terms and privacy policy used for account co
 test("the wallet state lives in the app's top bar, and connecting signs nothing", async ({ page }) => {
   await page.goto("/");
   // The public rail carries reading pages and one way into the app, never a wallet.
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toHaveCount(0);
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Sign in" })).toHaveCount(0);
 
   await page.goto("/app");
   const bar = page.getByRole("banner");
-  const state = bar.locator("summary", { hasText: "Connect" });
+  const state = bar.locator("summary", { hasText: "Sign in" });
   await expect(state).toBeVisible();
   await state.click();
   // A test browser has no wallet extension, so the no-wallet state is the one reachable here.
-  await expect(bar.getByText("No signing wallet is available in this browser. On a phone, open this page in Phantom or Solflare to connect and review each action.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Sign in to Seametry" }).getByText("No signing wallet is available in this browser. Install one, then reload this page.", { exact: true })).toBeVisible();
 
   await page.goto("/app/allocation");
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Sign in" })).toBeVisible();
 });
 
 test("the Allocation keeps its terms behind an info note, and the order sheet still states the fee and slippage", async ({ page }) => {
@@ -404,7 +404,7 @@ test("narrow shells give the mark room and disclose one complete navigation regi
   const appTabs = page.getByRole("navigation", { name: "Mobile product" });
   await expect(appTabs.getByRole("link")).toHaveCount(5);
   await expect(appTabs.getByRole("link", { name: "Allocation" })).toHaveAttribute("href", "/app/baskets/build");
-  await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toBeVisible();
+  await expect(page.getByRole("banner").locator("summary", { hasText: "Sign in" })).toBeVisible();
   await expect(page.getByRole("banner").getByRole("button", { name: "Use light mode" })).toBeVisible();
   const appOrder = await page.evaluate(() => ({
     wallet: document.querySelector<HTMLElement>("#app-wallet")?.getBoundingClientRect().left,
@@ -571,7 +571,7 @@ test("the app header connects a wallet and keeps the mode control beside it", as
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/app");
 
-  const login = page.getByTestId("app-header-actions").locator("summary", { hasText: "Connect" });
+  const login = page.getByTestId("app-header-actions").locator("summary", { hasText: "Sign in" });
   await expect(login).toBeVisible();
   const treatment = await login.evaluate((summary) => {
     const probe = document.createElement("span");
@@ -661,7 +661,7 @@ test("the app shell marks only the current tab with an icon, and keeps one globa
 
   for (const path of ["/app/baskets/build", "/app/compose"]) {
     await page.goto(path);
-    await expect(page.getByRole("banner").locator("summary", { hasText: "Connect" })).toHaveCount(1);
+    await expect(page.getByRole("banner").locator("summary", { hasText: "Sign in" })).toHaveCount(1);
   }
 });
 
