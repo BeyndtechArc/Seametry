@@ -68,8 +68,10 @@ func main() {
 		err = anchor(".")
 	case "import-activity":
 		err = importActivity(os.Args[2:])
+	case "growth":
+		err = growthCommand(os.Args[2:])
 	default:
-		err = fmt.Errorf("unknown command %q: usage is %q, %q, %q, %q, %q or %q", cmd, "serve", "migrate", "replay", "record-demo-batch", "anchor", "import-activity")
+		err = fmt.Errorf("unknown command %q: usage is %q, %q, %q, %q, %q, %q or %q", cmd, "serve", "migrate", "replay", "record-demo-batch", "anchor", "import-activity", "growth")
 	}
 	if err != nil {
 		slog.Error("seametry: exiting", "command", cmd, "error", err.Error())
@@ -183,7 +185,14 @@ func serve() error {
 	if strings.TrimSpace(adminEmails) == "" {
 		slog.Warn("seametry: SEAMETRY_ADMIN_EMAILS is not set; the Admin admits no one")
 	}
+	// Off until the account authority signals deletion: the privacy policy
+	// promises deleting an account removes its linked addresses, and a copy
+	// Growth holds with no such signal would outlive that promise.
+	joinAccounts := os.Getenv("SEAMETRY_GROWTH_JOIN_ACCOUNTS") == "on"
 	handler := gateway.NewHandler(gwServer, gateway.ServiceSecret(ingestSecret), func(next http.Handler) http.Handler {
+		if joinAccounts {
+			next = gateway.JoinAccounts(next, growth.NewPeople(pool))
+		}
 		return verifier.Middleware(next, time.Now)
 	}, gateway.AdminGate(adminEmails))
 	srv := &http.Server{

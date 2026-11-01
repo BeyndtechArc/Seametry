@@ -285,6 +285,23 @@ surface, CI read from GitHub, and a merge only on Storm's word.
      - every identity is marked `import`;
      - `lead.imported` is written once per lead;
      - a stage change logs `lead.stage_changed`.
+
+   Status: built on `feat/growth-person-graph`, stacked on the auth stack for
+   its token claims. The 1,131-lead file was accepted on a scratch database
+   only. Four decisions made on the way:
+   - **No `edges` yet.** The ledger's `org` is a hackathon and category label,
+     so `same_org` edges from it would state a relationship nothing shows.
+     It is kept as `cohort`, and the table arrives with its first honest
+     writer.
+   - **The import has no default lawful basis,** and refuses without
+     `--lawful-basis` and `--basis-note` (section 6, questions 3 and 4).
+   - **Joining accounts is off** behind `SEAMETRY_GROWTH_JOIN_ACCOUNTS` until
+     the deletion signal in section 5 exists.
+   - **No email is taken from the token.** Nothing mails yet.
+
+   One person's removal has no command yet: it waits for suppression in
+   Milestone 4, and a removed lead must also leave the file or a later import
+   restores them.
 3. **Lifecycle, scores and patterns.**
    - **Build:**
      - the stage machine (Lead, Visitor, Connected, Preflighted, Allocated,
