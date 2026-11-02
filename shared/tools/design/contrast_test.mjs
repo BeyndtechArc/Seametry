@@ -65,12 +65,24 @@ function oklch(hex) {
 // beside the olive-black ground (Storm, 30 October 2026), so each step up
 // must be lighter and no more chromatic than the one below it.
 test('each dark surface above the ground is lighter and no more chromatic than the step below', () => {
-  const ladder = ['ground', 'sheet', 'raised', 'tray'].map((key) => [key, oklch(value('dark', `surface.${key}`))]);
+  const ladder = ['ground', 'sheet', 'raised'].map((key) => [key, oklch(value('dark', `surface.${key}`))]);
   for (let step = 1; step < ladder.length; step += 1) {
     const [lowerName, lower] = ladder[step - 1];
     const [name, upper] = ladder[step];
     assert.ok(upper.lightness > lower.lightness, `dark surface.${name} is not lighter than surface.${lowerName}`);
-    assert.ok(upper.chroma <= lower.chroma, `dark surface.${name} chroma ${upper.chroma.toFixed(4)} exceeds surface.${lowerName} ${lower.chroma.toFixed(4)}`);
+    // A pure grey computes to a chroma of about 1e-8, not 0, so an exact
+    // comparison fails two neutral steps on rounding alone.
+    assert.ok(upper.chroma <= lower.chroma + 0.0005, `dark surface.${name} chroma ${upper.chroma.toFixed(4)} exceeds surface.${lowerName} ${lower.chroma.toFixed(4)}`);
+  }
+});
+
+// Sunken must sit below the ground in both modes; a dark tray above the ground
+// made the housing around a key read as the top of the ladder (Storm, 1 November 2026).
+test('the tray is darker than the ground in both modes', () => {
+  for (const mode of ['dark', 'light']) {
+    const tray = oklch(value(mode, 'surface.tray'));
+    const ground = oklch(value(mode, 'surface.ground'));
+    assert.ok(tray.lightness < ground.lightness, `${mode} surface.tray is not darker than surface.ground`);
   }
 });
 

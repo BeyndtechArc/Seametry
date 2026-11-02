@@ -103,7 +103,7 @@
   display: grid;
   gap: var(--sm-space-2);
   min-width: 0;
-  color: var(--sm-text-primary);
+  color: var(--sm-text-secondary);
 }
 
 .basketCell small {
@@ -117,14 +117,11 @@
   text-overflow: ellipsis;
 }
 
-/* The Alloy register's sunken round stack, so a basket's constituents read
+/* The Alloy register's round stack, so a basket's constituents read
    the same way an Alloy's legs do. */
 .basketLotStack {
   display: inline-flex;
   justify-self: start;
-  padding: var(--sm-space-2) var(--sm-space-3);
-  border-radius: var(--sm-radius-data);
-  background: var(--sm-surface-tray);
 }
 
 .basketLotStack > * {

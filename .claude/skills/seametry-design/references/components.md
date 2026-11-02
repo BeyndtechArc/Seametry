@@ -608,8 +608,8 @@ Copyable prompts and endpoints, the machine-readable site version, the API refer
 
 ### Closing wordmark
 **Answers:** none; it is the house's signature at the foot of every public page.
-**Anatomy:** "Seametry" in the display face across the whole window, its descender running off the page's foot, cut as a stencil from the ground with a hairline outline. Through the letters show the hero's discs, which rise into them as the foot of the page comes into view. Its frame starts just above the letters' cap height; nothing is drawn above the word (Storm, 24 October 2026: the squares that broke away above it were removed).
-**Identity:** the hero's disc tones and nesting, so the page ends where it began; no gradient, shadow or glow.
+**Anatomy:** "Seametry" in the display face across the whole window, its descender running off the page's foot, cut as a stencil from the ground with a hairline outline. Through the letters shows the hero's outer disc tone, as a plain fill with no edge (Storm, 1 November 2026: the discs' curved edges crossing the word read as a defect), which rises into them as the foot of the page comes into view. Its frame starts just above the letters' cap height; nothing is drawn above the word (Storm, 24 October 2026: the squares that broke away above it were removed).
+**Identity:** the hero's outer disc tone, so the page ends where it began; no gradient, shadow or glow.
 **States:** rising, on a CSS view timeline the compositor runs, finishing as the page's end is reached; risen, where view timelines are missing or the reader asks for less motion.
 **Rules:** decorative and hidden from assistive technology, since the House rail names the house. Never a second wordmark on a page.
 

@@ -2,43 +2,44 @@
   "$description": "Seametry design tokens. W3C Design Tokens Community Group format. Single source of truth: never hand-edit generated tokens.css or tokens.ts.",
   "theme": {
     "dark": {
-      "$description": "The touchstone. Olive-black operational surfaces, in the hue of the house's deck (clients/web/public/Slide-*.png, ground #171C03).",
+      "$description": "The touchstone. Neutral near-black operational surfaces, merged from the original Evidence Explorer palette and the Directus landing page (Storm, 1 November 2026). Olive stays on the feature track.",
       "surface": {
         "$type": "color",
         "ground": {
-          "$value": "#14180A",
-          "$description": "Operational olive-black ground, a step quieter than the deck's #171C03 so feature surfaces still read above it."
+          "$value": "#090909",
+          "$description": "Operational near-black ground, the Directus ground beside the Explorer's original #0A0A0A."
         },
         "sheet": {
-          "$value": "#1C2013",
-          "$description": "Each step above the ground loses chroma as it gains lightness (OKLCH 0.024, 0.021, 0.019 at hue 122), so a pane reads as a lighter olive-black, not khaki (Storm, 30 October 2026)."
+          "$value": "#151515",
+          "$description": "Elevation is lightness alone, with no chroma, so a pane cannot drift toward khaki."
         },
         "raised": {
-          "$value": "#25281D"
+          "$value": "#1E1E1E"
         },
         "tray": {
-          "$value": "#2F3228"
+          "$value": "#040404",
+          "$description": "Sunken, the darkest step, as tray sits below the ground in light mode too (Storm, 1 November 2026). Only 1.02:1 from the ground, so it needs its hairline to read."
         },
         "inverse": {
-          "$value": "#ECEEDF"
+          "$value": "#E8E8E8"
         }
       },
       "text": {
         "$type": "color",
         "primary": {
-          "$value": "#ECEEDF",
-          "$description": "Bone, as on the deck. 15.34:1 on ground, 11.11:1 on tray."
+          "$value": "#E8E8E8",
+          "$description": "Toned down from Directus's #FFFFFF for long reading. Neutral, so text and surfaces share no cast. 16.25:1 on ground, 13.61:1 on raised."
         },
         "secondary": {
-          "$value": "#B4B9A2",
-          "$description": "Readable supporting text. 8.93:1 on ground, 6.47:1 on tray."
+          "$value": "#A0A0A0",
+          "$description": "Directus's supporting grey. 7.61:1 on ground, 6.38:1 on raised."
         },
         "tertiary": {
-          "$value": "#9CA289",
-          "$description": "Lowest readable text step. 6.82:1 on ground, 4.94:1 on tray."
+          "$value": "#878787",
+          "$description": "Lowest readable text step. 5.54:1 on ground, 4.64:1 on raised. Directus's #777777 falls below 4.5:1 on raised."
         },
         "faint": {
-          "$value": "#5E644A",
+          "$value": "#555555",
           "$description": "Decorative only. Never for text a user must read."
         },
         "onTouch": {
@@ -46,20 +47,20 @@
           "$description": "Text on the touch fill. 7.21:1 on touch, 6.38:1 on touchPressed."
         },
         "inverse": {
-          "$value": "#14180A",
-          "$description": "15.34:1 on surface.inverse."
+          "$value": "#090909",
+          "$description": "16.25:1 on surface.inverse."
         }
       },
       "line": {
         "$type": "color",
         "rule": {
-          "$value": "#35382D"
+          "$value": "#262626"
         },
         "strong": {
-          "$value": "#505546"
+          "$value": "#333333"
         },
         "highlight": {
-          "$value": "rgba(236,246,232,0.06)",
+          "$value": "rgba(255,255,255,0.06)",
           "$description": "Top-edge hairline on raised surfaces. The only light effect allowed."
         }
       },
@@ -67,23 +68,23 @@
         "$type": "color",
         "touch": {
           "$value": "#98AD39",
-          "$description": "Fill on keys and full-round controls only, the deck's lime. 7.19:1 against the ground, so the control reads as a shape before its label is read."
+          "$description": "Fill on keys and full-round controls only, the deck's lime. 7.94:1 against the ground, so the control reads as a shape before its label is read."
         },
         "touchPressed": {
           "$value": "#8DA32C"
         },
         "provenance": {
-          "$value": "#AAA8D0",
-          "$description": "Muted provenance mark, outline and focus ring. Never bare text."
+          "$value": "#B3A2FF",
+          "$description": "Provenance mark, outline and focus ring, from the Directus landing page's violet. Never bare text."
         },
         "provenanceField": {
-          "$value": "#3A20D6",
-          "$description": "Bars beside green, chart fills, chips. Never a surface larger than a chip."
+          "$value": "#7557FF",
+          "$description": "Bars beside green, chart fills, chips, the Directus landing page's violet. Never a surface larger than a chip."
         },
         "touchText": {
           "$type": "color",
           "$value": "#AFC45F",
-          "$description": "Light lime for links and small touchable marks. 9.34:1 on ground, 6.77:1 on tray."
+          "$description": "Light lime for links and small touchable marks. 10.32:1 on ground, 8.64:1 on raised."
         }
       },
       "status": {
@@ -123,12 +124,12 @@
         "text": {
           "$type": "color",
           "primary": {
-            "$value": "#ECEEDF",
-            "$description": "Bone. 14.84:1 on feature.ground, 11.56:1 on feature.raised."
+            "$value": "#E8E8E8",
+            "$description": "14.24:1 on feature.ground, 11.10:1 on feature.raised."
           },
           "secondary": {
-            "$value": "#B4B9A2",
-            "$description": "8.64:1 on feature.ground, 7.84:1 on feature.sheet; restricted to feature.ground/sheet, see foundations.md 5b."
+            "$value": "#A0A0A0",
+            "$description": "6.67:1 on feature.ground, 6.06:1 on feature.sheet; restricted to feature.ground/sheet, see foundations.md 5b."
           }
         }
       }
