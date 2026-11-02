@@ -513,6 +513,13 @@
   outline-offset: var(--sm-space-1);
 }
 
+/* Leaving for Google: the row stays in place, quieter, and does not answer. */
+.walletRow:disabled {
+  color: var(--sm-text-tertiary);
+  background: transparent;
+  cursor: default;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .walletRow { transition: none; }
 }
@@ -1120,6 +1127,11 @@
   color: var(--sm-text-secondary);
   font-family: var(--sm-font-family-digest);
   overflow-wrap: anywhere;
+}
+
+/* The panel is the sheet a row's hover would take, so a row here lifts one step further. */
+.signInBoundary .walletRow:hover:not(:disabled) {
+  background: var(--sm-surface-raised);
 }
 
 .signInBoundary {

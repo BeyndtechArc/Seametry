@@ -41,6 +41,16 @@ const installLinks = [
   { name: "Backpack", href: "https://backpack.app/download" },
 ];
 
+/** Google as a wallet row with Google's own mark, the same in this modal and on /sign-in. */
+export function GoogleRow({ onClick, disabled = false }: { onClick: () => void; disabled?: boolean }) {
+  return (
+    <button className={styles.walletRow} type="button" data-kind="provider" disabled={disabled} onClick={onClick}>
+      <Image className={styles.walletBrand} src="/brands/google-g.svg" width={28} height={28} alt="" unoptimized />
+      <span className={styles.walletName}>Continue with Google</span>
+    </button>
+  );
+}
+
 /** How the reader was signing in when a step stopped, so Try again repeats that way. */
 type Via = { kind: "wallet"; name: WalletName } | { kind: "google" };
 
@@ -292,10 +302,7 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
           <>
             <div className={styles.authDivider} role="separator">or</div>
             <section className={styles.connectSection} aria-label="Other ways to sign in">
-              <button className={styles.walletRow} type="button" data-kind="provider" onClick={() => void signInWithGoogle()}>
-                <Image className={styles.walletBrand} src="/brands/google-g.svg" width={28} height={28} alt="" unoptimized />
-                <span className={styles.walletName}>Continue with Google</span>
-              </button>
+              <GoogleRow onClick={() => void signInWithGoogle()} />
             </section>
             {/* Email sign-in is reserved here and arrives with PR8. */}
           </>
