@@ -1014,7 +1014,7 @@
 
 .iconButton:hover:not(:disabled) {
   color: var(--sm-text-primary);
-  background: var(--sm-surface-tray);
+  background: var(--sm-surface-raised);
 }
 
 .iconButton:disabled {

@@ -2,30 +2,30 @@
 export const theme = {
   "dark": {
     "surface": {
-      "ground": "#14180A",
-      "sheet": "#1C2013",
-      "raised": "#25281D",
-      "tray": "#2F3228",
-      "inverse": "#ECEEDF"
+      "ground": "#090909",
+      "sheet": "#151515",
+      "raised": "#1E1E1E",
+      "tray": "#040404",
+      "inverse": "#E8E8E8"
     },
     "text": {
-      "primary": "#ECEEDF",
-      "secondary": "#B4B9A2",
-      "tertiary": "#9CA289",
-      "faint": "#5E644A",
+      "primary": "#E8E8E8",
+      "secondary": "#A0A0A0",
+      "tertiary": "#878787",
+      "faint": "#555555",
       "onTouch": "#141803",
-      "inverse": "#14180A"
+      "inverse": "#090909"
     },
     "line": {
-      "rule": "#35382D",
-      "strong": "#505546",
-      "highlight": "rgba(236,246,232,0.06)"
+      "rule": "#262626",
+      "strong": "#333333",
+      "highlight": "rgba(255,255,255,0.06)"
     },
     "accent": {
       "touch": "#98AD39",
       "touchPressed": "#8DA32C",
-      "provenance": "#AAA8D0",
-      "provenanceField": "#3A20D6",
+      "provenance": "#B3A2FF",
+      "provenanceField": "#7557FF",
       "touchText": "#AFC45F"
     },
     "status": {
@@ -41,8 +41,8 @@ export const theme = {
       "sheet": "#1F2507",
       "raised": "#2A310F",
       "text": {
-        "primary": "#ECEEDF",
-        "secondary": "#B4B9A2"
+        "primary": "#E8E8E8",
+        "secondary": "#A0A0A0"
       }
     }
   },

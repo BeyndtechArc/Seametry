@@ -270,7 +270,7 @@ const afterMelt = (): Poses => {
 export const STOPS: Stop[] = [
   {
     name: "Formula",
-    station: framed([-130, 0, 20], 70, 30, 1.35, [WIDTH * 0.5, HEIGHT * 0.5]),
+    station: framed([-40, 0, 20], 62, 30, 1.0, [WIDTH * 0.5, HEIGHT * 0.5]),
     hold: 4.5,
     callouts: [
       { at: [HOPPER_X, LEGS[0], 53], text: "The Hall's vault, a canister each", toward: "right", from: 0.3, rise: 60 },
@@ -280,7 +280,7 @@ export const STOPS: Stop[] = [
   },
   {
     name: "Strike",
-    station: framed([-34, 0, 30], 132, 26, 1.6, [WIDTH * 0.5, HEIGHT * 0.5]),
+    station: framed([0, 0, 30], 128, 28, 1.0, [WIDTH * 0.5, HEIGHT * 0.5]),
     hold: 6,
     callouts: [
       { at: [-52, LEGS[2], 9], text: "Strike: one of each constituent in", toward: "left", from: 0.8, rise: 70 },
@@ -299,7 +299,7 @@ export const STOPS: Stop[] = [
   },
   {
     name: "Issuer powers",
-    station: framed([-66, 0, 16], 112, 26, 1.45, [WIDTH * 0.42, HEIGHT * 0.5]),
+    station: framed([0, 0, 16], 108, 30, 1.0, [WIDTH * 0.5, HEIGHT * 0.5]),
     hold: 4.5,
     callouts: [
       { at: [GATE_X, LEGS[0], 28], text: "Every issuer power named up front", toward: "right", from: 0.3 },
@@ -313,7 +313,7 @@ export const STOPS: Stop[] = [
   },
   {
     name: "Melt",
-    station: framed([30, 0, 14], -38, 32, 1.1, [WIDTH * 0.5, HEIGHT * 0.52]),
+    station: framed([20, 0, 14], -38, 32, 1.0, [WIDTH * 0.5, HEIGHT * 0.52]),
     hold: 7,
     callouts: [
       { at: [RACK_X + 15, LEGS[0], 24], text: "Melt: a Claim on every leg", toward: "left", from: 1.6 },

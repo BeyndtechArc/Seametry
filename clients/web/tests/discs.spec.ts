@@ -53,3 +53,15 @@ test("the fragments lie in a disc, thin out and fade with depth, and none reach 
 test("the field is the same on every render", () => {
   expect(fragmentsOf()).toEqual(fragmentsOf());
 });
+
+for (const mode of ["dark", "light"]) {
+  test(`in ${mode} the closing wordmark draws one plain fill in the hero's outer disc tone`, async ({ page }) => {
+    await page.addInitScript((value) => localStorage.setItem("seametry-theme-v1", value), mode);
+    await page.goto("/");
+    const outer = page.locator("svg:has(#discs-whole) circle").first();
+    const fill = page.locator("div:has(> svg mask#wordmark-letters) svg:not(:has(mask)) > *");
+    await expect(fill).toHaveCount(1);
+    expect(await fill.evaluate((node) => node.tagName)).toBe("rect");
+    expect(await fill.evaluate((node) => getComputedStyle(node).fill)).toBe(await outer.evaluate((node) => getComputedStyle(node).fill));
+  });
+}

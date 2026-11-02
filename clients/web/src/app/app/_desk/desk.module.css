@@ -205,9 +205,6 @@
 .lotStack {
   display: inline-flex;
   justify-self: start;
-  padding: var(--sm-space-2) var(--sm-space-3);
-  border-radius: var(--sm-radius-data);
-  background: var(--sm-surface-tray);
 }
 
 /* Round marks overlapping by half read as one stack rather than a row. */

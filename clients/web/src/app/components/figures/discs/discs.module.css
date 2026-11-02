@@ -9,7 +9,8 @@
    relationship in dark mode, where the ground is dark. */
 .field {
   position: absolute;
-  top: 0;
+  /* Lowered a step so the outer disc's crown clears the House rail (Storm, 2 November 2026). */
+  top: var(--sm-space-12);
   left: calc(50% - 50vw);
   width: 100vw;
   pointer-events: none;

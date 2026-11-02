@@ -5,7 +5,7 @@
   border: 0.5px solid var(--sm-line-strong);
   border-top-color: var(--sm-line-highlight);
   border-radius: var(--sm-radius-surface);
-  background: var(--sm-surface-raised);
+  background: var(--sm-surface-sheet);
 }
 
 .head,
@@ -39,7 +39,7 @@
   column-gap: var(--sm-space-6);
   min-height: var(--sm-space-11);
   padding: var(--sm-space-3) var(--sm-space-5);
-  color: var(--sm-text-primary);
+  color: var(--sm-text-secondary);
   font-size: var(--sm-font-size-small);
   text-decoration: none;
 }
@@ -49,7 +49,7 @@
 }
 
 .row:hover {
-  background: var(--sm-surface-tray);
+  background: var(--sm-surface-raised);
 }
 
 .row:focus-visible {
@@ -94,6 +94,7 @@
 }
 
 .identityText b {
+  color: var(--sm-text-primary);
   font-size: var(--sm-font-size-body);
   font-weight: var(--sm-font-weight-semibold);
 }

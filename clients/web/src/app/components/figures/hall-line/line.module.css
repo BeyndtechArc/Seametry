@@ -25,7 +25,7 @@
 
 :global(:root[data-theme="dark"]) .line {
   --line-paper: var(--sm-surface-sheet);
-  --line-top: var(--sm-surface-tray);
+  --line-top: var(--sm-surface-raised);
   --line-shade-0: var(--sm-surface-ground);
   --line-shade-1: color-mix(in srgb, var(--sm-surface-ground) 50%, var(--sm-surface-sheet));
   --line-shade-2: var(--sm-surface-sheet);
