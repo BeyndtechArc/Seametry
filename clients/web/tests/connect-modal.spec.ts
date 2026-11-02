@@ -154,6 +154,33 @@ test("no wallet in a desktop browser: install links, and Google still offered", 
   await shot(page, "modal-no-wallet");
 });
 
+test("Google is offered with Google's own mark", async ({ page }) => {
+  await account(page);
+  await page.goto("/app/allocation");
+  await page.locator("#app-wallet").click();
+  const mark = modal(page).getByRole("button", { name: "Continue with Google" }).locator("img");
+  await expect(mark).toHaveAttribute("src", "/brands/google-g.svg");
+  await expect.poll(() => mark.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
+});
+
+test("a Google sign-in that cannot start says why, and can be tried again", async ({ page }) => {
+  await account(page);
+  let attempts = 0;
+  await page.route("**/api/auth/sign-in/social", (route) => {
+    attempts += 1;
+    return route.fulfill({ status: 503, json: { message: "The account service did not answer." } });
+  });
+  await page.goto("/app/allocation");
+  await page.locator("#app-wallet").click();
+  const dialog = modal(page);
+  await dialog.getByRole("button", { name: "Continue with Google" }).click();
+  await expect(dialog.getByRole("alert")).toHaveText("Google sign-in did not start: The account service did not answer. Try again, or sign in with a wallet.");
+  await dialog.getByRole("button", { name: "Try again" }).click();
+  await expect.poll(() => attempts).toBe(2);
+  await dialog.getByRole("button", { name: "Choose another way" }).click();
+  await expect(dialog.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+});
+
 test("no wallet on a phone: open this page in Phantom or Solflare, inside the screen", async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1" });
   if (shots) await context.addInitScript((mode) => localStorage.setItem("seametry-theme-v1", mode), shotTheme);
