@@ -121,6 +121,13 @@ export function WalletState({ accountConfigured = false }: { accountConfigured?:
   const networkName = network === "devnet" ? "Devnet" : "Mainnet";
   // Where no account service is configured the dialog can only connect.
   const signedOutLabel = accountConfigured ? "Sign in" : "Connect";
+  const holding = connected || signedIn;
+
+  // With nothing held the summary opens the modal instead of toggling, so a
+  // panel left open by a disconnect or sign-out could never be closed.
+  useEffect(() => {
+    if (!holding && details.current) details.current.open = false;
+  }, [holding]);
 
   async function linkConnected() {
     if (!wallet || !publicKey) return;
@@ -158,7 +165,7 @@ export function WalletState({ accountConfigured = false }: { accountConfigured?:
       <summary
         id="app-wallet"
         onClick={(event) => {
-          if (connected || signedIn) return;
+          if (holding) return;
           event.preventDefault();
           setChoosing("connect");
         }}

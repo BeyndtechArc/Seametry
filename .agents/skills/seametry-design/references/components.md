@@ -78,7 +78,7 @@ Universal states, required unless stated otherwise: default, loading, empty, sta
 ### Key
 **Answers:** what happens if I press this?
 **Anatomy:** cornerless `accent.touch` plate, label and a separate icon cell in `accent.touchPressed` with no rule between them, seated in a square `surface.tray` housing, height `size.key`.
-**Identity:** short registration rules protrude from both horizontal edges. The tray remains when the action is disabled, like an empty keyway.
+**Identity:** short registration rules protrude from both horizontal edges. The tray remains when the action is disabled, like an empty keyway. Blocked or busy, the plate and its icon cell both drop their fill and a hairline divides them, so no grey icon sits on green (Storm, 2 November 2026).
 **States:** default, pressed (drops 1px, `accent.touchPressed`), blocked (reads as unavailable, reason shown beside it, and still answers a press: a Process dialog names the reason and offers the action that resolves it, such as "Adjust amount" or "Melt instead"; a Key that goes dead without explaining was removed, Storm, 13 October 2026), busy (truly disabled; label becomes the action in progress: "Signing"). A Key with no reason to give is never disabled.
 **Rules:** verb plus object ("Approve and sign"). One key per view. Quieter than the figures above it.
 
@@ -608,8 +608,8 @@ Copyable prompts and endpoints, the machine-readable site version, the API refer
 
 ### Closing wordmark
 **Answers:** none; it is the house's signature at the foot of every public page.
-**Anatomy:** "Seametry" in the display face across the whole window, its descender running off the page's foot, cut as a stencil from the ground with a hairline outline. Through the letters shows the hero's outer disc tone, as a plain fill with no edge (Storm, 1 November 2026: the discs' curved edges crossing the word read as a defect), which rises into them as the foot of the page comes into view. Its frame starts just above the letters' cap height; nothing is drawn above the word (Storm, 24 October 2026: the squares that broke away above it were removed).
-**Identity:** the hero's outer disc tone, so the page ends where it began; no gradient, shadow or glow.
+**Anatomy:** "Seametry" in the display face across the whole window, its descender running off the page's foot, cut as a stencil from the ground with a hairline outline. Through the letters shows the middle disc's green cut into fine horizontal stripes, so the word reads as chopped, leanly (Storm, 2 November 2026; the discs' curved edges crossing the word, and then a plain fill, came before), and the stripes rise into them as the foot of the page comes into view. Its frame starts just above the letters' cap height; nothing is drawn above the word (Storm, 24 October 2026: the squares that broke away above it were removed).
+**Identity:** the hero's disc green, so the page ends where it began; no gradient, shadow or glow.
 **States:** rising, on a CSS view timeline the compositor runs, finishing as the page's end is reached; risen, where view timelines are missing or the reader asks for less motion.
 **Rules:** decorative and hidden from assistive technology, since the House rail names the house. Never a second wordmark on a page.
 

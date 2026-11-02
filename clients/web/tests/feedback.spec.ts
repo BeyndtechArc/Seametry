@@ -35,6 +35,21 @@ test("feedback needs no account and reaches the team through the server, with a 
   expect(report.body.wallet).toBeUndefined();
 });
 
+// components.md, Key: a blocked Key reads as unavailable, so its icon cell
+// drops its fill with the face; a green cell left behind put a grey icon on
+// green (Storm, 2 November 2026).
+for (const mode of ["dark", "light"]) {
+  test(`in ${mode} a blocked Key's icon cell drops its fill with the face`, async ({ page }) => {
+    await page.addInitScript((value) => localStorage.setItem("seametry-theme-v1", value), mode);
+    await page.goto("/feedback");
+    const send = page.getByRole("button", { name: "Send feedback" });
+    await expect(send).toBeDisabled();
+    const cell = send.locator("svg").locator("..");
+    expect(await cell.evaluate((node) => getComputedStyle(node).backgroundColor)).toBe(await send.evaluate((node) => getComputedStyle(node).backgroundColor));
+    expect(await send.locator("svg").evaluate((node) => getComputedStyle(node).color)).toBe(await send.evaluate((node) => getComputedStyle(node).color));
+  });
+}
+
 test("feedback that cannot be kept says so and names the address that still reaches the team", async ({ page }) => {
   await page.goto("/feedback");
   await page.getByLabel("What happened, or what should change").fill("fixture: the gateway fails");
