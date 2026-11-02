@@ -160,6 +160,28 @@ test("sign out ends the session and the chip returns to the wallet alone", async
   await expect(page.getByLabel(/Wallet 4vJ9/)).toBeVisible();
 });
 
+// With nothing left to hold, the chip opens the modal instead of toggling the
+// panel, so a panel left open would have no way to close.
+test("disconnecting the only wallet with no session closes the panel", async ({ page }) => {
+  await signedIn(page, undefined);
+  await registerTestWallet(page, { trusted: true });
+  await chosenBefore(page);
+  await page.goto("/app/allocation");
+  await chip(page).click();
+  await page.getByTestId("wallet-account").getByRole("button", { name: "Disconnect wallet" }).click();
+  await expect(chip(page)).not.toHaveAttribute("data-connected", /.*/);
+  await expect(page.getByTestId("wallet-state")).not.toHaveAttribute("open", /.*/);
+});
+
+test("signing out with no wallet connected closes the panel", async ({ page }) => {
+  await signedIn(page, googleOnly);
+  await page.goto("/app/allocation");
+  await chip(page).click();
+  await menu(page).getByRole("button", { name: "Sign out" }).click();
+  await expect(chip(page)).toHaveAttribute("data-account", "signed-out");
+  await expect(page.getByTestId("wallet-state")).not.toHaveAttribute("open", /.*/);
+});
+
 test("switch wallet disconnects this one and opens the modal", async ({ page }) => {
   await signedIn(page, walletOnly);
   await registerTestWallet(page, { trusted: true });

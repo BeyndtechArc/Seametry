@@ -41,11 +41,25 @@ const installLinks = [
   { name: "Backpack", href: "https://backpack.app/download" },
 ];
 
+/** Google as a wallet row with Google's own mark, the same in this modal and on /sign-in. */
+export function GoogleRow({ onClick, disabled = false }: { onClick: () => void; disabled?: boolean }) {
+  return (
+    <button className={styles.walletRow} type="button" data-kind="provider" disabled={disabled} onClick={onClick}>
+      <Image className={styles.walletBrand} src="/brands/google-g.svg" width={28} height={28} alt="" unoptimized />
+      <span className={styles.walletName}>Continue with Google</span>
+    </button>
+  );
+}
+
+/** How the reader was signing in when a step stopped, so Try again repeats that way. */
+type Via = { kind: "wallet"; name: WalletName } | { kind: "google" };
+
 type Step =
   | { kind: "choose" }
   | { kind: "connecting"; name: WalletName }
   | { kind: "signing"; name: WalletName; phase: "wallet" | "confirming" }
-  | { kind: "problem"; name: WalletName; message: string; retry: boolean };
+  | { kind: "google" }
+  | { kind: "problem"; via: Via; message: string; retry: boolean };
 
 /**
  * docs auth-design section 5, Connect modal. One dialog for connecting a
@@ -89,7 +103,20 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
       finish();
       return;
     }
-    setStep({ kind: "problem", name, message: result.message, retry: result.state !== "owned-elsewhere" && result.state !== "unsupported" });
+    setStep({ kind: "problem", via: { kind: "wallet", name }, message: result.message, retry: result.state !== "owned-elsewhere" && result.state !== "unsupported" });
+  }
+
+  // On success the browser is already leaving for Google, so only a failure
+  // to start is left to show.
+  async function signInWithGoogle() {
+    setStep({ kind: "google" });
+    const stopped = (reason: string) => setStep({ kind: "problem", via: { kind: "google" }, message: `Google sign-in did not start: ${reason} Try again, or sign in with a wallet.`, retry: true });
+    try {
+      const result = await authClient.signIn.social({ provider: "google", callbackURL: `${window.location.pathname}${window.location.search}` });
+      if (result.error) stopped(result.error.message ?? `the account service answered ${result.error.status}.`);
+    } catch {
+      stopped("the account service could not be reached.");
+    }
   }
 
   // When the chosen wallet connects: signed out, with a wallet that can sign
@@ -105,7 +132,7 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
     };
     // The wallet's own error text is not shown; it is often an internal code.
     const refused = () => {
-      setStep({ kind: "problem", name: step.name, message: `${step.name} did not complete the connection. Nothing changed.`, retry: true });
+      setStep({ kind: "problem", via: { kind: "wallet", name: step.name }, message: `${step.name} did not complete the connection. Nothing changed.`, retry: true });
     };
     adapter.on("connect", connectedNow);
     adapter.on("error", refused);
@@ -150,6 +177,12 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
     else select(name);
   };
 
+  const retry = (via: Via) => {
+    if (via.kind === "google") void signInWithGoogle();
+    else if (connected && wallet) void signInWith(via.name, signing(wallet.adapter));
+    else choose(via.name);
+  };
+
   const close = () => {
     setStep({ kind: "choose" });
     onClose();
@@ -183,7 +216,7 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
           : connectLead;
   const detected = new Set(ordered.map((entry) => entry.adapter.name as string));
   const installable = installLinks.filter((entry) => !detected.has(entry.name));
-  const pending = step.kind === "connecting" || step.kind === "signing" ? step : null;
+  const pending = step.kind === "connecting" || step.kind === "signing" || step.kind === "google" ? step : null;
 
   return (
     <AuthDialog
@@ -206,10 +239,10 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
             <StatusMark state="running" />
             <div>
               <p role="status">
-                {pending.kind === "connecting" ? `Approve the connection in ${pending.name}.` : pending.phase === "wallet" ? `Check ${pending.name} to sign in.` : "Confirming the signature."}
+                {pending.kind === "google" ? "Opening Google." : pending.kind === "connecting" ? `Approve the connection in ${pending.name}.` : pending.phase === "wallet" ? `Check ${pending.name} to sign in.` : "Confirming the signature."}
               </p>
               <span className={styles.authPendingHint}>
-                {pending.kind === "connecting" ? "Waiting for the wallet." : pending.phase === "wallet" ? "The wallet shows a message to sign. It is not a transaction." : "Checking the signature with Seametry."}
+                {pending.kind === "google" ? "Google asks you to choose an account, then returns you here." : pending.kind === "connecting" ? "Waiting for the wallet." : pending.phase === "wallet" ? "The wallet shows a message to sign. It is not a transaction." : "Checking the signature with Seametry."}
               </span>
             </div>
           </div>
@@ -220,8 +253,8 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
             <StatusMark state="stopped" />
             <p role="alert">{step.message}</p>
             <div className={styles.connectActions}>
-              {step.retry ? <ContinueAction onClick={() => (connected && wallet ? void signInWith(step.name, signing(wallet.adapter)) : choose(step.name))}>Try again</ContinueAction> : null}
-              {connected ? <QuietAction onClick={finish}>Continue without signing in</QuietAction> : <QuietAction onClick={() => setStep({ kind: "choose" })}>Choose another wallet</QuietAction>}
+              {step.retry ? <ContinueAction onClick={() => retry(step.via)}>Try again</ContinueAction> : null}
+              {connected ? <QuietAction onClick={finish}>Continue without signing in</QuietAction> : <QuietAction onClick={() => setStep({ kind: "choose" })}>{step.via.kind === "google" ? "Choose another way" : "Choose another wallet"}</QuietAction>}
             </div>
           </div>
         ) : null}
@@ -269,10 +302,7 @@ export function ConnectModal({ open, onClose, onConnected, session, link = false
           <>
             <div className={styles.authDivider} role="separator">or</div>
             <section className={styles.connectSection} aria-label="Other ways to sign in">
-              <button className={styles.walletRow} type="button" data-kind="provider" onClick={() => void authClient.signIn.social({ provider: "google", callbackURL: `${window.location.pathname}${window.location.search}` })}>
-                <span className={styles.walletBlank} aria-hidden="true"><Icon name="google" /></span>
-                <span className={styles.walletName}>Continue with Google</span>
-              </button>
+              <GoogleRow onClick={() => void signInWithGoogle()} />
             </section>
             {/* Email sign-in is reserved here and arrives with PR8. */}
           </>
