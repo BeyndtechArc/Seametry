@@ -1,9 +1,7 @@
 import { adminPeriodRead, adminQuery, type AdminActivity } from "@/lib/admin";
-import { AdminHeader, Empty, Part, RangeForm, RefusedRange, Unavailable, admitted, periodLine, shortAddress, utc, recordStyles as styles } from "../_record/record";
+import { AdminHeader, Empty, Part, RangeForm, RefusedRange, Unavailable, admitted, periodLine, shortAddress, sourceNames, utc, recordStyles as styles } from "../_record/record";
 
 export const dynamic = "force-dynamic";
-
-const sourceNames: Record<string, string> = { server: "Seametry sent", client: "Browser reported", chain: "Chain answered" };
 
 function eventName(source: string, event: string): string {
   if (source === "chain") return event === "landed" ? "Settled: landed" : event === "failed" ? "Failed, confirmed by the chain" : event === "dropped" ? "Expired, never seen on chain" : event;

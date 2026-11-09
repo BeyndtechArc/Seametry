@@ -204,6 +204,93 @@ func (e AdminPeriodDeployment) Valid() bool {
 	}
 }
 
+// Defines values for AdminPersonIdentitiesKind.
+const (
+	Account      AdminPersonIdentitiesKind = "account"
+	Colosseum    AdminPersonIdentitiesKind = "colosseum"
+	Unrecognised AdminPersonIdentitiesKind = "unrecognised"
+	Wallet       AdminPersonIdentitiesKind = "wallet"
+	Web          AdminPersonIdentitiesKind = "web"
+	X            AdminPersonIdentitiesKind = "x"
+)
+
+// Valid indicates whether the value is a known member of the AdminPersonIdentitiesKind enum.
+func (e AdminPersonIdentitiesKind) Valid() bool {
+	switch e {
+	case Account:
+		return true
+	case Colosseum:
+		return true
+	case Unrecognised:
+		return true
+	case Wallet:
+		return true
+	case Web:
+		return true
+	case X:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AdminPersonIdentitiesProvenance.
+const (
+	AdminPersonIdentitiesProvenanceAccountToken  AdminPersonIdentitiesProvenance = "account_token"
+	AdminPersonIdentitiesProvenanceImport        AdminPersonIdentitiesProvenance = "import"
+	AdminPersonIdentitiesProvenanceSignedMessage AdminPersonIdentitiesProvenance = "signed_message"
+)
+
+// Valid indicates whether the value is a known member of the AdminPersonIdentitiesProvenance enum.
+func (e AdminPersonIdentitiesProvenance) Valid() bool {
+	switch e {
+	case AdminPersonIdentitiesProvenanceAccountToken:
+		return true
+	case AdminPersonIdentitiesProvenanceImport:
+		return true
+	case AdminPersonIdentitiesProvenanceSignedMessage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AdminPersonSummaryCreatedFrom.
+const (
+	AdminPersonSummaryCreatedFromImport AdminPersonSummaryCreatedFrom = "import"
+	AdminPersonSummaryCreatedFromSignup AdminPersonSummaryCreatedFrom = "signup"
+)
+
+// Valid indicates whether the value is a known member of the AdminPersonSummaryCreatedFrom enum.
+func (e AdminPersonSummaryCreatedFrom) Valid() bool {
+	switch e {
+	case AdminPersonSummaryCreatedFromImport:
+		return true
+	case AdminPersonSummaryCreatedFromSignup:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AdminPersonSummaryKind.
+const (
+	Org    AdminPersonSummaryKind = "org"
+	Person AdminPersonSummaryKind = "person"
+)
+
+// Valid indicates whether the value is a known member of the AdminPersonSummaryKind enum.
+func (e AdminPersonSummaryKind) Valid() bool {
+	switch e {
+	case Org:
+		return true
+	case Person:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AdminRecordedRowSource.
 const (
 	AdminRecordedRowSourceChain  AdminRecordedRowSource = "chain"
@@ -219,6 +306,78 @@ func (e AdminRecordedRowSource) Valid() bool {
 	case AdminRecordedRowSourceClient:
 		return true
 	case AdminRecordedRowSourceServer:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AdminSystemMailDelivery.
+const (
+	AdminSystemMailDeliveryDelivered     AdminSystemMailDelivery = "delivered"
+	AdminSystemMailDeliveryFailed        AdminSystemMailDelivery = "failed"
+	AdminSystemMailDeliveryNotConfigured AdminSystemMailDelivery = "not_configured"
+	AdminSystemMailDeliveryPending       AdminSystemMailDelivery = "pending"
+)
+
+// Valid indicates whether the value is a known member of the AdminSystemMailDelivery enum.
+func (e AdminSystemMailDelivery) Valid() bool {
+	switch e {
+	case AdminSystemMailDeliveryDelivered:
+		return true
+	case AdminSystemMailDeliveryFailed:
+		return true
+	case AdminSystemMailDeliveryNotConfigured:
+		return true
+	case AdminSystemMailDeliveryPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AdminSystemMailKind.
+const (
+	AdminSystemMailKindFeedback AdminSystemMailKind = "feedback"
+	AdminSystemMailKindNotices  AdminSystemMailKind = "notices"
+)
+
+// Valid indicates whether the value is a known member of the AdminSystemMailKind enum.
+func (e AdminSystemMailKind) Valid() bool {
+	switch e {
+	case AdminSystemMailKindFeedback:
+		return true
+	case AdminSystemMailKindNotices:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for AdminTimelineEventSource.
+const (
+	AdminTimelineEventSourceAdmin  AdminTimelineEventSource = "admin"
+	AdminTimelineEventSourceChain  AdminTimelineEventSource = "chain"
+	AdminTimelineEventSourceClient AdminTimelineEventSource = "client"
+	AdminTimelineEventSourceImport AdminTimelineEventSource = "import"
+	AdminTimelineEventSourceMail   AdminTimelineEventSource = "mail"
+	AdminTimelineEventSourceServer AdminTimelineEventSource = "server"
+)
+
+// Valid indicates whether the value is a known member of the AdminTimelineEventSource enum.
+func (e AdminTimelineEventSource) Valid() bool {
+	switch e {
+	case AdminTimelineEventSourceAdmin:
+		return true
+	case AdminTimelineEventSourceChain:
+		return true
+	case AdminTimelineEventSourceClient:
+		return true
+	case AdminTimelineEventSourceImport:
+		return true
+	case AdminTimelineEventSourceMail:
+		return true
+	case AdminTimelineEventSourceServer:
 		return true
 	default:
 		return false
@@ -326,16 +485,16 @@ func (e EmailOptInDeployment) Valid() bool {
 
 // Defines values for EmailOptInPage.
 const (
-	Feedback        EmailOptInPage = "feedback"
-	FirstAllocation EmailOptInPage = "first_allocation"
+	EmailOptInPageFeedback        EmailOptInPage = "feedback"
+	EmailOptInPageFirstAllocation EmailOptInPage = "first_allocation"
 )
 
 // Valid indicates whether the value is a known member of the EmailOptInPage enum.
 func (e EmailOptInPage) Valid() bool {
 	switch e {
-	case Feedback:
+	case EmailOptInPageFeedback:
 		return true
-	case FirstAllocation:
+	case EmailOptInPageFirstAllocation:
 		return true
 	default:
 		return false
@@ -671,19 +830,19 @@ func (e WalletLegSubmitResult) Valid() bool {
 
 // Defines values for WalletLegChainOutcome.
 const (
-	Dropped WalletLegChainOutcome = "dropped"
-	Failed  WalletLegChainOutcome = "failed"
-	Landed  WalletLegChainOutcome = "landed"
+	WalletLegChainOutcomeDropped WalletLegChainOutcome = "dropped"
+	WalletLegChainOutcomeFailed  WalletLegChainOutcome = "failed"
+	WalletLegChainOutcomeLanded  WalletLegChainOutcome = "landed"
 )
 
 // Valid indicates whether the value is a known member of the WalletLegChainOutcome enum.
 func (e WalletLegChainOutcome) Valid() bool {
 	switch e {
-	case Dropped:
+	case WalletLegChainOutcomeDropped:
 		return true
-	case Failed:
+	case WalletLegChainOutcomeFailed:
 		return true
-	case Landed:
+	case WalletLegChainOutcomeLanded:
 		return true
 	default:
 		return false
@@ -768,6 +927,93 @@ func (e GetAdminOverviewParamsDeployment) Valid() bool {
 	case GetAdminOverviewParamsDeploymentPreview:
 		return true
 	case GetAdminOverviewParamsDeploymentProduction:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAdminPeopleParamsStage.
+const (
+	Advocate    GetAdminPeopleParamsStage = "advocate"
+	Allocated   GetAdminPeopleParamsStage = "allocated"
+	Ap          GetAdminPeopleParamsStage = "ap"
+	Connected   GetAdminPeopleParamsStage = "connected"
+	Lead        GetAdminPeopleParamsStage = "lead"
+	Preflighted GetAdminPeopleParamsStage = "preflighted"
+	Repeat      GetAdminPeopleParamsStage = "repeat"
+	Visitor     GetAdminPeopleParamsStage = "visitor"
+)
+
+// Valid indicates whether the value is a known member of the GetAdminPeopleParamsStage enum.
+func (e GetAdminPeopleParamsStage) Valid() bool {
+	switch e {
+	case Advocate:
+		return true
+	case Allocated:
+		return true
+	case Ap:
+		return true
+	case Connected:
+		return true
+	case Lead:
+		return true
+	case Preflighted:
+		return true
+	case Repeat:
+		return true
+	case Visitor:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAdminPeopleParamsOutreachStatus.
+const (
+	GetAdminPeopleParamsOutreachStatusCallBooked   GetAdminPeopleParamsOutreachStatus = "call_booked"
+	GetAdminPeopleParamsOutreachStatusCustomer     GetAdminPeopleParamsOutreachStatus = "customer"
+	GetAdminPeopleParamsOutreachStatusNotContacted GetAdminPeopleParamsOutreachStatus = "not_contacted"
+	GetAdminPeopleParamsOutreachStatusPass         GetAdminPeopleParamsOutreachStatus = "pass"
+	GetAdminPeopleParamsOutreachStatusReplied      GetAdminPeopleParamsOutreachStatus = "replied"
+	GetAdminPeopleParamsOutreachStatusSent         GetAdminPeopleParamsOutreachStatus = "sent"
+	GetAdminPeopleParamsOutreachStatusTesting      GetAdminPeopleParamsOutreachStatus = "testing"
+)
+
+// Valid indicates whether the value is a known member of the GetAdminPeopleParamsOutreachStatus enum.
+func (e GetAdminPeopleParamsOutreachStatus) Valid() bool {
+	switch e {
+	case GetAdminPeopleParamsOutreachStatusCallBooked:
+		return true
+	case GetAdminPeopleParamsOutreachStatusCustomer:
+		return true
+	case GetAdminPeopleParamsOutreachStatusNotContacted:
+		return true
+	case GetAdminPeopleParamsOutreachStatusPass:
+		return true
+	case GetAdminPeopleParamsOutreachStatusReplied:
+		return true
+	case GetAdminPeopleParamsOutreachStatusSent:
+		return true
+	case GetAdminPeopleParamsOutreachStatusTesting:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetAdminPeopleParamsCreatedFrom.
+const (
+	GetAdminPeopleParamsCreatedFromImport GetAdminPeopleParamsCreatedFrom = "import"
+	GetAdminPeopleParamsCreatedFromSignup GetAdminPeopleParamsCreatedFrom = "signup"
+)
+
+// Valid indicates whether the value is a known member of the GetAdminPeopleParamsCreatedFrom enum.
+func (e GetAdminPeopleParamsCreatedFrom) Valid() bool {
+	switch e {
+	case GetAdminPeopleParamsCreatedFromImport:
+		return true
+	case GetAdminPeopleParamsCreatedFromSignup:
 		return true
 	default:
 		return false
@@ -1066,6 +1312,22 @@ type AdminFunnel struct {
 	SignatureRequested int64 `json:"signature_requested"`
 }
 
+// AdminImported What a lead ledger said of the person, as the ledger's word. Absent for a person who signed up.
+type AdminImported struct {
+	Batch string `json:"batch"`
+
+	// Detail The ledger's remaining fields, as it wrote them.
+	Detail          *map[string]interface{} `json:"detail,omitempty"`
+	Engagement      *int32                  `json:"engagement,omitempty"`
+	Fit             *int32                  `json:"fit,omitempty"`
+	LawfulBasis     string                  `json:"lawful_basis"`
+	LawfulBasisNote string                  `json:"lawful_basis_note"`
+	Reach           *int32                  `json:"reach,omitempty"`
+	Score           *int32                  `json:"score,omitempty"`
+	Signal          *int32                  `json:"signal,omitempty"`
+	Tier            string                  `json:"tier"`
+}
+
 // AdminLandingPath defines model for AdminLandingPath.
 type AdminLandingPath struct {
 	Dropped    int64  `json:"dropped"`
@@ -1114,6 +1376,22 @@ type AdminOverview struct {
 	Wallets AdminWalletStates `json:"wallets"`
 }
 
+// AdminPeople defines model for AdminPeople.
+type AdminPeople struct {
+	// NextCursor Present while more people match; pass it as cursor for the next page.
+	NextCursor *string              `json:"next_cursor,omitempty"`
+	People     []AdminPersonSummary `json:"people"`
+
+	// Stages Everyone at each stage, unfiltered. A stage nobody is at is absent.
+	Stages []struct {
+		People int64  `json:"people"`
+		Stage  string `json:"stage"`
+	} `json:"stages"`
+
+	// Total Every person the filters match, across all pages.
+	Total int64 `json:"total"`
+}
+
 // AdminPeriod defines model for AdminPeriod.
 type AdminPeriod struct {
 	Deployment AdminPeriodDeployment `json:"deployment"`
@@ -1123,6 +1401,71 @@ type AdminPeriod struct {
 
 // AdminPeriodDeployment defines model for AdminPeriod.Deployment.
 type AdminPeriodDeployment string
+
+// AdminPerson defines model for AdminPerson.
+type AdminPerson struct {
+	Identities []struct {
+		FirstSeenAt time.Time                       `json:"first_seen_at"`
+		Kind        AdminPersonIdentitiesKind       `json:"kind"`
+		LastSeenAt  time.Time                       `json:"last_seen_at"`
+		Provenance  AdminPersonIdentitiesProvenance `json:"provenance"`
+		Value       string                          `json:"value"`
+		Verified    bool                            `json:"verified"`
+	} `json:"identities"`
+
+	// Imported What a lead ledger said of the person, as the ledger's word. Absent for a person who signed up.
+	Imported *AdminImported       `json:"imported,omitempty"`
+	Person   AdminPersonSummary   `json:"person"`
+	Timeline []AdminTimelineEvent `json:"timeline"`
+}
+
+// AdminPersonIdentitiesKind defines model for AdminPerson.Identities.Kind.
+type AdminPersonIdentitiesKind string
+
+// AdminPersonIdentitiesProvenance defines model for AdminPerson.Identities.Provenance.
+type AdminPersonIdentitiesProvenance string
+
+// AdminPersonSummary defines model for AdminPersonSummary.
+type AdminPersonSummary struct {
+	CreatedAt   time.Time                     `json:"created_at"`
+	CreatedFrom AdminPersonSummaryCreatedFrom `json:"created_from"`
+	DisplayName string                        `json:"display_name"`
+	Id          openapi_types.UUID            `json:"id"`
+
+	// ImportedScore The ledger's score, absent for a person who signed up.
+	ImportedScore *int32 `json:"imported_score,omitempty"`
+
+	// ImportedTier The ledger's tier, absent for a person who signed up.
+	ImportedTier   *string                `json:"imported_tier,omitempty"`
+	Kind           AdminPersonSummaryKind `json:"kind"`
+	OutreachStatus string                 `json:"outreach_status"`
+	Stage          string                 `json:"stage"`
+	UpdatedAt      time.Time              `json:"updated_at"`
+
+	// Verified An identity was proved by a token or a signature, not only claimed by a ledger.
+	Verified bool `json:"verified"`
+
+	// Wallets Wallet identities, proved or only claimed.
+	Wallets int64 `json:"wallets"`
+
+	// XHandle The first X handle the record holds, empty when none.
+	XHandle string `json:"x_handle"`
+}
+
+// AdminPersonSummaryCreatedFrom defines model for AdminPersonSummary.CreatedFrom.
+type AdminPersonSummaryCreatedFrom string
+
+// AdminPersonSummaryKind defines model for AdminPersonSummary.Kind.
+type AdminPersonSummaryKind string
+
+// AdminReaderAge defines model for AdminReaderAge.
+type AdminReaderAge struct {
+	AdvancedAt time.Time `json:"advanced_at"`
+
+	// LastSlot The slot a chain reader has read to; absent for an outbox projection.
+	LastSlot *int64 `json:"last_slot,omitempty"`
+	Origin   string `json:"origin"`
+}
 
 // AdminRecordedRow defines model for AdminRecordedRow.
 type AdminRecordedRow struct {
@@ -1176,6 +1519,78 @@ type AdminSources struct {
 	Period  AdminPeriod   `json:"period"`
 	Sources []AdminSource `json:"sources"`
 }
+
+// AdminSystem defines model for AdminSystem.
+type AdminSystem struct {
+	ChainReaders []AdminReaderAge `json:"chain_readers"`
+
+	// Entries Site entries counted since entries_since, no visitor told from another.
+	Entries int64 `json:"entries"`
+
+	// EntriesSince The first UTC day the entries total counts.
+	EntriesSince openapi_types.Date `json:"entries_since"`
+	Events       []struct {
+		Events           int64     `json:"events"`
+		NewestOccurredAt time.Time `json:"newest_occurred_at"`
+		NewestReceivedAt time.Time `json:"newest_received_at"`
+		Source           string    `json:"source"`
+	} `json:"events"`
+
+	// LastReconciledAt Absent until the reconciler has written a chain answer.
+	LastReconciledAt *time.Time `json:"last_reconciled_at,omitempty"`
+
+	// Mail The team's mail (feedback and notices) by delivery state. Every mail is kept before it is sent.
+	Mail []struct {
+		Delivery AdminSystemMailDelivery `json:"delivery"`
+		Kind     AdminSystemMailKind     `json:"kind"`
+		Mails    int64                   `json:"mails"`
+
+		// NewestAt When the newest mail in this state was kept.
+		NewestAt time.Time `json:"newest_at"`
+
+		// NewestDeliveredAt When the newest in this state was delivered; absent when none was.
+		NewestDeliveredAt *time.Time `json:"newest_delivered_at,omitempty"`
+	} `json:"mail"`
+
+	// NewestEntryOn The newest UTC day with any entry; absent when there is none in the window.
+	NewestEntryOn *openapi_types.Date `json:"newest_entry_on,omitempty"`
+
+	// OldestUnansweredAt When the oldest of those legs was submitted; absent when none waits.
+	OldestUnansweredAt *time.Time `json:"oldest_unanswered_at,omitempty"`
+
+	// OutboxWrittenAt When the execution outbox last grew; absent while it is empty.
+	OutboxWrittenAt *time.Time `json:"outbox_written_at,omitempty"`
+	People          []struct {
+		CreatedFrom string `json:"created_from"`
+		People      int64  `json:"people"`
+	} `json:"people"`
+	Projections []AdminReaderAge `json:"projections"`
+
+	// UnansweredLegs Legs sent with a signature that have no chain answer yet.
+	UnansweredLegs int64 `json:"unanswered_legs"`
+}
+
+// AdminSystemMailDelivery defines model for AdminSystem.Mail.Delivery.
+type AdminSystemMailDelivery string
+
+// AdminSystemMailKind defines model for AdminSystem.Mail.Kind.
+type AdminSystemMailKind string
+
+// AdminTimelineEvent defines model for AdminTimelineEvent.
+type AdminTimelineEvent struct {
+	Deployment *string                `json:"deployment,omitempty"`
+	OccurredAt time.Time              `json:"occurred_at"`
+	Origin     string                 `json:"origin"`
+	Properties map[string]interface{} `json:"properties"`
+
+	// Source Whose word the event is. Only a chain event says something settled.
+	Source AdminTimelineEventSource `json:"source"`
+	Type   string                   `json:"type"`
+	Wallet *string                  `json:"wallet,omitempty"`
+}
+
+// AdminTimelineEventSource Whose word the event is. Only a chain event says something settled.
+type AdminTimelineEventSource string
 
 // AdminWallet defines model for AdminWallet.
 type AdminWallet struct {
@@ -1879,6 +2294,43 @@ type GetAdminOverviewParams struct {
 
 // GetAdminOverviewParamsDeployment defines parameters for GetAdminOverview.
 type GetAdminOverviewParamsDeployment string
+
+// GetAdminPeopleParams defines parameters for GetAdminPeople.
+type GetAdminPeopleParams struct {
+	Stage          *GetAdminPeopleParamsStage          `form:"stage,omitempty" json:"stage,omitempty"`
+	OutreachStatus *GetAdminPeopleParamsOutreachStatus `form:"outreach_status,omitempty" json:"outreach_status,omitempty"`
+	CreatedFrom    *GetAdminPeopleParamsCreatedFrom    `form:"created_from,omitempty" json:"created_from,omitempty"`
+
+	// Tier A ledger tier, P1 to P9.
+	Tier *string `form:"tier,omitempty" json:"tier,omitempty"`
+
+	// Q Matched anywhere in the name or any identity's value, without case.
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// Cursor An opaque cursor from a previous page.
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit How many rows one page holds.
+	Limit *AdminPageLimit `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// GetAdminPeopleParamsStage defines parameters for GetAdminPeople.
+type GetAdminPeopleParamsStage string
+
+// GetAdminPeopleParamsOutreachStatus defines parameters for GetAdminPeople.
+type GetAdminPeopleParamsOutreachStatus string
+
+// GetAdminPeopleParamsCreatedFrom defines parameters for GetAdminPeople.
+type GetAdminPeopleParamsCreatedFrom string
+
+// GetAdminPersonParams defines parameters for GetAdminPerson.
+type GetAdminPersonParams struct {
+	// Before Only events before this time. Omitted means now.
+	Before *time.Time `form:"before,omitempty" json:"before,omitempty"`
+
+	// Limit How many rows one page holds.
+	Limit *AdminPageLimit `form:"limit,omitempty" json:"limit,omitempty"`
+}
 
 // GetAdminSourcesParams defines parameters for GetAdminSources.
 type GetAdminSourcesParams struct {

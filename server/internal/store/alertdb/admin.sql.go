@@ -11,6 +11,53 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const adminMailDeliveries = `-- name: AdminMailDeliveries :many
+SELECT 'feedback'::text AS kind, delivery, count(*) AS mails,
+       max(received_at)::timestamptz AS newest_at, max(delivered_at)::timestamptz AS newest_delivered_at
+FROM alert.feedback GROUP BY delivery
+UNION ALL
+SELECT 'notices'::text, delivery, count(*), max(created_at)::timestamptz, max(delivered_at)::timestamptz
+FROM alert.notices GROUP BY delivery
+ORDER BY 1, 2
+`
+
+type AdminMailDeliveriesRow struct {
+	Kind              string             `db:"kind" json:"kind"`
+	Delivery          string             `db:"delivery" json:"delivery"`
+	Mails             int64              `db:"mails" json:"mails"`
+	NewestAt          pgtype.Timestamptz `db:"newest_at" json:"newest_at"`
+	NewestDeliveredAt pgtype.Timestamptz `db:"newest_delivered_at" json:"newest_delivered_at"`
+}
+
+// The team's mail by kind and delivery state: how many, when the newest was
+// kept, and when the newest delivered. Every mail is kept before it is
+// sent, so a failed or unconfigured send is counted, not lost.
+func (q *Queries) AdminMailDeliveries(ctx context.Context) ([]AdminMailDeliveriesRow, error) {
+	rows, err := q.db.Query(ctx, adminMailDeliveries)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AdminMailDeliveriesRow
+	for rows.Next() {
+		var i AdminMailDeliveriesRow
+		if err := rows.Scan(
+			&i.Kind,
+			&i.Delivery,
+			&i.Mails,
+			&i.NewestAt,
+			&i.NewestDeliveredAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const adminOptInCounts = `-- name: AdminOptInCounts :many
 SELECT (address IS NOT NULL)::boolean AS live,
        COALESCE(page, 'unrecorded')::text AS page,

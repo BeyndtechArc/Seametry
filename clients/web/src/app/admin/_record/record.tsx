@@ -25,6 +25,11 @@ export const shortAddress = (address: string) => (address.length > 12 ? `${addre
 export const utc = (iso: string) => iso.replace("T", " ").replace(/:\d{2}(\.\d+)?Z$/, " UTC");
 export const dayOf = (iso: string) => iso.slice(0, 10);
 
+/** Whose word a row of the record is. Only the chain says what settled. */
+export const sourceNames: Record<string, string> = {
+  server: "Seametry sent", client: "Browser reported", chain: "Chain answered", mail: "Mail sent", import: "A ledger said", admin: "An admin set",
+};
+
 export const chainSource = "Solana mainnet, read by Seametry's reconciler";
 
 /** One title per page and the line that says what was read, when, and for which period. */

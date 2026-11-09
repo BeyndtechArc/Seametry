@@ -350,14 +350,16 @@ surface, CI read from GitHub, and a merge only on Storm's word.
    - **6a, the frame.** The Admin shell (`components.md`): a left rail of
      pages, gated in the layout on a new `/v1/admin/session` read, and the
      one page split into Overview, Funnel, Sources, Wallets, Activity and
-     Email opt-ins, each reading only what it shows. Status: built on
-     `feat/admin-shell`.
+     Email opt-ins, each reading only what it shows. Status: PR #68.
    - **6b, People, Person 360 and System, read only.** New Gateway reads:
      the people list (stage, outreach status, source, tier, filters), one
      person (identities with provenance, imported fields, the timeline from
      `growth.events` with whose word each row is), and System (reconciler
      age, outbox and projector lag, the Hall poller's last read, visit
-     counts, mail health).
+     counts, mail health). Status: built on `feat/admin-people`, stacked
+     on #68. Mail health is the team's mail (feedback and notices) by
+     delivery state, which Alert already keeps; mail to people waits for
+     milestone 4's send log.
    - **6c, actions.** Stage and outreach status changes and notes, each
      written with an `admin_actions` audit row (account, action, target,
      before and after), the first Admin writes. The per-read log line stays.

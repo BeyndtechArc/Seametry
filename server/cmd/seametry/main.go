@@ -165,6 +165,8 @@ func serve() error {
 		WithFeedback(alert.NewFeedback(pool, mailer)).
 		WithEmailOptIns(alert.NewOptIns(pool)).
 		WithAdmin(report, alert.NewOptIns(pool)).
+		WithAdminPeople(growth.NewPeople(pool)).
+		WithAdminMail(alert.NewMail(pool)).
 		WithVisits(growth.NewVisits(pool))
 	authOrigin := strings.TrimSpace(os.Getenv("SEAMETRY_AUTH_ORIGIN"))
 	if authOrigin == "" {

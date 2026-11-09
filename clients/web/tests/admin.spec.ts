@@ -17,7 +17,9 @@ const pages = [
   { label: "Sources", href: "/admin/sources", title: "Sources" },
   { label: "Wallets", href: "/admin/wallets", title: "Wallets" },
   { label: "Activity", href: "/admin/activity", title: "Activity" },
+  { label: "People", href: "/admin/people", title: "People" },
   { label: "Email opt-ins", href: "/admin/opt-ins", title: "Email opt-ins" },
+  { label: "System", href: "/admin/system", title: "System" },
 ];
 
 // A route that calls notFound() is answered with Next's error shell and the
@@ -102,7 +104,18 @@ test("on a phone the Admin pages fold behind one button and unfold above the pag
   await expect(page.getByRole("navigation", { name: "Admin" })).toBeHidden();
   await toggle.click();
   await expect(page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Wallets" })).toBeVisible();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  // The widest ledgers scroll inside themselves; the page never moves
+  // sideways. scrollWidth cannot see a cut-off edge (the root hides
+  // horizontal overflow), so each part and ledger is measured instead.
+  for (const path of ["/admin/funnel", "/admin/wallets", "/admin/people", "/admin/people/5ea71e7a-0102-0304-0506-0708090a0b0c", "/admin/system"]) {
+    await page.goto(path);
+    const overhang = await page.evaluate(() =>
+      [...document.querySelectorAll("main article > *, main section > *, main table, main form")]
+        .map((element) => ({ tag: element.tagName, right: Math.round(element.getBoundingClientRect().right) }))
+        .filter((box) => box.right > window.innerWidth),
+    );
+    expect(overhang, `${path} has content past the screen`).toEqual([]);
+  }
 });
 
 test("an admin reads every page, labelled by whose word each figure is, with no token or full address in any page", async ({ page }) => {
@@ -187,6 +200,8 @@ test("an admin with an empty record sees each page say what is absent", async ({
     ["/admin/wallets", ["No wallet has asked for a quote in this deployment."]],
     ["/admin/activity", ["Nothing has been recorded before the end of this period."]],
     ["/admin/opt-ins", ["No email consent was given in this period."]],
+    ["/admin/people", ["Growth knows of nobody yet. People arrive when they sign in, or when a lead ledger is imported."]],
+    ["/admin/system", ["Never yet", "No reader has moved yet. The first trade or Hall transaction read starts one.", "The timeline holds no event yet.", "No feedback or notice has been kept yet."]],
   ];
   for (const [path, sentences] of absent) {
     await page.goto(path);
@@ -198,7 +213,7 @@ test("an admin whose reads the Gateway cannot answer sees each page name its rea
   await signIn(page, "fixture-admin-degraded");
   await page.goto("/admin");
   await expect(page.getByRole("figure").filter({ has: page.getByText("Volume", { exact: true }) })).toContainText("2.600000");
-  for (const [path, region] of [["/admin/sources", "Sources"], ["/admin/wallets", "Wallets"], ["/admin/activity", "Recent activity"], ["/admin/opt-ins", "Email opt-ins"]]) {
+  for (const [path, region] of [["/admin/sources", "Sources"], ["/admin/wallets", "Wallets"], ["/admin/activity", "Recent activity"], ["/admin/opt-ins", "Email opt-ins"], ["/admin/people", "People"]]) {
     const response = await page.goto(path);
     expect(response?.status(), path).toBe(200);
     await expect(page.getByRole("region", { name: region })).toContainText("answered 503");
@@ -229,4 +244,81 @@ test("a wallet cursor the Gateway refuses shows the wallet list unavailable, and
   expect(response?.status()).toBe(200);
   await expect(page.getByRole("region", { name: "Wallets" }).getByText("The Gateway answered 400 for wallets.")).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Admin" })).toBeVisible();
+});
+
+test("People lists everyone a page at a time, counts them by stage, and sends its filters to the Gateway", async ({ page }) => {
+  await signIn(page, "fixture-admin");
+  await page.goto("/admin/people");
+  const people = page.getByRole("region", { name: "People", exact: true });
+  await expect(people.getByText("1 of 2 people, newest change first")).toBeVisible();
+  const lead = people.getByRole("row", { name: /Fake Person lead-1/ });
+  await expect(lead).toContainText("P1");
+  await expect(lead).toContainText("@fakeone");
+  await expect(lead).toContainText("No, claimed only");
+  await expect(page.getByRole("region", { name: "By stage" }).getByRole("row", { name: /Connected/ })).toContainText("1");
+
+  await people.getByRole("link", { name: "Older people" }).click();
+  await expect(page).toHaveURL(/\/admin\/people\?cursor=fixture-older-people/);
+  await expect(people.getByRole("row", { name: /acct-1/ })).toContainText("Yes");
+  await expect(people.getByRole("link", { name: "Older people" })).toHaveCount(0);
+
+  await page.getByLabel("Name, handle or wallet").fill("fakeone");
+  await page.getByRole("button", { name: "Read the people" }).click();
+  await expect(page).toHaveURL(/q=fakeone/);
+  await expect(people.getByText("1 of 1 people")).toBeVisible();
+
+  await page.goto("/admin/people?stage=advocate");
+  await expect(people).toContainText("The Gateway answered 400 for people.");
+  await expect(page.getByLabel("Stage")).toHaveValue("advocate");
+});
+
+test("one person's page shows each identity, what the ledger said, and the timeline, each by whose word it is", async ({ page }) => {
+  await signIn(page, "fixture-admin");
+  await page.goto("/admin/people");
+  await page.getByRole("link", { name: "Fake Person lead-1" }).click();
+  await expect(page).toHaveURL(/\/admin\/people\/5ea71e7a-0102-0304-0506-0708090a0b0c$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Fake Person lead-1");
+  await expect(page.getByRole("navigation", { name: "Admin" }).locator("[aria-current=page]")).toHaveText("People");
+
+  const identities = page.getByRole("region", { name: "Identities" });
+  await expect(identities.getByRole("row", { name: /@fakeone/ })).toContainText("A ledger's claim");
+  await expect(identities.getByRole("row", { name: /FFyr/ })).toContainText("Proved by sign-in");
+
+  const ledger = page.getByRole("region", { name: "What the ledger said" });
+  await expect(ledger).toContainText("legitimate interest: assessment of 2026-10-31");
+  await expect(ledger.getByRole("row", { name: /Fit, signal, reach, engagement/ })).toContainText("20, 18, 15, 8");
+
+  const timeline = page.getByRole("region", { name: "Timeline" });
+  await expect(timeline.locator("tr[data-source=chain]")).toContainText("Chain answered");
+  await expect(timeline.locator("tr[data-source=chain]")).toContainText("symbol: NVDAx");
+  await expect(timeline.locator("tr[data-source=client]")).toContainText("Browser reported");
+  await expect(timeline.locator("tr[data-source=import]")).toContainText("A ledger said");
+});
+
+test("a person the record does not hold, or a path that is not an id, says so inside the frame", async ({ page }) => {
+  await signIn(page, "fixture-admin");
+  const missing = await page.goto("/admin/people/00000000-0000-4000-8000-000000000009");
+  expect(missing?.status()).toBe(200);
+  await expect(page.getByText("The Gateway answered 404 for people/00000000-0000-4000-8000-000000000009.", { exact: false })).toBeVisible();
+  await page.goto("/admin/people/..%2Fsystem");
+  await expect(page.getByText("is not a person id.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the people list" })).toBeVisible();
+});
+
+test("System states when each part last moved, as a time and an age, and never calls a part working", async ({ page }) => {
+  await signIn(page, "fixture-admin");
+  await page.goto("/admin/system");
+  const record = page.getByRole("region", { name: "The record" });
+  await expect(record.getByRole("row", { name: /reconciler last wrote/ })).toContainText("2026-10-27 11:58 UTC, 2 min ago");
+  await expect(record.getByRole("row", { name: /no chain answer yet/ })).toContainText("1");
+  await expect(record.getByRole("row", { name: /oldest of them/ })).toContainText("20 min ago");
+  const readers = page.getByRole("region", { name: "Growth's readers" });
+  await expect(readers.getByRole("row", { name: /Hall program on devnet/ })).toContainText("412");
+  await expect(readers.getByRole("row", { name: /execution outbox/ })).toContainText("Not a chain reader");
+  await expect(page.getByRole("region", { name: "Who the record knows" })).toContainText("12");
+  const mail = page.getByRole("region", { name: "Mail to the team" });
+  await expect(mail.getByRole("row", { name: /Notices/ })).toContainText("Failed");
+  await expect(mail.getByRole("row", { name: /Notices/ })).toContainText("None delivered");
+  await expect(mail.getByRole("row", { name: /Feedback/ })).toContainText("Delivered");
+  for (const word of ["healthy", "Healthy", "working", "OK"]) await expect(page.getByRole("main")).not.toContainText(word);
 });

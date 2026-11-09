@@ -201,10 +201,68 @@ function adminAnswer(token, operation, search) {
         { live: true, page: "first_allocation", ref_code: "storm", optins: 1 },
         { live: false, page: "feedback", ref_code: "unknown", optins: 1 },
       ], recent: empty ? [] : [{ masked_address: "s***@g***.com", consented_at: "2026-10-15T09:00:00Z", page: "first_allocation", ref_code: "storm" }] } } };
+    case "people":
+      return adminPeople(search, empty);
+    case "system":
+      return { status: 200, body: { meta: adminMeta, data: empty
+        ? { unanswered_legs: 0, projections: [], chain_readers: [], events: [], people: [], entries_since: "2026-10-20", entries: 0, mail: [] }
+        : {
+          last_reconciled_at: "2026-10-27T11:58:00Z", unanswered_legs: 1, oldest_unanswered_at: "2026-10-27T11:40:00Z", outbox_written_at: "2026-10-27T11:59:00Z",
+          projections: [{ origin: "execution.outbox", advanced_at: "2026-10-27T11:59:30Z" }],
+          chain_readers: [{ origin: "hall.devnet", advanced_at: "2026-10-27T09:00:00Z", last_slot: 412 }],
+          events: [{ source: "chain", events: 4, newest_occurred_at: "2026-10-27T11:30:00Z", newest_received_at: "2026-10-27T11:59:30Z" }],
+          people: [{ created_from: "import", people: 1 }, { created_from: "signup", people: 1 }],
+          entries_since: "2026-10-20", entries: 12, newest_entry_on: "2026-10-27",
+          mail: [
+            { kind: "feedback", delivery: "delivered", mails: 3, newest_at: "2026-10-27T09:00:00Z", newest_delivered_at: "2026-10-27T09:00:05Z" },
+            { kind: "notices", delivery: "failed", mails: 1, newest_at: "2026-10-27T10:00:00Z" },
+          ],
+        } } };
     default:
+      if (operation === `people/${adminPersonID}`) return { status: 200, body: { meta: adminMeta, data: adminPerson } };
+      if (operation.startsWith("people/")) return { status: 404, body: { title: "No such person", status: 404, detail: "GetAdminPerson: the record holds no person with this id; they may have been removed with their import batch." } };
       return undefined;
   }
 }
+
+// Two people, one per page: an imported lead and one who signed in. The
+// filters reach the fixture so tests/admin.spec.ts can see them arrive.
+const adminPersonID = "5ea71e7a-0102-0304-0506-0708090a0b0c";
+const adminLead = {
+  id: adminPersonID, kind: "person", display_name: "Fake Person lead-1", stage: "lead", outreach_status: "not_contacted", created_from: "import",
+  imported_tier: "P1", imported_score: 61, x_handle: "fakeone", wallets: 0, verified: false, created_at: "2026-10-29T09:00:00Z", updated_at: "2026-10-29T09:00:00Z",
+};
+const adminSignup = {
+  id: "0b1e55ed-0000-4000-8000-000000000002", kind: "person", display_name: "acct-1", stage: "connected", outreach_status: "not_contacted", created_from: "signup",
+  x_handle: "", wallets: 1, verified: true, created_at: "2026-10-20T09:00:00Z", updated_at: "2026-10-21T09:00:00Z",
+};
+function adminPeople(search, empty) {
+  const stages = empty ? [] : [{ stage: "connected", people: 1 }, { stage: "lead", people: 1 }];
+  if (empty) return { status: 200, body: { meta: adminMeta, data: { people: [], total: 0, stages } } };
+  if (search.get("stage") === "advocate") {
+    return { status: 400, body: { title: "Admin read refused", status: 400, detail: "GetAdminPeople: fixture: no advocates are answered" } };
+  }
+  if (search.get("q") === "fakeone" || search.get("created_from") === "import") {
+    return { status: 200, body: { meta: adminMeta, data: { people: [adminLead], total: 1, stages } } };
+  }
+  if (search.get("cursor") === "fixture-older-people") {
+    return { status: 200, body: { meta: adminMeta, data: { people: [adminSignup], total: 2, stages } } };
+  }
+  return { status: 200, body: { meta: adminMeta, data: { people: [adminLead], total: 2, stages, next_cursor: "fixture-older-people" } } };
+}
+const adminPerson = {
+  person: adminLead,
+  imported: { batch: "seametry-leads-2026-10-29", lawful_basis: "legitimate_interest", lawful_basis_note: "assessment of 2026-10-31", tier: "P1", fit: 20, signal: 18, reach: 15, engagement: 8, score: 61, detail: { org: "Frontier", segment: "Payments" } },
+  identities: [
+    { kind: "x", value: "fakeone", provenance: "import", verified: false, first_seen_at: "2026-10-29T09:00:00Z", last_seen_at: "2026-10-29T09:00:00Z" },
+    { kind: "wallet", value: "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM", provenance: "account_token", verified: true, first_seen_at: "2026-10-30T09:00:00Z", last_seen_at: "2026-10-31T09:00:00Z" },
+  ],
+  timeline: [
+    { type: "leg.landed", source: "chain", origin: "execution.outbox", wallet: "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM", deployment: "production", occurred_at: "2026-10-31T10:00:00Z", properties: { symbol: "NVDAx", outcome: "landed" } },
+    { type: "review.opened", source: "client", origin: "execution.outbox", wallet: "FFyrQgpU4BQ2FLesy6t5MmPUDimPj2ghwChTMrLBN5DM", deployment: "production", occurred_at: "2026-10-31T09:58:00Z", properties: {} },
+    { type: "lead.imported", source: "import", origin: "growth.people", occurred_at: "2026-10-29T09:00:00Z", properties: { batch: "seametry-leads-2026-10-29" } },
+  ],
+};
 
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? "/", "http://127.0.0.1:3846");

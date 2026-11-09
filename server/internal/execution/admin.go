@@ -242,3 +242,32 @@ func (r *Report) RecentActivity(ctx context.Context, period Period) ([]RecordedR
 	}
 	return recorded, nil
 }
+
+// Motion is whether the record is still moving, across every deployment.
+// A nil time is a thing that has not happened yet: no answer written, no
+// leg waiting, nothing in the outbox.
+type Motion struct {
+	LastReconciledAt   *time.Time
+	UnansweredLegs     int64
+	OldestUnansweredAt *time.Time
+	OutboxWrittenAt    *time.Time
+}
+
+func optionalTime(value pgtype.Timestamptz) *time.Time {
+	if !value.Valid {
+		return nil
+	}
+	at := value.Time.UTC()
+	return &at
+}
+
+func (r *Report) Motion(ctx context.Context) (Motion, error) {
+	row, err := r.q.AdminSystem(ctx)
+	if err != nil {
+		return Motion{}, fmt.Errorf("execution: reading whether the record is moving: %w", err)
+	}
+	return Motion{
+		LastReconciledAt: optionalTime(row.LastReconciledAt), UnansweredLegs: row.UnansweredLegs,
+		OldestUnansweredAt: optionalTime(row.OldestUnansweredAt), OutboxWrittenAt: optionalTime(row.OutboxWrittenAt),
+	}, nil
+}

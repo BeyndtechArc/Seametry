@@ -78,3 +78,38 @@ func first(text string) string {
 	_, size := utf8.DecodeRuneInString(text)
 	return text[:size]
 }
+
+// Mail is the team's mail as the Admin reads it: feedback and notices, by
+// whether each was delivered.
+type Mail struct {
+	q *alertdb.Queries
+}
+
+func NewMail(db alertdb.DBTX) *Mail {
+	return &Mail{q: alertdb.New(db)}
+}
+
+// DeliveryCount is one kind of mail in one delivery state. NewestDeliveredAt
+// is nil for a state nothing in which was delivered.
+type DeliveryCount struct {
+	Kind, Delivery    string
+	Mails             int64
+	NewestAt          time.Time
+	NewestDeliveredAt *time.Time
+}
+
+func (m *Mail) Deliveries(ctx context.Context) ([]DeliveryCount, error) {
+	rows, err := m.q.AdminMailDeliveries(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("alert: reading mail deliveries: %w", err)
+	}
+	counts := make([]DeliveryCount, len(rows))
+	for i, row := range rows {
+		counts[i] = DeliveryCount{Kind: row.Kind, Delivery: row.Delivery, Mails: row.Mails, NewestAt: row.NewestAt.Time.UTC()}
+		if row.NewestDeliveredAt.Valid {
+			delivered := row.NewestDeliveredAt.Time.UTC()
+			counts[i].NewestDeliveredAt = &delivered
+		}
+	}
+	return counts, nil
+}

@@ -15,6 +15,7 @@ import (
 	"github.com/BeyndtechArc/Seametry/server/internal/alert"
 	"github.com/BeyndtechArc/Seametry/server/internal/execution"
 	"github.com/BeyndtechArc/Seametry/server/internal/gateway"
+	"github.com/BeyndtechArc/Seametry/server/internal/growth"
 	"github.com/BeyndtechArc/Seametry/server/internal/identity"
 )
 
@@ -25,7 +26,15 @@ type heldAdmin struct {
 	after     *execution.WalletCursor
 	limit     int
 	moreAfter *execution.WalletCursor
+	// The people reads' arguments, and whether more people remain.
+	filter      growth.PeopleFilter
+	peopleAfter *growth.PersonCursor
+	morePeople  *growth.PersonCursor
+	before      time.Time
+	since       time.Time
 }
+
+var personID = [16]byte{0x5e, 0xa7, 0x1e, 0x7a, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
 
 func (h *heldAdmin) Overview(_ context.Context, period execution.Period) (execution.Overview, error) {
 	h.period, h.reads = period, h.reads+1
@@ -49,6 +58,56 @@ func (h *heldAdmin) Wallets(_ context.Context, deployment string, after *executi
 func (h *heldAdmin) RecentActivity(_ context.Context, period execution.Period) ([]execution.RecordedRow, error) {
 	h.period, h.reads = period, h.reads+1
 	return []execution.RecordedRow{{At: period.To.Add(-time.Minute), Source: "chain", Event: "landed", Wallet: linkedWallet, Detail: "NVDAx"}}, nil
+}
+
+func (h *heldAdmin) Motion(context.Context) (execution.Motion, error) {
+	h.reads++
+	answered := time.Date(2026, 10, 27, 11, 58, 0, 0, time.UTC)
+	return execution.Motion{LastReconciledAt: &answered, UnansweredLegs: 1, OldestUnansweredAt: &answered}, nil
+}
+
+func (h *heldAdmin) List(_ context.Context, filter growth.PeopleFilter, after *growth.PersonCursor, limit int) (growth.PeoplePage, error) {
+	h.reads++
+	h.filter, h.peopleAfter, h.limit = filter, after, limit
+	if filter.Stage == "advocate" {
+		return growth.PeoplePage{}, growth.Refused{Reason: "the double refuses advocates"}
+	}
+	return growth.PeoplePage{
+		People: []growth.PersonSummary{{ID: personID, Kind: "person", DisplayName: "Ada", Stage: "lead", OutreachStatus: "not_contacted", CreatedFrom: "import", ImportedTier: "P1", XHandle: "@ada"}},
+		Total:  3, Next: h.morePeople, Stages: []growth.StageCount{{Stage: "lead", People: 3}},
+	}, nil
+}
+
+func (h *heldAdmin) Read(_ context.Context, id [16]byte, before time.Time, limit int) (growth.Person, error) {
+	h.reads++
+	h.before, h.limit = before, limit
+	if id != personID {
+		return growth.Person{}, growth.ErrNoPerson
+	}
+	return growth.Person{
+		Summary:    growth.PersonSummary{ID: personID, Kind: "person", DisplayName: "Ada", Stage: "connected", OutreachStatus: "sent", CreatedFrom: "signup"},
+		Identities: []growth.Identity{{Kind: "wallet", Value: linkedWallet, Provenance: "account_token", Verified: true}},
+		Timeline: []growth.Event{{
+			ID: 9, Type: "leg.landed", Wallet: linkedWallet, Source: "chain", Deployment: "production", Origin: "execution.outbox",
+			Properties: json.RawMessage(`{"usdc_atoms": 123456789012345678901, "symbol": "NVDAx"}`),
+		}},
+	}, nil
+}
+
+func (h *heldAdmin) Health(_ context.Context, since time.Time) (growth.Health, error) {
+	h.reads++
+	h.since = since
+	return growth.Health{
+		ChainReaders: []growth.CursorAge{{Origin: "hall.devnet", LastSlot: 412, AdvancedAt: since}},
+		Projections:  []growth.CursorAge{{Origin: "execution.outbox", AdvancedAt: since}},
+		EntriesSince: since.Truncate(24 * time.Hour), Entries: 12,
+	}, nil
+}
+
+func (h *heldAdmin) Deliveries(context.Context) ([]alert.DeliveryCount, error) {
+	h.reads++
+	kept := time.Date(2026, 10, 27, 9, 0, 0, 0, time.UTC)
+	return []alert.DeliveryCount{{Kind: "feedback", Delivery: "delivered", Mails: 3, NewestAt: kept, NewestDeliveredAt: &kept}, {Kind: "notices", Delivery: "failed", Mails: 1, NewestAt: kept}}, nil
 }
 
 func (h *heldAdmin) Summary(_ context.Context, from, to time.Time, deployment string) (alert.OptInSummary, error) {
@@ -89,7 +148,7 @@ func adminHandlerWith(t *testing.T, held *heldAdmin, now time.Time, gate func(ht
 	if err != nil {
 		t.Fatal(err)
 	}
-	core := gateway.NewServer(nil, nil).WithAdmin(held, held)
+	core := gateway.NewServer(nil, nil).WithAdmin(held, held).WithAdminPeople(held).WithAdminMail(held)
 	core.Now = func() time.Time { return now }
 	handler := gateway.NewHandler(core, gateway.ServiceSecret(reportSecret), func(next http.Handler) http.Handler {
 		return verifier.Middleware(next, func() time.Time { return now })
@@ -110,7 +169,7 @@ func adminHandlerWith(t *testing.T, held *heldAdmin, now time.Time, gate func(ht
 	return handler, sign
 }
 
-var adminPaths = []string{"/v1/admin/session", "/v1/admin/overview", "/v1/admin/sources", "/v1/admin/wallets", "/v1/admin/activity", "/v1/admin/email-optins", "/v1/admin", "/v1/admin/nothing-here"}
+var adminPaths = []string{"/v1/admin/session", "/v1/admin/overview", "/v1/admin/sources", "/v1/admin/wallets", "/v1/admin/activity", "/v1/admin/email-optins", "/v1/admin/people", "/v1/admin/people/5ea71e7a-0102-0304-0506-0708090a0b0c", "/v1/admin/system", "/v1/admin", "/v1/admin/nothing-here"}
 
 func TestAdminGateAnswersEveryoneButAVerifiedAllowlistedEmailAsAMissingPath(t *testing.T) {
 	now := time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)
@@ -159,7 +218,7 @@ func TestAdminGateAdmitsAVerifiedAllowlistedEmailWithoutCase(t *testing.T) {
 	held := &heldAdmin{}
 	handler, sign := adminHandler(t, " ops@example.com , Storm@Example.com ", held, now)
 	token := sign(adminClaims{"storm@EXAMPLE.com", true})
-	for _, path := range adminPaths[:6] {
+	for _, path := range adminPaths[:9] {
 		response := getActivity(handler, path, token)
 		if response.Code != http.StatusOK {
 			t.Fatalf("GET %s = %d: %s", path, response.Code, response.Body.String())
