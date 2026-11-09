@@ -27,6 +27,8 @@ type Server struct {
 	OptIns          EmailOptIns
 	AdminRecord     AdminRecord
 	AdminOptIns     AdminOptIns
+	AdminPeople     AdminPeople
+	AdminMail       AdminMail
 	Visits          VisitCounter
 	Now             func() time.Time
 }

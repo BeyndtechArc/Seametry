@@ -29,12 +29,21 @@ type ServerInterface interface {
 	// GetAdminOverview Volume, fee revenue, tip cost, wallet states, the funnel and reliability for a period.
 	// (GET /admin/overview)
 	GetAdminOverview(w http.ResponseWriter, r *http.Request, params GetAdminOverviewParams)
+	// GetAdminPeople The people Growth knows of, newest change first, a page at a time, with everyone counted by stage.
+	// (GET /admin/people)
+	GetAdminPeople(w http.ResponseWriter, r *http.Request, params GetAdminPeopleParams)
+	// GetAdminPerson One person, every identity with whose word it is, what a ledger said of them, and their timeline.
+	// (GET /admin/people/{id})
+	GetAdminPerson(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params GetAdminPersonParams)
 	// GetAdminSession The admitted account, so the Admin's frame can be drawn without reading any figure.
 	// (GET /admin/session)
 	GetAdminSession(w http.ResponseWriter, r *http.Request)
 	// GetAdminSources Wallets and landed volume by the first-touch ref code their first quote carried.
 	// (GET /admin/sources)
 	GetAdminSources(w http.ResponseWriter, r *http.Request, params GetAdminSourcesParams)
+	// GetAdminSystem Whether the record is still moving, across every deployment.
+	// (GET /admin/system)
+	GetAdminSystem(w http.ResponseWriter, r *http.Request)
 	// GetAdminWallets The wallets seen in a deployment, newest first seen first, a page at a time, with all-time landed totals.
 	// (GET /admin/wallets)
 	GetAdminWallets(w http.ResponseWriter, r *http.Request, params GetAdminWalletsParams)
@@ -313,6 +322,172 @@ func (siw *ServerInterfaceWrapper) GetAdminOverview(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
+// GetAdminPeople operation middleware
+func (siw *ServerInterfaceWrapper) GetAdminPeople(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAdminPeopleParams
+
+	// ------------- Optional query parameter "stage" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "stage", r.URL.Query(), &params.Stage, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "stage"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "stage", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "outreach_status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "outreach_status", r.URL.Query(), &params.OutreachStatus, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "outreach_status"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "outreach_status", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "created_from" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "created_from", r.URL.Query(), &params.CreatedFrom, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "created_from"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "created_from", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "tier" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "tier", r.URL.Query(), &params.Tier, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "tier"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tier", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "q" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "q", r.URL.Query(), &params.Q, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "q"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "q", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "cursor", r.URL.Query(), &params.Cursor, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "cursor"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAdminPeople(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAdminPerson operation middleware
+func (siw *ServerInterfaceWrapper) GetAdminPerson(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: "uuid", ValueIsUnescaped: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAdminPersonParams
+
+	// ------------- Optional query parameter "before" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "before", r.URL.Query(), &params.Before, runtime.BindQueryParameterOptions{Type: "string", Format: "date-time"})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "before"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "before", Err: err})
+		}
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "limit", r.URL.Query(), &params.Limit, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		var requiredError *runtime.RequiredParameterError
+		if errors.As(err, &requiredError) {
+			siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "limit"})
+		} else {
+			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		}
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAdminPerson(w, r, id, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetAdminSession operation middleware
 func (siw *ServerInterfaceWrapper) GetAdminSession(w http.ResponseWriter, r *http.Request) {
 
@@ -377,6 +552,20 @@ func (siw *ServerInterfaceWrapper) GetAdminSources(w http.ResponseWriter, r *htt
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetAdminSources(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAdminSystem operation middleware
+func (siw *ServerInterfaceWrapper) GetAdminSystem(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAdminSystem(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1366,6 +1555,9 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/wallets", wrapper.GetAdminWallets)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/activity", wrapper.GetAdminActivity)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/email-optins", wrapper.GetAdminEmailOptIns)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/people", wrapper.GetAdminPeople)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/people/{id}", wrapper.GetAdminPerson)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/system", wrapper.GetAdminSystem)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/quotes", wrapper.RecordActivityQuote)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/activity/submissions", wrapper.RecordActivitySubmission)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/internal/feedback", wrapper.ReceiveFeedback)
@@ -1511,6 +1703,95 @@ func (response GetAdminOverviewdefaultApplicationProblemPlusJSONResponse) VisitG
 	return err
 }
 
+type GetAdminPeopleRequestObject struct {
+	Params GetAdminPeopleParams
+}
+
+type GetAdminPeopleResponseObject interface {
+	VisitGetAdminPeopleResponse(w http.ResponseWriter) error
+}
+
+type GetAdminPeople200JSONResponse struct {
+	Data AdminPeople `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetAdminPeople200JSONResponse) VisitGetAdminPeopleResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminPeopledefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetAdminPeopledefaultApplicationProblemPlusJSONResponse) VisitGetAdminPeopleResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminPersonRequestObject struct {
+	Id     openapi_types.UUID `json:"id"`
+	Params GetAdminPersonParams
+}
+
+type GetAdminPersonResponseObject interface {
+	VisitGetAdminPersonResponse(w http.ResponseWriter) error
+}
+
+type GetAdminPerson200JSONResponse struct {
+	Data AdminPerson `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetAdminPerson200JSONResponse) VisitGetAdminPersonResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminPersondefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetAdminPersondefaultApplicationProblemPlusJSONResponse) VisitGetAdminPersonResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
 type GetAdminSessionRequestObject struct {
 }
 
@@ -1587,6 +1868,49 @@ type GetAdminSourcesdefaultApplicationProblemPlusJSONResponse struct {
 }
 
 func (response GetAdminSourcesdefaultApplicationProblemPlusJSONResponse) VisitGetAdminSourcesResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminSystemRequestObject struct {
+}
+
+type GetAdminSystemResponseObject interface {
+	VisitGetAdminSystemResponse(w http.ResponseWriter) error
+}
+
+type GetAdminSystem200JSONResponse struct {
+	Data AdminSystem `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetAdminSystem200JSONResponse) VisitGetAdminSystemResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminSystemdefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetAdminSystemdefaultApplicationProblemPlusJSONResponse) VisitGetAdminSystemResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
@@ -2903,12 +3227,21 @@ type StrictServerInterface interface {
 	// GetAdminOverview Volume, fee revenue, tip cost, wallet states, the funnel and reliability for a period.
 	// (GET /admin/overview)
 	GetAdminOverview(ctx context.Context, request GetAdminOverviewRequestObject) (GetAdminOverviewResponseObject, error)
+	// GetAdminPeople The people Growth knows of, newest change first, a page at a time, with everyone counted by stage.
+	// (GET /admin/people)
+	GetAdminPeople(ctx context.Context, request GetAdminPeopleRequestObject) (GetAdminPeopleResponseObject, error)
+	// GetAdminPerson One person, every identity with whose word it is, what a ledger said of them, and their timeline.
+	// (GET /admin/people/{id})
+	GetAdminPerson(ctx context.Context, request GetAdminPersonRequestObject) (GetAdminPersonResponseObject, error)
 	// GetAdminSession The admitted account, so the Admin's frame can be drawn without reading any figure.
 	// (GET /admin/session)
 	GetAdminSession(ctx context.Context, request GetAdminSessionRequestObject) (GetAdminSessionResponseObject, error)
 	// GetAdminSources Wallets and landed volume by the first-touch ref code their first quote carried.
 	// (GET /admin/sources)
 	GetAdminSources(ctx context.Context, request GetAdminSourcesRequestObject) (GetAdminSourcesResponseObject, error)
+	// GetAdminSystem Whether the record is still moving, across every deployment.
+	// (GET /admin/system)
+	GetAdminSystem(ctx context.Context, request GetAdminSystemRequestObject) (GetAdminSystemResponseObject, error)
 	// GetAdminWallets The wallets seen in a deployment, newest first seen first, a page at a time, with all-time landed totals.
 	// (GET /admin/wallets)
 	GetAdminWallets(ctx context.Context, request GetAdminWalletsRequestObject) (GetAdminWalletsResponseObject, error)
@@ -3118,6 +3451,59 @@ func (sh *strictHandler) GetAdminOverview(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// GetAdminPeople operation middleware
+func (sh *strictHandler) GetAdminPeople(w http.ResponseWriter, r *http.Request, params GetAdminPeopleParams) {
+	var request GetAdminPeopleRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminPeople(ctx, request.(GetAdminPeopleRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminPeople")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAdminPeopleResponseObject); ok {
+		if err := validResponse.VisitGetAdminPeopleResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAdminPerson operation middleware
+func (sh *strictHandler) GetAdminPerson(w http.ResponseWriter, r *http.Request, id openapi_types.UUID, params GetAdminPersonParams) {
+	var request GetAdminPersonRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminPerson(ctx, request.(GetAdminPersonRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminPerson")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAdminPersonResponseObject); ok {
+		if err := validResponse.VisitGetAdminPersonResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetAdminSession operation middleware
 func (sh *strictHandler) GetAdminSession(w http.ResponseWriter, r *http.Request) {
 	var request GetAdminSessionRequestObject
@@ -3161,6 +3547,30 @@ func (sh *strictHandler) GetAdminSources(w http.ResponseWriter, r *http.Request,
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetAdminSourcesResponseObject); ok {
 		if err := validResponse.VisitGetAdminSourcesResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAdminSystem operation middleware
+func (sh *strictHandler) GetAdminSystem(w http.ResponseWriter, r *http.Request) {
+	var request GetAdminSystemRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminSystem(ctx, request.(GetAdminSystemRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminSystem")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAdminSystemResponseObject); ok {
+		if err := validResponse.VisitGetAdminSystemResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

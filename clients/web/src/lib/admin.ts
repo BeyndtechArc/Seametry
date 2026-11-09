@@ -16,6 +16,9 @@ export type AdminSources = components["schemas"]["AdminSources"];
 export type AdminWallets = components["schemas"]["AdminWallets"];
 export type AdminActivity = components["schemas"]["AdminActivity"];
 export type AdminEmailOptIns = components["schemas"]["AdminEmailOptIns"];
+export type AdminPeople = components["schemas"]["AdminPeople"];
+export type AdminPerson = components["schemas"]["AdminPerson"];
+export type AdminSystem = components["schemas"]["AdminSystem"];
 type Meta = components["schemas"]["Meta"];
 
 export type Section<T> = { state: "read"; data: T; readAt: string } | { state: "unavailable"; detail: string };

@@ -400,6 +400,36 @@ func (q *Queries) AdminSources(ctx context.Context, arg AdminSourcesParams) ([]A
 	return items, nil
 }
 
+const adminSystem = `-- name: AdminSystem :one
+SELECT
+    (SELECT max(reconciled_at) FROM execution.legs)::timestamptz AS last_reconciled_at,
+    (SELECT count(*) FROM execution.legs WHERE signature IS NOT NULL AND chain_outcome IS NULL) AS unanswered_legs,
+    (SELECT min(submitted_at) FROM execution.legs WHERE signature IS NOT NULL AND chain_outcome IS NULL)::timestamptz AS oldest_unanswered_at,
+    (SELECT max(written_at) FROM execution.outbox)::timestamptz AS outbox_written_at
+`
+
+type AdminSystemRow struct {
+	LastReconciledAt   pgtype.Timestamptz `db:"last_reconciled_at" json:"last_reconciled_at"`
+	UnansweredLegs     int64              `db:"unanswered_legs" json:"unanswered_legs"`
+	OldestUnansweredAt pgtype.Timestamptz `db:"oldest_unanswered_at" json:"oldest_unanswered_at"`
+	OutboxWrittenAt    pgtype.Timestamptz `db:"outbox_written_at" json:"outbox_written_at"`
+}
+
+// Whether the record is still moving, across every deployment: when the
+// reconciler last wrote a chain answer, the legs still waiting for one and
+// the oldest of them, and when the outbox last grew.
+func (q *Queries) AdminSystem(ctx context.Context) (AdminSystemRow, error) {
+	row := q.db.QueryRow(ctx, adminSystem)
+	var i AdminSystemRow
+	err := row.Scan(
+		&i.LastReconciledAt,
+		&i.UnansweredLegs,
+		&i.OldestUnansweredAt,
+		&i.OutboxWrittenAt,
+	)
+	return i, err
+}
+
 const adminWalletCount = `-- name: AdminWalletCount :one
 SELECT count(DISTINCT wallet)::bigint FROM execution.quotes WHERE deployment = $1
 `

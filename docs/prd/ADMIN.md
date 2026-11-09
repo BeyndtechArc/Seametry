@@ -34,7 +34,10 @@ without reading any figure, and each page then reads only what it shows:
 | Sources | `/admin/sources` | `sources` |
 | Wallets | `/admin/wallets` | `wallets`, by deployment and cursor, never a period |
 | Activity | `/admin/activity` | `activity` |
+| People | `/admin/people` | `people`, by filters and cursor, never a period |
+| Person | `/admin/people/{id}` | `people/{id}`, the 100 newest timeline events |
 | Email opt-ins | `/admin/opt-ins` | `email-optins` |
+| System | `/admin/system` | `system`, across every deployment |
 
 A page joins the rail in the change that ships it; what comes next, and in
 which order, is `.plan/gtm-admin.plan.md`, milestones 6 and 7.
@@ -107,6 +110,37 @@ reported, and are counted only in the funnel.
   full address leaves the consent record.
 - **Age.** Every view prints when the Gateway read it and when the
   reconciler last wrote a chain answer, so a stalled reconciler shows.
+
+## People, a person, and System
+
+These read Growth's record (`server/internal/growth`), not the activity
+record, and take no period: a person is listed by their newest change.
+
+- **People.** Everyone Growth knows of, newest change first, 50 to a page
+  (at most 200) by an opaque cursor, filtered by stage, outreach status,
+  where they came from (a lead ledger or signing in), ledger tier, and a
+  search matched anywhere in the name or any identity without case, its
+  `%` and `_` taken as themselves. **By stage** counts everyone, whatever
+  the filters. A tier and score are the ledger's word, never this record's
+  measurement. **Proved** says an identity came from an account token or a
+  signed message; otherwise the person is known only by a ledger's claim.
+- **A person.** Every identity with whose word it is (proved by sign-in,
+  proved by a signed message, or a ledger's claim); what the ledger said,
+  with the lawful basis it was imported under; and the timeline, newest
+  first: events naming the person and events of each wallet they proved.
+  A wallet only a ledger claimed is listed, but its activity is not
+  attributed to them until they prove it. Numbers in an event are passed
+  through as written, never through a float.
+- **System.** Across every deployment, each part's last motion as a time
+  and an age: the reconciler's last chain answer, the legs sent with no
+  answer yet and the oldest of them, when the execution outbox last grew,
+  where each Growth reader (the outbox projection, the Hall program
+  readers) last moved, the timeline by whose word with when each kind last
+  happened and arrived, people by where they came from, site entries in
+  the last 7 days, and the team's mail (feedback and notices) by delivery
+  state, each kept before it is sent so a failed send is counted. No lag is derived and no part is called working: the
+  outbox is read in transaction order, so a difference of ids would not be
+  the backlog, and what counts as old is the reader's judgement.
 
 No recommendation is printed: the Admin states conditions and the reader
 decides (AGENTS.md, Language).

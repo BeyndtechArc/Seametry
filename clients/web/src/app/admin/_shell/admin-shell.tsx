@@ -7,7 +7,7 @@ import { Icon } from "@seametry/ui/icons";
 import { ThemeControl } from "@seametry/ui/theme-control";
 import { authClient } from "@/lib/auth-client";
 import { BrandMark } from "../../brand-mark";
-import { adminGroups } from "./routes";
+import { adminGroups, isCurrent } from "./routes";
 import styles from "./admin-shell.module.css";
 
 /** components.md, Admin shell. */
@@ -38,7 +38,7 @@ export function AdminShell({ email, children }: { email: string; children: React
                 <ul>
                   {group.routes.map((route) => (
                     <li key={route.href}>
-                      <Link href={route.href} aria-current={pathname === route.href ? "page" : undefined} onClick={() => setOpen(false)}>
+                      <Link href={route.href} aria-current={isCurrent(route, pathname) ? "page" : undefined} onClick={() => setOpen(false)}>
                         {route.label}
                       </Link>
                     </li>

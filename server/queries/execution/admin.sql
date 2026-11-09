@@ -187,3 +187,13 @@ FROM (
 WHERE at < sqlc.arg(period_to)::timestamptz
 ORDER BY at DESC
 LIMIT 50;
+
+-- name: AdminSystem :one
+-- Whether the record is still moving, across every deployment: when the
+-- reconciler last wrote a chain answer, the legs still waiting for one and
+-- the oldest of them, and when the outbox last grew.
+SELECT
+    (SELECT max(reconciled_at) FROM execution.legs)::timestamptz AS last_reconciled_at,
+    (SELECT count(*) FROM execution.legs WHERE signature IS NOT NULL AND chain_outcome IS NULL) AS unanswered_legs,
+    (SELECT min(submitted_at) FROM execution.legs WHERE signature IS NOT NULL AND chain_outcome IS NULL)::timestamptz AS oldest_unanswered_at,
+    (SELECT max(written_at) FROM execution.outbox)::timestamptz AS outbox_written_at;

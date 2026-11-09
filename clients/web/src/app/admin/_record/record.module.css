@@ -161,3 +161,24 @@
   outline: 2px solid var(--sm-accent-provenance);
   outline-offset: var(--sm-space-1);
 }
+
+/* A link inside a ledger opens the thing the row names: touchable, so it
+   takes the touch text colour, and stays the row's own size. */
+.rowLink {
+  color: var(--sm-accent-touchText);
+}
+
+.rowLink:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}
+
+/* A ledger wider than a phone scrolls inside itself, so the page never
+   moves sideways and every column stays readable. */
+@media (max-width: 860px) {
+  .ledger {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}

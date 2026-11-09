@@ -501,6 +501,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/people": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The people Growth knows of, newest change first, a page at a time, with everyone counted by stage.
+         * @description Imported people carry the ledger's tier and score as the ledger's word. A filter value outside its set, or a search over 200 characters, is refused with a 400 that names it.
+         */
+        get: operations["getAdminPeople"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/people/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One person, every identity with whose word it is, what a ledger said of them, and their timeline.
+         * @description The timeline is events naming the person and events of every wallet they proved by a token or a signature. A wallet only a ledger claimed is listed as an identity, but its events are not attributed to them.
+         */
+        get: operations["getAdminPerson"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/system": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Whether the record is still moving, across every deployment.
+         * @description Each part's own last motion, as a time: the reconciler's last chain answer, the legs still waiting for one, the outbox, each projection and chain reader, the timeline by whose word, who the record knows, site entries in the last 7 days, and the team's mail by delivery state. No lag is derived: the outbox is read in transaction order, so a difference of ids would not be the backlog.
+         */
+        get: operations["getAdminSystem"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/internal/activity/quotes": {
         parameters: {
             query?: never;
@@ -691,6 +751,189 @@ export interface components {
             total: number;
             /** @description Present while older wallets remain; pass it as cursor for the next page. */
             next_cursor?: string;
+        };
+        AdminPeople: {
+            people: components["schemas"]["AdminPersonSummary"][];
+            /**
+             * Format: int64
+             * @description Every person the filters match, across all pages.
+             */
+            total: number;
+            /** @description Everyone at each stage, unfiltered. A stage nobody is at is absent. */
+            stages: {
+                stage: string;
+                /** Format: int64 */
+                people: number;
+            }[];
+            /** @description Present while more people match; pass it as cursor for the next page. */
+            next_cursor?: string;
+        };
+        AdminPersonSummary: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "person" | "org";
+            display_name: string;
+            stage: string;
+            outreach_status: string;
+            /** @enum {string} */
+            created_from: "signup" | "import";
+            /** @description The ledger's tier, absent for a person who signed up. */
+            imported_tier?: string;
+            /**
+             * Format: int32
+             * @description The ledger's score, absent for a person who signed up.
+             */
+            imported_score?: number;
+            /** @description The first X handle the record holds, empty when none. */
+            x_handle: string;
+            /**
+             * Format: int64
+             * @description Wallet identities, proved or only claimed.
+             */
+            wallets: number;
+            /** @description An identity was proved by a token or a signature, not only claimed by a ledger. */
+            verified: boolean;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        AdminPerson: {
+            person: components["schemas"]["AdminPersonSummary"];
+            imported?: components["schemas"]["AdminImported"];
+            identities: {
+                /** @enum {string} */
+                kind: "wallet" | "account" | "x" | "colosseum" | "web" | "unrecognised";
+                value: string;
+                /** @enum {string} */
+                provenance: "account_token" | "signed_message" | "import";
+                verified: boolean;
+                /** Format: date-time */
+                first_seen_at: string;
+                /** Format: date-time */
+                last_seen_at: string;
+            }[];
+            timeline: components["schemas"]["AdminTimelineEvent"][];
+        };
+        /** @description What a lead ledger said of the person, as the ledger's word. Absent for a person who signed up. */
+        AdminImported: {
+            batch: string;
+            lawful_basis: string;
+            lawful_basis_note: string;
+            tier: string;
+            /** Format: int32 */
+            fit?: number;
+            /** Format: int32 */
+            signal?: number;
+            /** Format: int32 */
+            reach?: number;
+            /** Format: int32 */
+            engagement?: number;
+            /** Format: int32 */
+            score?: number;
+            /** @description The ledger's remaining fields, as it wrote them. */
+            detail?: {
+                [key: string]: unknown;
+            };
+        };
+        AdminTimelineEvent: {
+            type: string;
+            /**
+             * @description Whose word the event is. Only a chain event says something settled.
+             * @enum {string}
+             */
+            source: "server" | "client" | "chain" | "mail" | "import" | "admin";
+            origin: string;
+            wallet?: string;
+            deployment?: string;
+            /** Format: date-time */
+            occurred_at: string;
+            properties: {
+                [key: string]: unknown;
+            };
+        };
+        AdminSystem: {
+            /** @description The team's mail (feedback and notices) by delivery state. Every mail is kept before it is sent. */
+            mail: {
+                /** @enum {string} */
+                kind: "feedback" | "notices";
+                /** @enum {string} */
+                delivery: "pending" | "delivered" | "failed" | "not_configured";
+                /** Format: int64 */
+                mails: number;
+                /**
+                 * Format: date-time
+                 * @description When the newest mail in this state was kept.
+                 */
+                newest_at: string;
+                /**
+                 * Format: date-time
+                 * @description When the newest in this state was delivered; absent when none was.
+                 */
+                newest_delivered_at?: string;
+            }[];
+            /**
+             * Format: date-time
+             * @description Absent until the reconciler has written a chain answer.
+             */
+            last_reconciled_at?: string;
+            /**
+             * Format: int64
+             * @description Legs sent with a signature that have no chain answer yet.
+             */
+            unanswered_legs: number;
+            /**
+             * Format: date-time
+             * @description When the oldest of those legs was submitted; absent when none waits.
+             */
+            oldest_unanswered_at?: string;
+            /**
+             * Format: date-time
+             * @description When the execution outbox last grew; absent while it is empty.
+             */
+            outbox_written_at?: string;
+            projections: components["schemas"]["AdminReaderAge"][];
+            chain_readers: components["schemas"]["AdminReaderAge"][];
+            events: {
+                source: string;
+                /** Format: int64 */
+                events: number;
+                /** Format: date-time */
+                newest_occurred_at: string;
+                /** Format: date-time */
+                newest_received_at: string;
+            }[];
+            people: {
+                created_from: string;
+                /** Format: int64 */
+                people: number;
+            }[];
+            /**
+             * Format: date
+             * @description The first UTC day the entries total counts.
+             */
+            entries_since: string;
+            /**
+             * Format: int64
+             * @description Site entries counted since entries_since, no visitor told from another.
+             */
+            entries: number;
+            /**
+             * Format: date
+             * @description The newest UTC day with any entry; absent when there is none in the window.
+             */
+            newest_entry_on?: string;
+        };
+        AdminReaderAge: {
+            origin: string;
+            /** Format: date-time */
+            advanced_at: string;
+            /**
+             * Format: int64
+             * @description The slot a chain reader has read to; absent for an outbox projection.
+             */
+            last_slot?: number;
         };
         AdminActivity: {
             period: components["schemas"]["AdminPeriod"];
@@ -2203,6 +2446,97 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["AdminEmailOptIns"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAdminPeople: {
+        parameters: {
+            query?: {
+                stage?: "lead" | "visitor" | "connected" | "preflighted" | "allocated" | "repeat" | "ap" | "advocate";
+                outreach_status?: "not_contacted" | "sent" | "replied" | "call_booked" | "testing" | "customer" | "pass";
+                created_from?: "signup" | "import";
+                /** @description A ledger tier, P1 to P9. */
+                tier?: string;
+                /** @description Matched anywhere in the name or any identity's value, without case. */
+                q?: string;
+                /** @description An opaque cursor from a previous page. */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description How many rows one page holds. */
+                limit?: components["parameters"]["AdminPageLimit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page, newest change first. next_cursor is present while more people match. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AdminPeople"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAdminPerson: {
+        parameters: {
+            query?: {
+                /** @description Only events before this time. Omitted means now. */
+                before?: string;
+                /** @description How many rows one page holds. */
+                limit?: components["parameters"]["AdminPageLimit"];
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The person. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AdminPerson"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAdminSystem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The record's motion. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AdminSystem"];
                         meta: components["schemas"]["Meta"];
                     };
                 };

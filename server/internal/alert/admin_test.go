@@ -2,6 +2,7 @@ package alert
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"strings"
 	"testing"
@@ -69,5 +70,36 @@ func TestSummaryCountsConsentsAndReturnsOnlyMaskedAddresses(t *testing.T) {
 	}
 	if want := []string{"v***@e***.org", "s***@g***.com"}; !reflect.DeepEqual(addresses, want) {
 		t.Fatalf("recent = %v, want the two live production consents, newest first, masked: %v", addresses, want)
+	}
+}
+
+func TestMailDeliveriesCountEachKindByWhetherItArrived(t *testing.T) {
+	pool := freshPool(t)
+	ctx := context.Background()
+	delivered := &heldMail{}
+	if err := NewNotices(pool, delivered).Settlements(ctx, []Settlement{{Wallet: holder, Symbol: "AMD", Signature: "sig-b", Outcome: "failed"}}); err != nil {
+		t.Fatal(err)
+	}
+	refused := &heldMail{answer: errors.New("smtp: 554 refused")}
+	if err := NewNotices(pool, refused).Settlements(ctx, []Settlement{{Wallet: holder, Symbol: "BE", Signature: "sig-c", Outcome: "dropped"}}); err != nil {
+		t.Fatal(err)
+	}
+
+	counts, err := NewMail(pool).Deliveries(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(counts) != 2 {
+		t.Fatalf("deliveries = %+v, want one delivered notice and one failed", counts)
+	}
+	byState := map[string]DeliveryCount{}
+	for _, count := range counts {
+		if count.Kind != "notices" || count.Mails != 1 {
+			t.Fatalf("count = %+v, want one notice", count)
+		}
+		byState[count.Delivery] = count
+	}
+	if byState["delivered"].NewestDeliveredAt == nil || byState["failed"].NewestDeliveredAt != nil {
+		t.Fatalf("delivered %+v failed %+v, want a delivery time only on the delivered one", byState["delivered"], byState["failed"])
 	}
 }

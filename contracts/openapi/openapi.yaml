@@ -846,6 +846,138 @@ paths:
         default:
           $ref: '#/components/responses/Problem'
 
+  /admin/people:
+    get:
+      operationId: getAdminPeople
+      tags: [admin]
+      summary: The people Growth knows of, newest change first, a page at a time, with everyone counted by stage.
+      description: >
+        Imported people carry the ledger's tier and score as the ledger's
+        word. A filter value outside its set, or a search over 200
+        characters, is refused with a 400 that names it.
+      security:
+        - accountToken: []
+      parameters:
+        - name: stage
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [lead, visitor, connected, preflighted, allocated, repeat, ap, advocate]
+        - name: outreach_status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [not_contacted, sent, replied, call_booked, testing, customer, pass]
+        - name: created_from
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [signup, import]
+        - name: tier
+          in: query
+          required: false
+          schema:
+            type: string
+          description: A ledger tier, P1 to P9.
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 200
+          description: Matched anywhere in the name or any identity's value, without case.
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/AdminPageLimit'
+      responses:
+        "200":
+          description: One page, newest change first. next_cursor is present while more people match.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminPeople'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+  /admin/people/{id}:
+    get:
+      operationId: getAdminPerson
+      tags: [admin]
+      summary: One person, every identity with whose word it is, what a ledger said of them, and their timeline.
+      description: >
+        The timeline is events naming the person and events of every wallet
+        they proved by a token or a signature. A wallet only a ledger claimed
+        is listed as an identity, but its events are not attributed to them.
+      security:
+        - accountToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Only events before this time. Omitted means now.
+        - $ref: '#/components/parameters/AdminPageLimit'
+      responses:
+        "200":
+          description: The person.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminPerson'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+  /admin/system:
+    get:
+      operationId: getAdminSystem
+      tags: [admin]
+      summary: Whether the record is still moving, across every deployment.
+      description: >
+        Each part's own last motion, as a time: the reconciler's last chain
+        answer, the legs still waiting for one, the outbox, each projection
+        and chain reader, the timeline by whose word, who the record knows,
+        site entries in the last 7 days, and the team's mail by delivery
+        state. No lag is derived: the outbox
+        is read in transaction order, so a difference of ids would not be
+        the backlog.
+      security:
+        - accountToken: []
+      responses:
+        "200":
+          description: The record's motion.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminSystem'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
+
   # --- activity (internal) ------------------------------------------------
   /internal/activity/quotes:
     post:
@@ -1221,6 +1353,269 @@ components:
         next_cursor:
           type: string
           description: Present while older wallets remain; pass it as cursor for the next page.
+    AdminPeople:
+      type: object
+      required: [people, total, stages]
+      properties:
+        people:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPersonSummary'
+        total:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Every person the filters match, across all pages.
+        stages:
+          type: array
+          description: Everyone at each stage, unfiltered. A stage nobody is at is absent.
+          items:
+            type: object
+            required: [stage, people]
+            properties:
+              stage:
+                type: string
+              people:
+                type: integer
+                format: int64
+        next_cursor:
+          type: string
+          description: Present while more people match; pass it as cursor for the next page.
+    AdminPersonSummary:
+      type: object
+      required: [id, kind, display_name, stage, outreach_status, created_from, x_handle, wallets, verified, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [person, org]
+        display_name:
+          type: string
+        stage:
+          type: string
+        outreach_status:
+          type: string
+        created_from:
+          type: string
+          enum: [signup, import]
+        imported_tier:
+          type: string
+          description: The ledger's tier, absent for a person who signed up.
+        imported_score:
+          type: integer
+          format: int32
+          description: The ledger's score, absent for a person who signed up.
+        x_handle:
+          type: string
+          description: The first X handle the record holds, empty when none.
+        wallets:
+          type: integer
+          format: int64
+          description: Wallet identities, proved or only claimed.
+        verified:
+          type: boolean
+          description: An identity was proved by a token or a signature, not only claimed by a ledger.
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AdminPerson:
+      type: object
+      required: [person, identities, timeline]
+      properties:
+        person:
+          $ref: '#/components/schemas/AdminPersonSummary'
+        imported:
+          $ref: '#/components/schemas/AdminImported'
+        identities:
+          type: array
+          items:
+            type: object
+            required: [kind, value, provenance, verified, first_seen_at, last_seen_at]
+            properties:
+              kind:
+                type: string
+                enum: [wallet, account, x, colosseum, web, unrecognised]
+              value:
+                type: string
+              provenance:
+                type: string
+                enum: [account_token, signed_message, import]
+              verified:
+                type: boolean
+              first_seen_at:
+                type: string
+                format: date-time
+              last_seen_at:
+                type: string
+                format: date-time
+        timeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminTimelineEvent'
+    AdminImported:
+      type: object
+      description: What a lead ledger said of the person, as the ledger's word. Absent for a person who signed up.
+      required: [batch, lawful_basis, lawful_basis_note, tier]
+      properties:
+        batch:
+          type: string
+        lawful_basis:
+          type: string
+        lawful_basis_note:
+          type: string
+        tier:
+          type: string
+        fit:
+          type: integer
+          format: int32
+        signal:
+          type: integer
+          format: int32
+        reach:
+          type: integer
+          format: int32
+        engagement:
+          type: integer
+          format: int32
+        score:
+          type: integer
+          format: int32
+        detail:
+          type: object
+          additionalProperties: true
+          description: The ledger's remaining fields, as it wrote them.
+    AdminTimelineEvent:
+      type: object
+      required: [type, source, origin, occurred_at, properties]
+      properties:
+        type:
+          type: string
+        source:
+          type: string
+          enum: [server, client, chain, mail, import, admin]
+          description: Whose word the event is. Only a chain event says something settled.
+        origin:
+          type: string
+        wallet:
+          type: string
+        deployment:
+          type: string
+        occurred_at:
+          type: string
+          format: date-time
+        properties:
+          type: object
+          additionalProperties: true
+    AdminSystem:
+      type: object
+      required: [unanswered_legs, projections, chain_readers, events, people, entries_since, entries, mail]
+      properties:
+        mail:
+          type: array
+          description: The team's mail (feedback and notices) by delivery state. Every mail is kept before it is sent.
+          items:
+            type: object
+            required: [kind, delivery, mails, newest_at]
+            properties:
+              kind:
+                type: string
+                enum: [feedback, notices]
+              delivery:
+                type: string
+                enum: [pending, delivered, failed, not_configured]
+              mails:
+                type: integer
+                format: int64
+              newest_at:
+                type: string
+                format: date-time
+                description: When the newest mail in this state was kept.
+              newest_delivered_at:
+                type: string
+                format: date-time
+                description: When the newest in this state was delivered; absent when none was.
+        last_reconciled_at:
+          type: string
+          format: date-time
+          description: Absent until the reconciler has written a chain answer.
+        unanswered_legs:
+          type: integer
+          format: int64
+          description: Legs sent with a signature that have no chain answer yet.
+        oldest_unanswered_at:
+          type: string
+          format: date-time
+          description: When the oldest of those legs was submitted; absent when none waits.
+        outbox_written_at:
+          type: string
+          format: date-time
+          description: When the execution outbox last grew; absent while it is empty.
+        projections:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminReaderAge'
+        chain_readers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminReaderAge'
+        events:
+          type: array
+          items:
+            type: object
+            required: [source, events, newest_occurred_at, newest_received_at]
+            properties:
+              source:
+                type: string
+              events:
+                type: integer
+                format: int64
+              newest_occurred_at:
+                type: string
+                format: date-time
+              newest_received_at:
+                type: string
+                format: date-time
+        people:
+          type: array
+          items:
+            type: object
+            required: [created_from, people]
+            properties:
+              created_from:
+                type: string
+              people:
+                type: integer
+                format: int64
+        entries_since:
+          type: string
+          format: date
+          description: The first UTC day the entries total counts.
+        entries:
+          type: integer
+          format: int64
+          description: Site entries counted since entries_since, no visitor told from another.
+        newest_entry_on:
+          type: string
+          format: date
+          description: The newest UTC day with any entry; absent when there is none in the window.
+    AdminReaderAge:
+      type: object
+      required: [origin, advanced_at]
+      properties:
+        origin:
+          type: string
+        advanced_at:
+          type: string
+          format: date-time
+        last_slot:
+          type: integer
+          format: int64
+          description: The slot a chain reader has read to; absent for an outbox projection.
     AdminActivity:
       type: object
       required: [period, rows]

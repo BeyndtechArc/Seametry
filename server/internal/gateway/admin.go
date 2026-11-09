@@ -24,6 +24,7 @@ type AdminRecord interface {
 	Sources(ctx context.Context, period execution.Period) ([]execution.SourceTotals, error)
 	Wallets(ctx context.Context, deployment string, after *execution.WalletCursor, limit int) (execution.WalletPage, error)
 	RecentActivity(ctx context.Context, period execution.Period) ([]execution.RecordedRow, error)
+	Motion(ctx context.Context) (execution.Motion, error)
 }
 
 // AdminOptIns is the consent record's counts, with addresses already masked.
