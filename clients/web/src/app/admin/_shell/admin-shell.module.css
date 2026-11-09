@@ -1,0 +1,173 @@
+/* components.md, Admin shell. Wide: rail | page. Narrow: one column, the
+   page list folded behind a button. */
+.shell {
+  display: grid;
+  grid-template-columns: calc(var(--sm-space-13) * 1.65) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--sm-surface-ground);
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--sm-space-6);
+  height: 100vh;
+  padding: var(--sm-space-6) var(--sm-space-4);
+  border-right: 0.5px solid var(--sm-line-rule);
+  overflow-y: auto;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sm-space-4);
+}
+
+.toggle {
+  display: none;
+}
+
+.holder {
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: space-between;
+  gap: var(--sm-space-8);
+}
+
+.group ul {
+  display: grid;
+  gap: var(--sm-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.groupLabel {
+  margin: 0;
+  padding: var(--sm-space-5) var(--sm-space-3) var(--sm-space-2);
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+/* Page links and the account's exits share one row treatment, so the rail
+   reads as one list and nothing in it competes with the page. */
+.group a,
+.account a,
+.account button {
+  display: block;
+  width: 100%;
+  padding: var(--sm-space-2) var(--sm-space-3);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--sm-text-secondary);
+  font: inherit;
+  font-size: var(--sm-font-size-small);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.group a:hover,
+.account a:hover,
+.account button:hover:not(:disabled) {
+  color: var(--sm-text-primary);
+}
+
+.account button:disabled {
+  color: var(--sm-text-tertiary);
+  cursor: default;
+}
+
+/* The Docs page tree's current-page treatment: raised tone, primary text. */
+.group a[aria-current="page"] {
+  color: var(--sm-text-primary);
+  background: var(--sm-surface-raised);
+  font-weight: var(--sm-font-weight-medium);
+}
+
+.group a:focus-visible,
+.account a:focus-visible,
+.account button:focus-visible,
+.toggle:focus-visible {
+  outline: 2px solid var(--sm-accent-provenance);
+  outline-offset: var(--sm-space-1);
+}
+
+.account {
+  display: grid;
+  justify-items: start;
+  gap: var(--sm-space-1);
+  padding-top: var(--sm-space-5);
+  border-top: 0.5px solid var(--sm-line-rule);
+}
+
+.email {
+  max-width: 100%;
+  margin: 0;
+  padding: 0 var(--sm-space-3) var(--sm-space-2);
+  overflow-wrap: anywhere;
+  color: var(--sm-text-tertiary);
+  font-size: var(--sm-font-size-micro);
+}
+
+.problem {
+  margin: 0;
+  padding-top: var(--sm-space-3);
+  border-top: 0.5px solid var(--sm-line-strong);
+  color: var(--sm-text-primary);
+  font-size: var(--sm-font-size-small);
+}
+
+.page {
+  min-width: 0;
+  padding: var(--sm-space-10) var(--sm-space-9) var(--sm-space-12);
+}
+
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* No row is reserved for the folded list, so its gap goes with it. */
+  .rail {
+    position: static;
+    grid-template-rows: none;
+    height: auto;
+    padding: var(--sm-space-4);
+    border-right: 0;
+    border-bottom: 0.5px solid var(--sm-line-rule);
+    overflow: visible;
+  }
+
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--sm-space-3);
+    min-height: var(--sm-size-target);
+    padding: 0 var(--sm-space-3);
+    border: 0.5px solid var(--sm-line-rule);
+    border-radius: 0;
+    color: var(--sm-text-primary);
+    background: var(--sm-surface-sheet);
+    font: inherit;
+    font-size: var(--sm-font-size-small);
+    cursor: pointer;
+  }
+
+  .toggle svg {
+    width: var(--sm-space-5);
+    height: var(--sm-space-5);
+  }
+
+  .holder:not([data-open]) {
+    display: none;
+  }
+
+  .page {
+    padding: var(--sm-space-8) var(--sm-space-4) var(--sm-space-10);
+  }
+}

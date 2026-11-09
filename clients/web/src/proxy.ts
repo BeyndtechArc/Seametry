@@ -32,6 +32,9 @@ export function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
+  // A layout is not given its URL, and the Admin's sends a signed-out
+  // visitor to sign in and back to the exact page and query they asked for.
+  requestHeaders.set("x-request-path", `${request.nextUrl.pathname}${request.nextUrl.search}`);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);

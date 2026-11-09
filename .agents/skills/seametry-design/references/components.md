@@ -495,6 +495,14 @@ Copyable prompts and endpoints, the machine-readable site version, the API refer
 **Data:** one route list that drives the top bar tabs and the narrow navigation register, so they cannot disagree.
 **Rules:** the phone tab bar takes its height from `--shell-bottom-inset`, which the shell publishes and every sticky bar and the Toast region sit above, so nothing pinned to the bottom hides behind it. The mobile tabs reference the same route records as the wide bar. Every route resolves. The current route is named by its tab; a page header appears only when it adds network or decision context that the shell cannot carry. Reading links remain on the public pages and wide Status bar.
 
+### Admin shell
+**Answers:** which part of the house's record am I reading, and where is the next one?
+**Anatomy:** wide layouts: a sticky left rail beside the page. The rail holds the Brand mark (opening the Admin's Overview), one page link per Admin page under quiet group labels (Record, Reach, and later People and Operations), then, closing it under a rule, the admitted account's email in `text.tertiary`, Open the site, Open the app and Sign out as rows in the page links' own treatment (boxed Quiet controls wrapped in a rail this narrow and outweighed the page links), and the Mode control. Narrow layouts: the mark and one button, "Admin pages", which unfolds the same list above the page.
+**Identity:** the Docs page tree's treatment, because it is the house's existing left navigation: the current page is a raised tone behind primary text, other pages `text.secondary`, no icon per row, no underline, no badge. The rail sits on the ground, divided from the page by one rule. No public footer, no House rail: the Admin is a working register, not a public page.
+**States:** current page; other page; group label; keyboard focus; folded and open on narrow layouts. The frame is drawn only for an admitted account: anyone else gets the site's plain 404 before any of it renders.
+**Data:** one route list that drives the rail and the narrow list, so they cannot disagree; the admitted account from the Gateway's session read.
+**Rules:** every destination resolves, so a page joins the rail in the change that ships it. Each page reads only what it shows. The rail never carries a figure, a count or a status mark: what changed belongs on the pages.
+
 ### Page header
 **Answers:** what is this page, and what does it act on?
 **Anatomy:** title, with an optional Info note beside it; Network badge; optional quiet links. No group label: the product tabs already name it (Storm, 14 October 2026).

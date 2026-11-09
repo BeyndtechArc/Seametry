@@ -146,6 +146,9 @@ function adminPeriod(search) {
 function adminAnswer(token, operation, search) {
   const admins = ["fixture-admin-token", "fixture-admin-empty-token", "fixture-admin-degraded-token"];
   if (!admins.includes(token)) return undefined;
+  if (operation === "session") {
+    return { status: 200, body: { meta: adminMeta, data: { account_id: `${token}-account`, email: "storm@example.com" } } };
+  }
   const period = adminPeriod(search);
   if (Date.parse(period.from) >= Date.parse(period.to)) {
     return { status: 400, body: { title: "Activity report refused", status: 400, detail: `GetAdminOverview: execution: period from ${period.from} is not before to ${period.to}` } };

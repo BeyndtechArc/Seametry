@@ -110,7 +110,7 @@ func adminHandlerWith(t *testing.T, held *heldAdmin, now time.Time, gate func(ht
 	return handler, sign
 }
 
-var adminPaths = []string{"/v1/admin/overview", "/v1/admin/sources", "/v1/admin/wallets", "/v1/admin/activity", "/v1/admin/email-optins", "/v1/admin", "/v1/admin/nothing-here"}
+var adminPaths = []string{"/v1/admin/session", "/v1/admin/overview", "/v1/admin/sources", "/v1/admin/wallets", "/v1/admin/activity", "/v1/admin/email-optins", "/v1/admin", "/v1/admin/nothing-here"}
 
 func TestAdminGateAnswersEveryoneButAVerifiedAllowlistedEmailAsAMissingPath(t *testing.T) {
 	now := time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)
@@ -159,7 +159,7 @@ func TestAdminGateAdmitsAVerifiedAllowlistedEmailWithoutCase(t *testing.T) {
 	held := &heldAdmin{}
 	handler, sign := adminHandler(t, " ops@example.com , Storm@Example.com ", held, now)
 	token := sign(adminClaims{"storm@EXAMPLE.com", true})
-	for _, path := range adminPaths[:5] {
+	for _, path := range adminPaths[:6] {
 		response := getActivity(handler, path, token)
 		if response.Code != http.StatusOK {
 			t.Fatalf("GET %s = %d: %s", path, response.Code, response.Body.String())
@@ -170,6 +170,31 @@ func TestAdminGateAdmitsAVerifiedAllowlistedEmailWithoutCase(t *testing.T) {
 	}
 	if response := getActivity(handler, "/v1/admin/nothing-here", token); response.Code != http.StatusNotFound {
 		t.Fatalf("an admin's unknown admin path = %d, want 404", response.Code)
+	}
+}
+
+func TestAdminSessionNamesTheAdmittedAccountWithoutReadingTheRecord(t *testing.T) {
+	now := time.Date(2026, 10, 27, 12, 0, 0, 0, time.UTC)
+	held := &heldAdmin{}
+	handler, sign := adminHandler(t, "storm@example.com", held, now)
+	response := getActivity(handler, "/v1/admin/session", sign(adminClaims{"Storm@example.com", true}))
+	if response.Code != http.StatusOK {
+		t.Fatalf("session = %d: %s", response.Code, response.Body.String())
+	}
+	var body struct {
+		Data struct {
+			AccountID string `json:"account_id"`
+			Email     string `json:"email"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body.Data.AccountID != "account-1" || body.Data.Email != "Storm@example.com" {
+		t.Fatalf("session = %+v, want account-1 as Storm@example.com, the address as the token carried it", body.Data)
+	}
+	if held.reads != 0 {
+		t.Fatalf("the record was read %d times to name the session", held.reads)
 	}
 }
 

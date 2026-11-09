@@ -29,6 +29,9 @@ type ServerInterface interface {
 	// GetAdminOverview Volume, fee revenue, tip cost, wallet states, the funnel and reliability for a period.
 	// (GET /admin/overview)
 	GetAdminOverview(w http.ResponseWriter, r *http.Request, params GetAdminOverviewParams)
+	// GetAdminSession The admitted account, so the Admin's frame can be drawn without reading any figure.
+	// (GET /admin/session)
+	GetAdminSession(w http.ResponseWriter, r *http.Request)
 	// GetAdminSources Wallets and landed volume by the first-touch ref code their first quote carried.
 	// (GET /admin/sources)
 	GetAdminSources(w http.ResponseWriter, r *http.Request, params GetAdminSourcesParams)
@@ -301,6 +304,20 @@ func (siw *ServerInterfaceWrapper) GetAdminOverview(w http.ResponseWriter, r *ht
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetAdminOverview(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetAdminSession operation middleware
+func (siw *ServerInterfaceWrapper) GetAdminSession(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetAdminSession(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1343,6 +1360,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/status", wrapper.GetStatus)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me", wrapper.GetMe)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/me/activity", wrapper.GetMyActivity)
+	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/session", wrapper.GetAdminSession)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/overview", wrapper.GetAdminOverview)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/sources", wrapper.GetAdminSources)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/admin/wallets", wrapper.GetAdminWallets)
@@ -1482,6 +1500,49 @@ type GetAdminOverviewdefaultApplicationProblemPlusJSONResponse struct {
 }
 
 func (response GetAdminOverviewdefaultApplicationProblemPlusJSONResponse) VisitGetAdminOverviewResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(response.StatusCode)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminSessionRequestObject struct {
+}
+
+type GetAdminSessionResponseObject interface {
+	VisitGetAdminSessionResponse(w http.ResponseWriter) error
+}
+
+type GetAdminSession200JSONResponse struct {
+	Data AdminSession `json:"data"`
+
+	// Meta The outer envelope every response carries (docs/prd/API.md section 4.3).
+	Meta Meta `json:"meta"`
+}
+
+func (response GetAdminSession200JSONResponse) VisitGetAdminSessionResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetAdminSessiondefaultApplicationProblemPlusJSONResponse struct {
+	Body       Problem
+	StatusCode int
+}
+
+func (response GetAdminSessiondefaultApplicationProblemPlusJSONResponse) VisitGetAdminSessionResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response.Body); err != nil {
@@ -2842,6 +2903,9 @@ type StrictServerInterface interface {
 	// GetAdminOverview Volume, fee revenue, tip cost, wallet states, the funnel and reliability for a period.
 	// (GET /admin/overview)
 	GetAdminOverview(ctx context.Context, request GetAdminOverviewRequestObject) (GetAdminOverviewResponseObject, error)
+	// GetAdminSession The admitted account, so the Admin's frame can be drawn without reading any figure.
+	// (GET /admin/session)
+	GetAdminSession(ctx context.Context, request GetAdminSessionRequestObject) (GetAdminSessionResponseObject, error)
 	// GetAdminSources Wallets and landed volume by the first-touch ref code their first quote carried.
 	// (GET /admin/sources)
 	GetAdminSources(ctx context.Context, request GetAdminSourcesRequestObject) (GetAdminSourcesResponseObject, error)
@@ -3047,6 +3111,30 @@ func (sh *strictHandler) GetAdminOverview(w http.ResponseWriter, r *http.Request
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(GetAdminOverviewResponseObject); ok {
 		if err := validResponse.VisitGetAdminOverviewResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAdminSession operation middleware
+func (sh *strictHandler) GetAdminSession(w http.ResponseWriter, r *http.Request) {
+	var request GetAdminSessionRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminSession(ctx, request.(GetAdminSessionRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminSession")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetAdminSessionResponseObject); ok {
+		if err := validResponse.VisitGetAdminSessionResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

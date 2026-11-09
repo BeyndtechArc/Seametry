@@ -679,6 +679,32 @@ paths:
           $ref: '#/components/responses/Problem'
 
   # --- admin (internal) -------------------------------------------------
+  /admin/session:
+    get:
+      operationId: getAdminSession
+      tags: [admin]
+      summary: The admitted account, so the Admin's frame can be drawn without reading any figure.
+      description: >
+        Answers only past the admin gate, like every admin read; anyone the
+        gate refuses gets its 404. The email is the verified address the
+        account token carried, which the allowlist matched.
+      security:
+        - accountToken: []
+      responses:
+        "200":
+          description: The account the gate admitted.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminSession'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        default:
+          $ref: '#/components/responses/Problem'
   /admin/overview:
     get:
       operationId: getAdminOverview
@@ -1112,6 +1138,16 @@ components:
             $ref: '#/components/schemas/Problem'
 
   schemas:
+    AdminSession:
+      type: object
+      required: [account_id, email]
+      properties:
+        account_id:
+          type: string
+          description: The account authority's subject id.
+        email:
+          type: string
+          description: The verified address the allowlist admitted.
     AdminPeriod:
       type: object
       required: [from, to, deployment]
