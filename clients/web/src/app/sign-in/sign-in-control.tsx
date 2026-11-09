@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ContinueAction, QuietAction, RouteAction } from "@seametry/ui";
+import { QuietAction, QuietLink, RouteAction } from "@seametry/ui";
 import { authClient } from "@/lib/auth-client";
+import { GoogleRow } from "../connect-modal";
 import { WalletLinkControl } from "./wallet-link-control";
 import styles from "../site.module.css";
 
@@ -52,7 +53,7 @@ function ConfiguredSignInControl({ returnTo }: { returnTo: string }) {
 
   return (
     <>
-      <ContinueAction disabled={working} onClick={async () => {
+      <GoogleRow disabled={working} onClick={async () => {
         setWorking(true);
         setProblem(undefined);
         const result = await authClient.signIn.social({ provider: "google", callbackURL: returnTo });
@@ -60,10 +61,11 @@ function ConfiguredSignInControl({ returnTo }: { returnTo: string }) {
           setProblem(result.error.message ?? "Google sign-in did not complete.");
           setWorking(false);
         }
-      }}>Continue with Google</ContinueAction>
+      }} />
       <p>Signing in saves an account session. Connect an external wallet separately when you want to act from its address.</p>
       {problem ? <p role="alert" className={styles.authProblem}>{problem}</p> : null}
-      <RouteAction href="/app/allocation">Explore without an account</RouteAction>
+      {/* Quiet, so on a sign-in page the way past it never outranks signing in. */}
+      <QuietLink href="/app/allocation" icon="arrow-up-right">Explore without an account</QuietLink>
     </>
   );
 }

@@ -228,6 +228,18 @@ test("sign in distinguishes an account from its wallet", async ({ page }) => {
   await expect(page.getByRole("main").getByRole("link", { name: "Explore without an account" })).toHaveAttribute("href", "/app/allocation");
 });
 
+test("the sign-in page offers Google as the modal does, with Google's mark", async ({ page }) => {
+  await page.route("**/api/auth/get-session", (route) => route.fulfill({ json: null }));
+  await page.goto("/sign-in");
+  const onPage = page.getByRole("main").getByRole("button", { name: "Continue with Google" });
+  await expect(onPage.locator("img")).toHaveAttribute("src", "/brands/google-g.svg");
+  const pageClass = await onPage.getAttribute("class");
+  await page.goto("/app/allocation");
+  await page.locator("#app-wallet").click();
+  const inModal = page.getByRole("dialog", { name: "Sign in to Seametry" }).getByRole("button", { name: "Continue with Google" });
+  expect(await inModal.getAttribute("class")).toBe(pageClass);
+});
+
 test("the public site publishes the terms and privacy policy used for account consent", async ({ page }) => {
   await page.goto("/");
   const footer = page.getByRole("contentinfo");

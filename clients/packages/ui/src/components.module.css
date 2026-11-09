@@ -984,6 +984,14 @@
   background: transparent;
 }
 
+/* The cell's fill went with the face's, or the grey icon sat on green; with
+   no fill left, the hairline is the separation again, as on outline actions. */
+.key:disabled .actionIcon,
+.key[aria-disabled="true"] .actionIcon {
+  border-left: 0.5px solid currentColor;
+  background: transparent;
+}
+
 .key:disabled {
   cursor: default;
 }
