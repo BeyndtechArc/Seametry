@@ -506,6 +506,22 @@ hosts and not others, with the limits checked, is that record together with
 backups are this document's concern: a nightly dump goes to R2, and CI restores
 the latest one to prove it restores.
 
+**Reaching the VM.** It runs Oracle Linux, whose login user is `opc`:
+`ssh -i ssh-key-2026-10-01.key opc@api.seametry.xyz` from the repository
+root, where the key sits gitignored. `ubuntu@` is refused with
+`Permission denied (publickey)` because that is Oracle's user on Ubuntu images
+and does not exist here; OpenSSH reports a missing user and a wrong key the
+same way so names cannot be probed, which makes the wrong user look like a
+key fault. Windows OpenSSH also refuses a key other accounts can read; grant
+only yourself with
+`icacls ssh-key-2026-10-01.key /inheritance:r /grant:r "$($env:USERNAME):R"`.
+The repository is cloned at `~/seametry-repo`, and Compose reads only the
+`.env` beside `compose.yaml` in `~/seametry-repo/server/deploy`. `opc` is not in
+the `docker` group, so every Docker command there needs `sudo`. A changed
+`.env` reaches a container only through `sudo docker compose up -d <service>`,
+which recreates it; `docker compose restart` keeps the environment it started
+with.
+
 This follows the rule in section 5 rather than anticipating it. A single
 operator with no traffic gains nothing from three processes except three times
 the deployment surface and an inter process network bill.
