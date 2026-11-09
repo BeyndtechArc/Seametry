@@ -1146,6 +1146,15 @@ type AdminRefusal struct {
 	Status int   `json:"status"`
 }
 
+// AdminSession defines model for AdminSession.
+type AdminSession struct {
+	// AccountId The account authority's subject id.
+	AccountId string `json:"account_id"`
+
+	// Email The verified address the allowlist admitted.
+	Email string `json:"email"`
+}
+
 // AdminSource defines model for AdminSource.
 type AdminSource struct {
 	ActivatedWallets int64 `json:"activated_wallets"`

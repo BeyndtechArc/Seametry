@@ -342,12 +342,33 @@ surface, CI read from GitHub, and a merge only on Storm's word.
    - **Acceptance:** a test click and a test bot start are attributed to the
      right draft and person.
    - **Needs:** the bot token and the Telegram group link from Storm.
-6. **Today, Pipeline, Person 360,** in the existing `/admin`, keyboard first,
-   under the design system. Today reads a precomputed queue table, so it
-   loads under a second at 50,000 people.
+6. **The Admin as its own frame, then its pages.** Reordered by Storm on
+   9 November 2026 ("the admin should have its own layer"), after comparing
+   the one-page Admin with rugburn's: the frame comes first, and each later
+   milestone adds pages to it rather than sections to one page. Each step is
+   its own PR.
+   - **6a, the frame.** The Admin shell (`components.md`): a left rail of
+     pages, gated in the layout on a new `/v1/admin/session` read, and the
+     one page split into Overview, Funnel, Sources, Wallets, Activity and
+     Email opt-ins, each reading only what it shows. Status: built on
+     `feat/admin-shell`.
+   - **6b, People, Person 360 and System, read only.** New Gateway reads:
+     the people list (stage, outreach status, source, tier, filters), one
+     person (identities with provenance, imported fields, the timeline from
+     `growth.events` with whose word each row is), and System (reconciler
+     age, outbox and projector lag, the Hall poller's last read, visit
+     counts, mail health).
+   - **6c, actions.** Stage and outreach status changes and notes, each
+     written with an `admin_actions` audit row (account, action, target,
+     before and after), the first Admin writes. The per-read log line stays.
+   - **6d, Today.** A precomputed queue table, so it loads under a second at
+     50,000 people; until milestone 3's scores exist it lists recent changes
+     with their evidence, not a ranking.
 7. **Patterns, Funnels and cohorts, Graph explorer, Mail studio,
-   Channels, Import.** The funnel extends `ADMIN.md`'s existing funnel
-   rather than defining a second one.
+   Channels, Import.** Each joins the rail as a page when its milestone
+   above ships (Patterns after 3, Mail studio after 4, Channels after 5).
+   The funnel extends `ADMIN.md`'s existing funnel rather than defining a
+   second one.
 
 ## 5. Requests to other owners
 

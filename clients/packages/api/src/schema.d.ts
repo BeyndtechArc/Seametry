@@ -390,6 +390,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The admitted account, so the Admin's frame can be drawn without reading any figure.
+         * @description Answers only past the admin gate, like every admin read; anyone the gate refuses gets its 404. The email is the verified address the account token carried, which the allowlist matched.
+         */
+        get: operations["getAdminSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/overview": {
         parameters: {
             query?: never;
@@ -625,6 +645,12 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AdminSession: {
+            /** @description The account authority's subject id. */
+            account_id: string;
+            /** @description The verified address the allowlist admitted. */
+            email: string;
+        };
         AdminPeriod: {
             /** Format: date-time */
             from: string;
@@ -1998,6 +2024,30 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: components["schemas"]["WalletHistory"];
+                        meta: components["schemas"]["Meta"];
+                    };
+                };
+            };
+            default: components["responses"]["Problem"];
+        };
+    };
+    getAdminSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The account the gate admitted. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["AdminSession"];
                         meta: components["schemas"]["Meta"];
                     };
                 };

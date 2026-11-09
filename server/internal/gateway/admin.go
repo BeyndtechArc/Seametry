@@ -73,9 +73,10 @@ type AdminGateOptions struct {
 	Now            func() time.Time
 }
 
-// DefaultAdminReadsPerMinute bounds one account's admin reads. One /admin
-// page load is five reads, so this allows a reader two dozen loads a minute
-// and stops a loop or a scripted token from running the aggregates hot.
+// DefaultAdminReadsPerMinute bounds one account's admin reads. One Admin
+// page load is the session read and the page's own read, so this allows a
+// reader a page a second and stops a loop or a scripted token from running
+// the aggregates hot.
 const DefaultAdminReadsPerMinute = 120
 
 // AdminReadTimeout bounds one admitted read, past the web page's own 8 s
@@ -245,6 +246,17 @@ func deploymentOf[T ~string](value *T) *string {
 	}
 	text := string(*value)
 	return &text
+}
+
+// GetAdminSession needs no record, so it answers even on a Gateway started
+// without one: the gate has already decided, and this only names the result.
+func (s Server) GetAdminSession(ctx context.Context, _ api.GetAdminSessionRequestObject) (api.GetAdminSessionResponseObject, error) {
+	subject, ok := identity.SubjectFromContext(ctx)
+	if !ok {
+		problem := gatewayProblem(http.StatusInternalServerError, "Admin session missing", "GetAdminSession was reached without an account subject; the admin gate must run inside the identity middleware.")
+		return api.GetAdminSessiondefaultApplicationProblemPlusJSONResponse{Body: problem, StatusCode: http.StatusInternalServerError}, nil
+	}
+	return api.GetAdminSession200JSONResponse{Data: api.AdminSession{AccountId: subject.AccountID, Email: subject.Email}, Meta: s.adminMeta()}, nil
 }
 
 func (s Server) GetAdminOverview(ctx context.Context, request api.GetAdminOverviewRequestObject) (api.GetAdminOverviewResponseObject, error) {

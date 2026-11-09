@@ -11,17 +11,37 @@ Signed in with Google, with an email Google verified, that the Gateway's
 decision is the Gateway's: the account authority's service token carries
 `email` and `email_verified`, and `AdminGate` in
 `server/internal/gateway/admin.go` admits `/v1/admin/*` only for that pair.
-A signed-out visitor to the web page is sent to `/sign-in?next=/admin` and
-back after signing in; the return path is accepted only when it is a path on
-this site (`clients/web/src/lib/return-path.ts`). Everyone signed in but not
-admitted gets the same 404 as a path that does not exist, from the Gateway and
-from the web page. The redirect does reveal that /admin exists; who may read
-it is still decided only in the Gateway. An empty or unset allowlist admits no
-one.
+A signed-out visitor to any Admin page is sent to `/sign-in?next=<that page>`
+and back after signing in; the return path is accepted only when it is an
+Admin path on this site (`clients/web/src/lib/return-path.ts`), and anything
+else returns to the Overview. Everyone signed in but not admitted gets the
+same 404 as a path that does not exist, from the Gateway and from every Admin
+page, with none of the Admin's frame. The redirect does reveal that /admin
+exists; who may read it is still decided only in the Gateway. An empty or
+unset allowlist admits no one.
 
-The web page reads only through `/v1/admin/*`, on the server, with the
+## Its pages
+
+The Admin is its own frame, the Admin shell (`components.md`), with a rail
+of pages, not a page of the public site. The frame asks the Gateway's
+`/v1/admin/session` once per request, which names the admitted account
+without reading any figure, and each page then reads only what it shows:
+
+| Page | Path | Reads |
+|---|---|---|
+| Overview | `/admin` | `overview`: volume, fee revenue, tip cost, landed legs, wallet states |
+| Funnel | `/admin/funnel` | `overview`: the funnel, refusals by status, reliability |
+| Sources | `/admin/sources` | `sources` |
+| Wallets | `/admin/wallets` | `wallets`, by deployment and cursor, never a period |
+| Activity | `/admin/activity` | `activity` |
+| Email opt-ins | `/admin/opt-ins` | `email-optins` |
+
+A page joins the rail in the change that ships it; what comes next, and in
+which order, is `.plan/gtm-admin.plan.md`, milestones 6 and 7.
+
+Every page reads only through `/v1/admin/*`, on the server, with the
 account token it exchanges for the visitor's session cookie. No token, figure
-source or secret is sent to the browser, and the page adds no cookie, no
+source or secret is sent to the browser, and the Admin adds no cookie, no
 analytics and nothing collected from the visitor.
 
 ## Audit and read policy
@@ -32,8 +52,9 @@ analytics and nothing collected from the visitor.
   account's email, the query or anything the read returned. A caller the
   gate refuses is not audited; it was answered as a missing path.
 - One account makes at most 120 admin reads a minute (one page load is
-  five); past that the Gateway answers 429 with Retry-After before the
-  record is read. Each admitted read is bounded to 10 s.
+  two: the session and the page's own read); past that the Gateway answers
+  429 with Retry-After before the record is read. Each admitted read is
+  bounded to 10 s.
 - Already bounded before this: a period of at most 366 days, 200 wallets,
   50 activity rows and 20 opt-ins per read, and the web page's 8 s wait.
 
